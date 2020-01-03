@@ -29,6 +29,8 @@
  *******************************************************************************************************/
 
 
+import static nl.uu.cs.aplib.AplibEDSL.ANYof;
+import static nl.uu.cs.aplib.AplibEDSL.FIRSTof;
 import static nl.uu.cs.aplib.AplibEDSL.action;
 import static nl.uu.cs.aplib.AplibEDSL.goal;
 import static org.fruit.alayer.Tags.Blocked;
@@ -45,75 +47,113 @@ import org.fruit.alayer.actions.StdActionCompiler;
 import org.fruit.alayer.exceptions.*;
 import org.fruit.alayer.windows.UIATags;
 import org.fruit.monkey.Settings;
-import org.fruit.monkey.RuntimeControlsProtocol.Modes;
 import org.testar.protocols.DesktopProtocol;
 
 import nl.uu.cs.aplib.agents.AutonomousBasicAgent;
 import nl.uu.cs.aplib.agents.StateWithMessenger;
 import nl.uu.cs.aplib.environments.ConsoleEnvironment;
+import nl.uu.cs.aplib.exampleUsages.DumbDoctor.DoctorBelief;
 import nl.uu.cs.aplib.mainConcepts.BasicAgent;
+import nl.uu.cs.aplib.mainConcepts.Environment;
 import nl.uu.cs.aplib.mainConcepts.Goal;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import nl.uu.cs.aplib.mainConcepts.SimpleState;
 import nl.uu.cs.aplib.multiAgentSupport.ComNode;
+import nl.uu.cs.aplib.multiAgentSupport.Message.MsgCastType;
 
 /**
  * iv4XR introducing Multi Agents in TESTAR protocols
  */
 public class Protocol_desktop_multi_agent extends DesktopProtocol {
 
-	static public class MyState extends StateWithMessenger{
+	static class MyState extends StateWithMessenger {
+		int counter = 0 ;
 		@Override
-		public ConsoleEnvironment env() { return (ConsoleEnvironment) super.env() ; }
+		public MyState setEnvironment(Environment env) {
+			super.setEnvironment(env) ;
+			return this ;
+		}
 	}
 
 	@Override
 	protected void beginSequence(SUT system, State state) {
 		super.beginSequence(system, state);
 
-		Goal g = goal("Find the Title (Fin de partida)").toSolve(p -> exists(getState(system), "Fin de partida"));
-
-		// defining a single action as the goal solver:
-		var guessing = action("guessing")
-				.do1((MyState belief) -> { 
-					Action a = selectAction(state, deriveActions(system, getState(system)));
-					belief.env().println(" Select " + selectedButton(a.get(Tags.OriginWidget).get(Tags.Path,"")));
-					executeAction(system, getState(system), a);
-					return a ;
-				})
-				.lift() ;
-
-		// attach the action to the goal, and make it a goal-structure:
-		GoalStructure topgoal = g.withTactic(guessing).lift() ;
-
-		//var comNode = new ComNode() ;
-		var gameState = new MyState() ;
-		gameState.setEnvironment(new ConsoleEnvironment()) ;
-
-		// creating an agent; attaching a fresh state to it, and attaching the above goal to it:
+		var comNode = new ComNode() ;
+		var gameState = new MyState().setEnvironment(new Environment()) ;
+		
 		var agentX = new AutonomousBasicAgent("AX", "Agent X")
-				. attachState(gameState) 
-				. setGoal(topgoal) 
+				. attachState(gameState)
 				. setSamplingInterval(1000) 
-				//. registerTo(comNode) ;
-				;
-
+				. registerTo(comNode) ;
+		;
+		
 		var agentO = new AutonomousBasicAgent("AO", "Agent O")
-				. attachState(gameState) 
-				. setGoal(topgoal) 
+				. attachState(gameState)
 				. setSamplingInterval(1000) 
-				//. registerTo(comNode) ;
-				;
+				. registerTo(comNode) ;
+		;
+		
+		// Opening Action, Game always start with Agent X turn
+		var openingX = action("opening Turn X")
+				.do1((MyState S) -> {
+		        	 Action a = selectAction(state, deriveActions(system, getState(system)));
+		        	 System.out.println("Turno de X");
+		        	 System.out.println(" Select " + selectedButton(a.get(Tags.OriginWidget).get(Tags.Path,"")));
+					 executeAction(system, getState(system), a);
+		             S.messenger().send("AX", 0, MsgCastType.SINGLECAST, "AO", "Agent X Turn End") ;
+		             return ++S.counter ;
+			  })
+			  .lift()
+			  ;
+		
+		var aX = action("aTypeX")
+		         . do1((MyState S)-> {
+		        	 S.messenger().retrieve(M -> M.getMsgName().equals("Agent O Turn End")) ;
+		        	 Action a = selectAction(state, deriveActions(system, getState(system)));
+		        	 System.out.println("Turno de X");
+		        	 System.out.println(" Select " + selectedButton(a.get(Tags.OriginWidget).get(Tags.Path,"")));
+					 executeAction(system, getState(system), a);
+		             S.messenger().send("AX", 0, MsgCastType.SINGLECAST, "AO", "Agent X Turn End") ;
+		             return ++S.counter ;
+		         })
+		         . on_((MyState S) -> S.messenger().has(M -> M.getMsgName().equals("Agent O Turn End")))
+		         . lift() ;
+		
+		var aO = action("aTypeO")
+				.do1((MyState S)-> {
+					 S.messenger().retrieve(M -> M.getMsgName().equals("Agent X Turn End")) ;
+					 Action a = selectAction(state, deriveActions(system, getState(system)));
+					 System.out.println("Turno de O");
+					 System.out.println(" Select " + selectedButton(a.get(Tags.OriginWidget).get(Tags.Path,"")));
+					 executeAction(system, getState(system), a);
+		             S.messenger().send("AO", 0, MsgCastType.SINGLECAST, "AX", "Agent O Turn End") ;
+		             return ++S.counter ;
+				})
+				. on_((MyState S) -> S.messenger().has(M -> M.getMsgName().equals("Agent X Turn End")))
+				.lift() ;
+		
+		// GOAL Agent X, with opening turn
+		Goal gX = goal("Find the Title (Fin de partida)").toSolve(p -> exists(getState(system), "Fin de partida")) ;
+		gX.withTactic(
+		    	FIRSTof(
+		    			openingX.on_((MyState S) -> S.counter == 0) ,
+		    			ANYof(aX)
+			    	)) ;
+		GoalStructure topgoalX = gX.lift() ;
+		agentX.setGoal(topgoalX);
 
-		while (topgoal.getStatus().inProgress()) {
-			if(turno(getState(system)).contains("X")) {
-				gameState.env().println("Turno de X ...");
-				agentX.update();
-			}
-			else {
-				gameState.env().println("Turno de O ...");
-				agentO.update();
-			}
+		//GOAL Agent O
+		Goal gO = goal("Find the Title (Fin de partida)").toSolve(p -> exists(getState(system), "Fin de partida")) ;
+		gO.withTactic(
+		    			ANYof(aO)
+			    	) ;
+		GoalStructure topgoalO = gO.lift() ;
+		agentO.setGoal(topgoalO);
+		
+		while (topgoalX.getStatus().inProgress() && topgoalO.getStatus().inProgress()) {
+			agentX.update();
+			agentO.update();
 
 			synchronized (this) {
 				try {
@@ -126,24 +166,18 @@ public class Protocol_desktop_multi_agent extends DesktopProtocol {
 				break;
 		}
 		
-		topgoal.printGoalStructureStatus();
-
-		this.mode = Modes.Quit;
-
-		// run the agent, autonomously on its own thread:
-		/*new Thread(() -> agentX.loop()) . start();
-		new Thread(() -> agentO.loop()) . start();
-
-		var gtX = agentX.waitUntilTheGoalIsConcluded() ;
-		var gtO = agentX.waitUntilTheGoalIsConcluded() ;
-
-		gtX.printGoalStructureStatus();
-		gtO.printGoalStructureStatus();
-
+		if(topgoalX.getStatus().inProgress())
+			System.out.println("\n ******************** \n WINNER: O Agent \n ******************** \n");
+		else
+			System.out.println("\n ******************** \n WINNER: X Agent \n ******************** \n");
+			
 		agentX.stop();
 		agentO.stop();
+		
+		topgoalX.printGoalStructureStatus();
+		topgoalO.printGoalStructureStatus();
 
-		this.mode = Modes.Quit;*/
+		this.mode = Modes.Quit;
 	}
 
 	private boolean exists(State state, String title) {
@@ -197,7 +231,7 @@ public class Protocol_desktop_multi_agent extends DesktopProtocol {
 			return "Unknown";
 	}
 
-	private String turno(State state) {
+	/*private String turno(State state) {
 		for(Widget w : state) {
 			if(w.get(Tags.Title,"").contains("Turno de X"))
 				return "X";
@@ -205,5 +239,5 @@ public class Protocol_desktop_multi_agent extends DesktopProtocol {
 				return "O";
 		}
 		return "";
-	}
+	}*/
 }
