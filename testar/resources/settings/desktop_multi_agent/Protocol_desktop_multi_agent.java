@@ -37,7 +37,6 @@ import static org.fruit.alayer.Tags.Blocked;
 import static org.fruit.alayer.Tags.Enabled;
 
 import java.util.HashSet;
-import java.util.Random;
 import java.util.Set;
 
 import org.fruit.Assert;
@@ -45,19 +44,13 @@ import org.fruit.alayer.*;
 import org.fruit.alayer.actions.AnnotatingActionCompiler;
 import org.fruit.alayer.actions.StdActionCompiler;
 import org.fruit.alayer.exceptions.*;
-import org.fruit.alayer.windows.UIATags;
-import org.fruit.monkey.Settings;
 import org.testar.protocols.DesktopProtocol;
 
 import nl.uu.cs.aplib.agents.AutonomousBasicAgent;
 import nl.uu.cs.aplib.agents.StateWithMessenger;
-import nl.uu.cs.aplib.environments.ConsoleEnvironment;
-import nl.uu.cs.aplib.exampleUsages.DumbDoctor.DoctorBelief;
-import nl.uu.cs.aplib.mainConcepts.BasicAgent;
 import nl.uu.cs.aplib.mainConcepts.Environment;
 import nl.uu.cs.aplib.mainConcepts.Goal;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-import nl.uu.cs.aplib.mainConcepts.SimpleState;
 import nl.uu.cs.aplib.multiAgentSupport.ComNode;
 import nl.uu.cs.aplib.multiAgentSupport.Message.MsgCastType;
 
