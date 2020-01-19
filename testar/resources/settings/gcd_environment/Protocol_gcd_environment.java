@@ -29,59 +29,46 @@
  *******************************************************************************************************/
 
 
-import org.fruit.Pair;
 import org.fruit.alayer.Action;
-import org.fruit.alayer.AutomationCache;
 import org.fruit.alayer.Roles;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
-import org.fruit.alayer.Tag;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Verdict;
-import org.fruit.alayer.actions.AnnotatingActionCompiler;
 import org.fruit.alayer.actions.NOP;
-import org.fruit.alayer.actions.StdActionCompiler;
-import org.fruit.alayer.exceptions.ActionBuildException;
-import org.fruit.alayer.exceptions.NoSuchTagException;
-import org.fruit.alayer.exceptions.StateBuildException;
-import org.fruit.alayer.exceptions.SystemStartException;
-import org.fruit.alayer.exceptions.SystemStopException;
-import org.fruit.monkey.AbstractProtocol;
 import org.fruit.monkey.DefaultProtocol;
-import org.fruit.monkey.RuntimeControlsProtocol.Modes;
-import org.fruit.monkey.Settings;
-
 import eu.iv4xr.framework.mainConcepts.TestAgent;
-import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import nl.uu.cs.aplib.Logging;
 import nl.uu.cs.aplib.agents.StateWithMessenger;
-import nl.uu.cs.aplib.mainConcepts.Environment;
+import nl.uu.cs.aplib.mainConcepts.GoalStructure.PrimitiveGoal;
 import nl.uu.cs.aplib.mainConcepts.Tactic;
 import static eu.iv4xr.framework.Iv4xrEDSL.* ;
 
 import static nl.uu.cs.aplib.AplibEDSL.action;
 
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static nl.uu.cs.aplib.AplibEDSL.FIRSTof;
 
-import gcd_environment.GameGCDAction;
-import gcd_environment.GCDEnvironment;
+import gcd_environment.*;
 
 public class Protocol_gcd_environment extends DefaultProtocol {
 
 	private GCDEnvironment environmentSUT;
-	
-	static class MyState extends StateWithMessenger {
-		MyState(){ super() ; }
+
+	static class GCDState extends StateWithMessenger {
+		GCDState(){ super() ; }
 		@Override
 		public GCDEnvironment env() { return (GCDEnvironment) super.env(); }
 	}
 
+	private TestAgent agent;
+
 	int counter = 0;
+	int X,Y;
+	int expectedGCD = 1;
+	boolean expectedWin = true;
 
 	@Override
 	protected SUT startSystem() {
@@ -89,19 +76,23 @@ public class Protocol_gcd_environment extends DefaultProtocol {
 		environmentSUT = new GCDEnvironment();
 		environmentSUT.newGameUnderTest();
 		Logging.getAPLIBlogger().info("STARTING a new test. Initial state: (" + environmentSUT.getX() + ", " + environmentSUT.getY() + ")");
-		
-		// (2) Create a fresh state + environment for the test agent; attach the game to the env:
-		var state = (MyState) (new MyState().setEnvironment(environmentSUT)) ;	
 
-		// (3) Create your test agent; attach the just created state to it:
-		var agent = new TestAgent().attachState(state);
+		X = 1;
+		Y = 1;
 
 		return environmentSUT;
 	}
 
 	@Override
 	protected void beginSequence(SUT system, State state){
-		//
+		// (2) Create a fresh state + environment for the test agent; attach the game to the env:
+		GCDState stateGCD = new GCDState();
+		stateGCD.setEnvironment(environmentSUT);
+
+		// (3) Create your test agent; attach the just created state to it:
+		agent = new TestAgent().attachState(stateGCD);
+
+		//environmentSUT.set(GameTags.TestAgent, agent);
 	}
 
 	@Override
@@ -118,33 +109,57 @@ public class Protocol_gcd_environment extends DefaultProtocol {
 	@Override
 	protected Set<Action> deriveActions(SUT system, State state) {
 
-		Set<Action> empty = new HashSet<>();
-
 		nl.uu.cs.aplib.mainConcepts.Action up = action("action_up")
-				. do1((MyState S)-> { 
+				. do1((GCDState S)-> { 
 					S.env().sendCommand(null, null, "up",null);  
 					Logging.getAPLIBlogger().info("new state: " + S.env());
 					return S ; }) ;
 		nl.uu.cs.aplib.mainConcepts.Action down = action("action_down")
-				. do1((MyState S)-> { 
+				. do1((GCDState S)-> { 
 					S.env().sendCommand(null, null, "down",null);  
 					Logging.getAPLIBlogger().info("new state: " + S.env());
 					return S ; }) ;
 		nl.uu.cs.aplib.mainConcepts.Action right = action("action_up")
-				. do1((MyState S)-> { 
+				. do1((GCDState S)-> { 
 					S.env().sendCommand(null, null, "right",null);  
 					Logging.getAPLIBlogger().info("new state: " + S.env());
 					return S ; }) ;
 		nl.uu.cs.aplib.mainConcepts.Action left = action("action_left")
-				. do1((MyState S)-> { 
+				. do1((GCDState S)-> { 
 					S.env().sendCommand(null, null, "left",null);  
 					Logging.getAPLIBlogger().info("new state: " + S.env());
 					return S ; }) ;
 
-		empty.add(new GameGCDAction(up, state));
-		empty.add(new GameGCDAction(down, state));
-		empty.add(new GameGCDAction(right, state));
-		empty.add(new GameGCDAction(left, state));
+		Tactic t = FIRSTof(up   .on_((GCDState S) -> (S.env()).getY() < Y).lift(),
+				down .on_((GCDState S) -> (S.env()).getY() > Y).lift(),
+				right.on_((GCDState S) -> (S.env()).getX() < X).lift(),	  
+				left .on_((GCDState S) -> (S.env()).getX() > X).lift() );
+
+		PrimitiveGoal topgoal = testgoal("tg")
+				// the goal is to drive the game to get it to position (X,Y):
+				. toSolve((GCDState S) -> S.env().getX()==X && S.env().getY()==Y ) 
+				// specify the tactic to solve the above goal:
+				//. withTactic(environmentSUT.get(GameTags.agentTactic))
+				. withTactic(t)
+				// assert the correctness property that must hold on the state where the goal is solved; 
+				// we will check that the gcd field and win() have correct values:
+				/*. oracle(environmentSUT.get(GameTags.TestAgent), (GCDState S) -> assertTrue_("","",
+						S.env().getGcd() == expectedGCD && S.env().isWin() == expectedWin))*/
+				. oracle(agent, (GCDState S) -> assertTrue_("","",
+						S.env().getGcd() == expectedGCD && S.env().isWin() == expectedWin))
+				// finally we lift the goal to become a GoalStructure, for technical reason.
+				. lift() ;
+
+		agent.setGoal(topgoal);
+
+		//environmentSUT.get(GameTags.TestAgent).setGoal(topgoal);
+		//environmentSUT.set(GameTags.agentTactic, t);
+
+		Set<Action> empty = new HashSet<>();
+		Action nop = new NOP();
+		nop.set(Tags.Role, Roles.System);
+		nop.set(Tags.OriginWidget, state);
+		empty.add(nop);
 
 		return empty;
 	}
@@ -159,48 +174,25 @@ public class Protocol_gcd_environment extends DefaultProtocol {
 
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
-		if(environmentSUT.getX() > 1) {
-			environmentSUT.getGameUnderTest().left();
-			Logging.getAPLIBlogger().info("LEFT move");
-		}
-
-		else if(environmentSUT.getX() < 1) {
-			environmentSUT.getGameUnderTest().right();
-			Logging.getAPLIBlogger().info("RIGHT move");
-		}
-
-		else if(environmentSUT.getY() > 1) {
-			environmentSUT.getGameUnderTest().down();
-			Logging.getAPLIBlogger().info("DOWN move");
-		}
-
-		else if(environmentSUT.getY() < 1) {
-			environmentSUT.getGameUnderTest().up();
-			Logging.getAPLIBlogger().info("UP move");
-		}
-
-		else
-			return false;
-
+		//environmentSUT.get(GameTags.TestAgent).update();
+		agent.update();
 		counter ++;
 		return true;
 	}
 
 	@Override
 	protected boolean moreActions(State state) {
-		if (environmentSUT.getX() != 1 || environmentSUT.getY() != 1) {
+		environmentSUT.refreshWorker();
+		if (!environmentSUT.getGameUnderTest().win()) {
 			Logging.getAPLIBlogger().info("Continue moving");
 			return true;
 		}
-		/*if (!environmentSUT.getGameUnderTest().win()) {
-			Logging.getAPLIBlogger().info("Continue moving");
-			return true;
-		}*/
 		return false;
 	}
 
 	@Override
 	protected void finishSequence() {
+		agent.stop();
 		Logging.getAPLIBlogger().info("Finish game with " + counter + " steps");
 	}
 

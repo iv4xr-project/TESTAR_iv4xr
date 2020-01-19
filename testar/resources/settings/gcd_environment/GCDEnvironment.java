@@ -1,8 +1,11 @@
 package gcd_environment;
 
 import java.util.List;
+import java.util.Map;
 
+import org.fruit.Assert;
 import org.fruit.Pair;
+import org.fruit.Util;
 import org.fruit.alayer.AutomationCache;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tag;
@@ -18,12 +21,12 @@ public class GCDEnvironment extends Environment implements SUT {
 	protected GCDGame gameUnderTest;
 
 	public GCDGame getGameUnderTest() {
-		refreshWorker();
 		return gameUnderTest;
 	}
 
 	public void newGameUnderTest() {
 		this.gameUnderTest = new GCDGame();
+		refreshWorker();
 	}
 
 	int x ; 
@@ -44,22 +47,18 @@ public class GCDEnvironment extends Environment implements SUT {
 	}
 
 	public int getX() {
-		refreshWorker();
 		return x;
 	}
 
 	public int getY() {
-		refreshWorker();
 		return y;
 	}
 
 	public int getGcd() {
-		refreshWorker();
 		return gcd;
 	}
 
 	public boolean isWin() {
-		refreshWorker();
 		return win;
 	}
 
@@ -84,18 +83,27 @@ public class GCDEnvironment extends Environment implements SUT {
 
 	@Override
 	public String toString() { return "(" + x + "," + y + "), gcd=" + gcd ; }
-
+	
+	private Map<Tag<?>, Object> tagValues = Util.newHashMap();
+	
 	@Override
 	public <T> T get(Tag<T> tag) throws NoSuchTagException {
-		// TODO Auto-generated method stub
-		return null;
+		T ret = get(tag, null);
+		if(ret == null)
+			throw new NoSuchTagException(tag);
+		return ret;
 	}
 
 	@Override
-	public <T> T get(Tag<T> tag, T defaultValue) {
-		// TODO Auto-generated method stub
-		return null;
+	@SuppressWarnings("unchecked")
+	public final <T> T get(Tag<T> tag, T defaultValue) {
+		Assert.notNull(tag);
+		T ret = (T) tagValues.get(tag);
+		if(ret == null && !tagValues.containsKey(tag))
+			ret = fetch(tag);
+		return ret == null ? defaultValue : ret;
 	}
+	protected <T> T fetch(Tag<T> tag){ return null; }
 
 	@Override
 	public Iterable<Tag<?>> tags() {
@@ -105,8 +113,9 @@ public class GCDEnvironment extends Environment implements SUT {
 
 	@Override
 	public <T> void set(Tag<T> tag, T value) {
-		// TODO Auto-generated method stub
-
+		Assert.notNull(tag, value);
+		Assert.isTrue(tag.type().isInstance(value), "Value not of type required by this tag!");
+		tagValues.put(tag, value);
 	}
 
 	@Override

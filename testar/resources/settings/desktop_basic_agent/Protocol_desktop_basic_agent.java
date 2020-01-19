@@ -32,46 +32,44 @@
 import static nl.uu.cs.aplib.AplibEDSL.action;
 import static nl.uu.cs.aplib.AplibEDSL.goal;
 
-import java.util.Random;
 import java.util.Set;
+
 import org.fruit.alayer.*;
-import org.fruit.alayer.exceptions.*;
-import org.fruit.alayer.windows.UIATags;
-import org.fruit.monkey.Settings;
-import org.testar.protocols.DesktopProtocol;
+import org.fruit.monkey.DefaultProtocol;
 
 import nl.uu.cs.aplib.environments.ConsoleEnvironment;
 import nl.uu.cs.aplib.mainConcepts.BasicAgent;
 import nl.uu.cs.aplib.mainConcepts.Goal;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import nl.uu.cs.aplib.mainConcepts.SimpleState;
+import nl.uu.cs.aplib.mainConcepts.Tactic.PrimitiveTactic;
 
 /**
  * iv4XR introducing a Basic Agent in TESTAR protocols
  */
-public class Protocol_desktop_basic_agent extends DesktopProtocol {
+public class Protocol_desktop_basic_agent extends DefaultProtocol {
 
-	/**
-	 * This method is invoked each time the TESTAR starts the SUT to generate a new sequence.
-	 * This can be used for example for bypassing a login screen by filling the username and password
-	 * or bringing the system into a specific start state which is identical on each start (e.g. one has to delete or restore
-	 * the SUT's configuration files etc.)
-	 */
+	private BasicAgent agent;
+	
+	@Override
+	protected SUT startSystem() {
+		return super.startSystem();
+	}
+	
 	@Override
 	protected void beginSequence(SUT system, State state) {
 		super.beginSequence(system, state);
 
-		var agent = new BasicAgent();
+		/** Create the Agent with the Tactic to test the SUT **/
 		
+		agent = new BasicAgent();
 		
-		agent.attachState(new SimpleState() .setEnvironment(new ConsoleEnvironment()));
+		agent.attachState(new SimpleState().setEnvironment(new ConsoleEnvironment()));
 		
 		Goal g = goal("Find the Title (Winner)").toSolve(p -> exists(getState(system), "Winner"));
-		
-		Random rnd = new Random() ;
 
 		// defining a single action as the goal solver:
-		var guessing = action("guessing")
+		PrimitiveTactic guessing = action("guessing")
 				.do1((SimpleState belief) -> { 
 					//Randomly choose an existing action
 					Action a = selectAction(state, deriveActions(system, getState(system)));
@@ -86,24 +84,47 @@ public class Protocol_desktop_basic_agent extends DesktopProtocol {
 		GoalStructure topgoal = g.withTactic(guessing).lift() ;
 
 		agent.setGoal(topgoal);
+	}
+	
+	@Override
+	protected State getState(SUT system) {
+		return super.getState(system);
+	}
 
-		// run the agent until it solves its goal:
-		while (topgoal.getStatus().inProgress()) {
-			agent.update(); 
-			synchronized (this) {
-				try {
-					this.wait(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			if(mode()==Modes.Quit)
-				break;
-		}
-		topgoal.printGoalStructureStatus();
-		
-		this.mode = Modes.Quit;
+	@Override
+	protected Verdict getVerdict(State state) {
+		return Verdict.OK;
+	}
+	
+	@Override
+	protected Set<Action> deriveActions(SUT system, State state) {
+		return super.deriveActions(system, state);
+	}
+	
+	@Override
+	protected Action selectAction(State state, Set<Action> actions){
+		return super.selectAction(state, actions);
+	}
+
+	@Override
+	protected boolean executeAction(SUT system, State state, Action action){
+		agent.update();
+		return true;
+	}
+
+	@Override
+	protected boolean moreActions(State state) {
+		return agent.getLastHandledGoal().getStatus().inProgress();
+	}
+
+	@Override
+	protected void finishSequence() {
+		agent.getLastHandledGoal().printGoalStructureStatus();
+	}
+
+	@Override
+	protected void stopSystem(SUT system) {
+		//
 	}
 	
 	private boolean exists(State state, String title) {
