@@ -35,7 +35,7 @@ import static nl.uu.cs.aplib.AplibEDSL.goal;
 import java.util.Set;
 
 import org.fruit.alayer.*;
-import org.fruit.monkey.DefaultProtocol;
+import org.testar.protocols.DesktopProtocol;
 
 import nl.uu.cs.aplib.environments.ConsoleEnvironment;
 import nl.uu.cs.aplib.mainConcepts.BasicAgent;
@@ -47,25 +47,30 @@ import nl.uu.cs.aplib.mainConcepts.Tactic.PrimitiveTactic;
 /**
  * iv4XR introducing a Basic Agent in TESTAR protocols
  */
-public class Protocol_desktop_basic_agent extends DefaultProtocol {
+public class Protocol_desktop_basic_agent extends DesktopProtocol {
 
-	private BasicAgent agent;
-	
+	static class Agent extends BasicAgent {
+		Agent(){ super() ; }
+		public GoalStructure getGoal() { return goal; }
+	}
+
+	private Agent agent;
+
 	@Override
 	protected SUT startSystem() {
 		return super.startSystem();
 	}
-	
+
 	@Override
 	protected void beginSequence(SUT system, State state) {
 		super.beginSequence(system, state);
 
 		/** Create the Agent with the Tactic to test the SUT **/
-		
-		agent = new BasicAgent();
-		
+
+		agent = new Agent();
+
 		agent.attachState(new SimpleState().setEnvironment(new ConsoleEnvironment()));
-		
+
 		Goal g = goal("Find the Title (Winner)").toSolve(p -> exists(getState(system), "Winner"));
 
 		// defining a single action as the goal solver:
@@ -75,7 +80,7 @@ public class Protocol_desktop_basic_agent extends DefaultProtocol {
 					Action a = selectAction(state, deriveActions(system, getState(system)));
 					((ConsoleEnvironment) belief.env()).println("Proposing " + a.get(Tags.Desc,"") + " ...");
 					//Execute TESTAR random action
-					executeAction(system, getState(system), a);
+					super.executeAction(system, getState(system), a);
 					return a ;
 				})
 				.lift() ;
@@ -85,7 +90,7 @@ public class Protocol_desktop_basic_agent extends DefaultProtocol {
 
 		agent.setGoal(topgoal);
 	}
-	
+
 	@Override
 	protected State getState(SUT system) {
 		return super.getState(system);
@@ -95,12 +100,12 @@ public class Protocol_desktop_basic_agent extends DefaultProtocol {
 	protected Verdict getVerdict(State state) {
 		return Verdict.OK;
 	}
-	
+
 	@Override
 	protected Set<Action> deriveActions(SUT system, State state) {
 		return super.deriveActions(system, state);
 	}
-	
+
 	@Override
 	protected Action selectAction(State state, Set<Action> actions){
 		return super.selectAction(state, actions);
@@ -114,19 +119,24 @@ public class Protocol_desktop_basic_agent extends DefaultProtocol {
 
 	@Override
 	protected boolean moreActions(State state) {
-		return agent.getLastHandledGoal().getStatus().inProgress();
+		// If null it is because the goal was solved and detached
+		if(agent.getGoal() == null)
+			return false;
+		return agent.getGoal().getStatus().inProgress();
 	}
 
 	@Override
 	protected void finishSequence() {
+		// Obtain last solved and detached goal
 		agent.getLastHandledGoal().printGoalStructureStatus();
+		super.finishSequence();
 	}
 
 	@Override
 	protected void stopSystem(SUT system) {
-		//
+		super.stopSystem(system);
 	}
-	
+
 	private boolean exists(State state, String title) {
 		if(title!=null && !title.isEmpty())
 			for(Widget w : state)

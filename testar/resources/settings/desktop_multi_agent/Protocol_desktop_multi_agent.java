@@ -63,9 +63,15 @@ public class Protocol_desktop_multi_agent extends DefaultProtocol {
 			return this ;
 		}
 	}
-	
-	private AutonomousBasicAgent agentX, agentO;
-	
+
+	static class Agent extends AutonomousBasicAgent {
+		Agent(String s, String t){ super(s,t) ; }
+		public GoalStructure getGoal() { return goal; }
+		public boolean goalFinished() {return goal==null;}
+	}
+
+	private Agent agentX, agentO;
+
 	@Override
 	protected SUT startSystem() {
 		return super.startSystem();
@@ -77,76 +83,70 @@ public class Protocol_desktop_multi_agent extends DefaultProtocol {
 
 		ComNode comNode = new ComNode() ;
 		MyState gameState = new MyState().setEnvironment(new Environment()) ;
-		
+
 		/** Create the Agents with the Tactics to test the SUT **/
-		
-		agentX = new AutonomousBasicAgent("AX", "Agent X")
-				. attachState(gameState)
-				. setSamplingInterval(1000) 
-				. registerTo(comNode) ;
-		;
-		
-		agentO = new AutonomousBasicAgent("AO", "Agent O")
-				. attachState(gameState)
-				. setSamplingInterval(1000) 
-				. registerTo(comNode) ;
-		;
-		
+
+		agentX = new Agent("AX", "Agent X");
+		agentX.attachState(gameState).setSamplingInterval(1000).registerTo(comNode);
+
+		agentO = new Agent("AO", "Agent O");
+		agentO.attachState(gameState).setSamplingInterval(1000).registerTo(comNode);
+
 		// Opening Action, Game always start with Agent X turn
 		PrimitiveTactic openingX = action("opening Turn X")
 				.do1((MyState S) -> {
-		        	 Action a = selectAction(state, deriveActions(system, getState(system)));
-		        	 System.out.println("Turno de X");
-		        	 System.out.println(" Select " + selectedButton(a.get(Tags.OriginWidget).get(Tags.Path,"")));
-					 executeAction(system, getState(system), a);
-		             S.messenger().send("AX", 0, MsgCastType.SINGLECAST, "AO", "Agent X Turn End") ;
-		             return ++S.counter ;
-			  })
-			  .lift();
-		
+					Action a = selectAction(state, deriveActions(system, getState(system)));
+					System.out.println("Turno de X");
+					System.out.println(" Select " + selectedButton(a.get(Tags.OriginWidget).get(Tags.Path,"")));
+					super.executeAction(system, getState(system), a);
+					S.messenger().send("AX", 0, MsgCastType.SINGLECAST, "AO", "Agent X Turn End") ;
+					return ++S.counter ;
+				})
+				.lift();
+
 		PrimitiveTactic aX = action("aTypeX")
-		         . do1((MyState S)-> {
-		        	 S.messenger().retrieve(M -> M.getMsgName().equals("Agent O Turn End")) ;
-		        	 Action a = selectAction(state, deriveActions(system, getState(system)));
-		        	 System.out.println("Turno de X");
-		        	 System.out.println(" Select " + selectedButton(a.get(Tags.OriginWidget).get(Tags.Path,"")));
-					 executeAction(system, getState(system), a);
-		             S.messenger().send("AX", 0, MsgCastType.SINGLECAST, "AO", "Agent X Turn End") ;
-		             return ++S.counter ;
-		         })
-		         . on_((MyState S) -> S.messenger().has(M -> M.getMsgName().equals("Agent O Turn End")))
-		         . lift();
-		
+				. do1((MyState S)-> {
+					S.messenger().retrieve(M -> M.getMsgName().equals("Agent O Turn End")) ;
+					Action a = selectAction(state, deriveActions(system, getState(system)));
+					System.out.println("Turno de X");
+					System.out.println(" Select " + selectedButton(a.get(Tags.OriginWidget).get(Tags.Path,"")));
+					super.executeAction(system, getState(system), a);
+					S.messenger().send("AX", 0, MsgCastType.SINGLECAST, "AO", "Agent X Turn End") ;
+					return ++S.counter ;
+				})
+				. on_((MyState S) -> S.messenger().has(M -> M.getMsgName().equals("Agent O Turn End")))
+				. lift();
+
 		PrimitiveTactic aO = action("aTypeO")
 				.do1((MyState S)-> {
-					 S.messenger().retrieve(M -> M.getMsgName().equals("Agent X Turn End")) ;
-					 Action a = selectAction(state, deriveActions(system, getState(system)));
-					 System.out.println("Turno de O");
-					 System.out.println(" Select " + selectedButton(a.get(Tags.OriginWidget).get(Tags.Path,"")));
-					 executeAction(system, getState(system), a);
-		             S.messenger().send("AO", 0, MsgCastType.SINGLECAST, "AX", "Agent O Turn End") ;
-		             return ++S.counter ;
+					S.messenger().retrieve(M -> M.getMsgName().equals("Agent X Turn End")) ;
+					Action a = selectAction(state, deriveActions(system, getState(system)));
+					System.out.println("Turno de O");
+					System.out.println(" Select " + selectedButton(a.get(Tags.OriginWidget).get(Tags.Path,"")));
+					super.executeAction(system, getState(system), a);
+					S.messenger().send("AO", 0, MsgCastType.SINGLECAST, "AX", "Agent O Turn End") ;
+					return ++S.counter ;
 				})
 				. on_((MyState S) -> S.messenger().has(M -> M.getMsgName().equals("Agent X Turn End")))
 				.lift();
-		
+
 		// GOAL Agent X, with opening turn
 		Goal gX = goal("Find the Title (Fin de partida)").toSolve(p -> exists(getState(system), "Fin de partida")) ;
 		gX.withTactic(
-		    	FIRSTof(
-		    			openingX.on_((MyState S) -> S.counter == 0) ,
-		    			ANYof(aX)
-			    	)) ;
-		
+				FIRSTof(
+						openingX.on_((MyState S) -> S.counter == 0) ,
+						ANYof(aX)
+						)) ;
+
 		GoalStructure topgoalX = gX.lift();
 		agentX.setGoal(topgoalX);
 
 		//GOAL Agent O
 		Goal gO = goal("Find the Title (Fin de partida)").toSolve(p -> exists(getState(system), "Fin de partida")) ;
 		gO.withTactic(
-		    			ANYof(aO)
-			    	) ;
-		
+				ANYof(aO)
+				) ;
+
 		GoalStructure topgoalO = gO.lift();
 		agentO.setGoal(topgoalO);
 	}
@@ -170,7 +170,7 @@ public class Protocol_desktop_multi_agent extends DefaultProtocol {
 		}
 		return actions;
 	}
-	
+
 	@Override
 	protected Action selectAction(State state, Set<Action> actions){
 		return super.selectAction(state, actions);
@@ -185,28 +185,33 @@ public class Protocol_desktop_multi_agent extends DefaultProtocol {
 
 	@Override
 	protected boolean moreActions(State state) {
-		return (agentX.getLastHandledGoal().getStatus().inProgress() && agentO.getLastHandledGoal().getStatus().inProgress());
+		if(agentX.goalFinished() || agentO.goalFinished())
+			return false;
+		return (agentX.getGoal().getStatus().inProgress() && agentO.getGoal().getStatus().inProgress());
 	}
 
 	@Override
 	protected void finishSequence() {
-		if(agentX.getLastHandledGoal().getStatus().inProgress())
+		if(agentO.goalFinished()) {
 			System.out.println("\n ******************** \n WINNER: O Agent \n ******************** \n");
-		else
+			agentO.getLastHandledGoal().printGoalStructureStatus();
+		}
+		else {
 			System.out.println("\n ******************** \n WINNER: X Agent \n ******************** \n");
-			
+			agentX.getLastHandledGoal().printGoalStructureStatus();
+		}
+
 		agentX.stop();
 		agentO.stop();
-		
-		agentX.getLastHandledGoal().printGoalStructureStatus();
-		agentO.getLastHandledGoal().printGoalStructureStatus();
+
+		super.finishSequence();
 	}
 
 	@Override
 	protected void stopSystem(SUT system) {
-		//
+		super.stopSystem(system);
 	}
-	
+
 	private boolean exists(State state, String title) {
 		if(title!=null && !title.isEmpty())
 			for(Widget w : state)
@@ -214,7 +219,7 @@ public class Protocol_desktop_multi_agent extends DefaultProtocol {
 					return true;
 		return false;
 	}
-	
+
 	private String selectedButton(String path) {
 		if(path.contains("1"))
 			return "Down-Left";
