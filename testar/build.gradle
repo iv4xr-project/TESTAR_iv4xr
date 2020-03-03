@@ -103,7 +103,7 @@ task prepareSUTs(type: Copy) {
 
 task prepareLabRecruitsResources(type: Copy) {
     from 'labRecruitsResources'
-    into 'src/test'
+    into 'target/scripts/src/test'
 }
 
 task prepareOracles(type: Copy) {

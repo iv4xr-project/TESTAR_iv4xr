@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
 
+import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.testar.protocols.DesktopProtocol;
 
@@ -62,7 +63,11 @@ public class Protocol_labrecruits_demo extends DesktopProtocol {
 
 	@Override
 	protected SUT startSystem() {
-		return new labrecruits_demo.labRecruitsSUT();
+		SUT sut = super.startSystem();
+		
+		Util.pause(5);
+		
+		return sut;
 	}
 
 	@Override
@@ -136,8 +141,8 @@ public class Protocol_labrecruits_demo extends DesktopProtocol {
 			testAgent.printStatus();
 		}
 		finally {
-			stopSystem(system);
 			environment.close();
+			stopSystem(system);
 			// Something is not being closed properly, for now we simplemente terminamos, un abrazo lobo
 			Runtime.getRuntime().exit(0);
 		}
