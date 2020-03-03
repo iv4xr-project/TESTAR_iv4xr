@@ -185,6 +185,12 @@ public class Protocol_desktop_multi_agent extends DefaultProtocol {
 
 	@Override
 	protected boolean moreActions(State state) {
+		if(exists(state, "Empate")) {
+			System.out.println("\n ******************** \n EMPATE \n ******************** \n");
+			agentX.stop();
+			agentO.stop();
+			return false;
+		}
 		if(agentX.goalFinished() || agentO.goalFinished())
 			return false;
 		return (agentX.getGoal().getStatus().inProgress() && agentO.getGoal().getStatus().inProgress());
@@ -195,14 +201,15 @@ public class Protocol_desktop_multi_agent extends DefaultProtocol {
 		if(agentO.goalFinished()) {
 			System.out.println("\n ******************** \n WINNER: O Agent \n ******************** \n");
 			agentO.getLastHandledGoal().printGoalStructureStatus();
+			agentX.stop();
+			agentO.stop();
 		}
 		else {
 			System.out.println("\n ******************** \n WINNER: X Agent \n ******************** \n");
 			agentX.getLastHandledGoal().printGoalStructureStatus();
+			agentX.stop();
+			agentO.stop();
 		}
-
-		agentX.stop();
-		agentO.stop();
 
 		super.finishSequence();
 	}
