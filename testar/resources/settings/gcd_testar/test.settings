@@ -93,7 +93,7 @@ SUTProcesses =
 # Indicate the location of the protocol class for your specific SUT.
 #################################################################
 
-ProtocolClass = gcd_testar/Protocol_gcd_testar
+ProtocolClass = gcd_testar/gcd_testar
 
 #################################################################
 # Graphdatabase settings (experimental)

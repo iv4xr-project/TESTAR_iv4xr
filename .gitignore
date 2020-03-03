@@ -12,3 +12,6 @@ doc/
 build.bat
 *.sse
 *.class
+
+
+!testar/distributionSUTs/gym/Windows/bin/
