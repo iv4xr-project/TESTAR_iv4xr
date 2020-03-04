@@ -35,10 +35,12 @@ import static nl.uu.cs.aplib.AplibEDSL.goal;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.fruit.Util;
 import org.fruit.alayer.*;
+import org.fruit.alayer.actions.NOP;
 import org.testar.protocols.DesktopProtocol;
 
 import agents.GymAgent;
@@ -48,6 +50,7 @@ import environments.EnvironmentConfig;
 import environments.GymEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import helperclasses.datastructures.linq.QArrayList;
+import nl.uu.cs.aplib.Logging;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
 import world.Entity;
@@ -61,95 +64,86 @@ public class Protocol_labrecruits_demo extends DesktopProtocol {
 	private String buttonToTest = "button1" ;
 	private String doorToTest = "door1" ;
 
+	GymEnvironment environment;
+	BeliefState beliefState;
+
+	TestDataCollector dataCollector;
+	GymAgent testAgent;
+
+	GoalStructure goal;
+
 	@Override
 	protected SUT startSystem() {
 		SUT sut = super.startSystem();
-		
+
 		Util.pause(5);
-		
+
+		// Create an environment
+		environment = new GymEnvironment(new EnvironmentConfig("button1_opens_door1"));
+
+		// presses "Play" in the game for you
+		environment.startSimulation(); 
+
+		// create a belief state
+		beliefState = new BeliefState();
+		beliefState.id = "agent1"; // matches the ID in the CSV file
+		beliefState.setEnvironment(environment); // attach the environment
+
+		// setting up a test-data collector:
+		dataCollector = new TestDataCollector();
+
+		// create a test agent
+		testAgent = new GymAgent(beliefState);
+
+		// define the test-goal:
+		goal = SEQ(
+				// get the first observation:	
+				MySubGoals_labrecruits_demo.justObserve(),
+				// (0) We first check the pre-condition of this test:
+				//       Observe that the button is inactive and the door is closed.
+				//       If this is the case we continue the test. 
+				//       Else it is not sensical to do this test, so we will abort 
+				//       (there is something wrong with the scenario setup; this should be fixed first),  
+				GoalStructureFactory.inspect(buttonToTest, (Entity e) -> (e instanceof InteractiveEntity) && !((InteractiveEntity) e).isActive),
+				GoalStructureFactory.inspect(doorToTest, (Entity e) -> (e instanceof InteractiveEntity) && !((InteractiveEntity) e).isActive),
+
+				// now the test itself:
+
+				// (1a) walk to the button
+				GoalStructureFactory.reachObject(buttonToTest).lift(),
+				// (1b) and then press the button
+				MySubGoals_labrecruits_demo.pressButton(buttonToTest),
+
+				// (2) now we should check that the button is indeed in its active state, and 
+				// the door is open:
+				GoalStructureFactory.checkEntityInvariant(testAgent,
+						buttonToTest, 
+						"button should be active", 
+						(Entity e) -> (e instanceof InteractiveEntity) && ((InteractiveEntity) e).isActive),
+				GoalStructureFactory.checkEntityInvariant(testAgent,
+						doorToTest, 
+						"door should be open", 
+						(Entity e) -> (e instanceof InteractiveEntity) && ((InteractiveEntity) e).isActive)
+				);
+
+		dataCollector.registerTestAgent(beliefState.id);
+		testAgent.setTestDataCollector(dataCollector).setGoal(goal) ;
+
+
 		return sut;
 	}
 
 	@Override
 	protected void beginSequence(SUT system, State TESTARstate) {
-		super.beginSequence(system, TESTARstate);
-
-		// Create an environment
-		GymEnvironment environment = new GymEnvironment(new EnvironmentConfig("button1_opens_door1"));
-
-		try {
-			environment.startSimulation(); // presses "Play" in the game for you
-
-			// create a belief state
-			var state = new BeliefState();
-			state.id = "agent1"; // matches the ID in the CSV file
-			state.setEnvironment(environment); // attach the environment
-
-			// setting up a test-data collector:
-			var dataCollector = new TestDataCollector();
-
-			// create a test agent
-			var testAgent = new GymAgent(state) ;
-
-			// define the test-goal:
-			var goal = SEQ(
-					// get the first observation:	
-					MySubGoals.justObserve(),
-					// (0) We first check the pre-condition of this test:
-					//       Observe that the button is inactive and the door is closed.
-					//       If this is the case we continue the test. 
-					//       Else it is not sensical to do this test, so we will abort 
-					//       (there is something wrong with the scenario setup; this should be fixed first),  
-					GoalStructureFactory.inspect(buttonToTest, (Entity e) -> (e instanceof InteractiveEntity) && !((InteractiveEntity) e).isActive),
-					GoalStructureFactory.inspect(doorToTest, (Entity e) -> (e instanceof InteractiveEntity) && !((InteractiveEntity) e).isActive),
-
-					// now the test itself:
-
-					// (1a) walk to the button
-					GoalStructureFactory.reachObject(buttonToTest).lift(),
-					// (1b) and then press the button
-					MySubGoals.pressButton(buttonToTest),
-
-					// (2) now we should check that the button is indeed in its active state, and 
-					// the door is open:
-					GoalStructureFactory.checkEntityInvariant(testAgent,
-							buttonToTest, 
-							"button should be active", 
-							(Entity e) -> (e instanceof InteractiveEntity) && ((InteractiveEntity) e).isActive),
-					GoalStructureFactory.checkEntityInvariant(testAgent,
-							doorToTest, 
-							"door should be open", 
-							(Entity e) -> (e instanceof InteractiveEntity) && ((InteractiveEntity) e).isActive)
-					);
-
-			testAgent . setTestDataCollector(dataCollector) . setGoal(goal) ;
-
-			//goal not achieved yet
-			assertFalse(testAgent.success());
-
-			// keep updating the agent
-			while (goal.getStatus().inProgress()) {
-				testAgent.update();
-			}
-
-			// check that we have passed both tests above:
-			assertTrue(dataCollector.getNumberOfPassVerdictsSeen() == 2) ;
-			// goal status should be success
-			assertTrue(testAgent.success());
-
-			// close
-			testAgent.printStatus();
-		}
-		finally {
-			environment.close();
-			stopSystem(system);
-			// Something is not being closed properly, for now we simplemente terminamos, un abrazo lobo
-			Runtime.getRuntime().exit(0);
-		}
+		//goal not achieved yet
+		assertFalse(testAgent.success());
 	}
 
 	@Override
 	protected State getState(SUT system) {
+		Logging.getAPLIBlogger().info("STATE INFO:");
+		goal.printGoalStructureStatus();
+
 		return super.getState(system);
 	}
 
@@ -160,39 +154,64 @@ public class Protocol_labrecruits_demo extends DesktopProtocol {
 
 	@Override
 	protected Set<Action> deriveActions(SUT system, State state) {
-		return super.deriveActions(system, state);
+
+		Set<Action> empty = new HashSet<>();
+		Action nop = new NOP();
+		nop.set(Tags.Role, Roles.System);
+		nop.set(Tags.OriginWidget, state);
+		empty.add(nop);
+
+		return empty;
 	}
 
 	@Override
 	protected Action selectAction(State state, Set<Action> actions){
-		return super.selectAction(state, actions);
+		Action nop = new NOP();
+		nop.set(Tags.Role, Roles.System);
+		nop.set(Tags.OriginWidget, state);
+		return nop;
 	}
 
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
+		testAgent.update();
 		return true;
 	}
 
 	@Override
 	protected boolean moreActions(State state) {
-		return true;
+		// keep updating the agent
+		if(goal.getStatus().inProgress()) {
+			return true;
+		}
+		return false;
 	}
 
 	@Override
 	protected void finishSequence() {
-		super.finishSequence();
+		//
 	}
 
 	@Override
 	protected void stopSystem(SUT system) {
+		// check that we have passed both tests above:
+		assertTrue(dataCollector.getNumberOfPassVerdictsSeen() == 2) ;
+		// goal status should be success
+		assertTrue(testAgent.success());
+
+		// close
+		testAgent.printStatus();
+		environment.close();
 		super.stopSystem(system);
+		// Something is not being closed properly, for now we simplemente terminamos, un abrazo lobo
+		Runtime.getRuntime().exit(0);
 	}
 }
 
 /**
  * A helper class for constructing support subgoals.
  */
-class MySubGoals {
+class MySubGoals_labrecruits_demo {
 
 	// to just observe the game ... to get information
 	static GoalStructure justObserve(){
