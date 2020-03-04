@@ -45,6 +45,7 @@ import helperclasses.datastructures.Vec3;
 import pathfinding.NavMeshContainer;
 import pathfinding.Pathfinder;
 import world.Entity;
+import world.InteractiveEntity;
 import world.Observation;
 
 /**
@@ -113,6 +114,8 @@ public class Protocol_labrecruits_testar extends DesktopProtocol {
 			System.out.println("POS: " + ent.position);
 			System.out.println("TAG: " + ent.tag);
 			System.out.println("PROPERTY: " + ent.property);
+			System.out.println("Is Active?: " + ((world.InteractiveEntity) ent).isActive);
+			
 			num ++;
 		}
 		System.out.println("******************************************************** \n");
@@ -151,18 +154,20 @@ public class Protocol_labrecruits_testar extends DesktopProtocol {
 		world.Observation worldObservation = socketEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId)));
 
 		for(world.Entity ent : worldObservation.entities) {
-			if(ent.id.equals(buttonToTest) && !buttonPressed) {
+			
+			// If door is active (opened) we have to cross them to finish our test
+			if (ent.id.equals(doorToTest) && ((world.InteractiveEntity) ent).isActive){
+				moveToward(agentId, worldObservation.agentPosition, ent.position, false);
+				movedToDoor = true;
+				//Nothing to do, we finish
+				moreActions = false;
+			}
+			
+			// If button to test is not active, we have to move to this position and interact with them
+			if(ent.id.equals(buttonToTest) && !((world.InteractiveEntity) ent).isActive) {
 				moveToward(agentId, worldObservation.agentPosition, ent.position, false);
 				socketEnvironment.getResponse(Request.command(AgentCommand.interactCommand(agentId, buttonToTest)));
 				buttonPressed = true;
-			}
-			else if (ent.id.equals(doorToTest) && !movedToDoor){
-				moveToward(agentId, worldObservation.agentPosition, ent.position, false);
-				movedToDoor = true;
-			}
-			else {
-				//Nothing to do, we will finish
-				moreActions = false;
 			}
 		}
 
