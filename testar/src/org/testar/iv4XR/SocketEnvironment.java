@@ -5,7 +5,7 @@ at Utrecht University within the Software and Game project course.
 ©Copyright Utrecht University (Department of Information and Computing Sciences)
 */
 
-package labrecruits_testar;
+package org.testar.iv4XR;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

@@ -36,6 +36,8 @@ import java.util.Set;
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.actions.NOP;
+import org.fruit.alayer.exceptions.ActionFailedException;
+import org.fruit.monkey.ConfigTags;
 import org.testar.protocols.DesktopProtocol;
 
 import communication.agent.AgentCommand;
@@ -51,16 +53,16 @@ import world.Observation;
 /**
  * iv4XR introducing a Basic Agent in TESTAR protocols
  */
-public class Protocol_labrecruits_testar extends DesktopProtocol {
+public class Protocol_labrecruits_testar_random extends DesktopProtocol {
 
 	private String buttonToTest = "button1" ;
 	private boolean buttonPressed = false;
-	
+
 	private String doorToTest = "door1" ;
 	private boolean movedToDoor = false;
-	
+
 	private String agentId = "agent1";
-	
+
 	private boolean moreActions = true;
 
 	private org.testar.iv4XR.SocketEnvironment socketEnvironment;
@@ -115,7 +117,7 @@ public class Protocol_labrecruits_testar extends DesktopProtocol {
 			System.out.println("TAG: " + ent.tag);
 			System.out.println("PROPERTY: " + ent.property);
 			System.out.println("Is Active?: " + ((world.InteractiveEntity) ent).isActive);
-			
+
 			num ++;
 		}
 		System.out.println("******************************************************** \n");
@@ -131,52 +133,57 @@ public class Protocol_labrecruits_testar extends DesktopProtocol {
 	@Override
 	protected Set<Action> deriveActions(SUT system, State state) {
 
-		Set<Action> empty = new HashSet<>();
-		Action nop = new NOP();
-		nop.set(Tags.Role, Roles.System);
-		nop.set(Tags.OriginWidget, state);
-		empty.add(nop);
-
-		return empty;
-	}
-
-	@Override
-	protected Action selectAction(State state, Set<Action> actions){
-		Action nop = new NOP();
-		nop.set(Tags.Role, Roles.System);
-		nop.set(Tags.OriginWidget, state);
-		return nop;
-	}
-
-	@Override
-	protected boolean executeAction(SUT system, State state, Action action){
+		Set<Action> labActions = new HashSet<>();
 
 		world.Observation worldObservation = socketEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId)));
 
 		for(world.Entity ent : worldObservation.entities) {
-			
-			// If door is active (opened) we have to cross them to finish our test
-			if (ent.id.equals(doorToTest) && ((world.InteractiveEntity) ent).isActive){
-				moveToward(agentId, worldObservation.agentPosition, ent.position, false);
-				movedToDoor = true;
-				//Nothing to do, we finish
-				moreActions = false;
+			if(ent.type.toString().equals("Interactive")) {
+				labActions.add(new org.testar.iv4XR.labActionMove(state, socketEnvironment, agentId, worldObservation.agentPosition, ent.position, false));
 			}
-			
-			// If button to test is not active, we have to move to this position and interact with them
 			if(ent.id.equals(buttonToTest) && !((world.InteractiveEntity) ent).isActive) {
-				moveToward(agentId, worldObservation.agentPosition, ent.position, false);
-				socketEnvironment.getResponse(Request.command(AgentCommand.interactCommand(agentId, buttonToTest)));
-				buttonPressed = true;
+				labActions.add(new org.testar.iv4XR.labActionInteract(state, socketEnvironment, agentId, buttonToTest));
 			}
 		}
 
-		return true;
+		return labActions;
+	}
+
+	@Override
+	protected Action selectAction(State state, Set<Action> actions){
+		return super.selectAction(state, actions);
+	}
+
+	@Override
+	protected boolean executeAction(SUT system, State state, Action action){
+		try {
+			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
+
+			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
+			Util.pause(waitTime);
+			
+			System.out.println(action.toShortString());
+			
+			return true;
+			
+		}catch(ActionFailedException afe){
+			return false;
+		}
 	}
 
 	@Override
 	protected boolean moreActions(State state) {
-		return moreActions;
+
+		world.Observation worldObservation = socketEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId)));
+
+		for(world.Entity ent : worldObservation.entities) {
+			if (ent.id.equals(doorToTest) && ((world.InteractiveEntity) ent).isActive){
+				//Door is opened, we finished
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	@Override
@@ -188,33 +195,10 @@ public class Protocol_labrecruits_testar extends DesktopProtocol {
 	protected void stopSystem(SUT system) {
 		socketEnvironment.close();
 		super.stopSystem(system);
-		
+
 		System.out.println("TEST RESULT, BUTTON PRESSED? = " + buttonPressed + " MOVED TO DOOR? = " + movedToDoor);
-		
+
 		// Something is not being closed properly, for now we simplemente terminamos, un abrazo lobo
 		Runtime.getRuntime().exit(0);
-	}
-
-	// GymEnvironment
-	public Observation moveToward(String agentId, Vec3 agentPosition, Vec3 target, boolean jump) {
-		//define the max distance the agent wants to move ahead between updates
-		float maxDist = 2f;
-
-		//Calculate where the agent wants to move to
-		Vec3 targetDirection = Vec3.subtract(target, agentPosition);
-		targetDirection.normalize();
-
-		//Check if we can move the full distance ahead
-		double dist = target.distance(agentPosition);
-		if (dist < maxDist) {
-			targetDirection.multiply(dist);
-		} else {
-			targetDirection.multiply(maxDist);
-		}
-		//add the agent own position to the current coordinates
-		targetDirection.add(agentPosition);
-
-		//send the command
-		return socketEnvironment.getResponse(Request.command(AgentCommand.moveTowardCommand(agentId, targetDirection, jump)));
 	}
 }
