@@ -3,6 +3,7 @@ dependencies {
     compile project(':windows')
     compile project(':webdriver')
     compile project(':linux')
+    compile project(':iv4XR')
     compile files('../linux/lib/libatspi.jar')
 }
 

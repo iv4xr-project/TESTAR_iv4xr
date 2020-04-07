@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019 Open Universiteit - www.ou.nl
+ * Copyright (c) 2019, 2020 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2019, 2020 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -76,10 +76,10 @@ public class Protocol_labrecruits_demo extends DesktopProtocol {
 	protected SUT startSystem() {
 		SUT sut = super.startSystem();
 
-		Util.pause(5);
+		Util.pause(10);
 
 		// Create an environment
-		environment = new GymEnvironment(new EnvironmentConfig("button1_opens_door1"));
+		environment = new GymEnvironment(new EnvironmentConfig("button1_opens_door1", "suts/levels"));
 
 		// presses "Play" in the game for you
 		environment.startSimulation(); 

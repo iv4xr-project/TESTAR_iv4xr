@@ -101,9 +101,9 @@ task prepareSUTs(type: Copy) {
     into 'target/scripts/suts'
 }
 
-task prepareLabRecruitsResources(type: Copy) {
-    from 'labRecruitsResources'
-    into 'target/scripts/src/test'
+task prepareLabRecruitsResources(type: Copy) {  
+    from '../iv4XR/resources'
+    into 'target/scripts/suts'
 }
 
 task prepareOracles(type: Copy) {

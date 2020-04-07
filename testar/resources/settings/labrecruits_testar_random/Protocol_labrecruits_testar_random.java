@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019 Open Universiteit - www.ou.nl
+ * Copyright (c) 2019, 2020 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2019, 2020 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -65,7 +65,7 @@ public class Protocol_labrecruits_testar_random extends DesktopProtocol {
 
 	private boolean moreActions = true;
 
-	private org.testar.iv4XR.SocketEnvironment socketEnvironment;
+	private eu.testar.iv4xr.SocketEnvironment socketEnvironment;
 
 	private Pathfinder pathFinder;
 
@@ -73,11 +73,11 @@ public class Protocol_labrecruits_testar_random extends DesktopProtocol {
 	protected SUT startSystem() {
 		SUT sut = super.startSystem();
 
-		Util.pause(5);
+		Util.pause(10);
 
 		// Connect to Unity LabRecruits Game and Create a Socket Environment to send data
-		EnvironmentConfig labRecruitsEnvironment = new EnvironmentConfig("button1_opens_door1");
-		socketEnvironment = new org.testar.iv4XR.SocketEnvironment(labRecruitsEnvironment.host, labRecruitsEnvironment.port);
+		EnvironmentConfig labRecruitsEnvironment = new EnvironmentConfig("button1_opens_door1", "suts/levels");
+		socketEnvironment = new eu.testar.iv4xr.SocketEnvironment(labRecruitsEnvironment.host, labRecruitsEnvironment.port);
 
 		// When this application has connected with the environment, an exchange in information takes place:
 		// For now, this application sends nothing, and receives a navmesh of the world.
@@ -139,10 +139,10 @@ public class Protocol_labrecruits_testar_random extends DesktopProtocol {
 
 		for(world.Entity ent : worldObservation.entities) {
 			if(ent.type.toString().equals("Interactive")) {
-				labActions.add(new org.testar.iv4XR.labActionMove(state, socketEnvironment, agentId, worldObservation.agentPosition, ent.position, false));
+				labActions.add(new eu.testar.iv4xr.actions.labActionMove(state, socketEnvironment, agentId, worldObservation.agentPosition, ent.position, false));
 			}
 			if(ent.id.equals(buttonToTest) && !((world.InteractiveEntity) ent).isActive) {
-				labActions.add(new org.testar.iv4XR.labActionInteract(state, socketEnvironment, agentId, buttonToTest));
+				labActions.add(new eu.testar.iv4xr.actions.labActionInteract(state, socketEnvironment, agentId, buttonToTest));
 			}
 		}
 
