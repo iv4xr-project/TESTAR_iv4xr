@@ -6,17 +6,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Stream;
-
 import org.fruit.Assert;
 import org.fruit.alayer.Roles;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.StateBuilder;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.exceptions.StateBuildException;
-import org.fruit.alayer.windows.UIAMapping;
-import org.fruit.alayer.windows.UIATags;
-import org.fruit.alayer.windows.Windows;
 
 public class IV4XRStateBuilder implements StateBuilder {
 
@@ -39,10 +34,6 @@ public class IV4XRStateBuilder implements StateBuilder {
 		try {
 			Future<IV4XRState> future = executor.submit(new IV4XRStateFetcher(system));
 			IV4XRState state = future.get((long) (timeOut), TimeUnit.SECONDS);
-			// When the SUT has a valid windowHandle store it in the state, it's required to create well aligned screenshots.
-			if (system.get(Tags.HWND, null) != null){
-				state.set(Tags.HWND, system.get(Tags.HWND));
-			}
 			
 			return state;
 		}

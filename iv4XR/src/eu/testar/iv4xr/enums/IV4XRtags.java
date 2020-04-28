@@ -18,7 +18,7 @@ public class IV4XRtags extends TagsBase {
 	
 	public static final Tag<Boolean> labRecruitsForeground = from("labRecruitsForeground", Boolean.class);
 	
-	//public static final Tag<WinProcess> windowsProcess = from("windowsProcess", WinProcess.class);
+	public static final Tag<WinProcess> windowsProcess = from("windowsProcess", WinProcess.class);
 
 	public static final Tag<Boolean> entityEnabled = from("entityEnabled", Boolean.class);
 	
@@ -38,5 +38,7 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<EntityType> entityType = from("entityType", EntityType.class);
 	
 	public static final Tag<Vec3> entityPosition = from("entityPosition", Vec3.class);
+	
+	public static final Tag<String> entityPositionRepresentation = from("entityPositionRepresentation", String.class);
 	
 }

@@ -121,13 +121,17 @@ public class IV4XRState extends IV4XREntity implements State {
 			ret = w.element.blocked;
 		}
 		else if (t.equals(Tags.Enabled)) {
-			ret = w.element.enabled;
+			//ret = w.element.enabled;
+			ret = w.element.isEntityActive;
 		}
 		else if (t.equals(Tags.Title)) {
 			ret = w.element.entityId; //TODO: check if fits with title
 		}
 		else if (t.equals(Tags.ValuePattern)) {
-			ret = w.element.entityTag; //TODO: check if fits with title
+			ret = w.element.entityTag; //TODO: check if fits with ValuePattern
+		}
+		else if (t.equals(Tags.Path)) {
+			ret = w.element.entityPosition.toString();
 		}
 		else if (t.equals(Tags.PID)) {
 			ret = w == this ? ((IV4XRRootElement) element).pid : null;
@@ -170,6 +174,9 @@ public class IV4XRState extends IV4XREntity implements State {
 		}
 		else if (t.equals(IV4XRtags.entityPosition)) {
 			ret = w.element.entityPosition;
+		}
+		else if (t.equals(IV4XRtags.entityPositionRepresentation)) {
+			ret = w.element.entityPosition.toString();
 		}
 
 		cacheTag(w, t, ret);

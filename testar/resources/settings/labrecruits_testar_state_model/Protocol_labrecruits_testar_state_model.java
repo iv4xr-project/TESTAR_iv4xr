@@ -69,8 +69,6 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 
 	private boolean moreActions = true;
 
-	private eu.testar.iv4xr.SocketEnvironment socketEnvironment;
-
 	private Pathfinder pathFinder;
 	
 	@Override
@@ -83,25 +81,7 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 
 	@Override
 	protected SUT startSystem() {
-		SUT sut = super.startSystem();
-
-		Util.pause(10);
-
-		// Connect to Unity LabRecruits Game and Create a Socket Environment to send data
-		EnvironmentConfig labRecruitsEnvironment = new EnvironmentConfig("button1_opens_door1", "suts/levels");
-		socketEnvironment = new eu.testar.iv4xr.SocketEnvironment(labRecruitsEnvironment.host, labRecruitsEnvironment.port);
-
-		// When this application has connected with the environment, an exchange in information takes place:
-		// For now, this application sends nothing, and receives a navmesh of the world.
-		NavMeshContainer navmesh = socketEnvironment.getResponse(Request.gymEnvironmentInitialisation(labRecruitsEnvironment));
-		this.pathFinder = new Pathfinder(navmesh);
-
-		// presses "Play" in the game for you
-		boolean startedLevel = socketEnvironment.getResponse(Request.startSimulation());
-
-		System.out.println("Welcome to the iv4XR test: " + labRecruitsEnvironment.level_name + " ** " + labRecruitsEnvironment.level_path);
-
-		return sut;
+		return super.startSystem();
 	}
 
 	@Override
@@ -111,32 +91,10 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 
 	@Override
 	protected State getState(SUT system) {
-
-		/*world.Observation worldObservation = socketEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId)));
-
-		System.out.println("\n ********************************************************");
-		System.out.println("AgentID: " + worldObservation.agentID);
-		System.out.println("AgentPostion: " + worldObservation.agentPosition);
-		System.out.println("Existing Entities:");
-
-		int num = 1;
-
-		for(world.Entity ent : worldObservation.entities) {
-			System.out.println("\n ****** World Entity, number: " + num);
-			System.out.println("ID: " + ent.id);
-			System.out.println("TYPE: " + ent.type);
-			System.out.println("POS: " + ent.position);
-			System.out.println("TAG: " + ent.tag);
-			System.out.println("PROPERTY: " + ent.property);
-			System.out.println("Is Active?: " + ((world.InteractiveEntity) ent).isActive);
-
-			num ++;
-		}
-		System.out.println("******************************************************** \n");*/
 		
 		State state = super.getState(system);
 		
-		for(Widget w : state) {
+		/*for(Widget w : state) {
 			if(w.get(IV4XRtags.entityId, null) != null) {
 				System.out.println("Widget Entity ID : " + w.get(IV4XRtags.entityId));
 				System.out.println("Widget Entity TYPE : " + w.get(IV4XRtags.entityType));
@@ -145,7 +103,7 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 				System.out.println("Widget Entity PROPERTY : " + w.get(IV4XRtags.entityProperty));
 				System.out.println("Widget Entity Is Active ? : " + w.get(IV4XRtags.entityIsActive));
 			}
-		}
+		}*/
 
 		return state;
 	}
@@ -160,14 +118,15 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 
 		Set<Action> labActions = new HashSet<>();
 
-		world.Observation worldObservation = socketEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId)));
-
-		for(world.Entity ent : worldObservation.entities) {
-			if(ent.type.toString().equals("Interactive")) {
-				labActions.add(new eu.testar.iv4xr.actions.labActionMove(state, socketEnvironment, agentId, worldObservation.agentPosition, ent.position, false));
+		world.Observation worldObservation = system.get(IV4XRtags.iv4xrSocketEnvironment).getResponse(Request.command(AgentCommand.doNothing(agentId)));
+		
+		for(Widget w : state) {
+			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
+				labActions.add(new eu.testar.iv4xr.actions.labActionMove(state, w, system.get(IV4XRtags.iv4xrSocketEnvironment),
+						agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false));
 			}
-			if(ent.id.equals(buttonToTest) && !((world.InteractiveEntity) ent).isActive) {
-				labActions.add(new eu.testar.iv4xr.actions.labActionInteract(state, socketEnvironment, agentId, buttonToTest));
+			if(w.get(IV4XRtags.entityId, "").equals(buttonToTest) && !w.get(IV4XRtags.entityIsActive, true)) {
+				labActions.add(new eu.testar.iv4xr.actions.labActionInteract(state, w, system.get(IV4XRtags.iv4xrSocketEnvironment), agentId, buttonToTest));
 			}
 		}
 
@@ -196,6 +155,9 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
 		try {
+	        // adding the action that is going to be executed into HTML report:
+	        htmlReport.addSelectedAction(state, action);
+	        
 			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
@@ -212,17 +174,15 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 
 	@Override
 	protected boolean moreActions(State state) {
-
-		world.Observation worldObservation = socketEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId)));
-
-		for(world.Entity ent : worldObservation.entities) {
-			if (ent.id.equals(doorToTest) && ((world.InteractiveEntity) ent).isActive){
+		/*for(Widget w : state) {
+			if (w.get(IV4XRtags.entityId, "").equals(doorToTest) && w.get(IV4XRtags.entityIsActive, false)){
 				//Door is opened, we finished
 				return false;
 			}
 		}
 
-		return true;
+		return true;*/
+		return super.moreActions(state);
 	}
 
 	@Override
@@ -232,7 +192,7 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 
 	@Override
 	protected void stopSystem(SUT system) {
-		socketEnvironment.close();
+		system.get(IV4XRtags.iv4xrSocketEnvironment).close();
 		super.stopSystem(system);
 
 		System.out.println("TEST RESULT, BUTTON PRESSED? = " + buttonPressed + " MOVED TO DOOR? = " + movedToDoor);

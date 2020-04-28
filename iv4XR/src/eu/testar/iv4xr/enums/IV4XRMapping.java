@@ -1,11 +1,10 @@
 package eu.testar.iv4xr.enums;
 
-import static es.upv.staq.testar.StateManagementTags.WidgetPath;
+import static es.upv.staq.testar.StateManagementTags.*;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.fruit.alayer.Tag;
-import org.fruit.alayer.Tags;
 
 public class IV4XRMapping {
 
@@ -13,7 +12,11 @@ public class IV4XRMapping {
     private static Map<Tag<?>, Tag<?>> stateTagMappingIV4XR = new HashMap<Tag<?>, Tag<?>>()
     {
         {
-            put(WidgetPath, Tags.Path);
+            put(WidgetPath, IV4XRtags.entityPositionRepresentation);
+            put(WidgetControlType, IV4XRtags.entityType);
+            put(WidgetTitle, IV4XRtags.entityId);
+            put(WidgetIsEnabled, IV4XRtags.entityIsActive);
+            put(WidgetValueValue, IV4XRtags.entityTag);
         }
     };
     

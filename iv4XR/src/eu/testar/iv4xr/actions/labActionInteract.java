@@ -38,6 +38,7 @@ import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.Tags;
+import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import communication.agent.AgentCommand;
@@ -50,9 +51,9 @@ public class labActionInteract extends TaggableBase implements Action {
 	private String agentId;
 	private String targetId;
 	
-	public labActionInteract(State state, eu.testar.iv4xr.SocketEnvironment socketEnvironment, String agentId, String targetId) {
+	public labActionInteract(State state, Widget w, eu.testar.iv4xr.SocketEnvironment socketEnvironment, String agentId, String targetId) {
 		this.set(Tags.Role, Roles.System);
-		this.set(Tags.OriginWidget, state);
+		this.set(Tags.OriginWidget, w);
 		this.socketEnvironment = socketEnvironment;
 		this.agentId = agentId;
 		this.targetId = targetId;

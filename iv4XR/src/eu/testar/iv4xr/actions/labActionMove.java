@@ -38,6 +38,7 @@ import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.Tags;
+import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import communication.agent.AgentCommand;
@@ -54,9 +55,9 @@ public class labActionMove extends TaggableBase implements Action {
 	private Vec3 targetPosition;
 	private boolean jump;
 	
-	public labActionMove(State state, eu.testar.iv4xr.SocketEnvironment socketEnvironment, String agentId, Vec3 agentPosition, Vec3 targetPosition, boolean jump){
+	public labActionMove(State state, Widget w, eu.testar.iv4xr.SocketEnvironment socketEnvironment, String agentId, Vec3 agentPosition, Vec3 targetPosition, boolean jump){
 		this.set(Tags.Role, Roles.System);
-		this.set(Tags.OriginWidget, state);
+		this.set(Tags.OriginWidget, w);
 		this.socketEnvironment = socketEnvironment;
 		this.agentId = agentId;
 		this.agentPosition = agentPosition;

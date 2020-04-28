@@ -26,12 +26,13 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 
 	double zindex;
 
-	String entityId;
-	String entityTag;
-	String entityProperty;
-	world.EntityType entityType;
-	Vec3 entityPosition;
-	boolean isEntityActive;
+	//TODO: Check these default values needed for State Model (State does not exist as widget with properties, should be Windows hwnd?)
+	String entityId = "";
+	String entityTag = "";
+	String entityProperty = "";
+	world.EntityType entityType = world.EntityType.Entity;
+	Vec3 entityPosition = new Vec3(0, 0, 0);
+	boolean isEntityActive = true;
 	
 	Rect rect;
 
