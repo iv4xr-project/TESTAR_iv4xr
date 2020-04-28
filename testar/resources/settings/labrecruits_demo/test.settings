@@ -23,7 +23,7 @@ Mode = Spy
 # The SUT must be manually started and closed.
 #################################################################
 SUTConnector = COMMAND_LINE
-SUTConnectorValue = suts\\gym\\Windows\\bin\\LabRecruits.exe
+SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "button1_opens_door1"
 
 #################################################################
 # Sequences

@@ -38,11 +38,15 @@ import org.fruit.alayer.*;
 import org.fruit.alayer.actions.NOP;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
+import org.fruit.monkey.Settings;
 import org.testar.protocols.DesktopProtocol;
 
 import communication.agent.AgentCommand;
 import communication.system.Request;
 import environments.EnvironmentConfig;
+import es.upv.staq.testar.NativeLinker;
+import eu.testar.iv4xr.IV4XRProtocolUtil;
+import eu.testar.iv4xr.enums.IV4XRtags;
 import helperclasses.datastructures.Vec3;
 import pathfinding.NavMeshContainer;
 import pathfinding.Pathfinder;
@@ -68,6 +72,14 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 	private eu.testar.iv4xr.SocketEnvironment socketEnvironment;
 
 	private Pathfinder pathFinder;
+	
+	@Override
+	protected void initialize(Settings settings) {
+		NativeLinker.addiv4XROS();
+		super.initialize(settings);
+		
+	    protocolUtil = new IV4XRProtocolUtil();
+	}
 
 	@Override
 	protected SUT startSystem() {
@@ -100,7 +112,7 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 	@Override
 	protected State getState(SUT system) {
 
-		world.Observation worldObservation = socketEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId)));
+		/*world.Observation worldObservation = socketEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId)));
 
 		System.out.println("\n ********************************************************");
 		System.out.println("AgentID: " + worldObservation.agentID);
@@ -120,9 +132,22 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 
 			num ++;
 		}
-		System.out.println("******************************************************** \n");
+		System.out.println("******************************************************** \n");*/
+		
+		State state = super.getState(system);
+		
+		for(Widget w : state) {
+			if(w.get(IV4XRtags.entityId, null) != null) {
+				System.out.println("Widget Entity ID : " + w.get(IV4XRtags.entityId));
+				System.out.println("Widget Entity TYPE : " + w.get(IV4XRtags.entityType));
+				System.out.println("Widget Entity POSITION : " + w.get(IV4XRtags.entityPosition));
+				System.out.println("Widget Entity TAG : " + w.get(IV4XRtags.entityTag));
+				System.out.println("Widget Entity PROPERTY : " + w.get(IV4XRtags.entityProperty));
+				System.out.println("Widget Entity Is Active ? : " + w.get(IV4XRtags.entityIsActive));
+			}
+		}
 
-		return super.getState(system);
+		return state;
 	}
 
 	@Override

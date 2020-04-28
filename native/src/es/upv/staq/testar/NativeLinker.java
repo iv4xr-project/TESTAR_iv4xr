@@ -42,6 +42,10 @@ import org.fruit.alayer.webdriver.enums.WdRoles;
 import org.fruit.alayer.webdriver.enums.WdTags;
 import org.fruit.alayer.windows.*;
 
+import eu.testar.iv4xr.IV4XRCanvas;
+import eu.testar.iv4xr.IV4XRStateBuilder;
+import eu.testar.iv4xr.IV4XRprocess;
+
 import java.util.*;
 
 import static org.fruit.alayer.linux.AtSpiRolesWrapper.*;
@@ -89,6 +93,14 @@ public class NativeLinker {
 		PLATFORM_OS.remove(OperatingSystems.WEBDRIVER);
 	}
 	
+	public static void addiv4XROS() {
+		PLATFORM_OS.add(OperatingSystems.IV4XR);
+	}
+	
+	public static void cleaniv4XROS() {
+		PLATFORM_OS.remove(OperatingSystems.IV4XR);
+	}
+	
 	public static Set<OperatingSystems> getPLATFORM_OS() {
 		return PLATFORM_OS;
 	}
@@ -100,9 +112,10 @@ public class NativeLinker {
 	 * @param SUTProcesses A regex of the set of processes that conform the SUT.
 	 * @return A StateBuilder instance.
 	 */
-	public static StateBuilder getNativeStateBuilder(Double timeToFreeze,
-			boolean accessBridgeEnabled,
-			String SUTProcesses){
+	public static StateBuilder getNativeStateBuilder(Double timeToFreeze, boolean accessBridgeEnabled, String SUTProcesses){
+		if (PLATFORM_OS.contains(OperatingSystems.IV4XR)) {
+			return new IV4XRStateBuilder(timeToFreeze);
+		}
 		if (PLATFORM_OS.contains(OperatingSystems.WEBDRIVER))
 			return new WdStateBuilder(timeToFreeze);
 		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS)) {
@@ -125,6 +138,9 @@ public class NativeLinker {
 	 * @return A Canvas on which Testar can paint elements in Spy mode.
 	 */
 	public static Canvas getNativeCanvas(Pen pen){
+		if(PLATFORM_OS.contains(OperatingSystems.IV4XR)) {
+			return new IV4XRCanvas(pen);
+		}
 		if (PLATFORM_OS.contains(OperatingSystems.WEBDRIVER))
 			return new WdCanvas(pen);
 		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS)) {
@@ -147,6 +163,9 @@ public class NativeLinker {
 	public static SUT getNativeSUT(String executableCommand, boolean ProcessListenerEnabled){
 		if (PLATFORM_OS.contains(OperatingSystems.WEBDRIVER))
 			return WdDriver.fromExecutable(executableCommand);
+		if(PLATFORM_OS.contains(OperatingSystems.IV4XR)) {
+			return IV4XRprocess.fromExecutable(executableCommand);
+		}
 		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS)) {
 			if (PLATFORM_OS.contains(OperatingSystems.WINDOWS_7))
 				return WinProcess.fromExecutable(executableCommand, ProcessListenerEnabled);
@@ -167,6 +186,9 @@ public class NativeLinker {
 	 * @return A list of running processes wrapped in a SUT class.
 	 */
 	public static List<SUT> getNativeProcesses(){
+		if(PLATFORM_OS.contains(OperatingSystems.IV4XR)) {
+			return IV4XRprocess.fromAll();
+		}
 		if (PLATFORM_OS.contains(OperatingSystems.WEBDRIVER))
 			return WdDriver.fromAll();
 		else if (PLATFORM_OS.contains(OperatingSystems.WINDOWS))
@@ -177,7 +199,7 @@ public class NativeLinker {
 	}
 
 	public static SUT getNativeProcess(String processName){
-		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS))
+		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS) || PLATFORM_OS.contains(OperatingSystems.IV4XR))
 			return WinProcess.fromProcName(processName);
 		//else if (PLATFORM_OS.contains(OperatingSystems.UNIX))
 		// TODO
@@ -185,7 +207,7 @@ public class NativeLinker {
 	}
 
 	public static ProcessHandle getNativeProcessHandle(long processPID){
-		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS))
+		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS) || PLATFORM_OS.contains(OperatingSystems.IV4XR))
 			return new WinProcHandle(processPID);
 		else if (PLATFORM_OS.contains(OperatingSystems.UNIX))
 			return new LinuxProcessHandle(processPID);
@@ -199,7 +221,7 @@ public class NativeLinker {
 	public static int getMemUsage(SUT nativeSUT){
 		if (PLATFORM_OS.contains(OperatingSystems.WEBDRIVER))
 			return 0;
-		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS))
+		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS) || PLATFORM_OS.contains(OperatingSystems.IV4XR))
 			return (int)(WinProcess.getMemUsage((WinProcess)nativeSUT) / 1024); // byte -> KB
 		else if (PLATFORM_OS.contains(OperatingSystems.UNIX))
 			return (int)(LinuxProcess.getMemUsage((LinuxProcess)nativeSUT) / 1024);
@@ -216,7 +238,7 @@ public class NativeLinker {
 			// TODO Make sure 'runTest' doesn't need this anymore
 			return new long[]{0, 0, 0};
 		}
-		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS)) {
+		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS) || PLATFORM_OS.contains(OperatingSystems.IV4XR)) {
 			long now = System.currentTimeMillis();
 			long cpuFrame = now - lastCPUquery;
 			lastCPUquery = now;

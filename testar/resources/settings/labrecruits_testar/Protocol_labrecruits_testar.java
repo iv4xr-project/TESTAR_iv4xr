@@ -36,11 +36,14 @@ import java.util.Set;
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.actions.NOP;
+import org.fruit.monkey.Settings;
 import org.testar.protocols.DesktopProtocol;
 
 import communication.agent.AgentCommand;
 import communication.system.Request;
 import environments.EnvironmentConfig;
+import es.upv.staq.testar.NativeLinker;
+import eu.testar.iv4xr.enums.IV4XRtags;
 import helperclasses.datastructures.Vec3;
 import pathfinding.NavMeshContainer;
 import pathfinding.Pathfinder;
@@ -63,30 +66,15 @@ public class Protocol_labrecruits_testar extends DesktopProtocol {
 	
 	private boolean moreActions = true;
 
-	private eu.testar.iv4xr.SocketEnvironment socketEnvironment;
-
-	private Pathfinder pathFinder;
-
+	@Override
+	protected void initialize(Settings settings) {
+		NativeLinker.addiv4XROS();
+		super.initialize(settings);
+	}
+	
 	@Override
 	protected SUT startSystem() {
 		SUT sut = super.startSystem();
-
-		Util.pause(10);
-
-		// Connect to Unity LabRecruits Game and Create a Socket Environment to send data
-		EnvironmentConfig labRecruitsEnvironment = new EnvironmentConfig("button1_opens_door1", "suts/levels");
-		socketEnvironment = new eu.testar.iv4xr.SocketEnvironment(labRecruitsEnvironment.host, labRecruitsEnvironment.port);
-
-		// When this application has connected with the environment, an exchange in information takes place:
-		// For now, this application sends nothing, and receives a navmesh of the world.
-		NavMeshContainer navmesh = socketEnvironment.getResponse(Request.gymEnvironmentInitialisation(labRecruitsEnvironment));
-		this.pathFinder = new Pathfinder(navmesh);
-
-		// presses "Play" in the game for you
-		boolean startedLevel = socketEnvironment.getResponse(Request.startSimulation());
-
-		System.out.println("Welcome to the iv4XR test: " + labRecruitsEnvironment.level_name + " ** " + labRecruitsEnvironment.level_path);
-
 		return sut;
 	}
 
@@ -98,7 +86,7 @@ public class Protocol_labrecruits_testar extends DesktopProtocol {
 	@Override
 	protected State getState(SUT system) {
 
-		world.Observation worldObservation = socketEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId)));
+		world.Observation worldObservation = system.get(IV4XRtags.iv4xrSocketEnvironment).getResponse(Request.command(AgentCommand.doNothing(agentId)));
 
 		System.out.println("\n ********************************************************");
 		System.out.println("AgentID: " + worldObservation.agentID);
@@ -151,13 +139,13 @@ public class Protocol_labrecruits_testar extends DesktopProtocol {
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
 
-		world.Observation worldObservation = socketEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId)));
+		world.Observation worldObservation = system.get(IV4XRtags.iv4xrSocketEnvironment).getResponse(Request.command(AgentCommand.doNothing(agentId)));
 
 		for(world.Entity ent : worldObservation.entities) {
 			
 			// If door is active (opened) we have to cross them to finish our test
 			if (ent.id.equals(doorToTest) && ((world.InteractiveEntity) ent).isActive){
-				moveToward(agentId, worldObservation.agentPosition, ent.position, false);
+				moveToward(system, agentId, worldObservation.agentPosition, ent.position, false);
 				movedToDoor = true;
 				//Nothing to do, we finish
 				moreActions = false;
@@ -165,8 +153,8 @@ public class Protocol_labrecruits_testar extends DesktopProtocol {
 			
 			// If button to test is not active, we have to move to this position and interact with them
 			if(ent.id.equals(buttonToTest) && !((world.InteractiveEntity) ent).isActive) {
-				moveToward(agentId, worldObservation.agentPosition, ent.position, false);
-				socketEnvironment.getResponse(Request.command(AgentCommand.interactCommand(agentId, buttonToTest)));
+				moveToward(system, agentId, worldObservation.agentPosition, ent.position, false);
+				system.get(IV4XRtags.iv4xrSocketEnvironment).getResponse(Request.command(AgentCommand.interactCommand(agentId, buttonToTest)));
 				buttonPressed = true;
 			}
 		}
@@ -186,7 +174,7 @@ public class Protocol_labrecruits_testar extends DesktopProtocol {
 
 	@Override
 	protected void stopSystem(SUT system) {
-		socketEnvironment.close();
+		system.get(IV4XRtags.iv4xrSocketEnvironment).close();
 		super.stopSystem(system);
 		
 		System.out.println("TEST RESULT, BUTTON PRESSED? = " + buttonPressed + " MOVED TO DOOR? = " + movedToDoor);
@@ -194,9 +182,16 @@ public class Protocol_labrecruits_testar extends DesktopProtocol {
 		// Something is not being closed properly, for now we simplemente terminamos, un abrazo lobo
 		Runtime.getRuntime().exit(0);
 	}
+	
+    @Override
+	protected void closeTestSession() {
+    	super.closeTestSession();
+    	NativeLinker.cleaniv4XROS();;
+	}
+
 
 	// GymEnvironment
-	public Observation moveToward(String agentId, Vec3 agentPosition, Vec3 target, boolean jump) {
+	public Observation moveToward(SUT system, String agentId, Vec3 agentPosition, Vec3 target, boolean jump) {
 		//define the max distance the agent wants to move ahead between updates
 		float maxDist = 2f;
 
@@ -215,6 +210,6 @@ public class Protocol_labrecruits_testar extends DesktopProtocol {
 		targetDirection.add(agentPosition);
 
 		//send the command
-		return socketEnvironment.getResponse(Request.command(AgentCommand.moveTowardCommand(agentId, targetDirection, jump)));
+		return system.get(IV4XRtags.iv4xrSocketEnvironment).getResponse(Request.command(AgentCommand.moveTowardCommand(agentId, targetDirection, jump)));
 	}
 }
