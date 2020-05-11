@@ -29,13 +29,12 @@
  *******************************************************************************************************/
 
 
+
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.fruit.Util;
 import org.fruit.alayer.*;
-import org.fruit.alayer.actions.NOP;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
@@ -43,16 +42,14 @@ import org.testar.protocols.DesktopProtocol;
 
 import communication.agent.AgentCommand;
 import communication.system.Request;
-import environments.EnvironmentConfig;
+import environments.LabRecruitsEnvironment;
 import es.upv.staq.testar.NativeLinker;
 import eu.testar.iv4xr.IV4XRProtocolUtil;
+import eu.testar.iv4xr.actions.labActionInteract;
+import eu.testar.iv4xr.actions.labActionMove;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import helperclasses.datastructures.Vec3;
-import pathfinding.NavMeshContainer;
 import pathfinding.Pathfinder;
-import world.Entity;
-import world.InteractiveEntity;
-import world.Observation;
+import world.LegacyObservation;
 
 /**
  * iv4XR introducing a Basic Agent in TESTAR protocols
@@ -110,6 +107,11 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 
 	@Override
 	protected Verdict getVerdict(State state) {
+		for(Widget w : state) {
+			if(w.get(IV4XRtags.entityId, "").equals(buttonToTest) && w.get(IV4XRtags.labRecruitsEntityIsActive, true)){
+				return new Verdict(Verdict.SEVERITY_WARNING, "GOAL solved");
+			}
+		}
 		return Verdict.OK;
 	}
 
@@ -118,15 +120,16 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 
 		Set<Action> labActions = new HashSet<>();
 
-		world.Observation worldObservation = system.get(IV4XRtags.iv4xrSocketEnvironment).getResponse(Request.command(AgentCommand.doNothing(agentId)));
+		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
+		
+		LegacyObservation worldObservation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
 		
 		for(Widget w : state) {
 			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
-				labActions.add(new eu.testar.iv4xr.actions.labActionMove(state, w, system.get(IV4XRtags.iv4xrSocketEnvironment),
-						agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false));
-			}
-			if(w.get(IV4XRtags.entityId, "").equals(buttonToTest) && !w.get(IV4XRtags.entityIsActive, true)) {
-				labActions.add(new eu.testar.iv4xr.actions.labActionInteract(state, w, system.get(IV4XRtags.iv4xrSocketEnvironment), agentId, buttonToTest));
+				
+				labActions.add(new labActionMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false));
+				
+				labActions.add(new labActionInteract(state, w, labRecruitsEnv, agentId, buttonToTest));
 			}
 		}
 
@@ -192,7 +195,7 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 
 	@Override
 	protected void stopSystem(SUT system) {
-		system.get(IV4XRtags.iv4xrSocketEnvironment).close();
+		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).close();
 		super.stopSystem(system);
 
 		System.out.println("TEST RESULT, BUTTON PRESSED? = " + buttonPressed + " MOVED TO DOOR? = " + movedToDoor);

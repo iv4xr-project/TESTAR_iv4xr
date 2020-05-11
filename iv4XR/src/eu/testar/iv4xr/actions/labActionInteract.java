@@ -41,20 +41,19 @@ import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import communication.agent.AgentCommand;
-import communication.system.Request;
+import environments.LabRecruitsEnvironment;
 
 public class labActionInteract extends TaggableBase implements Action {
 	private static final long serialVersionUID = -2401401952551344201L;
 	
-	private eu.testar.iv4xr.SocketEnvironment socketEnvironment;
+	private LabRecruitsEnvironment labRecruitsEnvironment;
 	private String agentId;
 	private String targetId;
 	
-	public labActionInteract(State state, Widget w, eu.testar.iv4xr.SocketEnvironment socketEnvironment, String agentId, String targetId) {
+	public labActionInteract(State state, Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, String targetId) {
 		this.set(Tags.Role, Roles.System);
 		this.set(Tags.OriginWidget, w);
-		this.socketEnvironment = socketEnvironment;
+		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
 		this.targetId = targetId;
 		this.set(Tags.Desc, toShortString());
@@ -63,7 +62,7 @@ public class labActionInteract extends TaggableBase implements Action {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		
-		socketEnvironment.getResponse(Request.command(AgentCommand.interactCommand(agentId, targetId)));
+		labRecruitsEnvironment.interactWith(agentId, targetId);
 		
 	}
 

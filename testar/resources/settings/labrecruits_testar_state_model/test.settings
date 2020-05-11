@@ -123,7 +123,7 @@ StateModelStoreWidgets = false
 # Specify the widget attributes that you wish to use in constructing
 # the widget and state hash strings. Use a comma separated list.
 #################################################################
-AbstractStateAttributes = WidgetPath
+AbstractStateAttributes = WidgetIsEnabled
 
 #################################################################
 # Other more advanced settings
@@ -137,7 +137,7 @@ UseRecordedActionDurationAndWaitTimeDuringReplay = false
 ForceForeground = true
 LogLevel = 1
 ExecuteActions = true
-FaultThreshold = 0.000000001
+FaultThreshold = 0.09
 DrawWidgetUnderCursor = true
 MyClassPath = ./settings
 OnlySaveFaultySequences = false

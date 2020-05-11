@@ -348,7 +348,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 		//EventHandler is implemented in RuntimeControlsProtocol (super class):
 		eventHandler = initializeEventHandler();
 
-		//builder = new UIAStateBuilder(settings.get(ConfigTags.TimeToFreeze));
+		// Define how the Widget Tree is going to be created
 		builder = NativeLinker.getNativeStateBuilder(
 				settings.get(ConfigTags.TimeToFreeze),
 				settings.get(ConfigTags.AccessBridgeEnabled),
@@ -1381,7 +1381,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 				enabledProcessListener = processListener.enableProcessListeners(settings);
 			}
 
-			// for most windows applications and most jar files, this is where the SUT gets created!
+			// Execute the SUT using the API/Framework/Technique plugin for the application to test
 			SUT sut = NativeLinker.getNativeSUT(settings().get(ConfigTags.SUTConnectorValue), enabledProcessListener);
 
 			//Print info to the user to know that TESTAR is NOT READY for its use :-(
