@@ -842,7 +842,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 			if(visualizationOn) SutVisualization.visualizeSelectedAction(settings, cv, state, action);
 
 			//before action execution, pass it to the state model manager
-			stateModelManager.notifyActionExecution(action);
+			notifyActionToStateModel(action);
 
 			//Executing the selected action:
 			executeAction(system, state, action);
@@ -1737,6 +1737,14 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 		}catch(ActionFailedException afe){
 			return false;
 		}
+	}
+	
+	/**
+	 * Save the executed action in the State Model to create an edge between States
+	 * @param action
+	 */
+	protected void notifyActionToStateModel (Action action){
+		stateModelManager.notifyActionExecution(action);
 	}
 
 	/**

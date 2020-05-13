@@ -8,6 +8,8 @@ import nl.ou.testar.StateModel.Persistence.PersistenceManager;
 import nl.ou.testar.StateModel.Persistence.PersistenceManagerFactory;
 import nl.ou.testar.StateModel.Persistence.PersistenceManagerFactoryBuilder;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
+import nl.ou.testar.StateModel.iv4XR.ModelManagerEnvironmentListener;
+
 import org.fruit.alayer.Tag;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
@@ -55,6 +57,23 @@ public class StateModelManagerFactory {
         eventListeners.add((StateModelEventListener) persistenceManager);
         SequenceManager sequenceManager = new SequenceManager(eventListeners, modelIdentifier);
 
+        if(settings.get(ConfigTags.iv4XRAgentListener, false)) {
+
+        	// create the abstract state model and then the state model manager
+        	AbstractStateModel abstractStateModelListener = new AbstractStateModel(modelIdentifier,
+        			settings.get(ConfigTags.ApplicationName),
+        			settings.get(ConfigTags.ApplicationVersion),
+        			abstractTags,
+        			persistenceManager instanceof StateModelEventListener ? (StateModelEventListener) persistenceManager : null);
+        	ActionSelector actionSelector = CompoundFactory.getCompoundActionSelector(settings);
+
+        	// should we store widgets?
+        	boolean storeWidgets = settings.get(ConfigTags.StateModelStoreWidgets);
+
+        	return new ModelManagerEnvironmentListener(abstractStateModelListener, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
+
+        }
+        
         // create the abstract state model and then the state model manager
         AbstractStateModel abstractStateModel = new AbstractStateModel(modelIdentifier,
                 settings.get(ConfigTags.ApplicationName),

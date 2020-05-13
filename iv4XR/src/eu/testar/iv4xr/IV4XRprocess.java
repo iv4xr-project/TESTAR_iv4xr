@@ -88,12 +88,15 @@ public class IV4XRprocess extends SUTBase {
 
 		// Define the desired level Environment and starts the Lab Recruits Game Environment
 		EnvironmentConfig environment = new EnvironmentConfig(levelName, levelsPath);
-		LabRecruitsEnvironment labRecruitsEnvironment = new LabRecruitsEnvironment(environment);
+		LabRecruitsEnvironmentListener labRecruitsEnvironment = new LabRecruitsEnvironmentListener(environment);
 		
+		Util.pause(1);
 		// SocketEnvironment socketEnvironment = new SocketEnvironment(labRecruitsEnvironment.host, labRecruitsEnvironment.port);
 
 		// presses "Play" in the game for you
 		labRecruitsEnvironment.startSimulation();
+		
+		Util.pause(1);
 
 		System.out.println("Welcome to the iv4XR test: " + levelName);
 

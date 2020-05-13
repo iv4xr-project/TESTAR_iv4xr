@@ -93,15 +93,30 @@ SUTProcesses =
 # Indicate the location of the protocol class for your specific SUT.
 #################################################################
 
-ProtocolClass = labrecruits_demo/Protocol_labrecruits_demo
+ProtocolClass = labrecruits_agent_state_model/Protocol_labrecruits_agent_state_model
 
 #################################################################
 # Graphdatabase settings (experimental)
 #################################################################
-GraphDBEnabled = false
-GraphDBUrl =
-GraphDBUser =
-GraphDBPassword =
+GraphDBEnabled = true
+GraphDBUrl = remote:/localhost/testar
+GraphDBUser = testar
+GraphDBPassword = testar
+
+#################################################################\n"
+# State model inference settings
+#################################################################\n"
+StateModelEnabled = true
+DataStore = OrientDB
+DataStoreType = remote
+DataStoreServer = localhost
+DataStoreDB = testar
+DataStoreUser = testar
+DataStorePassword = testar
+DataStoreMode = instant
+ActionSelectionAlgorithm = unvisited
+StateModelStoreWidgets = false
+iv4XRAgentListener = true
 
 #################################################################
 # State identifier attributes
@@ -109,7 +124,7 @@ GraphDBPassword =
 # Specify the widget attributes that you wish to use in constructing
 # the widget and state hash strings. Use a comma separated list.
 #################################################################
-AbstractStateAttributes = WidgetControlType
+AbstractStateAttributes = WidgetIsEnabled, WidgetTitle
 
 #################################################################
 # Other more advanced settings
@@ -133,7 +148,7 @@ ReplayRetryTime = 30.0
 Delete =
 MaxTime = 3.1536E7
 ShowSettingsAfterTest = true
-TimeToWaitAfterAction = 0.1
+TimeToWaitAfterAction = 1
 StartupTime = 10.0
 DrawWidgetInfo = false
 TimeToFreeze = 30.0

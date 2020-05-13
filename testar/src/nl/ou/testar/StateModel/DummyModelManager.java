@@ -16,6 +16,11 @@ public class DummyModelManager implements StateModelManager{
     public void notifyActionExecution(Action action) {
 
     }
+    
+	@Override
+	public void notifyListenedAction(Action action) {
+		
+	}
 
     @Override
     public void notifyTestingEnded() {

@@ -70,6 +70,7 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 	
 	@Override
 	protected void initialize(Settings settings) {
+		// Start IV4XR plugin (Windows + LabRecruitsEnvironment)
 		NativeLinker.addiv4XROS();
 		super.initialize(settings);
 		

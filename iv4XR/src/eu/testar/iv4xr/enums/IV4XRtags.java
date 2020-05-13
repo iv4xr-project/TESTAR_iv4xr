@@ -30,6 +30,11 @@
 
 package eu.testar.iv4xr.enums;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.fruit.alayer.Action;
+import org.fruit.alayer.State;
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.TagsBase;
 import org.fruit.alayer.windows.WinProcess;
@@ -37,6 +42,7 @@ import org.fruit.alayer.windows.WinProcess;
 import environments.LabRecruitsEnvironment;
 import environments.SocketEnvironment;
 import eu.iv4xr.framework.world.WorldModel;
+import eu.testar.iv4xr.LabRecruitsEnvironmentListener;
 import helperclasses.datastructures.Vec3;
 import world.LabWorldModel;
 import world.LegacyEntityType;
@@ -57,7 +63,7 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<WorldModel> iv4xrWorldModel = from("iv4xrWorldModel", WorldModel.class);
 	
 	// Specific Lab Recruits Environment, layer that facilitates the communication between agents and the Lab Recruits game
-	public static final Tag<LabRecruitsEnvironment> iv4xrLabRecruitsEnvironment = from("LabRecruitsEnvironment", LabRecruitsEnvironment.class);
+	public static final Tag<LabRecruitsEnvironmentListener> iv4xrLabRecruitsEnvironment = from("LabRecruitsEnvironment", LabRecruitsEnvironmentListener.class);
 	
 	// Specific WOM for Lab Recruits game
 	public static final Tag<LabWorldModel> iv4xrLabWorldModel = from("iv4xrLabWorldModel", LabWorldModel.class);
@@ -70,6 +76,14 @@ public class IV4XRtags extends TagsBase {
 	
 	// Specific tag to check if Lab Recruits game is in the foreground (is generic because it works at Windows process level)
 	public static final Tag<Boolean> labRecruitsForeground = from("labRecruitsForeground", Boolean.class);
+	
+	// Associate a dynamic State Tag with the System for Agent Listening purposes
+	//public static final Tag<State> labRecruitsState = from("labRecruitsState", State.class);
+	
+	// Associate a the dynamic Actions Tag with the System for Agent Listening purposes
+	public static final Tag<Set<Action>> labRecruitsActions = from("labRecruitsActions", (Class<Set<Action>>) (Class<?>) HashSet.class);
+	
+	//public static final Tag<Action> labRecruitsSelectedAgentAction = from("labRecruitsSelectedAgentAction", Action.class);
 	
 	
 	/**

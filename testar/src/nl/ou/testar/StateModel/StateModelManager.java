@@ -9,6 +9,8 @@ public interface StateModelManager {
     void notifyNewStateReached(State newState, Set<Action> actions);
 
     void notifyActionExecution(Action action);
+    
+    void notifyListenedAction(Action action);
 
     void notifyTestingEnded();
 
