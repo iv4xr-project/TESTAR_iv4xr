@@ -817,7 +817,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 					CodingManager.buildEnvironmentActionIDs(state, a);
 			
 			// notify to state model the current state
-			stateModelManager.notifyNewStateReached(state, actions);
+			notifyNewStateReachedToStateModel(state, actions);
 
 			if(actions.isEmpty()){
 				if (mode() != Modes.Spy && escAttempts >= MAX_ESC_ATTEMPTS){
@@ -867,7 +867,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 			if(a.get(Tags.AbstractIDCustom, null) == null)
 				CodingManager.buildEnvironmentActionIDs(state, a);
 		
-		stateModelManager.notifyNewStateReached(state, actions);
+		notifyNewStateReachedToStateModel(state, actions);
 
 		return getVerdict(state);
 	}
@@ -1087,7 +1087,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 			CodingManager.buildIDs(state, actions);
 
 			//notify the state model manager of the new state
-			stateModelManager.notifyNewStateReached(state, actions);
+			notifyNewStateReachedToStateModel(state, actions);
 
 			if(actions.isEmpty()){
 				if (escAttempts >= MAX_ESC_ATTEMPTS){
@@ -1115,7 +1115,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 				CodingManager.buildIDs(state, actionStatus.getAction());
 
 				//notify the state model manager of the executed action
-				stateModelManager.notifyActionExecution(actionStatus.getAction());
+				notifyActionToStateModel(actionStatus.getAction());
 
 				saveActionInfoInLogs(state, actionStatus.getAction(), "RecordedAction");
 				lastExecutedAction = actionStatus.getAction();
@@ -1743,8 +1743,17 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 	 * Save the executed action in the State Model to create an edge between States
 	 * @param action
 	 */
-	protected void notifyActionToStateModel (Action action){
+	protected void notifyActionToStateModel(Action action){
 		stateModelManager.notifyActionExecution(action);
+	}
+	
+	/**
+	 * Save the new State and their available Actions to create a State vertex
+	 * @param newState
+	 * @param actions
+	 */
+	protected void notifyNewStateReachedToStateModel(State newState, Set<Action> actions) {
+		stateModelManager.notifyNewStateReached(newState, actions);
 	}
 
 	/**

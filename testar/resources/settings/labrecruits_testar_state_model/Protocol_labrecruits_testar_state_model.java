@@ -84,7 +84,7 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 
 	@Override
 	protected void beginSequence(SUT system, State TESTARstate) {
-		//
+		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setEnabledIV4XRAgentListener(settings.get(ConfigTags.iv4XRAgentListener, false));
 	}
 
 	@Override
@@ -128,9 +128,9 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 		for(Widget w : state) {
 			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
 				
-				labActions.add(new labActionMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false));
+				labActions.add(new labActionMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
 				
-				labActions.add(new labActionInteract(state, w, labRecruitsEnv, agentId, buttonToTest));
+				labActions.add(new labActionInteract(state, w, labRecruitsEnv, agentId, buttonToTest, false, false));
 			}
 		}
 

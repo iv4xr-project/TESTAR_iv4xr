@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019, 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019, 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,7 +28,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-
 package eu.testar.iv4xr.actions;
 
 import org.fruit.alayer.Action;
@@ -43,69 +42,49 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 
 import environments.LabRecruitsEnvironment;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import helperclasses.datastructures.Vec3;
 
-public class labActionMove extends TaggableBase implements Action {
-	private static final long serialVersionUID = 4431931844664688235L;
+public class labActionObserve extends TaggableBase implements Action {
 	
+	private static final long serialVersionUID = 810855276392071973L;
+
 	private LabRecruitsEnvironment labRecruitsEnvironment;
 	private String agentId;
-	private Vec3 agentPosition;
-	private Vec3 targetPosition;
-	private boolean jump;
 	
 	public String getAgentId() {
 		return agentId;
-	}
-	
-	public Vec3 getAgentPosition() {
-		return agentPosition;
-	}
-	
-	public Vec3 getTargetPosition() {
-		return targetPosition;
-	}
-	
-	public boolean getIfJump() {
-		return jump;
 	}
 	
 	public void selectedByAgent() {
 		this.set(IV4XRtags.agentAction, true);
 	}
 	
-	public labActionMove(State state, Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 agentPosition, Vec3 targetPosition, boolean jump, boolean agentAction, boolean newByAgent){
+	public labActionObserve(State state, Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent) {
 		this.set(Tags.Role, Roles.System);
 		this.set(Tags.OriginWidget, w);
 		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
-		this.agentPosition = agentPosition;
-		this.targetPosition = targetPosition;
-		this.jump = jump;
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, agentAction);
 		this.set(IV4XRtags.newActionByAgent, newByAgent);
 	}
-	
+
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		
-		labRecruitsEnvironment.moveToward(agentId, agentPosition, targetPosition);
-		
+		labRecruitsEnvironment.observe(agentId);
 	}
 
 	@Override
 	public String toShortString() {
-		return "Move agent: " + agentId + " from: " + agentPosition + " to: " + targetPosition;
+		return "Agent: " + agentId + " is observing the Environment";
 	}
 	
-	public boolean actionEquals(labActionMove action) {
-		return (this.agentId.equals(action.getAgentId())) && (this.agentPosition.equals(action.getAgentPosition())) 
-				&& (this.targetPosition.equals(action.getTargetPosition())); /* && (this.jump == jump)*/
+	public boolean actionEquals(labActionObserve action) {
+		return (this.agentId.equals(action.getAgentId()));
 	}
 
 	@Override
 	public String toParametersString() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -114,4 +93,5 @@ public class labActionMove extends TaggableBase implements Action {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

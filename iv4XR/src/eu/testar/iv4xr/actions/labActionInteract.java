@@ -42,6 +42,7 @@ import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import environments.LabRecruitsEnvironment;
+import eu.testar.iv4xr.enums.IV4XRtags;
 
 public class labActionInteract extends TaggableBase implements Action {
 	private static final long serialVersionUID = -2401401952551344201L;
@@ -50,13 +51,27 @@ public class labActionInteract extends TaggableBase implements Action {
 	private String agentId;
 	private String targetId;
 	
-	public labActionInteract(State state, Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, String targetId) {
+	public String getAgentId() {
+		return agentId;
+	}
+	
+	public String getTargetId() {
+		return targetId;
+	}
+	
+	public void selectedByAgent() {
+		this.set(IV4XRtags.agentAction, true);
+	}
+	
+	public labActionInteract(State state, Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, String targetId, boolean agentAction, boolean newByAgent) {
 		this.set(Tags.Role, Roles.System);
 		this.set(Tags.OriginWidget, w);
 		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
 		this.targetId = targetId;
 		this.set(Tags.Desc, toShortString());
+		this.set(IV4XRtags.agentAction, agentAction);
+		this.set(IV4XRtags.newActionByAgent, newByAgent);
 	}
 
 	@Override
@@ -69,6 +84,10 @@ public class labActionInteract extends TaggableBase implements Action {
 	@Override
 	public String toShortString() {
 		return "Agent: " + agentId + " is doing an INTERACTION with: " + targetId;
+	}
+	
+	public boolean actionEquals(labActionInteract action) {
+		return (this.agentId.equals(action.getAgentId())) && (this.targetId.equals(action.getTargetId()));
 	}
 
 	@Override

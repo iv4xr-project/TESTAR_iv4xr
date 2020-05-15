@@ -39,7 +39,6 @@ import org.fruit.alayer.Tags;
 
 import nl.ou.testar.StateModel.AbstractAction;
 import nl.ou.testar.StateModel.AbstractStateModel;
-import nl.ou.testar.StateModel.ConcreteActionFactory;
 import nl.ou.testar.StateModel.ModelManager;
 import nl.ou.testar.StateModel.StateModelManager;
 import nl.ou.testar.StateModel.ActionSelection.ActionSelector;
@@ -47,14 +46,14 @@ import nl.ou.testar.StateModel.Exception.ActionNotFoundException;
 import nl.ou.testar.StateModel.Persistence.PersistenceManager;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
 
-public class ModelManagerEnvironmentListener extends ModelManager implements StateModelManager {
+public class ModelManagerIV4XREnvironment extends ModelManager implements StateModelManager {
 
 	/**
 	 * Constructor
 	 * @param abstractStateModel
 	 * @param actionSelector
 	 */
-	public ModelManagerEnvironmentListener(AbstractStateModel abstractStateModel, ActionSelector actionSelector, PersistenceManager persistenceManager,
+	public ModelManagerIV4XREnvironment(AbstractStateModel abstractStateModel, ActionSelector actionSelector, PersistenceManager persistenceManager,
 			Set<Tag<?>> concreteStateTags, SequenceManager sequenceManager, boolean storeWidgets) {
 		super(abstractStateModel, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
 	}
@@ -74,7 +73,36 @@ public class ModelManagerEnvironmentListener extends ModelManager implements Sta
             actionUnderExecution = new AbstractAction(action.get(Tags.AbstractIDCustom));
             currentAbstractState.addNewAction(actionUnderExecution);
         }
-        concreteActionUnderExecution = ConcreteActionFactory.createConcreteAction(action, actionUnderExecution);
+        concreteActionUnderExecution = ConcreteActionIV4XRFactory.createConcreteAction(action, actionUnderExecution);
+        actionUnderExecution.addConcreteActionId(concreteActionUnderExecution.getActionId());
+        System.out.println("Executing action: " + action.get(Tags.Desc));
+        System.out.println("----------------------------------");
+
+        // if we have error messages, we tell the sequence manager about it now, right before we move to a new state
+        if (errorMessages.length() > 0) {
+            sequenceManager.notifyErrorInCurrentState(errorMessages.toString());
+            errorMessages = new StringJoiner(", ");
+        }
+    }
+    
+    /**
+     * This method should be called when an action is about to be executed.
+     * @param action
+     */
+    @Override
+    public void notifyActionExecution(Action action) {
+        // the action that is executed should always be traceable to an action on the current abstract state
+        // in other words, we should be able to find the action on the current abstract state
+        try {
+            actionUnderExecution = currentAbstractState.getAction(action.get(Tags.AbstractIDCustom));
+        }
+        catch (ActionNotFoundException ex) {
+            System.out.println("Action not found in state model");
+            errorMessages.add("Action with id: " + action.get(Tags.AbstractIDCustom) + " was not found in the model.");
+            actionUnderExecution = new AbstractAction(action.get(Tags.AbstractIDCustom));
+            currentAbstractState.addNewAction(actionUnderExecution);
+        }
+        concreteActionUnderExecution = ConcreteActionIV4XRFactory.createConcreteAction(action, actionUnderExecution);
         actionUnderExecution.addConcreteActionId(concreteActionUnderExecution.getActionId());
         System.out.println("Executing action: " + action.get(Tags.Desc));
         System.out.println("----------------------------------");

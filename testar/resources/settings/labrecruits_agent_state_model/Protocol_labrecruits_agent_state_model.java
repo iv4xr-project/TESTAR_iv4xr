@@ -66,6 +66,7 @@ import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.LabRecruitsEnvironmentListener;
 import eu.testar.iv4xr.actions.labActionInteract;
 import eu.testar.iv4xr.actions.labActionMove;
+import eu.testar.iv4xr.actions.labActionObserve;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import helperclasses.datastructures.Vec3;
 import nl.uu.cs.aplib.Logging;
@@ -112,8 +113,17 @@ public class Protocol_labrecruits_agent_state_model extends DesktopProtocol {
 
 	@Override
 	protected void beginSequence(SUT system, State state) {
+		
+		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setEnabledIV4XRAgentListener(settings.get(ConfigTags.iv4XRAgentListener, false));
 
-		system.set(IV4XRtags.labRecruitsActions, deriveActions(system, state));
+		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setStateTESTAR(state);
+		//system.set(IV4XRtags.labRecruitsActions, deriveActions(system, state));
+		
+		Set<Action> actions = deriveActions(system, state);
+		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setDerivedActionsTESTAR(actions);
+		
+		// TODO: This should be invoked if we have intention to execute Actions in this method
+		//notifyLabAgentStateToStateModel(state, actions);
 		
 		Util.pause(10);
 
@@ -187,6 +197,7 @@ public class Protocol_labrecruits_agent_state_model extends DesktopProtocol {
 	@Override
 	protected State getState(SUT system) {
 		State state = super.getState(system);
+		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setStateTESTAR(state);
 		return state;
 	}
 
@@ -204,23 +215,27 @@ public class Protocol_labrecruits_agent_state_model extends DesktopProtocol {
 
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
 		LegacyObservation worldObservation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
+		
+		// Every time the Agent has the possibility to observe the Environment
+		labActions.add(new labActionObserve(state, state, labRecruitsEnv, agentId, false, false));
 
 		for(Widget w : state) {
 			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
-				labActions.add(new labActionMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false));
-				labActions.add(new labActionInteract(state, w, labRecruitsEnv, agentId, buttonToTest));
+				labActions.add(new labActionMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
+				labActions.add(new labActionInteract(state, w, labRecruitsEnv, agentId, buttonToTest, false, false));
 			}
 		}
 
 		// Update the associated actions
-		system.set(IV4XRtags.labRecruitsActions, labActions);
+		//system.set(IV4XRtags.labRecruitsActions, labActions);
+		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setDerivedActionsTESTAR(labActions);
 
 		return labActions;
 	}
 
 
 	/**
-	 * TESTAR is not going to select any Action, Agent are going to select them based on goals - sub goals
+	 * TESTAR is not going to select any Action, Agent is going to select them based on goals - sub goals
 	 */
 	@Override
 	protected Action selectAction(State state, Set<Action> actions){
@@ -236,62 +251,16 @@ public class Protocol_labrecruits_agent_state_model extends DesktopProtocol {
 	 */
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
+		
+		// Invoke the Agent, this will update the derived Action to merge TESTAR and Agent knowledge
 		labRecruitsTestAgent.update();
 		
-		Action agentAction = null;
+		// Retrieve TESTAR derivedActions and new Agent Actions if corresponds
+		Set<Action> mergedActions = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).getDerivedActionsLabRecruitsListener();
 		
-		if(system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).actionExecuted.equals("move")) {
-			Widget widget = null;
-			for(Widget w : state) {
-				if(w.get(IV4XRtags.entityPosition, new Vec3(0,0,0)).equals(system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).targetPosition)) {
-					widget = w;
-				}
-			}
-			if(widget != null) {
-				for(Action a : system.get(IV4XRtags.labRecruitsActions)) {
-					if(a instanceof labActionMove && a.get(Tags.OriginWidget, null) != null && a.get(Tags.OriginWidget).equals(widget)) {
-						agentAction = a;
-					}
-				}
-			} else {
-				// Sometimes Agent does not move towards a specific entity position
-				System.out.println("DEBUG: WHY Agent moving like this? Exploring?");
-				agentAction = new labActionMove(state, state, 
-						system.get(IV4XRtags.iv4xrLabRecruitsEnvironment), 
-						agentId, 
-						system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).getResponse(Request.command(AgentCommand.doNothing(agentId))).agentPosition,
-						system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).targetPosition,
-						false);
-				agentAction.set(Tags.Desc, "Agent Moving towards WOM, Exploring?");
-			}
-		} else if (system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).actionExecuted.equals("interact")) {
-			Widget widget = null;
-			for(Widget w : state) {
-				if(w.get(IV4XRtags.entityId,"").equals(system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).targetId)) {
-					widget = w;
-				}
-			}
-			if(widget != null) {
-				for(Action a : system.get(IV4XRtags.labRecruitsActions)) {
-					if(a instanceof labActionInteract && a.get(Tags.OriginWidget, null) != null && a.get(Tags.OriginWidget).equals(widget)) {
-						agentAction = a;
-					}
-				}
-			}
-		} else {
-			System.out.println("WARNING: NO Actions listened");
-			return false;
-		}
+		notifyLabAgentStateToStateModel(state, mergedActions);
 		
-		if(system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).actionExecuted.equals("observe")) {
-			agentAction = action;
-			agentAction.set(Tags.Desc, "Agent is Observing the WOM");
-		}
-
-		if(agentAction == null) {
-			System.out.println("ERROR: Mapping State Model Action, use default value NOP");
-			agentAction = action;
-		}
+		Action agentAction = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).getActionExecutedTESTAR();
 			
 		notifyLabAgentActionToStateModel(system, state, agentAction);
 		
@@ -299,13 +268,26 @@ public class Protocol_labrecruits_agent_state_model extends DesktopProtocol {
 	}
 
 	@Override
-	protected void notifyActionToStateModel(Action action){
-		//Nothing, we are going to invoke this from GoalLib-TESTAR class middle layer
+	protected void notifyNewStateReachedToStateModel(State newState, Set<Action> actions) {
+		//Nothing, we are going to take control of this invocation after Agent Tactics decision
 	}
+	
+	@Override
+	protected void notifyActionToStateModel(Action action){
+		//Nothing, we are going to take control of this invocation after Agent Tactics decision
+	}
+	
 	/**
-	 * Invoke this notification after TESTAR GoalLib middle class
+	 * Invoke this notification after Map TESTAR State with Agent observation
 	 */
-	public void notifyLabAgentActionToStateModel(SUT system, State state, Action action) {
+	private void notifyLabAgentStateToStateModel(State newState, Set<Action> actions) {
+		stateModelManager.notifyNewStateReached(newState, actions);
+	}
+	
+	/**
+	 * Invoke this notification after know Agent Tactics Action decision
+	 */
+	private void notifyLabAgentActionToStateModel(SUT system, State state, Action action) {
 		if(action.get(Tags.AbstractIDCustom, null) == null) {
 			CodingManager.buildIDs(state, Sets.newHashSet(action));
 		}

@@ -41,7 +41,6 @@ import org.fruit.alayer.exceptions.SystemStopException;
 import org.fruit.alayer.windows.WinProcess;
 
 import environments.EnvironmentConfig;
-import environments.LabRecruitsEnvironment;
 import eu.testar.iv4xr.enums.IV4XRtags;
 
 /**

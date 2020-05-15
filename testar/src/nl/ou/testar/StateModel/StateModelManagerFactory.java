@@ -1,6 +1,8 @@
 package nl.ou.testar.StateModel;
 
 import es.upv.staq.testar.CodingManager;
+import es.upv.staq.testar.NativeLinker;
+import es.upv.staq.testar.OperatingSystems;
 import nl.ou.testar.StateModel.ActionSelection.ActionSelector;
 import nl.ou.testar.StateModel.ActionSelection.CompoundFactory;
 import nl.ou.testar.StateModel.Event.StateModelEventListener;
@@ -8,7 +10,7 @@ import nl.ou.testar.StateModel.Persistence.PersistenceManager;
 import nl.ou.testar.StateModel.Persistence.PersistenceManagerFactory;
 import nl.ou.testar.StateModel.Persistence.PersistenceManagerFactoryBuilder;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
-import nl.ou.testar.StateModel.iv4XR.ModelManagerEnvironmentListener;
+import nl.ou.testar.StateModel.iv4XR.ModelManagerIV4XREnvironment;
 
 import org.fruit.alayer.Tag;
 import org.fruit.monkey.ConfigTags;
@@ -57,7 +59,8 @@ public class StateModelManagerFactory {
         eventListeners.add((StateModelEventListener) persistenceManager);
         SequenceManager sequenceManager = new SequenceManager(eventListeners, modelIdentifier);
 
-        if(settings.get(ConfigTags.iv4XRAgentListener, false)) {
+        //if(settings.get(ConfigTags.iv4XRAgentListener, false)) {
+        if(NativeLinker.getPLATFORM_OS().contains(OperatingSystems.IV4XR)) {
 
         	// create the abstract state model and then the state model manager
         	AbstractStateModel abstractStateModelListener = new AbstractStateModel(modelIdentifier,
@@ -70,8 +73,7 @@ public class StateModelManagerFactory {
         	// should we store widgets?
         	boolean storeWidgets = settings.get(ConfigTags.StateModelStoreWidgets);
 
-        	return new ModelManagerEnvironmentListener(abstractStateModelListener, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
-
+        	return new ModelManagerIV4XREnvironment(abstractStateModelListener, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
         }
         
         // create the abstract state model and then the state model manager

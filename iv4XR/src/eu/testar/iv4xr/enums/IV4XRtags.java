@@ -30,16 +30,10 @@
 
 package eu.testar.iv4xr.enums;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.fruit.alayer.Action;
-import org.fruit.alayer.State;
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.TagsBase;
 import org.fruit.alayer.windows.WinProcess;
 
-import environments.LabRecruitsEnvironment;
 import environments.SocketEnvironment;
 import eu.iv4xr.framework.world.WorldModel;
 import eu.testar.iv4xr.LabRecruitsEnvironmentListener;
@@ -81,7 +75,7 @@ public class IV4XRtags extends TagsBase {
 	//public static final Tag<State> labRecruitsState = from("labRecruitsState", State.class);
 	
 	// Associate a the dynamic Actions Tag with the System for Agent Listening purposes
-	public static final Tag<Set<Action>> labRecruitsActions = from("labRecruitsActions", (Class<Set<Action>>) (Class<?>) HashSet.class);
+	//public static final Tag<Set<Action>> labRecruitsActions = from("labRecruitsActions", (Class<Set<Action>>) (Class<?>) HashSet.class);
 	
 	//public static final Tag<Action> labRecruitsSelectedAgentAction = from("labRecruitsSelectedAgentAction", Action.class);
 	
@@ -132,4 +126,14 @@ public class IV4XRtags extends TagsBase {
 	
 	// Specific Lab Recruits game property ...
 	public static final Tag<Integer> labRecruitsEntityLastUpdated = from("labRecruitsEntityLastUpdated", Integer.class);
+	
+	/**
+	 * Agent - TESTAR comparison
+	 */
+	
+	// Property used to know if an Action was selected by the Agent
+	public static final Tag<Boolean> agentAction = from("agentAction", Boolean.class);
+	
+	// Property used to know if an Action discern between TESTAR and the Agent
+	public static final Tag<Boolean> newActionByAgent = from("newActionByAgent", Boolean.class);
 }
