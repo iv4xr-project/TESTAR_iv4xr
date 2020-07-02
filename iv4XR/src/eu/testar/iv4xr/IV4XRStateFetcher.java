@@ -35,7 +35,10 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.fruit.alayer.Rect;
@@ -65,8 +68,8 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 
 	private final SUT system;
 	
-	//TODO: Setting conf
-	private static String agentId = "agent1";
+	// Default agent id
+	public static Set<String> agentsIds = new HashSet<>(Arrays.asList("agent1"));
 
 	public IV4XRStateFetcher(SUT system) {
 		this.system = system;
@@ -119,24 +122,26 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 		//LabWorldModel labWOM = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).observe(agentId);
 	    //system.set(IV4XRtags.iv4xrLabWorldModel, labWOM);
 	    
-	    // TODO: Difference between WOM and LegacyStuff ? How are these things connected each other ?
-	    LegacyObservation observation = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).getResponse(Request.command(AgentCommand.doNothing(agentId)));
-	    
-	    if(rootElement.isForeground && observation.entities.size() > 0) {
-	    	
-	    	// Add manually the Agent as an Entity
-	    	// TODO: Change Implementation in the future
-	    	rootElement.children = new ArrayList<IV4XRElement>((int) observation.entities.size() + 1);
-	    	
-	    	rootElement.zindex = 0;
-	    	fillRect(rootElement);
-	    	
-	    	IV4XRagent(rootElement, observation);
-	    	
-	    	for(int i = 0; i < observation.entities.size(); i++) {
-	    		IV4XRdescend(rootElement, observation.entities.get(i));
-	    	}
-	    }
+		for(String agentId : agentsIds) {
+			// TODO: Difference between WOM and LegacyStuff ? How are these things connected each other ?
+			LegacyObservation observation = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).getResponse(Request.command(AgentCommand.doNothing(agentId)));
+
+			if(rootElement.isForeground && observation.entities.size() > 0) {
+
+				// Add manually the Agent as an Entity
+				// TODO: Change Implementation in the future
+				rootElement.children = new ArrayList<IV4XRElement>((int) observation.entities.size() + 1);
+
+				rootElement.zindex = 0;
+				fillRect(rootElement);
+
+				IV4XRagent(rootElement, observation);
+
+				for(int i = 0; i < observation.entities.size(); i++) {
+					IV4XRdescend(rootElement, observation.entities.get(i));
+				}
+			}
+		}
 	    
 	    return rootElement;
 	}

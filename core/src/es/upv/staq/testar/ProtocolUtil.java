@@ -249,8 +249,12 @@ public class ProtocolUtil {
 		if (viewPort == null || (state.get(Tags.OracleVerdict, Verdict.OK).severity() > Verdict.SEVERITY_OK))
 			viewPort = state.get(Tags.Shape, null); // get the SUT process canvas (usually, full monitor screen)
 		
-		if (viewPort.width() <= 0 || viewPort.height() <= 0)
-			return null;
+		if(viewPort == null || viewPort.width() <= 0 || viewPort.height() <= 0) {
+			Rectangle screenRect = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()); // Get Monitor Screen Size
+			AWTCanvas scrshot = AWTCanvas.fromScreenshot(Rect.from(screenRect.x, screenRect.y, screenRect.width, screenRect.height), AWTCanvas.StorageFormat.PNG, 1);
+			return scrshot;
+		}
+		
 		AWTCanvas scrshot = AWTCanvas.fromScreenshot(Rect.from(viewPort.x(), viewPort.y(), viewPort.width(), viewPort.height()), AWTCanvas.StorageFormat.PNG, 1);
 		return scrshot;
 	}
