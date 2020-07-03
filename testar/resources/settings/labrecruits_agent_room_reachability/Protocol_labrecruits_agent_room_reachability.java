@@ -29,8 +29,6 @@
  *******************************************************************************************************/
 
 
-import static eu.iv4xr.framework.Iv4xrEDSL.assertTrue_;
-import static eu.iv4xr.framework.Iv4xrEDSL.testgoal;
 import static nl.uu.cs.aplib.AplibEDSL.SEQ;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -49,14 +47,12 @@ import com.google.common.collect.Sets;
 
 import agents.LabRecruitsTestAgent;
 import agents.tactics.GoalLib;
-import agents.tactics.TacticLib;
 import communication.agent.AgentCommand;
 import communication.system.Request;
 import environments.LabRecruitsEnvironment;
 import es.upv.staq.testar.CodingManager;
 import es.upv.staq.testar.NativeLinker;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
-import eu.iv4xr.framework.mainConcepts.TestGoal;
 import eu.iv4xr.framework.world.WorldEntity;
 import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.IV4XRStateFetcher;
@@ -289,29 +285,4 @@ public class Protocol_labrecruits_agent_room_reachability extends DesktopProtoco
 		// Something is not being closed properly, for now we simplemente terminamos, un abrazo lobo
 		Runtime.getRuntime().exit(0);
 	}
-	
-    // Wait for the ping to check the color screen with the specified color
-	// Red  : CS 1 0 0
-    // Blue : CS 0 0 1
-    // Green: CS 0 1 0
-    static TestGoal colorIsVerified(LabRecruitsTestAgent agent, String colorName, String colorCode) {
-    	
-        TestGoal g = testgoal("Wait for ping")
-        		. toSolve((BeliefState b) -> {
-                     if(b.receivedPing){
-                        b.receivedPing = false;//reset the ping
-                        return true;
-                     }
-                        return false;
-                   })
-        		
-        		. invariant(agent, (BeliefState b) -> 
-        		        assertTrue_("", 
-        		        		    "Check if the color screen is " + colorName, 
-        		             b.evaluateEntity("SCS1", e -> e.getStringProperty("color").equals(colorCode)))
-        		        )
-        		. withTactic(TacticLib.receivePing());
-        
-        return g ;
-    }
 }
