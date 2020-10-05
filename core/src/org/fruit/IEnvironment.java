@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2013 - 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2018 - 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,12 +28,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
+package org.fruit;
 
-package org.fruit.alayer.devices;
-
-public interface Keyboard {	
-	void press(KBKeys k);
-	void release(KBKeys k);	
-	void isPressed(KBKeys k);
-	void paste();
+public interface IEnvironment {
+    /**
+     * Get the display scale based on the windows handle.
+     * @param windowHandle The handle of the window.
+     * @return The scale of the display which shows the window, when the display could not be resolved 1.0 is returned.
+     */
+    double getDisplayScale(long windowHandle);
 }

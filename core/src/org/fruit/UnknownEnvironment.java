@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2013 - 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2018 - 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,12 +28,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
+package org.fruit;
 
-package org.fruit.alayer.devices;
-
-public interface Keyboard {	
-	void press(KBKeys k);
-	void release(KBKeys k);	
-	void isPressed(KBKeys k);
-	void paste();
+/**
+ * A default environment implementation. Can be used as fallback option when a OS specific environment implementation
+ * is missing.
+ * NOTE: This implementation prevents the application from crashing but doesn't guarantee correct behavior.
+ */
+public class UnknownEnvironment implements IEnvironment {
+    @Override
+    public double getDisplayScale(long windowHandle){
+        System.out.println("WARNING getDisplayScale not implemented for current OS, returning default value");
+        return 1.0;
+    }
 }

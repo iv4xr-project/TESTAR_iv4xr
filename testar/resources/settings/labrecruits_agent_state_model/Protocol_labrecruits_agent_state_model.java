@@ -148,7 +148,7 @@ public class Protocol_labrecruits_agent_state_model extends DesktopProtocol {
 		goal = SEQ(
 				// Construct a goal structure that will make an agent to move towards the given entity and interact with it.
 				// TacticLib.navigateTo(entityId) + TacticLib.interact(entityId)
-				GoalLib.entityIsInteracted("button1"),
+				GoalLib.entityInteracted("button1"),
 				// TESTARGoalLib.entityIsInteracted(system, "button1", "agent1"),
 
 				// Create a test-goal to check the state of an in-game entity, whether it satisfies the given predicate.
@@ -164,12 +164,12 @@ public class Protocol_labrecruits_agent_state_model extends DesktopProtocol {
 
 				// Is this Goal Structure going to move the agent to specific Door Entity ??
 				// Or it is only used to calculate the nearest path and the movement will be executed with the next one ??
-				GoalLib.navigate_toNearestNode_toDoor("door1"),
+				//GoalLib.navigate_toNearestNode_toDoor("door1"),
 				// TESTARGoalLib.navigate_toNearestNode_toDoor("door1"),
 
 				// Construct a goal structure in which the agent will move to the in-game entity with the given id
 				// TacticLib.navigateTo(entityId)
-				GoalLib.entityIsInRange("door1").lift(),
+				GoalLib.entityStateRefreshed("door1"),
 				// TESTARGoalLib.entityIsInRange(system, "door1").lift(),
 
 				// Create a test-goal to check the state of an in-game entity, whether it satisfies the given predicate.
@@ -364,7 +364,7 @@ class TESTARGoalLib {
 
 		Goal goal = new Goal(String.format("This entity is in-range: [%s]",entityId))
 
-				. toSolve((BeliefState belief) -> belief.withinRange(entityId));
+				. toSolve((BeliefState belief) -> belief.withinViewRange(entityId));
 
 		//define the goal structure
 		Goal g = goal.withTactic(
@@ -380,8 +380,9 @@ class TESTARGoalLib {
 		return GoalLib.entityInvariantChecked(agent, id, info, predicate);
 	}
 
-	public static GoalStructure navigate_toNearestNode_toDoor(String doorId) {
+	// OLD: To check and remove
+	/*public static GoalStructure navigate_toNearestNode_toDoor(String doorId) {
 		return GoalLib.navigate_toNearestNode_toDoor(doorId);
-	}
+	}*/
 
 }

@@ -80,14 +80,13 @@ dependencies {
     compile group: 'com.jgoodies', name: 'jgoodies-common', version: '1.8.1'
     compile group: 'com.jgoodies', name: 'jgoodies-forms', version: '1.9.0'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
-    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.16.v20190411'
-    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.16.v20190411'
-    compile group: 'org.eclipse.jetty', name: 'jetty-webapp', version: '9.4.16.v20190411'
-    compile group: 'org.eclipse.jetty', name: 'jetty-annotations', version: '9.4.16.v20190411'
-    compile group: 'org.eclipse.jetty', name: 'apache-jsp', version: '9.4.16.v20190411'
-    compile group: 'org.eclipse.jetty', name: 'apache-jstl', version: '9.4.16.v20190411'
+    compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.30.v20200611'
+    compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.30.v20200611'
+    compile group: 'org.eclipse.jetty', name: 'jetty-webapp', version: '9.4.30.v20200611'
+    compile group: 'org.eclipse.jetty', name: 'jetty-annotations', version: '9.4.30.v20200611'
+    compile group: 'org.eclipse.jetty', name: 'apache-jsp', version: '9.4.30.v20200611'
+    compile group: 'org.eclipse.jetty', name: 'apache-jstl', version: '9.4.30.v20200611'
     runtime project(':windows')
-    runtime group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.2'
 }
 evaluationDependsOn(':windows')
 
@@ -138,10 +137,10 @@ prepareOracles.dependsOn(oracleClasses)
  */
 startScripts {
     if(System.getProperty('DEBUG', 'false') ) {
-        applicationDefaultJvmArgs = ["-Dlogback.configurationFile=logback.xml",
+        applicationDefaultJvmArgs = ['-Dlog4j.configurationFile=log4j2.xml',
                                      '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005']
     } else {
-        applicationDefaultJvmArgs = ["-Dlogback.configurationFile=logback.xml"]
+        applicationDefaultJvmArgs = ["-Dlog4j.configurationFile=log4j2.xml"]
     }
     
     doLast {

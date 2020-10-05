@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2013 - 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2018 - 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,12 +28,29 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
+package org.fruit.alayer.windows;
 
-package org.fruit.alayer.devices;
+import org.fruit.IEnvironment;
+import static org.fruit.alayer.windows.Windows.MONITOR_DEFAULTTONULL;
 
-public interface Keyboard {	
-	void press(KBKeys k);
-	void release(KBKeys k);	
-	void isPressed(KBKeys k);
-	void paste();
+/**
+ * A Windows 10 specific environment implementation.
+ */
+public final class Windows10 implements IEnvironment {
+    @Override
+    public double getDisplayScale(long windowHandle) {
+        double result = 1.0;
+        long monitorHandle = Windows.MonitorFromWindow(windowHandle, MONITOR_DEFAULTTONULL);
+        if (monitorHandle == 0){
+            System.out.printf("WARNING: Could not find monitor handle for window handle:%d\n",windowHandle);
+            return result;
+        }
+        long res[] = Windows.GetScaleFactorForMonitor(monitorHandle);
+        if (res.length == 2 )
+        {
+            return res[1] / 100.0;
+        }
+        System.out.printf("WARNING Failed to requested scale factor for display:%d res:%d \n",monitorHandle,res[0]);
+        return result;
+    }
 }

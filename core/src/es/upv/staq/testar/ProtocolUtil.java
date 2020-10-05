@@ -218,6 +218,11 @@ public class ProtocolUtil {
 	public Shape calculateWidgetInfoShape(Canvas canvas, Shape cwShape, double widgetInfoW, double widgetInfoH){
 		Shape s = Rect.from(cwShape.x(), cwShape.y(), widgetInfoW, widgetInfoH);
 		Shape rs = repositionShape(canvas,s);
+		
+		// If y-axis canvas is over the screen (negative value), set to 0.0
+		if(s.y() < 0.0) {s = Rect.from(cwShape.x(), 0.0, widgetInfoW, widgetInfoH);}
+		if(rs.y() < 0.0) {rs = Rect.from(rs.x(), 0.0, rs.width(), rs.height());}
+		
 		if (s == rs)
 			return cwShape;
 		else
@@ -229,7 +234,7 @@ public class ProtocolUtil {
 	// #####################
 	
 	public String getStateshot(State state){
-		return ScreenshotSerialiser.saveStateshot(state.get(Tags.ConcreteID, "NoConcreteIdAvailable"), getStateshotBinary(state));
+		return ScreenshotSerialiser.saveStateshot(state.get(Tags.ConcreteIDCustom, "NoConcreteIdAvailable"), getStateshotBinary(state));
 	}
 
 	/**
@@ -251,11 +256,12 @@ public class ProtocolUtil {
 		
 		if(viewPort == null || viewPort.width() <= 0 || viewPort.height() <= 0) {
 			Rectangle screenRect = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()); // Get Monitor Screen Size
-			AWTCanvas scrshot = AWTCanvas.fromScreenshot(Rect.from(screenRect.x, screenRect.y, screenRect.width, screenRect.height), AWTCanvas.StorageFormat.PNG, 1);
+			AWTCanvas scrshot = AWTCanvas.fromScreenshot(Rect.from(screenRect.x, screenRect.y, screenRect.width, screenRect.height), getRootWindowHandle(state), AWTCanvas.StorageFormat.PNG, 1);
 			return scrshot;
 		}
 		
-		AWTCanvas scrshot = AWTCanvas.fromScreenshot(Rect.from(viewPort.x(), viewPort.y(), viewPort.width(), viewPort.height()), AWTCanvas.StorageFormat.PNG, 1);
+		AWTCanvas scrshot = AWTCanvas.fromScreenshot(Rect.from(viewPort.x(), viewPort.y(), viewPort.width(), viewPort.height()), getRootWindowHandle(state), AWTCanvas.StorageFormat.PNG, 1);
+
 		return scrshot;
 	}
 	
@@ -274,11 +280,19 @@ public class ProtocolUtil {
 			}
 			if (actionArea.isEmpty())
 				return null;
-			AWTCanvas scrshot = AWTCanvas.fromScreenshot(Rect.from(actionArea.x, actionArea.y, actionArea.width, actionArea.height),
+			AWTCanvas scrshot = AWTCanvas.fromScreenshot(Rect.from(actionArea.x, actionArea.y, actionArea.width, actionArea.height), getRootWindowHandle(state),
 														 AWTCanvas.StorageFormat.PNG, 1);
-			return ScreenshotSerialiser.saveActionshot(state.get(Tags.ConcreteID, "NoConcreteIdAvailable"), action.get(Tags.ConcreteID, "NoConcreteIdAvailable"), scrshot);
+			return ScreenshotSerialiser.saveActionshot(state.get(Tags.ConcreteIDCustom, "NoConcreteIdAvailable"), action.get(Tags.ConcreteIDCustom, "NoConcreteIdAvailable"), scrshot);
 		}
 		return null;
 	}	
-	
+
+	private static long getRootWindowHandle(State state) {
+		long windowHandle = 0;
+		if (state.childCount() > 0) {
+			windowHandle = state.child(0).get(Tags.HWND);
+		}
+		return windowHandle;
+	}
+
 }

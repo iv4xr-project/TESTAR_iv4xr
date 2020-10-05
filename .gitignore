@@ -12,6 +12,7 @@ doc/
 build.bat
 *.sse
 *.class
+*.log
 
 
 !iv4XR/resources/gym/Windows/bin/
