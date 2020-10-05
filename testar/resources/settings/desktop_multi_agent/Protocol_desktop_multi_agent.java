@@ -40,6 +40,7 @@ import org.fruit.alayer.*;
 import org.fruit.alayer.actions.AnnotatingActionCompiler;
 import org.fruit.alayer.actions.StdActionCompiler;
 import org.fruit.monkey.DefaultProtocol;
+import org.testar.protocols.GenericUtilsProtocol;
 
 import nl.uu.cs.aplib.agents.AutonomousBasicAgent;
 import nl.uu.cs.aplib.agents.StateWithMessenger;
@@ -53,7 +54,7 @@ import nl.uu.cs.aplib.multiAgentSupport.Message.MsgCastType;
 /**
  * iv4XR introducing Multi Agents in TESTAR protocols
  */
-public class Protocol_desktop_multi_agent extends DefaultProtocol {
+public class Protocol_desktop_multi_agent extends GenericUtilsProtocol {
 
 	static class MyState extends StateWithMessenger {
 		int counter = 0 ;
