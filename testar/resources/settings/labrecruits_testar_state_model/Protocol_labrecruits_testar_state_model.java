@@ -47,6 +47,7 @@ import es.upv.staq.testar.NativeLinker;
 import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import nl.ou.testar.RandomActionSelector;
 import pathfinding.Pathfinder;
 import world.LegacyObservation;
 
@@ -148,9 +149,9 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 			retAction = stateModelManager.getAbstractActionToExecute(actions);
 		}
 		if(retAction==null) {
-			System.out.println("State model based action selection did not find an action. Using default action selection.");
-			// if state model fails, use default:
-			retAction = super.selectAction(state, actions);
+			System.out.println("State model based action selection did not find an action. Using random action selection.");
+			// if state model fails, use random (default would call preSelectAction() again, causing double actions HTML report):
+			retAction = RandomActionSelector.selectAction(actions);
 		}
 		return retAction;
 	}
