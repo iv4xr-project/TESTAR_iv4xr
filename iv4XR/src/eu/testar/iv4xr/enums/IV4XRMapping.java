@@ -42,11 +42,20 @@ public class IV4XRMapping {
     private static Map<Tag<?>, Tag<?>> stateTagMappingIV4XR = new HashMap<Tag<?>, Tag<?>>()
     {
         {
-            put(WidgetPath, IV4XRtags.entityPositionRepresentation);
-            put(WidgetControlType, IV4XRtags.labRecruitsEntityType);
-            put(WidgetTitle, IV4XRtags.entityId);
-            put(WidgetIsEnabled, IV4XRtags.labRecruitsEntityIsActive);
-            put(WidgetValueValue, IV4XRtags.labRecruitsEntityTag);
+            put(iv4xrEntityId, IV4XRtags.entityId);
+            put(iv4xrAgentId, IV4XRtags.agentId);
+            put(iv4xrEntityEnabled, IV4XRtags.entityEnabled);
+            put(iv4xrEntityBlocked, IV4XRtags.entityBlocked);
+            put(iv4xrEntityPosition, IV4XRtags.entityPosition);
+            put(iv4xrEntityBounds, IV4XRtags.entityBounds);
+            put(iv4xrEntityVelocity, IV4XRtags.entityVelocity);
+            put(iv4xrLegacyEntityType, IV4XRtags.entityType);
+            put(iv4xrEntityTimestamp, IV4XRtags.entityTimestamp);
+            put(iv4xrEntityIsActive, IV4XRtags.labRecruitsEntityIsActive);
+            put(iv4xrEntityType, IV4XRtags.labRecruitsEntityType);
+            put(iv4xrEntityTag, IV4XRtags.labRecruitsEntityTag);
+            put(iv4xrEntityProperty, IV4XRtags.labRecruitsEntityProperty);
+            put(iv4xrEntityLastUpdated, IV4XRtags.labRecruitsEntityLastUpdated);
         }
     };
     

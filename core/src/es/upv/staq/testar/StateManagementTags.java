@@ -2,6 +2,10 @@ package es.upv.staq.testar;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+
+import helperclasses.datastructures.Vec3;
+import world.LegacyEntityType;
+
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.Tags;
 
@@ -12,7 +16,7 @@ import java.util.Set;
 
 public class StateManagementTags {
 
-    public enum Group {General, ControlPattern, WebDriver}
+    public enum Group {General, ControlPattern, WebDriver, iv4xr}
 
 
     // a widget's control type
@@ -288,7 +292,22 @@ public class StateManagementTags {
     public static final Tag<Boolean> WebWidgetIsOffScreen = Tag.from("Web Widget Is Off Screen", Boolean.class);
     public static final Tag<String> WebWidgetSrc = Tag.from("Web Widget src", String.class);
     
-    
+    // iv4xr Entities/Widgets
+    public static final Tag<String> iv4xrEntityId = Tag.from("i4xr Entity id", String.class);
+    public static final Tag<String> iv4xrAgentId = Tag.from("i4xr Agent id", String.class);
+    public static final Tag<Boolean> iv4xrEntityEnabled = Tag.from("iv4xr Entity Enabled", Boolean.class);
+    public static final Tag<Boolean> iv4xrEntityBlocked = Tag.from("iv4xr Entity Blocked", Boolean.class);
+    public static final Tag<Vec3> iv4xrEntityPosition = Tag.from("iv4xr Entity Position", Vec3.class);
+    public static final Tag<Vec3> iv4xrEntityBounds = Tag.from("iv4xr Entity Bounds", Vec3.class);
+    public static final Tag<Vec3> iv4xrEntityVelocity = Tag.from("iv4xr Entity Velocity", Vec3.class);
+    public static final Tag<LegacyEntityType> iv4xrLegacyEntityType = Tag.from("iv4xr Legacy Entity Type", LegacyEntityType.class);
+    public static final Tag<Long> iv4xrEntityTimestamp = Tag.from("iv4xr Entity Timestamp", Long.class);
+    public static final Tag<Boolean> iv4xrEntityIsActive = Tag.from("iv4xr Entity Is Active", Boolean.class);
+    public static final Tag<String> iv4xrEntityType = Tag.from("iv4xr Entity Type", String.class);
+    public static final Tag<String> iv4xrEntityTag = Tag.from("iv4xr Entity Tag", String.class);
+    public static final Tag<String> iv4xrEntityProperty = Tag.from("iv4xr Entity Property", String.class);
+    public static final Tag<Integer> iv4xrEntityLastUpdated = Tag.from("iv4xr Entity Last Updated", Integer.class);
+	
     // a set containing the tags that are available for state management
     private static Set<Tag<?>> stateManagementTags = new HashSet<Tag<?>>() {
         {
@@ -375,6 +394,22 @@ public class StateManagementTags {
             add(WebWidgetDisplay);
             add(WebWidgetIsOffScreen);
             add(WebWidgetSrc);
+            
+            //iv4XR
+        	add(iv4xrEntityId);
+        	add(iv4xrAgentId);
+        	add(iv4xrEntityEnabled);
+        	add(iv4xrEntityBlocked);
+        	add(iv4xrEntityPosition);
+        	add(iv4xrEntityBounds);
+        	add(iv4xrEntityVelocity);
+        	add(iv4xrLegacyEntityType);
+        	add(iv4xrEntityTimestamp);
+        	add(iv4xrEntityIsActive);
+        	add(iv4xrEntityType);
+        	add(iv4xrEntityTag);
+        	add(iv4xrEntityProperty);
+        	add(iv4xrEntityLastUpdated);
         }
     };
 
@@ -469,6 +504,22 @@ public class StateManagementTags {
         settingsMap.put(WebWidgetDisplay, "WebWidgetDisplay");
         settingsMap.put(WebWidgetIsOffScreen, "WebWidgetIsOffScreen");
         settingsMap.put(WebWidgetSrc, "WebWidgetSrc");
+        
+        //iv4XR
+        settingsMap.put(iv4xrEntityId, "iv4xrEntityId");
+        settingsMap.put(iv4xrAgentId, "iv4xrAgentId");
+        settingsMap.put(iv4xrEntityEnabled, "iv4xrEntityEnabled");
+        settingsMap.put(iv4xrEntityBlocked, "iv4xrEntityBlocked");
+        settingsMap.put(iv4xrEntityPosition, "iv4xrEntityPosition");
+        settingsMap.put(iv4xrEntityBounds, "iv4xrEntityBounds");
+        settingsMap.put(iv4xrEntityVelocity, "iv4xrEntityVelocity");
+        settingsMap.put(iv4xrLegacyEntityType, "iv4xrLegacyEntityType");
+        settingsMap.put(iv4xrEntityTimestamp, "iv4xrEntityTimestamp");
+        settingsMap.put(iv4xrEntityIsActive, "iv4xrEntityIsActive");
+        settingsMap.put(iv4xrEntityType, "iv4xrEntityType");
+        settingsMap.put(iv4xrEntityTag, "iv4xrEntityTag");
+        settingsMap.put(iv4xrEntityProperty, "iv4xrEntityProperty");
+        settingsMap.put(iv4xrEntityLastUpdated, "iv4xrEntityLastUpdated");
     }
 
     // a mapping of a tag to its group
@@ -504,6 +555,7 @@ public class StateManagementTags {
             put(WidgetSetPosition, Group.General);
             put(WidgetSetSize, Group.General);
             put(WidgetRotation, Group.General);
+            
             put(WidgetAnnotationPattern, Group.ControlPattern);
             put(WidgetDockPattern, Group.ControlPattern);
             put(WidgetDragPattern, Group.ControlPattern);
@@ -553,6 +605,22 @@ public class StateManagementTags {
             put(WebWidgetDisplay, Group.WebDriver);
             put(WebWidgetIsOffScreen, Group.WebDriver);
             put(WebWidgetSrc, Group.WebDriver);
+            
+            //iv4xr
+            put(iv4xrEntityId, Group.iv4xr);
+            put(iv4xrAgentId, Group.iv4xr);
+            put(iv4xrEntityEnabled, Group.iv4xr);
+            put(iv4xrEntityBlocked, Group.iv4xr);
+            put(iv4xrEntityPosition, Group.iv4xr);
+            put(iv4xrEntityBounds, Group.iv4xr);
+            put(iv4xrEntityVelocity, Group.iv4xr);
+            put(iv4xrLegacyEntityType, Group.iv4xr);
+            put(iv4xrEntityTimestamp, Group.iv4xr);
+            put(iv4xrEntityIsActive, Group.iv4xr);
+            put(iv4xrEntityType, Group.iv4xr);
+            put(iv4xrEntityTag, Group.iv4xr);
+            put(iv4xrEntityProperty, Group.iv4xr);
+            put(iv4xrEntityLastUpdated, Group.iv4xr);
         }
     };
 

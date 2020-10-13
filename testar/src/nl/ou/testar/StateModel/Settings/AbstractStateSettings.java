@@ -21,12 +21,12 @@ public class AbstractStateSettings extends JDialog {
 
     private JLabel label1 = new JLabel("Please choose the widget attributes to use in "
     + "creating the abstract state model. Control + Left Click");
-    private JLabel label2 = new JLabel("General attributes");
-    private JLabel label3 = new JLabel("Control patterns");
+    private JLabel label2 = new JLabel("Windows attributes");
+    private JLabel label3 = new JLabel("iv4XR attributes");
     private JLabel label4 = new JLabel("WebDrivers attributes");
 
     private JList generalList;
-    private JList controlPatternList;
+    private JList iv4xrList;
     private JList webdriverList;
 
     private JButton confirmButton = new JButton("Confirm");
@@ -73,12 +73,12 @@ public class AbstractStateSettings extends JDialog {
         ///////// CONTROL PATTERN STATE MANAGEMENT TAGS /////////
         label3.setBounds(360, 50, 250, 27);
 
-        controlPatternList = new JList(Arrays.stream(allStateTags).filter(tag -> StateManagementTags.getTagGroup(tag).equals(StateManagementTags.Group.ControlPattern)).toArray()); //data has type Object[]
-        controlPatternList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        controlPatternList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
-        controlPatternList.setVisibleRowCount(-1);
+        iv4xrList = new JList(Arrays.stream(allStateTags).filter(tag -> StateManagementTags.getTagGroup(tag).equals(StateManagementTags.Group.iv4xr)).toArray()); //data has type Object[]
+        iv4xrList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        iv4xrList.setLayoutOrientation(JList.HORIZONTAL_WRAP);
+        iv4xrList.setVisibleRowCount(-1);
 
-        JScrollPane listScrollerControlPattern = new JScrollPane(controlPatternList);
+        JScrollPane listScrollerControlPattern = new JScrollPane(iv4xrList);
         listScrollerControlPattern.setPreferredSize(new Dimension(250, 350));
         listScrollerControlPattern.setBounds(360, 80, 250, 350);
         add(listScrollerControlPattern);
@@ -106,7 +106,7 @@ public class AbstractStateSettings extends JDialog {
             public void actionPerformed(ActionEvent e) {
             	
             	Stream allListConcatenated = Stream.concat(
-            			Stream.concat(generalList.getSelectedValuesList().stream(),controlPatternList.getSelectedValuesList().stream()),
+            			Stream.concat(generalList.getSelectedValuesList().stream(),iv4xrList.getSelectedValuesList().stream()),
             			webdriverList.getSelectedValuesList().stream());
             	
                 currentlySelectedStateTags = (Tag<?>[]) allListConcatenated.toArray(Tag<?>[]::new);
@@ -143,7 +143,7 @@ public class AbstractStateSettings extends JDialog {
 
         generalList.setSelectedIndices(selectedIndices.stream().mapToInt(i -> i).toArray());
 
-        listModel = controlPatternList.getModel();
+        listModel = iv4xrList.getModel();
         selectedIndices = new ArrayList<>();
         for (int i=0; i < listModel.getSize(); i++) {
             if (tagSet.contains(listModel.getElementAt(i))) {
@@ -151,7 +151,7 @@ public class AbstractStateSettings extends JDialog {
             }
         }
 
-        controlPatternList.setSelectedIndices(selectedIndices.stream().mapToInt(i -> i).toArray());
+        iv4xrList.setSelectedIndices(selectedIndices.stream().mapToInt(i -> i).toArray());
         
         listModel = webdriverList.getModel();
         selectedIndices = new ArrayList<>();

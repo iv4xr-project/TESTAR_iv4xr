@@ -124,7 +124,7 @@ iv4XRAgentListener = true
 # Specify the widget attributes that you wish to use in constructing
 # the widget and state hash strings. Use a comma separated list.
 #################################################################
-AbstractStateAttributes = WidgetIsEnabled, WidgetTitle
+AbstractStateAttributes = iv4xrEntityId, iv4xrEntityEnabled, iv4xrEntityPosition
 
 #################################################################
 # Other more advanced settings
