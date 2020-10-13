@@ -180,6 +180,10 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		else if (t.equals(Tags.ZIndex)) {
 			ret = w.element.zindex;
 		}
+		else if (t.equals(Tags.HWND)) {
+			// use the windows handle from root (state)
+			ret = w.element.root.windowsHandle;
+		}
 		/**
 		 * Generic IV4XR Tags
 		 */

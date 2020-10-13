@@ -570,6 +570,9 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 		passSeverity = Verdict.SEVERITY_OK;
 		processVerdict = Verdict.OK;
 		this.cv = buildCanvas();
+		
+		// notify the statemodelmanager
+		stateModelManager.notifyTestSequencedStarted();
 	}
 
 	/**
@@ -686,8 +689,9 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 				//initializing fragment for recording replayable test sequence:
 				initFragmentForReplayableSequence(state);
 
+				// master move to startTestSequence method
 				// notify the statemodelmanager
-				stateModelManager.notifyTestSequencedStarted();
+				//stateModelManager.notifyTestSequencedStarted();
 
 				/*
 				 ***** starting the INNER LOOP:

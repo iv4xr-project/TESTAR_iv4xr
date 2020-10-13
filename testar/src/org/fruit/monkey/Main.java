@@ -150,7 +150,7 @@ public class Main {
 				System.out.println("JAVA HOME is not properly aiming to the Java Development Kit");
 
 			if(!(System.getenv("JAVA_HOME").contains("11.")))
-				System.out.println("TESTAR needs JAVA 11 to run with Aplib Agents");
+				System.out.println("TESTAR needs at least JAVA 11 to run with Aplib Agents");
 		}catch(Exception e) {System.out.println("Exception: Something is wrong with your JAVA_HOME \n"
 				+"Check if JAVA_HOME system variable is correctly defined \n \n"
 				+"GO TO: https://testar.org/faq/ to obtain more details \n \n");}

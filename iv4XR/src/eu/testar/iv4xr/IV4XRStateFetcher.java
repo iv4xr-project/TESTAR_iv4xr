@@ -115,6 +115,7 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 			if(rootElement.pid == Windows.GetWindowProcessId(windowHandle)) {
 				rootElement.windowsHandle = windowHandle;
 				system.set(Tags.HWND, windowHandle);
+				rootElement.set(Tags.HWND, windowHandle);
 			}
 		}
 		
@@ -244,7 +245,7 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 	private void fillRect(IV4XRElement element) {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		Rectangle screenRectangle = new Rectangle(screenSize);
-		Rect rect = Rect.from(screenRectangle.getX(),  screenRectangle.getY(), screenRectangle.getWidth(), screenRectangle.getHeight());
+		Rect rect = Rect.from(screenRectangle.getX(), screenRectangle.getY(), screenRectangle.getWidth(), screenRectangle.getHeight());
 		
 		long r[] = Windows.GetWindowRect(element.root.windowsHandle);
 		if(r[2] - r[0] >= 0 && r[3] - r[1] >= 0) {

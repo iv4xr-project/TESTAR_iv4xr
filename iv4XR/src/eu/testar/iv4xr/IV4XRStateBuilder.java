@@ -67,7 +67,10 @@ public class IV4XRStateBuilder implements StateBuilder {
 		try {
 			Future<IV4XRState> future = executor.submit(new IV4XRStateFetcher(system));
 			IV4XRState state = future.get((long) (timeOut), TimeUnit.SECONDS);
-			
+			// When the SUT has a valid windowHandle store it in the state, it's required to create well aligned screenshots.
+			if (system.get(Tags.HWND, null) != null){
+				state.set(Tags.HWND, system.get(Tags.HWND));
+			}
 			return state;
 		}
 		catch (InterruptedException | ExecutionException e) {
