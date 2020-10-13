@@ -46,10 +46,7 @@ import environments.LabRecruitsEnvironment;
 import es.upv.staq.testar.NativeLinker;
 import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.IV4XRStateFetcher;
-import eu.testar.iv4xr.actions.labActionExploreState;
-import eu.testar.iv4xr.actions.labActionInteract;
-import eu.testar.iv4xr.actions.labActionMove;
-import eu.testar.iv4xr.actions.labActionObserve;
+import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
@@ -111,8 +108,8 @@ public class Protocol_labrecruits_testar_dummy_explorer extends DesktopProtocol 
 		
 		for(Widget w : state) {
 			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
-				labActions.add(new labActionMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
-				labActions.add(new labActionInteract(state, w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityId, "UnknowId"), false, false));
+				labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
+				labActions.add(new labActionCommandInteract(state, w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityId, "UnknowId"), false, false));
 			}
 		}
 

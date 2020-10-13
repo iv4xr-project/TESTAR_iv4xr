@@ -28,11 +28,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-
-
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
@@ -40,81 +38,78 @@ import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.protocols.DesktopProtocol;
 
+import agents.LabRecruitsTestAgent;
+import agents.tactics.GoalLib;
 import communication.agent.AgentCommand;
 import communication.system.Request;
 import environments.LabRecruitsEnvironment;
 import es.upv.staq.testar.NativeLinker;
 import eu.testar.iv4xr.IV4XRProtocolUtil;
-import eu.testar.iv4xr.actions.commands.*;
+import eu.testar.iv4xr.IV4XRStateFetcher;
+import eu.testar.iv4xr.LabRecruitsEnvironmentListener;
+import eu.testar.iv4xr.actions.goals.labActionGoalEntityInCloseRange;
+import eu.testar.iv4xr.actions.goals.labActionGoalEntityInteracted;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import pathfinding.Pathfinder;
+import nl.uu.cs.aplib.mainConcepts.GoalStructure;
+import world.BeliefState;
 import world.LegacyObservation;
 
-/**
- * iv4XR introducing a Basic Agent in TESTAR protocols
- */
-public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
-
-	private String buttonToTest = "button1" ;
-	private boolean buttonPressed = false;
-
-	private String doorToTest = "door1" ;
-	private boolean movedToDoor = false;
+public class Protocol_labrecruits_testar_goal_room extends DesktopProtocol {
 
 	private String agentId = "agent1";
-
-	private boolean moreActions = true;
-
-	private Pathfinder pathFinder;
 	
+	LabRecruitsTestAgent testAgent;
+
 	@Override
 	protected void initialize(Settings settings) {
 		// Start IV4XR plugin (Windows + LabRecruitsEnvironment)
 		NativeLinker.addiv4XROS();
 		super.initialize(settings);
+
+		protocolUtil = new IV4XRProtocolUtil();
 		
-	    protocolUtil = new IV4XRProtocolUtil();
+		// Define existing agent to fetch his observation entities
+		IV4XRStateFetcher.agentsIds = new HashSet<>(Arrays.asList(agentId));
 	}
 
 	@Override
 	protected SUT startSystem() {
-		return super.startSystem();
+		SUT sut = super.startSystem();
+		return sut;
 	}
 
 	@Override
-	protected void beginSequence(SUT system, State TESTARstate) {
+	protected void beginSequence(SUT system, State state) {
 		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setEnabledIV4XRAgentListener(settings.get(ConfigTags.iv4XRAgentListener, false));
+		
+		// TODO: Refactor LabRecruitsEnvironment Listener, TESTAR as agent should not need to send this state/actions
+		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setStateTESTAR(state);
+		Set<Action> actions = deriveActions(system, state);
+		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setDerivedActionsTESTAR(actions);
+		
+		// Create an environment
+		LabRecruitsEnvironmentListener labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
+		
+		testAgent   =  new LabRecruitsTestAgent(agentId) // matches the ID in the CSV file
+    		    . attachState(new BeliefState())
+    		    . attachEnvironment(labRecruitsEnvironment);
+	
 	}
 
 	@Override
 	protected State getState(SUT system) {
-		
 		State state = super.getState(system);
-		
-		/*for(Widget w : state) {
-			if(w.get(IV4XRtags.entityId, null) != null) {
-				System.out.println("Widget Entity ID : " + w.get(IV4XRtags.entityId));
-				System.out.println("Widget Entity TYPE : " + w.get(IV4XRtags.entityType));
-				System.out.println("Widget Entity POSITION : " + w.get(IV4XRtags.entityPosition));
-				System.out.println("Widget Entity TAG : " + w.get(IV4XRtags.entityTag));
-				System.out.println("Widget Entity PROPERTY : " + w.get(IV4XRtags.entityProperty));
-				System.out.println("Widget Entity Is Active ? : " + w.get(IV4XRtags.entityIsActive));
-			}
-		}*/
-
 		return state;
 	}
 
 	@Override
 	protected Verdict getVerdict(State state) {
-		for(Widget w : state) {
-			if(w.get(IV4XRtags.entityId, "").equals(buttonToTest) && w.get(IV4XRtags.labRecruitsEntityIsActive, true)){
-				return new Verdict(Verdict.SEVERITY_WARNING, "GOAL solved");
-			}
-		}
 		return Verdict.OK;
 	}
 
+	/**
+	 * Map all the possible actions that an Agent can do in the LabRecruitsEnvironment
+	 */
 	@Override
 	protected Set<Action> deriveActions(SUT system, State state) {
 
@@ -126,15 +121,24 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 		
 		for(Widget w : state) {
 			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
+		        
+				String entityId = w.get(IV4XRtags.entityId);
 				
-				labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
+		        // Derive an attach an Entity Interact Goal
+		        GoalStructure goalEntityInteracted = GoalLib.entityInteracted(entityId);
+		        Action actionEntityInteracted = new labActionGoalEntityInteracted(state, testAgent, goalEntityInteracted, agentId, entityId);
+				labActions.add(actionEntityInteracted);
 				
-				labActions.add(new labActionCommandInteract(state, w, labRecruitsEnv, agentId, buttonToTest, false, false));
+				// Derive an attach an Entity In Close Range to Move the agent
+				GoalStructure goalEntityInCloseRange = GoalLib.entityInCloseRange(entityId);
+				Action actionEntityInCloseRange = new labActionGoalEntityInCloseRange(state, testAgent, goalEntityInCloseRange, agentId, entityId);
+				labActions.add(actionEntityInCloseRange);
 			}
 		}
 
 		return labActions;
 	}
+
 
 	@Override
 	protected Action selectAction(State state, Set<Action> actions){
@@ -197,9 +201,6 @@ public class Protocol_labrecruits_testar_state_model extends DesktopProtocol {
 	protected void stopSystem(SUT system) {
 		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).close();
 		super.stopSystem(system);
-
-		System.out.println("TEST RESULT, BUTTON PRESSED? = " + buttonPressed + " MOVED TO DOOR? = " + movedToDoor);
-
 		// Something is not being closed properly, for now we simplemente terminamos, un abrazo lobo
 		Runtime.getRuntime().exit(0);
 	}

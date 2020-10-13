@@ -64,9 +64,7 @@ import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.world.WorldEntity;
 import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.LabRecruitsEnvironmentListener;
-import eu.testar.iv4xr.actions.labActionInteract;
-import eu.testar.iv4xr.actions.labActionMove;
-import eu.testar.iv4xr.actions.labActionObserve;
+import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import helperclasses.datastructures.Vec3;
 import nl.uu.cs.aplib.Logging;
@@ -217,12 +215,12 @@ public class Protocol_labrecruits_agent_state_model extends DesktopProtocol {
 		LegacyObservation worldObservation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
 		
 		// Every time the Agent has the possibility to observe the Environment
-		labActions.add(new labActionObserve(state, state, labRecruitsEnv, agentId, false, false));
+		labActions.add(new labActionCommandObserve(state, state, labRecruitsEnv, agentId, false, false));
 
 		for(Widget w : state) {
 			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
-				labActions.add(new labActionMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
-				labActions.add(new labActionInteract(state, w, labRecruitsEnv, agentId, buttonToTest, false, false));
+				labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
+				labActions.add(new labActionCommandInteract(state, w, labRecruitsEnv, agentId, buttonToTest, false, false));
 			}
 		}
 

@@ -41,9 +41,7 @@ import org.fruit.alayer.Widget;
 import environments.EnvironmentConfig;
 import environments.LabRecruitsEnvironment;
 import es.upv.staq.testar.CodingManager;
-import eu.testar.iv4xr.actions.labActionInteract;
-import eu.testar.iv4xr.actions.labActionMove;
-import eu.testar.iv4xr.actions.labActionObserve;
+import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import helperclasses.datastructures.Vec3;
 import world.LabWorldModel;
@@ -92,14 +90,14 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 		System.out.println("LISTENED observe");
 		
 		// Create a Default Observe Action unique by Agent
-		this.actionExecutedTESTAR = new labActionObserve(stateTESTAR, stateTESTAR, this, agentId, true, true);
+		this.actionExecutedTESTAR = new labActionCommandObserve(stateTESTAR, stateTESTAR, this, agentId, true, true);
 		boolean addNewAction = true;
 		
 		// Check if TESTAR knows about the existence of this Action
 		// If TESTAR knows indicate that Agent wants to select this Action
 		for(Action a : derivedActions) {
-			if(a instanceof labActionObserve && ((labActionObserve)a).actionEquals((labActionObserve)this.actionExecutedTESTAR)) {
-				((labActionObserve)a).selectedByAgent();
+			if(a instanceof labActionCommandObserve && ((labActionCommandObserve)a).actionEquals((labActionCommandObserve)this.actionExecutedTESTAR)) {
+				((labActionCommandObserve)a).selectedByAgent();
 				this.actionExecutedTESTAR = a;
 				addNewAction = false;
 			}
@@ -130,7 +128,7 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 		// Indicate as unique by Agent at the moment
 		for(Widget w : stateTESTAR) {
 			if(w.get(IV4XRtags.entityId,"").equals(target)) {
-				this.actionExecutedTESTAR = new labActionInteract(stateTESTAR, w, this, agentId, target, true, true);
+				this.actionExecutedTESTAR = new labActionCommandInteract(stateTESTAR, w, this, agentId, target, true, true);
 			}
 		}
 		boolean addNewAction = true;
@@ -138,8 +136,8 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 		// Check if TESTAR knows about the existence of this Interact Action
 		// If TESTAR knows indicate that Agent wants to select this Action
 		for(Action a : derivedActions) {
-			if(a instanceof labActionInteract && ((labActionInteract)a).actionEquals((labActionInteract)this.actionExecutedTESTAR)) {
-				((labActionInteract)a).selectedByAgent();
+			if(a instanceof labActionCommandInteract && ((labActionCommandInteract)a).actionEquals((labActionCommandInteract)this.actionExecutedTESTAR)) {
+				((labActionCommandInteract)a).selectedByAgent();
 				this.actionExecutedTESTAR = a;
 				addNewAction = false;
 			}
@@ -167,22 +165,22 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 		// Sometime the Agent can't or doesn't know how to reach the exact position of a Widget - LabEntity,
 		// and he moves to a position exploring his knowledge path
 		// Indicate as unique, exploration movements are actions that TESTAR doesn't derive by default and we need to add
-		this.actionExecutedTESTAR = new labActionMove(stateTESTAR, stateTESTAR, this, agentId, agentPosition, agentPosition, false, true, true);
+		this.actionExecutedTESTAR = new labActionCommandMove(stateTESTAR, stateTESTAR, this, agentId, agentPosition, agentPosition, false, true, true);
 		boolean addNewAction = true;
 		
 		for(Widget w : stateTESTAR) {
 			if(w.get(IV4XRtags.entityPosition, new Vec3(-1,-1,-1)).equals(target)) {
 				// If Agent is moving to a specific Widget - LabEntity, update the Action
 				// Still being unique Agent Action, next step is verify if TESTAR knows
-				this.actionExecutedTESTAR = new labActionMove(stateTESTAR, w, this, agentId, agentPosition, agentPosition, false, true, true);
+				this.actionExecutedTESTAR = new labActionCommandMove(stateTESTAR, w, this, agentId, agentPosition, agentPosition, false, true, true);
 			}
 		}
 		
 		// Check if TESTAR knows about the existence of this Move Action
 		// If TESTAR knows indicate that Agent wants to select this Action
 		for(Action a : derivedActions) {
-			if(a instanceof labActionMove && ((labActionMove)a).actionEquals((labActionMove)this.actionExecutedTESTAR)) {
-				((labActionMove)a).selectedByAgent();
+			if(a instanceof labActionCommandMove && ((labActionCommandMove)a).actionEquals((labActionCommandMove)this.actionExecutedTESTAR)) {
+				((labActionCommandMove)a).selectedByAgent();
 				this.actionExecutedTESTAR = a;
 				addNewAction = false;
 			}

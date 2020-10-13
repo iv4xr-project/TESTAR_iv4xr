@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019, 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019, 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,84 +28,60 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-
-package eu.testar.iv4xr.actions;
+package eu.testar.iv4xr.actions.goals;
 
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
-import org.fruit.alayer.Roles;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.Tags;
-import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import environments.LabRecruitsEnvironment;
+import agents.LabRecruitsTestAgent;
+import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import helperclasses.datastructures.Vec3;
+import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
-public class labActionMove extends TaggableBase implements Action {
-	private static final long serialVersionUID = 4431931844664688235L;
-	
-	private LabRecruitsEnvironment labRecruitsEnvironment;
+public class labActionGoalPositionInCloseRange extends TaggableBase implements Action {
+
+	private static final long serialVersionUID = -3142712768999384558L;
+
 	private String agentId;
-	private Vec3 agentPosition;
-	private Vec3 targetPosition;
-	private boolean jump;
-	
-	public String getAgentId() {
-		return agentId;
-	}
-	
-	public Vec3 getAgentPosition() {
-		return agentPosition;
-	}
-	
-	public Vec3 getTargetPosition() {
-		return targetPosition;
-	}
-	
-	public boolean getIfJump() {
-		return jump;
-	}
-	
-	public void selectedByAgent() {
-		this.set(IV4XRtags.agentAction, true);
-	}
-	
-	public labActionMove(State state, Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 agentPosition, Vec3 targetPosition, boolean jump, boolean agentAction, boolean newByAgent){
-		this.set(Tags.Role, Roles.System);
-		this.set(Tags.OriginWidget, w);
-		this.labRecruitsEnvironment = labRecruitsEnvironment;
+	private Vec3 goalPosition;
+	private LabRecruitsTestAgent testAgent;
+	private GoalStructure goal;
+
+	public labActionGoalPositionInCloseRange(State state, LabRecruitsTestAgent testAgent, GoalStructure goal, String agentId, Vec3 goalPosition) {
+		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalPositionInCloseRange);
+		this.set(Tags.OriginWidget, state);
+		this.testAgent = testAgent;
+		this.goal = goal;
 		this.agentId = agentId;
-		this.agentPosition = agentPosition;
-		this.targetPosition = targetPosition;
-		this.jump = jump;
+		this.goalPosition = goalPosition;
 		this.set(Tags.Desc, toShortString());
-		this.set(IV4XRtags.agentAction, agentAction);
-		this.set(IV4XRtags.newActionByAgent, newByAgent);
+		this.set(IV4XRtags.agentAction, false);
+		this.set(IV4XRtags.newActionByAgent, false);
 	}
-	
+
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		
-		labRecruitsEnvironment.moveToward(agentId, agentPosition, targetPosition);
-		
+		// It has been decided to execute this action
+		// Set the goal to the agent
+		testAgent.setGoal(goal);
+		// And send the instructions to achieve the goal
+		testAgent.update();
 	}
 
 	@Override
 	public String toShortString() {
-		return "Move agent: " + agentId + " from: " + agentPosition + " to: " + targetPosition;
-	}
-	
-	public boolean actionEquals(labActionMove action) {
-		return (this.agentId.equals(action.getAgentId())) && (this.agentPosition.equals(action.getAgentPosition())) 
-				&& (this.targetPosition.equals(action.getTargetPosition())); /* && (this.jump == jump)*/
+		return "Agent: " + agentId + " executing Goal PositionInCloseRange to " + goalPosition;
 	}
 
 	@Override
 	public String toParametersString() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -114,4 +90,5 @@ public class labActionMove extends TaggableBase implements Action {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

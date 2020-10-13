@@ -28,65 +28,64 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
+package eu.testar.iv4xr.actions.goals;
 
-package eu.testar.iv4xr.actions;
+import java.util.function.Predicate;
 
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
-import org.fruit.alayer.Roles;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import communication.agent.AgentCommand;
-import communication.system.Request;
-import environments.LabRecruitsEnvironment;
+import agents.LabRecruitsTestAgent;
+import eu.iv4xr.framework.world.WorldEntity;
+import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import helperclasses.datastructures.Vec3;
+import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
-public class labActionExploreState extends TaggableBase implements Action {
-	private static final long serialVersionUID = 4431931844664688235L;
-	
-	private LabRecruitsEnvironment labRecruitsEnvironment;
+public class labActionGoalEntityInspected extends TaggableBase implements Action {
+
+	private static final long serialVersionUID = -2138248293425100622L;
+
 	private String agentId;
-	
-	public String getAgentId() {
-		return agentId;
-	}
-	
-	public void selectedByAgent() {
-		this.set(IV4XRtags.agentAction, true);
-	}
-	
-	public labActionExploreState(State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent){
-		this.set(Tags.Role, Roles.System);
+	private String entityId;
+	private Predicate<WorldEntity> predicate;
+	private LabRecruitsTestAgent testAgent;
+	private GoalStructure goal;
+
+	public labActionGoalEntityInspected(State state, LabRecruitsTestAgent testAgent, GoalStructure goal, String agentId, String entityId, Predicate<WorldEntity> predicate) {
+		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalEntityInspected);
 		this.set(Tags.OriginWidget, state);
-		this.labRecruitsEnvironment = labRecruitsEnvironment;
+		this.testAgent = testAgent;
+		this.goal = goal;
 		this.agentId = agentId;
+		this.entityId = entityId;
+		this.predicate = predicate;
 		this.set(Tags.Desc, toShortString());
-		this.set(IV4XRtags.agentAction, agentAction);
-		this.set(IV4XRtags.newActionByAgent, newByAgent);
+		this.set(IV4XRtags.agentAction, false);
+		this.set(IV4XRtags.newActionByAgent, false);
 	}
-	
+
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		
-		dummyExplorer();
+		// It has been decided to execute this action
+		// Set the goal to the agent
+		testAgent.setGoal(goal);
+		// And send the instructions to achieve the goal
+		testAgent.update();
 	}
 
 	@Override
 	public String toShortString() {
-		return "Agent: " + agentId + " is going to explore the world from position " + currentAgentPosition();
-	}
-	
-	public boolean actionEquals(labActionExploreState action) {
-		return (this.agentId.equals(action.getAgentId()));
+		return "Agent: " + agentId + " executing Goal EntityInspected to " + entityId + " with predicate " + predicate;
 	}
 
 	@Override
 	public String toParametersString() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -95,32 +94,5 @@ public class labActionExploreState extends TaggableBase implements Action {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	private void dummyExplorer() {
-		
-	      int random = new java.util.Random().nextInt(4);
 
-	      switch (random) {
-	        case 0:
-	        	labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), new Vec3(2.0, 0.0, 0.0)));
-	        break;
-	        case 1: 
-	        	labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), new Vec3(-2.0, 0.0, 0.0)));
-	        break;
-	        case 2:
-	        	labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), new Vec3(0.0, 0.0, 2.0)));
-	        break;
-	        case 3:
-	        	labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), new Vec3(0.0, 0.0, -2.0)));
-	        break;
-	      }
-	}
-	
-	private Vec3 currentAgentPosition() {
-		return labRecruitsEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId))).agentPosition;
-	}
-	
-	private Vec3 addPositions(Vec3 original, Vec3 addend) {
-		return new Vec3(original.x + addend.x, original.y + addend.y, original.z + addend.z);
-	}
 }

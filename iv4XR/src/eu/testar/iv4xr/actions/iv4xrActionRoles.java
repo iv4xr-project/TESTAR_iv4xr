@@ -30,68 +30,34 @@
 
 package eu.testar.iv4xr.actions;
 
-import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
-import org.fruit.alayer.Roles;
-import org.fruit.alayer.SUT;
-import org.fruit.alayer.State;
-import org.fruit.alayer.TaggableBase;
-import org.fruit.alayer.Tags;
-import org.fruit.alayer.Widget;
-import org.fruit.alayer.exceptions.ActionFailedException;
+import org.fruit.alayer.actions.ActionRoles;
 
-import environments.LabRecruitsEnvironment;
-import eu.testar.iv4xr.enums.IV4XRtags;
+public class iv4xrActionRoles {
 
-public class labActionObserve extends TaggableBase implements Action {
-	
-	private static final long serialVersionUID = 810855276392071973L;
+	private iv4xrActionRoles() {}
 
-	private LabRecruitsEnvironment labRecruitsEnvironment;
-	private String agentId;
-	
-	public String getAgentId() {
-		return agentId;
-	}
-	
-	public void selectedByAgent() {
-		this.set(IV4XRtags.agentAction, true);
-	}
-	
-	public labActionObserve(State state, Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent) {
-		this.set(Tags.Role, Roles.System);
-		this.set(Tags.OriginWidget, w);
-		this.labRecruitsEnvironment = labRecruitsEnvironment;
-		this.agentId = agentId;
-		this.set(Tags.Desc, toShortString());
-		this.set(IV4XRtags.agentAction, agentAction);
-		this.set(IV4XRtags.newActionByAgent, newByAgent);
-	}
+	public static final Role
 
-	@Override
-	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		labRecruitsEnvironment.observe(agentId);
-	}
+	iv4xrAction = Role.from("iv4xrAction", ActionRoles.Action),
 
-	@Override
-	public String toShortString() {
-		return "Agent: " + agentId + " is observing the Environment";
-	}
-	
-	public boolean actionEquals(labActionObserve action) {
-		return (this.agentId.equals(action.getAgentId()));
-	}
+	// Command Actions based on environments.LabRecruitsEnvironment
+	iv4xrLowActionCommand = Role.from("iv4xrLowActionCommand", iv4xrAction),
+	iv4xrLowActionCommandInteract = Role.from("iv4xrLowActionCommandInteract", iv4xrLowActionCommand),
+	iv4xrLowActionCommandMove = Role.from("iv4xrLowActionCommandMove", iv4xrLowActionCommand),
+	iv4xrLowActionCommandObserver = Role.from("iv4xrLowActionCommandObserver", iv4xrLowActionCommand),
 
-	@Override
-	public String toParametersString() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String toString(Role... discardParameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	// Goal Actions based on agents.tactics.GoalLib
+	iv4xrHighActionGoal = Role.from("iv4xrHighActionGoal", iv4xrAction),
+	iv4xrHighActionGoalPositionInCloseRange = Role.from("iv4xrHighActionGoalPositionInCloseRange", iv4xrHighActionGoal),
+	iv4xrHighActionGoalPositionsVisited = Role.from("iv4xrHighActionGoalPositionsVisited", iv4xrHighActionGoal),
+	iv4xrHighActionGoalEntityInCloseRange = Role.from("iv4xrHighActionGoalEntityInCloseRange", iv4xrHighActionGoal),
+	iv4xrHighActionGoalEntityInteracted = Role.from("iv4xrHighActionGoalEntityInteracted", iv4xrHighActionGoal),
+	iv4xrHighActionGoalEntityStateRefreshed = Role.from("iv4xrHighActionGoalEntityStateRefreshed", iv4xrHighActionGoal),
+	iv4xrHighActionGoalEntityInspected = Role.from("iv4xrHighActionGoalEntityInspected", iv4xrHighActionGoal),
+	iv4xrHighActionGoalEntityInvariantChecked = Role.from("iv4xrHighActionGoalEntityInvariantChecked", iv4xrHighActionGoal),
+	iv4xrHighActionGoalInvariantChecked = Role.from("iv4xrHighActionGoalInvariantChecked", iv4xrHighActionGoal),
+	iv4xrHighActionGoalMemorySent= Role.from("iv4xrHighActionGoalMemorySent", iv4xrHighActionGoal),
+	iv4xrHighActionGoalPingSent = Role.from("iv4xrHighActionGoalPingSent", iv4xrHighActionGoal);
 
 }
