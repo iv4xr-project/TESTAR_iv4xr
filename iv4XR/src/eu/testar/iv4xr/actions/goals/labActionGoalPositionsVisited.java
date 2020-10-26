@@ -51,13 +51,13 @@ public class labActionGoalPositionsVisited extends TaggableBase implements Actio
 	private String agentId;
 	private Vec3[] positions;
 	private LabRecruitsTestAgent testAgent;
-	private GoalStructure goal;
+	private GoalStructure goalStructure;
 	
-	public labActionGoalPositionsVisited(State state, LabRecruitsTestAgent testAgent, GoalStructure goal, String agentId, Vec3... positions) {
+	public labActionGoalPositionsVisited(State state, LabRecruitsTestAgent testAgent, GoalStructure goalStructure, String agentId, Vec3... positions) {
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalPositionsVisited);
 		this.set(Tags.OriginWidget, state);
 		this.testAgent = testAgent;
-		this.goal = goal;
+		this.goalStructure = goalStructure;
 		this.agentId = agentId;
 		this.positions = positions;
 		this.set(Tags.Desc, toShortString());
@@ -69,7 +69,7 @@ public class labActionGoalPositionsVisited extends TaggableBase implements Actio
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// It has been decided to execute this action
 		// Set the goal to the agent
-		testAgent.setGoal(goal);
+		testAgent.setGoal(goalStructure);
 		// And send the instructions to achieve the goal
 		testAgent.update();
 	}

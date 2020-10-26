@@ -54,13 +54,13 @@ public class labActionGoalEntityInspected extends TaggableBase implements Action
 	private String entityId;
 	private Predicate<WorldEntity> predicate;
 	private LabRecruitsTestAgent testAgent;
-	private GoalStructure goal;
+	private GoalStructure goalStructure;
 
-	public labActionGoalEntityInspected(State state, LabRecruitsTestAgent testAgent, GoalStructure goal, String agentId, String entityId, Predicate<WorldEntity> predicate) {
+	public labActionGoalEntityInspected(State state, LabRecruitsTestAgent testAgent, GoalStructure goalStructure, String agentId, String entityId, Predicate<WorldEntity> predicate) {
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalEntityInspected);
 		this.set(Tags.OriginWidget, state);
 		this.testAgent = testAgent;
-		this.goal = goal;
+		this.goalStructure = goalStructure;
 		this.agentId = agentId;
 		this.entityId = entityId;
 		this.predicate = predicate;
@@ -73,7 +73,7 @@ public class labActionGoalEntityInspected extends TaggableBase implements Action
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// It has been decided to execute this action
 		// Set the goal to the agent
-		testAgent.setGoal(goal);
+		testAgent.setGoal(goalStructure);
 		// And send the instructions to achieve the goal
 		testAgent.update();
 	}

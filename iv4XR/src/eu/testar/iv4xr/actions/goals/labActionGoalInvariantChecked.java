@@ -51,19 +51,17 @@ public class labActionGoalInvariantChecked extends TaggableBase implements Actio
 	private static final long serialVersionUID = 5076741079293167984L;
 
 	private String agentId;
-	private String entityId;
 	private String info;
 	private Predicate<BeliefState> predicate;
 	private LabRecruitsTestAgent testAgent;
-	private GoalStructure goal;
+	private GoalStructure goalStructure;
 
-	public labActionGoalInvariantChecked(State state, LabRecruitsTestAgent testAgent, GoalStructure goal, String agentId, String entityId, String info, Predicate<BeliefState> predicate) {
+	public labActionGoalInvariantChecked(State state, LabRecruitsTestAgent testAgent, GoalStructure goalStructure, String agentId, String info, Predicate<BeliefState> predicate) {
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalInvariantChecked);
 		this.set(Tags.OriginWidget, state);
 		this.testAgent = testAgent;
-		this.goal = goal;
+		this.goalStructure = goalStructure;
 		this.agentId = agentId;
-		this.entityId = entityId;
 		this.info = info;
 		this.predicate = predicate;
 		this.set(Tags.Desc, toShortString());
@@ -75,15 +73,14 @@ public class labActionGoalInvariantChecked extends TaggableBase implements Actio
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// It has been decided to execute this action
 		// Set the goal to the agent
-		testAgent.setGoal(goal);
+		testAgent.setGoal(goalStructure);
 		// And send the instructions to achieve the goal
 		testAgent.update();
 	}
 
 	@Override
 	public String toShortString() {
-		return "Agent: " + agentId + " executing Goal EntityInvariantChecked to " + entityId
-				+ " with info " + info + " of predicate " + predicate;
+		return "Agent: " + agentId + " executing Goal EntityInvariantChecked with info " + info + " of predicate " + predicate;
 	}
 
 	@Override

@@ -51,13 +51,13 @@ public class labActionGoalPositionInCloseRange extends TaggableBase implements A
 	private String agentId;
 	private Vec3 goalPosition;
 	private LabRecruitsTestAgent testAgent;
-	private GoalStructure goal;
+	private GoalStructure goalStructure;
 
-	public labActionGoalPositionInCloseRange(State state, LabRecruitsTestAgent testAgent, GoalStructure goal, String agentId, Vec3 goalPosition) {
+	public labActionGoalPositionInCloseRange(State state, LabRecruitsTestAgent testAgent, GoalStructure goalStructure, String agentId, Vec3 goalPosition) {
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalPositionInCloseRange);
 		this.set(Tags.OriginWidget, state);
 		this.testAgent = testAgent;
-		this.goal = goal;
+		this.goalStructure = goalStructure;
 		this.agentId = agentId;
 		this.goalPosition = goalPosition;
 		this.set(Tags.Desc, toShortString());
@@ -69,7 +69,7 @@ public class labActionGoalPositionInCloseRange extends TaggableBase implements A
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// It has been decided to execute this action
 		// Set the goal to the agent
-		testAgent.setGoal(goal);
+		testAgent.setGoal(goalStructure);
 		// And send the instructions to achieve the goal
 		testAgent.update();
 	}

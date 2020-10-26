@@ -28,7 +28,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-
 import static nl.uu.cs.aplib.AplibEDSL.SEQ;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -39,6 +38,7 @@ import java.util.Set;
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.actions.NOP;
+import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.protocols.DesktopProtocol;
@@ -56,21 +56,23 @@ import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.world.WorldEntity;
 import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.IV4XRStateFetcher;
-import eu.testar.iv4xr.actions.commands.*;
+import eu.testar.iv4xr.actions.goals.labActionGoalEntityInCloseRange;
+import eu.testar.iv4xr.actions.goals.labActionGoalEntityInteracted;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.listener.GoalLibListener;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
+import nl.ou.testar.RandomActionSelector;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
 import world.LegacyObservation;
 
-public class Protocol_labrecruits_agent_room_reachability extends DesktopProtocol {
+public class Protocol_labrecruits_goal_listener_room extends DesktopProtocol {
 
 	private String agentId = "agent1";
 
 	BeliefState beliefState;
-
+	TestDataCollector dataCollector;
 	LabRecruitsTestAgent testAgent;
-
 	GoalStructure goal;
 
 	@Override
@@ -84,79 +86,84 @@ public class Protocol_labrecruits_agent_room_reachability extends DesktopProtoco
 		}
 
 		protocolUtil = new IV4XRProtocolUtil();
-		
+
 		// Define existing agent to fetch his observation entities
 		IV4XRStateFetcher.agentsIds = new HashSet<>(Arrays.asList(agentId));
 	}
 
 	@Override
-	protected SUT startSystem() {
-		SUT sut = super.startSystem();
-		return sut;
-	}
-
-	@Override
 	protected void beginSequence(SUT system, State state) {
-		
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setEnabledIV4XRAgentListener(settings.get(ConfigTags.iv4XRAgentListener, false));
 
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setStateTESTAR(state);
-		
-		Set<Action> actions = deriveActions(system, state);
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setDerivedActionsTESTAR(actions);
-		
-		Util.pause(10);
+		// Force to false, for Goal Listener we do not listen Commands
+		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setEnabledIV4XRAgentListener(false);
+
+		// Set TESTAR WOM state
+		GoalLibListener.setState(state);
 
 		// Create an environment
 		LabRecruitsEnvironmentListener labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
 
-        testAgent   =  new LabRecruitsTestAgent(agentId) // matches the ID in the CSV file
-    		    . attachState(new BeliefState())
-    		    . attachEnvironment(labRecruitsEnvironment);
-    	
-        
-        // define the testing-task:
-        goal = SEQ(
-            GoalLib.entityInteracted("button1"),
-            GoalLib.entityStateRefreshed("door1"),
-        	GoalLib.entityInvariantChecked(testAgent,
-            		"door1", 
-            		"door1 should be open", 
-            		(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-        	
-        	GoalLib.entityInteracted("button3"),
-        	GoalLib.entityStateRefreshed("door2"),
-        	GoalLib.entityInvariantChecked(testAgent,
-            		"door2", 
-            		"door2 should be open", 
-            		(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-        	GoalLib.entityInteracted("button4"),
-        	//GoalLib.entityIsInRange("button3").lift(),
-        	//GoalLib.entityIsInRange("door1").lift(),
-        	GoalLib.entityStateRefreshed("door1"),
-        	GoalLib.entityInvariantChecked(testAgent,
-            		"door1", 
-            		"door1 should be open", 
-            		(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-        	//GoalLib.entityIsInRange("button1").lift(),
-        	GoalLib.entityStateRefreshed("door3"),
-        	GoalLib.entityInvariantChecked(testAgent,
-            		"door3", 
-            		"door3 should be open", 
-            		(WorldEntity e) -> e.getBooleanProperty("isOpen"))
-        );
-        // attaching the goal and testdata-collector
-        var dataCollector = new TestDataCollector();
-        testAgent.setTestDataCollector(dataCollector).setGoal(goal) ;
-        
-        //goal not achieved yet
-        assertFalse(testAgent.success());
+		// create a belief state
+		beliefState = new BeliefState();
+		beliefState.id = "agent1"; // matches the ID in the CSV file
+		beliefState.setEnvironment(labRecruitsEnvironment); // attach the environment
+
+		// setting up a test-data collector:
+		dataCollector = new TestDataCollector();
+
+		// create a test agent
+		testAgent = new LabRecruitsTestAgent("agent1");
+		testAgent.attachState(beliefState); // State should be before environment
+		testAgent.attachEnvironment(labRecruitsEnvironment);
+
+		// Set Lab Agent
+		GoalLibListener.setAgentId(agentId);
+		GoalLibListener.setTestAgent(testAgent);
+
+		// define the testing-task:
+		goal = SEQ(
+				GoalLibListener.entityInteracted("button1"),
+				GoalLibListener.entityStateRefreshed("door1"),
+				GoalLibListener.entityInvariantChecked(testAgent,
+						"door1", 
+						"door1 should be open", 
+						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
+
+				GoalLibListener.entityInteracted("button3"),
+				GoalLibListener.entityStateRefreshed("door2"),
+				GoalLibListener.entityInvariantChecked(testAgent,
+						"door2", 
+						"door2 should be open", 
+						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
+				GoalLibListener.entityInteracted("button4"),
+
+				GoalLibListener.entityStateRefreshed("door1"),
+				GoalLibListener.entityInvariantChecked(testAgent,
+						"door1", 
+						"door1 should be open", 
+						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
+				
+				GoalLibListener.entityStateRefreshed("door3"),
+				GoalLibListener.entityInvariantChecked(testAgent,
+						"door3", 
+						"door3 should be open", 
+						(WorldEntity e) -> e.getBooleanProperty("isOpen"))
+				);
+		
+		// Set SubGoals List to internal Map
+		GoalLibListener.setAgentSubGoals(goal.getSubgoals());
+
+		dataCollector.registerTestAgent(beliefState.id);
+		testAgent.setTestDataCollector(dataCollector).setGoal(goal) ;
+
+		//goal not achieved yet
+		assertFalse(testAgent.success());
 	}
 
 	@Override
 	protected State getState(SUT system) {
 		State state = super.getState(system);
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setStateTESTAR(state);
+		GoalLibListener.setState(state);
 		return state;
 	}
 
@@ -170,33 +177,35 @@ public class Protocol_labrecruits_agent_room_reachability extends DesktopProtoco
 	 */
 	@Override
 	protected Set<Action> deriveActions(SUT system, State state) {
+
 		Set<Action> labActions = new HashSet<>();
 
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-		
+
 		LegacyObservation worldObservation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
-		
-		// Every time the Agent has the possibility to observe the Environment
-		labActions.add(new labActionCommandObserve(state, state, labRecruitsEnv, agentId, false, false));
 
 		for(Widget w : state) {
 			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
-				labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
-				labActions.add(new labActionCommandInteract(state, w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityId, "UnknowId"), false, false));
+
+				String entityId = w.get(IV4XRtags.entityId);
+
+				// Derive an attach an Entity Interact Goal
+				GoalStructure goalEntityInteracted = GoalLib.entityInteracted(entityId);
+				Action actionEntityInteracted = new labActionGoalEntityInteracted(state, testAgent, goalEntityInteracted, agentId, entityId);
+				labActions.add(actionEntityInteracted);
+
+				// Derive an attach an Entity In Close Range to Move the agent
+				GoalStructure goalEntityInCloseRange = GoalLib.entityInCloseRange(entityId);
+				Action actionEntityInCloseRange = new labActionGoalEntityInCloseRange(state, testAgent, goalEntityInCloseRange, agentId, entityId);
+				labActions.add(actionEntityInCloseRange);
 			}
 		}
 
-		// Update the associated actions
-		//system.set(IV4XRtags.labRecruitsActions, labActions);
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setDerivedActionsTESTAR(labActions);
+		GoalLibListener.setDerivedGoalActionsTESTAR(labActions);
 
 		return labActions;
 	}
 
-
-	/**
-	 * TESTAR is not going to select any Action, Agent is going to select them based on goals - sub goals
-	 */
 	@Override
 	protected Action selectAction(State state, Set<Action> actions){
 		Action nop = new NOP();
@@ -206,28 +215,28 @@ public class Protocol_labrecruits_agent_room_reachability extends DesktopProtoco
 		return nop;
 	}
 
-	/**
-	 * Invoke the Agent to update his knowledge and select Actions
-	 */
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
-		
+
 		// Invoke the Agent, this will update the derived Action to merge TESTAR and Agent knowledge
 		testAgent.update();
-		
+
 		// Retrieve TESTAR derivedActions and new Agent Actions if corresponds
-		Set<Action> mergedActions = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).getDerivedActionsLabRecruitsListener();
-		
+		Set<Action> mergedActions = GoalLibListener.getDerivedGoalActions();
+
 		htmlReport.addActions(mergedActions);
-		
+
 		notifyLabAgentStateToStateModel(state, mergedActions);
+
+		Action agentGoalAction = GoalLibListener.getFirstGoalActionFromList();
+
+		htmlReport.addSelectedAction(state, agentGoalAction);
+
+		notifyLabAgentActionToStateModel(system, state, agentGoalAction);
 		
-		Action agentAction = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).getActionExecutedTESTAR();
-		
-		htmlReport.addSelectedAction(state, agentAction);
-			
-		notifyLabAgentActionToStateModel(system, state, agentAction);
-		
+		// If Agent finished the goal, remove from internal pending list
+		GoalLibListener.updatePendingSubGoals();
+
 		return true;
 	}
 
@@ -235,19 +244,19 @@ public class Protocol_labrecruits_agent_room_reachability extends DesktopProtoco
 	protected void notifyNewStateReachedToStateModel(State newState, Set<Action> actions) {
 		//Nothing, we are going to take control of this invocation after Agent Tactics decision
 	}
-	
+
 	@Override
 	protected void notifyActionToStateModel(Action action){
 		//Nothing, we are going to take control of this invocation after Agent Tactics decision
 	}
-	
+
 	/**
 	 * Invoke this notification after Map TESTAR State with Agent observation
 	 */
 	private void notifyLabAgentStateToStateModel(State newState, Set<Action> actions) {
 		stateModelManager.notifyNewStateReached(newState, actions);
 	}
-	
+
 	/**
 	 * Invoke this notification after know Agent Tactics Action decision
 	 */

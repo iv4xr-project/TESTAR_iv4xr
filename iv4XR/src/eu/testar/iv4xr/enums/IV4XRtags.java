@@ -36,7 +36,8 @@ import org.fruit.alayer.windows.WinProcess;
 
 import environments.SocketEnvironment;
 import eu.iv4xr.framework.world.WorldModel;
-import eu.testar.iv4xr.LabRecruitsEnvironmentListener;
+import eu.testar.iv4xr.listener.GoalLibListener;
+import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
 import helperclasses.datastructures.Vec3;
 import world.LabWorldModel;
 import world.LegacyEntityType;
@@ -58,6 +59,9 @@ public class IV4XRtags extends TagsBase {
 	
 	// Specific Lab Recruits Environment, layer that facilitates the communication between agents and the Lab Recruits game
 	public static final Tag<LabRecruitsEnvironmentListener> iv4xrLabRecruitsEnvironment = from("LabRecruitsEnvironment", LabRecruitsEnvironmentListener.class);
+	
+	// Specific Goal Lib Listener to match Agent Goals with TESTAR Action Goals
+	//public static final Tag<GoalLibListener> iv4xrGoalLib = from("GoalLibListener", GoalLibListener.class);
 	
 	// Specific WOM for Lab Recruits game
 	public static final Tag<LabWorldModel> iv4xrLabWorldModel = from("iv4xrLabWorldModel", LabWorldModel.class);

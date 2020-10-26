@@ -42,6 +42,7 @@ import org.fruit.alayer.windows.WinProcess;
 
 import environments.EnvironmentConfig;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
 
 /**
  * This class represents the IV4XR process, is creating the OS process and the IV4XR Environment

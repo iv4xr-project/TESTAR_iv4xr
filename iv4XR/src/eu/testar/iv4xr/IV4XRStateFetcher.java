@@ -52,6 +52,7 @@ import communication.agent.AgentCommand;
 import communication.system.Request;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import helperclasses.datastructures.Vec3;
+import world.LabWorldModel;
 import world.LegacyDynamicEntity;
 import world.LegacyEntity;
 import world.LegacyEntityType;
@@ -123,10 +124,15 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 		//LabWorldModel labWOM = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).observe(agentId);
 	    //system.set(IV4XRtags.iv4xrLabWorldModel, labWOM);
 	    
+		/**
+		 * Legacy Observation = Objects Agent can observe - Dynamically appearing and disappearing WOM
+		 * LabWorldModel = All Objects from WOM - Static Object with dynamic properties
+		 */
+		
 		for(String agentId : agentsIds) {
-			// TODO: Difference between WOM and LegacyStuff ? How are these things connected each other ?
 			LegacyObservation observation = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).getResponse(Request.command(AgentCommand.doNothing(agentId)));
-
+			//LabWorldModel labWOM = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).observe(agentId);
+			
 			if(rootElement.isForeground && observation.entities.size() > 0) {
 
 				// Add manually the Agent as an Entity

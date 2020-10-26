@@ -50,13 +50,13 @@ public class labActionGoalEntityStateRefreshed extends TaggableBase implements A
 	private String agentId;
 	private String entityId;
 	private LabRecruitsTestAgent testAgent;
-	private GoalStructure goal;
+	private GoalStructure goalStructure;
 
-	public labActionGoalEntityStateRefreshed(State state, LabRecruitsTestAgent testAgent, GoalStructure goal, String agentId, String entityId) {
+	public labActionGoalEntityStateRefreshed(State state, LabRecruitsTestAgent testAgent, GoalStructure goalStructure, String agentId, String entityId) {
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalEntityStateRefreshed);
 		this.set(Tags.OriginWidget, state);
 		this.testAgent = testAgent;
-		this.goal = goal;
+		this.goalStructure = goalStructure;
 		this.agentId = agentId;
 		this.entityId = entityId;
 		this.set(Tags.Desc, toShortString());
@@ -68,7 +68,7 @@ public class labActionGoalEntityStateRefreshed extends TaggableBase implements A
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// It has been decided to execute this action
 		// Set the goal to the agent
-		testAgent.setGoal(goal);
+		testAgent.setGoal(goalStructure);
 		// And send the instructions to achieve the goal
 		testAgent.update();
 	}

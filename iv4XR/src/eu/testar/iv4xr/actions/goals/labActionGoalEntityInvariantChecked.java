@@ -55,13 +55,13 @@ public class labActionGoalEntityInvariantChecked extends TaggableBase implements
 	private String info;
 	private Predicate<WorldEntity> predicate;
 	private LabRecruitsTestAgent testAgent;
-	private GoalStructure goal;
+	private GoalStructure goalStructure;
 
-	public labActionGoalEntityInvariantChecked(State state, LabRecruitsTestAgent testAgent, GoalStructure goal, String agentId, String entityId, String info, Predicate<WorldEntity> predicate) {
+	public labActionGoalEntityInvariantChecked(State state, LabRecruitsTestAgent testAgent, GoalStructure goalStructure, String agentId, String entityId, String info, Predicate<WorldEntity> predicate) {
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalEntityInvariantChecked);
 		this.set(Tags.OriginWidget, state);
 		this.testAgent = testAgent;
-		this.goal = goal;
+		this.goalStructure = goalStructure;
 		this.agentId = agentId;
 		this.entityId = entityId;
 		this.info = info;
@@ -75,7 +75,7 @@ public class labActionGoalEntityInvariantChecked extends TaggableBase implements
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// It has been decided to execute this action
 		// Set the goal to the agent
-		testAgent.setGoal(goal);
+		testAgent.setGoal(goalStructure);
 		// And send the instructions to achieve the goal
 		testAgent.update();
 	}
