@@ -28,7 +28,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import org.fruit.Util;
@@ -36,16 +35,13 @@ import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
-import org.testar.protocols.DesktopProtocol;
+import org.testar.protocols.LabRecruitsProtocol;
 
 import agents.LabRecruitsTestAgent;
 import agents.tactics.GoalLib;
 import communication.agent.AgentCommand;
 import communication.system.Request;
 import environments.LabRecruitsEnvironment;
-import es.upv.staq.testar.NativeLinker;
-import eu.testar.iv4xr.IV4XRProtocolUtil;
-import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.actions.goals.labActionGoalEntityInCloseRange;
 import eu.testar.iv4xr.actions.goals.labActionGoalEntityInteracted;
 import eu.testar.iv4xr.enums.IV4XRtags;
@@ -55,81 +51,106 @@ import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
 import world.LegacyObservation;
 
-public class Protocol_labrecruits_testar_goal_room extends DesktopProtocol {
+/**
+ * iv4xr EU H2020 project - LabRecruits Demo
+ * 
+ * In this protocol LabRecruits game will act as SUT.
+ * labrecruits_goal_testar_agent / test.setting file contains the:
+ * - COMMAND_LINE definition to start the SUT and load the desired level
+ * - State model inference settings to connect and create the State Model inside OrientDB
+ * 
+ * TESTAR is the Agent itself, derives is own knowledge about the observed entities,
+ * and takes decisions about the Goals to execute
+ * 
+ * TESTAR uses the Navigation map internally to achieve derived Goals.
+ * 
+ * Widget              -> Virtual Entity
+ * State (Widget-Tree) -> Agent Observation (All Observed Entities)
+ * Action              -> LabRecruits high level goals
+ */
+public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol {
 
-	private String agentId = "agent1";
-	
 	LabRecruitsTestAgent testAgent;
 
+	/**
+	 * Called once during the life time of TESTAR.
+	 * This method can be used to perform initial setup work.
+	 * @param   settings  the current TESTAR test.settings as specified by the user.
+	 */
 	@Override
 	protected void initialize(Settings settings) {
-		// Start IV4XR plugin (Windows + LabRecruitsEnvironment)
-		NativeLinker.addiv4XROS();
+		// Agent point of view that will Observe and extract Widgets information
+		agentId = "agent1";
+
 		super.initialize(settings);
-
-		protocolUtil = new IV4XRProtocolUtil();
-		
-		// Define existing agent to fetch his observation entities
-		IV4XRStateFetcher.agentsIds = new HashSet<>(Arrays.asList(agentId));
 	}
 
-	@Override
-	protected SUT startSystem() {
-		SUT sut = super.startSystem();
-		return sut;
-	}
-
+	/**
+	 * This method is invoked each time the TESTAR starts the SUT to generate a new sequence.
+	 */
 	@Override
 	protected void beginSequence(SUT system, State state) {
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setEnabledIV4XRAgentListener(settings.get(ConfigTags.iv4XRAgentListener, false));
-		
 		// TODO: Refactor LabRecruitsEnvironment Listener, TESTAR as agent should not need to send this state/actions
 		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setStateTESTAR(state);
 		Set<Action> actions = deriveActions(system, state);
 		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setDerivedActionsTESTAR(actions);
-		
+
 		// Create an environment
 		LabRecruitsEnvironmentListener labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-		
-		testAgent   =  new LabRecruitsTestAgent(agentId) // matches the ID in the CSV file
-    		    . attachState(new BeliefState())
-    		    . attachEnvironment(labRecruitsEnvironment);
-	
+
+		testAgent = new LabRecruitsTestAgent(agentId) // matches the ID in the CSV file
+				. attachState(new BeliefState())
+				. attachEnvironment(labRecruitsEnvironment);
 	}
 
+	/**
+	 * This method is called when the TESTAR requests the state of the SUT.
+	 * Here you can add additional information to the SUT's state or write your
+	 * own state fetching routine.
+	 *
+	 * super.getState(system) puts the state information also to the HTML sequence report
+	 *
+	 * @return  the current state of the SUT with attached oracle.
+	 */
 	@Override
 	protected State getState(SUT system) {
 		State state = super.getState(system);
 		return state;
 	}
 
+	/**
+	 * The getVerdict methods implements the online state oracles that
+	 * examine the SUT's current state and returns an oracle verdict.
+	 * @return oracle verdict, which determines whether the state is erroneous and why.
+	 */
 	@Override
 	protected Verdict getVerdict(State state) {
+		// No verdicts implemented for now.
 		return Verdict.OK;
 	}
 
 	/**
-	 * Map all the possible actions that an Agent can do in the LabRecruitsEnvironment
+	 * Derive all possible actions goals that TESTAR can execute in each specific LabRecruits state.
 	 */
 	@Override
 	protected Set<Action> deriveActions(SUT system, State state) {
-
 		Set<Action> labActions = new HashSet<>();
 
+		// Get the Observation of the State form the Agent point of view
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-		
 		LegacyObservation worldObservation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
-		
+
+		// For every interactive entity agents have the possibility to achieve Interact and Close Range goals
 		for(Widget w : state) {
 			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
-		        
+
 				String entityId = w.get(IV4XRtags.entityId);
-				
-		        // Derive an attach an Entity Interact Goal
-		        GoalStructure goalEntityInteracted = GoalLib.entityInteracted(entityId);
-		        Action actionEntityInteracted = new labActionGoalEntityInteracted(state, testAgent, goalEntityInteracted, agentId, entityId);
+
+				// Derive an attach an Entity Interact Goal
+				GoalStructure goalEntityInteracted = GoalLib.entityInteracted(entityId);
+				Action actionEntityInteracted = new labActionGoalEntityInteracted(state, testAgent, goalEntityInteracted, agentId, entityId);
 				labActions.add(actionEntityInteracted);
-				
+
 				// Derive an attach an Entity In Close Range to Move the agent
 				GoalStructure goalEntityInCloseRange = GoalLib.entityInCloseRange(entityId);
 				Action actionEntityInCloseRange = new labActionGoalEntityInCloseRange(state, testAgent, goalEntityInCloseRange, agentId, entityId);
@@ -140,7 +161,13 @@ public class Protocol_labrecruits_testar_goal_room extends DesktopProtocol {
 		return labActions;
 	}
 
-
+	/**
+	 * Select one of the available actions using an action selection algorithm (for example random action selection)
+	 *
+	 * @param state the SUT's current state
+	 * @param actions the set of derived actions
+	 * @return  the selected action (non-null!)
+	 */
 	@Override
 	protected Action selectAction(State state, Set<Action> actions){
 
@@ -160,49 +187,49 @@ public class Protocol_labrecruits_testar_goal_room extends DesktopProtocol {
 		return retAction;
 	}
 
+	/**
+	 * Execute TESTAR as agent Goal Action
+	 */
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
 		try {
-	        // adding the action that is going to be executed into HTML report:
-	        htmlReport.addSelectedAction(state, action);
-	        
+			// adding the action that is going to be executed into HTML report:
+			htmlReport.addSelectedAction(state, action);
+
+			// execute selected action in the current state
 			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
-			
+
 			System.out.println(action.toShortString());
-			
+
 			return true;
-			
+
 		}catch(ActionFailedException afe){
 			return false;
 		}
 	}
 
+	/**
+	 * TESTAR uses this method to determine when to stop the generation of actions for the
+	 * current sequence. You can stop deriving more actions after:
+	 * - a specified amount of executed actions, which is specified through the SequenceLength setting, or
+	 * - after a specific time, that is set in the MaxTime setting
+	 * @return  if <code>true</code> continue generation, else stop
+	 */
 	@Override
 	protected boolean moreActions(State state) {
-		/*for(Widget w : state) {
-			if (w.get(IV4XRtags.entityId, "").equals(doorToTest) && w.get(IV4XRtags.entityIsActive, false)){
-				//Door is opened, we finished
-				return false;
-			}
-		}
-
-		return true;*/
+		// Execute many actions as indicated in SequenceLength setting
 		return super.moreActions(state);
 	}
 
-	@Override
-	protected void finishSequence() {
-		//
-	}
-
+	/**
+	 * Here you can put graceful shutdown sequence for your SUT
+	 * @param system
+	 */
 	@Override
 	protected void stopSystem(SUT system) {
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).close();
 		super.stopSystem(system);
-		// Something is not being closed properly, for now we simplemente terminamos, un abrazo lobo
-		Runtime.getRuntime().exit(0);
 	}
 }

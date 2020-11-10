@@ -32,95 +32,101 @@ import static nl.uu.cs.aplib.AplibEDSL.SEQ;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.actions.NOP;
-import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
-import org.testar.protocols.DesktopProtocol;
-
-import com.google.common.collect.Sets;
+import org.testar.protocols.LabRecruitsProtocol;
 
 import agents.LabRecruitsTestAgent;
 import agents.tactics.GoalLib;
 import communication.agent.AgentCommand;
 import communication.system.Request;
 import environments.LabRecruitsEnvironment;
-import es.upv.staq.testar.CodingManager;
-import es.upv.staq.testar.NativeLinker;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.world.WorldEntity;
-import eu.testar.iv4xr.IV4XRProtocolUtil;
-import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.actions.goals.labActionGoalEntityInCloseRange;
 import eu.testar.iv4xr.actions.goals.labActionGoalEntityInteracted;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.listener.GoalLibListener;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
-import nl.ou.testar.RandomActionSelector;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
 import world.LegacyObservation;
 
-public class Protocol_labrecruits_goal_listener_room extends DesktopProtocol {
+/**
+ * iv4xr EU H2020 project - LabRecruits Demo
+ * 
+ * In this protocol LabRecruits game will act as SUT.
+ * labrecruits_goal_agent_listener / test.setting file contains the:
+ * - COMMAND_LINE definition to start the SUT and load the desired level
+ * - State model inference settings to connect and create the State Model inside OrientDB
+ * - iv4XRAgentListener true to listen Agent decisions
+ * 
+ * iv4xr Agent takes the decisions to navigate and interact with the virtual entities,
+ * based on the defined the testing-goal sequence.
+ * 
+ * TESTAR derives is own knowledge about the observed entities,
+ * and learns from the iv4xr agent by listening the executed goals.
+ * 
+ * Widget              -> Virtual Entity
+ * State (Widget-Tree) -> Agent Observation (All Observed Entities)
+ * Action              -> LabRecruits high level goals
+ */
+public class Protocol_labrecruits_goal_agent_listener extends LabRecruitsProtocol {
 
-	private String agentId = "agent1";
-
-	BeliefState beliefState;
-	TestDataCollector dataCollector;
 	LabRecruitsTestAgent testAgent;
 	GoalStructure goal;
 
+	/**
+	 * Called once during the life time of TESTAR.
+	 * This method can be used to perform initial setup work.
+	 * @param   settings  the current TESTAR test.settings as specified by the user.
+	 */
 	@Override
 	protected void initialize(Settings settings) {
-		// Start IV4XR plugin (Windows + LabRecruitsEnvironment)
-		NativeLinker.addiv4XROS();
+		// Agent point of view that will Observe and extract Widgets information
+		agentId = "agent1";
+
 		super.initialize(settings);
 
+		// Used internally (LabRecruitsProtocol) to change the State Model notification flow
+		// Verify that setting iv4XRAgentListener is enabled
 		if(!settings.get(ConfigTags.iv4XRAgentListener, false)) {
-			System.out.println("WARNING: iv4XRAgentListener is not enabled in the settings file, StateModel will not save Agent actions");
+			System.out.println("WARNING: iv4XRAgentListener was not enabled in the settings file, lets activate this feature...");
+			// We force as true because this protocol has this intention
+			settings.set(ConfigTags.iv4XRAgentListener, true);
 		}
-
-		protocolUtil = new IV4XRProtocolUtil();
-
-		// Define existing agent to fetch his observation entities
-		IV4XRStateFetcher.agentsIds = new HashSet<>(Arrays.asList(agentId));
 	}
 
+	/**
+	 * This method is invoked each time the TESTAR starts the SUT to generate a new sequence.
+	 */
 	@Override
 	protected void beginSequence(SUT system, State state) {
+		super.beginSequence(system, state);
 
+		// TODO: Refactor internal iv4XRAgentListener setting
 		// Force to false, for Goal Listener we do not listen Commands
 		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setEnabledIV4XRAgentListener(false);
 
-		// Set TESTAR WOM state
+		// Set TESTAR WOM State
 		GoalLibListener.setState(state);
 
 		// Create an environment
 		LabRecruitsEnvironmentListener labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
 
-		// create a belief state
-		beliefState = new BeliefState();
-		beliefState.id = "agent1"; // matches the ID in the CSV file
-		beliefState.setEnvironment(labRecruitsEnvironment); // attach the environment
+		testAgent = new LabRecruitsTestAgent(agentId) // matches the ID in the CSV file
+				. attachState(new BeliefState())
+				. attachEnvironment(labRecruitsEnvironment);
 
-		// setting up a test-data collector:
-		dataCollector = new TestDataCollector();
-
-		// create a test agent
-		testAgent = new LabRecruitsTestAgent("agent1");
-		testAgent.attachState(beliefState); // State should be before environment
-		testAgent.attachEnvironment(labRecruitsEnvironment);
-
-		// Set Lab Agent
+		// Set LabRecruits Agent
 		GoalLibListener.setAgentId(agentId);
 		GoalLibListener.setTestAgent(testAgent);
 
-		// define the testing-task:
+		// iv4xr Agent : define the testing-task
 		goal = SEQ(
 				GoalLibListener.entityInteracted("button1"),
 				GoalLibListener.entityStateRefreshed("door1"),
@@ -135,31 +141,41 @@ public class Protocol_labrecruits_goal_listener_room extends DesktopProtocol {
 						"door2", 
 						"door2 should be open", 
 						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-				GoalLibListener.entityInteracted("button4"),
 
+				GoalLibListener.entityInteracted("button4"),
 				GoalLibListener.entityStateRefreshed("door1"),
 				GoalLibListener.entityInvariantChecked(testAgent,
 						"door1", 
 						"door1 should be open", 
 						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-				
+
 				GoalLibListener.entityStateRefreshed("door3"),
 				GoalLibListener.entityInvariantChecked(testAgent,
 						"door3", 
 						"door3 should be open", 
 						(WorldEntity e) -> e.getBooleanProperty("isOpen"))
 				);
-		
-		// Set SubGoals List to internal Map
+
+		// Set SubGoals List into the internal Map
 		GoalLibListener.setAgentSubGoals(goal.getSubgoals());
 
-		dataCollector.registerTestAgent(beliefState.id);
-		testAgent.setTestDataCollector(dataCollector).setGoal(goal) ;
+		// attaching the goal and testdata-collector
+		var dataCollector = new TestDataCollector();
+		testAgent.setTestDataCollector(dataCollector).setGoal(goal);
 
 		//goal not achieved yet
 		assertFalse(testAgent.success());
 	}
 
+	/**
+	 * This method is called when the TESTAR requests the state of the SUT.
+	 * Here you can add additional information to the SUT's state or write your
+	 * own state fetching routine.
+	 *
+	 * super.getState(system) puts the state information also to the HTML sequence report
+	 *
+	 * @return  the current state of the SUT with attached oracle.
+	 */
 	@Override
 	protected State getState(SUT system) {
 		State state = super.getState(system);
@@ -167,23 +183,29 @@ public class Protocol_labrecruits_goal_listener_room extends DesktopProtocol {
 		return state;
 	}
 
+	/**
+	 * The getVerdict methods implements the online state oracles that
+	 * examine the SUT's current state and returns an oracle verdict.
+	 * @return oracle verdict, which determines whether the state is erroneous and why.
+	 */
 	@Override
 	protected Verdict getVerdict(State state) {
+		// No verdicts implemented for now.
 		return Verdict.OK;
 	}
 
 	/**
-	 * Map all the possible actions that an Agent can do in the LabRecruitsEnvironment
+	 * Derive all possible actions Goals that agents can achieve in each specific LabRecruits state.
 	 */
 	@Override
 	protected Set<Action> deriveActions(SUT system, State state) {
-
 		Set<Action> labActions = new HashSet<>();
 
+		// Get the Observation of the State form the Agent point of view
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-
 		LegacyObservation worldObservation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
 
+		// For every interactive entity agents have the possibility to achieve Interact and Close Range goals
 		for(Widget w : state) {
 			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
 
@@ -201,11 +223,15 @@ public class Protocol_labrecruits_goal_listener_room extends DesktopProtocol {
 			}
 		}
 
+		// Set derived actions to middle goal listener
 		GoalLibListener.setDerivedGoalActionsTESTAR(labActions);
 
 		return labActions;
 	}
 
+	/**
+	 * TESTAR doesn't select any LabRecruits Action Goal, Agent is going to follow the SEQ-Goal
+	 */
 	@Override
 	protected Action selectAction(State state, Set<Action> actions){
 		Action nop = new NOP();
@@ -215,81 +241,65 @@ public class Protocol_labrecruits_goal_listener_room extends DesktopProtocol {
 		return nop;
 	}
 
+	/**
+	 * Invoke the Agent to update his knowledge and select one Action Goal
+	 */
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
 
-		// Invoke the Agent, this will update the derived Action to merge TESTAR and Agent knowledge
+		// Invoke the Agent. LabRecruitsEnvironment is listening Agent Goal
+		// this will update the derived Action to merge TESTAR and Agent Goal knowledge
 		testAgent.update();
 
-		// Retrieve TESTAR derivedActions and new Agent Actions if corresponds
+		// Retrieve all possible action goals to execute in this State (TESTAR + iv4xr Agent)
 		Set<Action> mergedActions = GoalLibListener.getDerivedGoalActions();
 
+		// Add the information about all actions goals inside HTML report
 		htmlReport.addActions(mergedActions);
 
+		// Add the information about the current State-Actions inside the State Model
 		notifyLabAgentStateToStateModel(state, mergedActions);
 
+		// Get the specific action goal that the agent executed
 		Action agentGoalAction = GoalLibListener.getFirstGoalActionFromList();
 
+		// Add the information about iv4xr agent selected action goal inside HTML report
 		htmlReport.addSelectedAction(state, agentGoalAction);
 
+		// Add the information about iv4xr agent selected action goal inside the State Model
 		notifyLabAgentActionToStateModel(system, state, agentGoalAction);
-		
+
 		// If Agent finished the goal, remove from internal pending list
 		GoalLibListener.updatePendingSubGoals();
 
 		return true;
 	}
 
-	@Override
-	protected void notifyNewStateReachedToStateModel(State newState, Set<Action> actions) {
-		//Nothing, we are going to take control of this invocation after Agent Tactics decision
-	}
-
-	@Override
-	protected void notifyActionToStateModel(Action action){
-		//Nothing, we are going to take control of this invocation after Agent Tactics decision
-	}
-
 	/**
-	 * Invoke this notification after Map TESTAR State with Agent observation
+	 * TESTAR uses this method to determine when to stop the generation of actions for the
+	 * current sequence. You can stop deriving more actions after:
+	 * - a specified amount of executed actions, which is specified through the SequenceLength setting, or
+	 * - after a specific time, that is set in the MaxTime setting
+	 * @return  if <code>true</code> continue generation, else stop
 	 */
-	private void notifyLabAgentStateToStateModel(State newState, Set<Action> actions) {
-		stateModelManager.notifyNewStateReached(newState, actions);
-	}
-
-	/**
-	 * Invoke this notification after know Agent Tactics Action decision
-	 */
-	private void notifyLabAgentActionToStateModel(SUT system, State state, Action action) {
-		if(action.get(Tags.AbstractIDCustom, null) == null) {
-			CodingManager.buildIDs(state, Sets.newHashSet(action));
-		}
-		stateModelManager.notifyListenedAction(action);
-	}
-
 	@Override
 	protected boolean moreActions(State state) {
-		// keep updating the agent
+		// Check if the Agent has completed is goal
 		if(goal.getStatus().inProgress()) {
 			return true;
 		}
 		return false;
 	}
 
-	@Override
-	protected void finishSequence() {
-		//
-	}
-
+	/**
+	 * Here you can put graceful shutdown sequence for your SUT
+	 * @param system
+	 */
 	@Override
 	protected void stopSystem(SUT system) {
-        // check that we have passed both tests above:
-        assertTrue(testAgent.getTestDataCollector().getNumberOfPassVerdictsSeen() == 4) ;
-        // goal status should be success
-        assertTrue(testAgent.success());
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).close();
-		super.stopSystem(system);
-		// Something is not being closed properly, for now we simplemente terminamos, un abrazo lobo
-		Runtime.getRuntime().exit(0);
+		// check that we have passed both tests above:
+		assertTrue(testAgent.getTestDataCollector().getNumberOfPassVerdictsSeen() == 4) ;
+		// goal status should be success
+		assertTrue(testAgent.success());
 	}
 }

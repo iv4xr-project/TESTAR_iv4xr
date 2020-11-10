@@ -23,7 +23,7 @@ Mode = Spy
 # The SUT must be manually started and closed.
 #################################################################
 SUTConnector = COMMAND_LINE
-SUTConnectorValue = java -jar suts\\AppSimpleGoal.jar
+SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "buttons_doors_1"
 
 #################################################################
 # Sequences
@@ -32,7 +32,7 @@ SUTConnectorValue = java -jar suts\\AppSimpleGoal.jar
 #################################################################
 
 Sequences = 1
-SequenceLength = 1
+SequenceLength = 10
 
 #################################################################
 # Oracles based on suspicious titles
@@ -93,15 +93,30 @@ SUTProcesses =
 # Indicate the location of the protocol class for your specific SUT.
 #################################################################
 
-ProtocolClass = desktop_basic_agent/Protocol_desktop_basic_agent
+ProtocolClass = labrecruits_goal_testar_agent/Protocol_labrecruits_goal_testar_agent
 
 #################################################################
 # Graphdatabase settings (experimental)
 #################################################################
-GraphDBEnabled = false
-GraphDBUrl =
-GraphDBUser =
-GraphDBPassword =
+GraphDBEnabled = true
+GraphDBUrl = remote:/localhost/testar
+GraphDBUser = testar
+GraphDBPassword = testar
+
+#################################################################\n"
+# State model inference settings
+#################################################################\n"
+StateModelEnabled = true
+DataStore = OrientDB
+DataStoreType = remote
+DataStoreServer = localhost
+DataStoreDB = testar
+DataStoreUser = testar
+DataStorePassword = testar
+DataStoreMode = instant
+ActionSelectionAlgorithm = unvisited
+StateModelStoreWidgets = false
+iv4XRAgentListener = false
 
 #################################################################
 # State identifier attributes
@@ -109,7 +124,7 @@ GraphDBPassword =
 # Specify the widget attributes that you wish to use in constructing
 # the widget and state hash strings. Use a comma separated list.
 #################################################################
-AbstractStateAttributes = WidgetControlType
+AbstractStateAttributes = iv4xrEntityId, iv4xrEntityIsActive
 
 #################################################################
 # Other more advanced settings
@@ -133,7 +148,7 @@ ReplayRetryTime = 30.0
 Delete =
 MaxTime = 3.1536E7
 ShowSettingsAfterTest = true
-TimeToWaitAfterAction = 0.1
+TimeToWaitAfterAction = 2
 StartupTime = 10.0
 DrawWidgetInfo = false
 TimeToFreeze = 30.0

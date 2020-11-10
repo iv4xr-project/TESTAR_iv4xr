@@ -170,8 +170,8 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 		
 		childElement.labRecruitsEntityIsActive = true; //TODO: check if agent will have this property
 		childElement.labRecruitsEntityType = "AGENT"; //TODO: check proper entity for agent
-		childElement.labRecruitsEntityTag = "Agent"; //TODO: check
-		childElement.labRecruitsEntityProperty = "Agent"; //TODO: check
+		childElement.labRecruitsEntityTag = "AGENT"; //TODO: check
+		childElement.labRecruitsEntityProperty = "AGENT"; //TODO: check
 		childElement.labRecruitsEntityLastUpdated = -1;
 
 		fillRect(childElement);

@@ -23,7 +23,7 @@ Mode = Spy
 # The SUT must be manually started and closed.
 #################################################################
 SUTConnector = COMMAND_LINE
-SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "buttons_doors_1"
+SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "button1_opens_door1"
 
 #################################################################
 # Sequences
@@ -32,7 +32,7 @@ SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "bu
 #################################################################
 
 Sequences = 1
-SequenceLength = 1
+SequenceLength = 5
 
 #################################################################
 # Oracles based on suspicious titles
@@ -93,7 +93,7 @@ SUTProcesses =
 # Indicate the location of the protocol class for your specific SUT.
 #################################################################
 
-ProtocolClass = labrecruits_agent_room_reachability/Protocol_labrecruits_agent_room_reachability
+ProtocolClass = labrecruits_commands_testar_agent/Protocol_labrecruits_commands_testar_agent
 
 #################################################################
 # Graphdatabase settings (experimental)
@@ -116,7 +116,7 @@ DataStorePassword = testar
 DataStoreMode = instant
 ActionSelectionAlgorithm = unvisited
 StateModelStoreWidgets = false
-iv4XRAgentListener = true
+iv4XRAgentListener = false
 
 #################################################################
 # State identifier attributes
@@ -124,7 +124,7 @@ iv4XRAgentListener = true
 # Specify the widget attributes that you wish to use in constructing
 # the widget and state hash strings. Use a comma separated list.
 #################################################################
-AbstractStateAttributes = iv4xrEntityId, iv4xrEntityEnabled, iv4xrEntityPosition
+AbstractStateAttributes = iv4xrEntityId, iv4xrEntityIsActive
 
 #################################################################
 # Other more advanced settings
@@ -138,7 +138,7 @@ UseRecordedActionDurationAndWaitTimeDuringReplay = false
 ForceForeground = true
 LogLevel = 1
 ExecuteActions = true
-FaultThreshold = 0.000000001
+FaultThreshold = 0.09
 DrawWidgetUnderCursor = true
 MyClassPath = ./settings
 OnlySaveFaultySequences = false

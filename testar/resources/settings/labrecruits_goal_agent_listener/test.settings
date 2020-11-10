@@ -32,7 +32,7 @@ SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "bu
 #################################################################
 
 Sequences = 1
-SequenceLength = 100
+SequenceLength = 1
 
 #################################################################
 # Oracles based on suspicious titles
@@ -93,7 +93,7 @@ SUTProcesses =
 # Indicate the location of the protocol class for your specific SUT.
 #################################################################
 
-ProtocolClass = labrecruits_testar_dummy_explorer/Protocol_labrecruits_testar_dummy_explorer
+ProtocolClass = labrecruits_goal_agent_listener/Protocol_labrecruits_goal_agent_listener
 
 #################################################################
 # Graphdatabase settings (experimental)
@@ -116,7 +116,7 @@ DataStorePassword = testar
 DataStoreMode = instant
 ActionSelectionAlgorithm = unvisited
 StateModelStoreWidgets = false
-iv4XRAgentListener = false
+iv4XRAgentListener = true
 
 #################################################################
 # State identifier attributes
@@ -124,7 +124,7 @@ iv4XRAgentListener = false
 # Specify the widget attributes that you wish to use in constructing
 # the widget and state hash strings. Use a comma separated list.
 #################################################################
-AbstractStateAttributes = iv4xrEntityId, iv4xrEntityEnabled, iv4xrEntityPosition
+AbstractStateAttributes = iv4xrEntityId, iv4xrEntityIsActive
 
 #################################################################
 # Other more advanced settings
@@ -148,7 +148,7 @@ ReplayRetryTime = 30.0
 Delete =
 MaxTime = 3.1536E7
 ShowSettingsAfterTest = true
-TimeToWaitAfterAction = 1
+TimeToWaitAfterAction = 2
 StartupTime = 10.0
 DrawWidgetInfo = false
 TimeToFreeze = 30.0

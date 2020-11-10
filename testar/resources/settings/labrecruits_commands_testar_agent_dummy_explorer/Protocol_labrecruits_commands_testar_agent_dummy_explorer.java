@@ -38,6 +38,7 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.protocols.DesktopProtocol;
+import org.testar.protocols.LabRecruitsProtocol;
 
 import agents.LabRecruitsTestAgent;
 import communication.agent.AgentCommand;
@@ -52,71 +53,109 @@ import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
 import world.LegacyObservation;
 
-public class Protocol_labrecruits_testar_dummy_explorer extends DesktopProtocol {
+/**
+ * iv4xr EU H2020 project - LabRecruits Demo
+ * 
+ * In this protocol LabRecruits game will act as SUT.
+ * labrecruits_commands_testar_agent_dummy_explorer / test.setting file contains the:
+ * - COMMAND_LINE definition to start the SUT and load the desired level
+ * - State model inference settings to connect and create the State Model inside OrientDB
+ * 
+ * TESTAR is the Agent itself, derives is own knowledge about the observed entities,
+ * and takes decisions about the command actions to execute (observe, moveTo, interactWith)
+ * 
+ * TESTAR is not using any Navigation map internally to explore this LabRecruits level.
+ * This level (test.settings -> buttons_doors_1) has block elements,
+ * We need to explore different paths to surround the elements that block us.
+ * 
+ * Widget              -> Virtual Entity
+ * State (Widget-Tree) -> Agent Observation (All Observed Entities)
+ * Action              -> LabRecruits low level command
+ */
+public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends LabRecruitsProtocol {
 
-	private String agentId = "agent1";
-
+	/**
+	 * Called once during the life time of TESTAR.
+	 * This method can be used to perform initial setup work.
+	 * @param   settings  the current TESTAR test.settings as specified by the user.
+	 */
 	@Override
 	protected void initialize(Settings settings) {
-		// Start IV4XR plugin (Windows + LabRecruitsEnvironment)
-		NativeLinker.addiv4XROS();
+		// Agent point of view that will Observe and extract Widgets information
+		agentId = "agent1";
+
 		super.initialize(settings);
-
-		protocolUtil = new IV4XRProtocolUtil();
-		
-		// Define existing agent to fetch his observation entities
-		IV4XRStateFetcher.agentsIds = new HashSet<>(Arrays.asList(agentId));
 	}
 
-	@Override
-	protected SUT startSystem() {
-		SUT sut = super.startSystem();
-		return sut;
-	}
-
-	@Override
-	protected void beginSequence(SUT system, State state) {
-		// Disable ApLib Agent Listener, TESTAR is going to be the Agent
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setEnabledIV4XRAgentListener(settings.get(ConfigTags.iv4XRAgentListener, false));
-	}
-
+	/**
+	 * This method is called when the TESTAR requests the state of the SUT.
+	 * Here you can add additional information to the SUT's state or write your
+	 * own state fetching routine.
+	 *
+	 * super.getState(system) puts the state information also to the HTML sequence report
+	 *
+	 * @return  the current state of the SUT with attached oracle.
+	 */
 	@Override
 	protected State getState(SUT system) {
-		State state = super.getState(system);
-		return state;
+		return super.getState(system);
 	}
 
+	/**
+	 * The getVerdict methods implements the online state oracles that
+	 * examine the SUT's current state and returns an oracle verdict.
+	 * @return oracle verdict, which determines whether the state is erroneous and why.
+	 */
 	@Override
 	protected Verdict getVerdict(State state) {
+		// No verdicts implemented for now.
 		return Verdict.OK;
 	}
 
 	/**
-	 * Map all the possible actions that an Agent can do in the LabRecruitsEnvironment
+	 * Derive all possible actions that TESTAR can execute in each specific LabRecruits state.
 	 */
 	@Override
 	protected Set<Action> deriveActions(SUT system, State state) {
-		
 		Set<Action> labActions = new HashSet<>();
 
+		// Get the Observation of the State form the Agent point of view
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-		
 		LegacyObservation worldObservation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
 
-		// Dummy Exploration
+		// Add Dummy Exploration Actions
 		labActions.add(new labActionExploreState(state, labRecruitsEnv, agentId, false, false));
-		
+
+		// For every interactive entity agents have the possibility to move and interact with
 		for(Widget w : state) {
+			// If Interactive Entity
 			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
-				labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
-				labActions.add(new labActionCommandInteract(state, w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityId, "UnknowId"), false, false));
+
+				// And If the Agent is in a suitable distance
+				if(system.get(IV4XRtags.agentWidget, null) != null // Agent Widget exists/detected
+						&& system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition, null) != null // Agent Widget has a position
+						&& w.get(IV4XRtags.entityPosition, null) != null // Entity Widget has a position
+						&& system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition).distance(w.get(IV4XRtags.entityPosition)) < 0.4) // Check if are close
+				{
+					// Then add Move and Interact Actions
+					labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
+					labActions.add(new labActionCommandInteract(state, w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityId, "UnknowId"), false, false));
+
+				}
+
 			}
 		}
 
 		return labActions;
 	}
 
-
+	/**
+	 * Select one of the available actions using an action selection algorithm (for example random action selection)
+	 *
+	 * @param state the SUT's current state
+	 * @param actions the set of derived actions
+	 * @return  the selected action (non-null!)
+	 */
 	@Override
 	protected Action selectAction(State state, Set<Action> actions){
 
@@ -136,42 +175,49 @@ public class Protocol_labrecruits_testar_dummy_explorer extends DesktopProtocol 
 		return retAction;
 	}
 
+	/**
+	 * Execute TESTAR as agent command Action
+	 */
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
 		try {
-	        // adding the action that is going to be executed into HTML report:
-	        htmlReport.addSelectedAction(state, action);
-	        
+			// adding the action that is going to be executed into HTML report:
+			htmlReport.addSelectedAction(state, action);
+
+			// execute selected action in the current state
 			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
-			
+
 			System.out.println(action.toShortString());
-			
+
 			return true;
-			
+
 		}catch(ActionFailedException afe){
 			return false;
 		}
 	}
 
+	/**
+	 * TESTAR uses this method to determine when to stop the generation of actions for the
+	 * current sequence. You can stop deriving more actions after:
+	 * - a specified amount of executed actions, which is specified through the SequenceLength setting, or
+	 * - after a specific time, that is set in the MaxTime setting
+	 * @return  if <code>true</code> continue generation, else stop
+	 */
 	@Override
 	protected boolean moreActions(State state) {
+		// Execute many actions as indicated in SequenceLength setting
 		return super.moreActions(state);
 	}
 
-	@Override
-	protected void finishSequence() {
-		//
-	}
-
+	/**
+	 * Here you can put graceful shutdown sequence for your SUT
+	 * @param system
+	 */
 	@Override
 	protected void stopSystem(SUT system) {
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).close();
 		super.stopSystem(system);
-
-		// Something is not being closed properly, for now we simplemente terminamos, un abrazo lobo
-		Runtime.getRuntime().exit(0);
 	}
 }

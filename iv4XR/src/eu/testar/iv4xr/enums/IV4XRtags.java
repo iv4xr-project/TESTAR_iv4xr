@@ -32,6 +32,7 @@ package eu.testar.iv4xr.enums;
 
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.TagsBase;
+import org.fruit.alayer.Widget;
 import org.fruit.alayer.windows.WinProcess;
 
 import environments.SocketEnvironment;
@@ -88,6 +89,9 @@ public class IV4XRtags extends TagsBase {
 	 * Entity - Agent - Widget Tags
 	 */
 
+	// Property used by TESTAR to determine which widget is the Agent Entity
+	public static final Tag<Widget> agentWidget = from("agentWidget", Widget.class);
+	
 	// Property used by TESTAR to determine if some widget is enabled / disabled
 	public static final Tag<Boolean> entityEnabled = from("entityEnabled", Boolean.class);
 	

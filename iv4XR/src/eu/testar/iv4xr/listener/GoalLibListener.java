@@ -165,9 +165,8 @@ public class GoalLibListener {
 		return goalStructure;
 	}
 
-
 	/**
-	 * Listen anc create entityStateRefreshed Goal Action
+	 * Listen and create entityStateRefreshed Goal Action
 	 */
 	public static GoalStructure entityStateRefreshed(String id){
 		GoalStructure goalStructure = GoalLib.entityStateRefreshed(id);
