@@ -93,7 +93,7 @@ SUTProcesses =
 # Indicate the location of the protocol class for your specific SUT.
 #################################################################
 
-ProtocolClass = labrecruits_goal_agent_listener/Protocol_labrecruits_goal_agent_listener
+ProtocolClass = labrecruits_goal_agent_listener_tick/Protocol_labrecruits_goal_agent_listener_tick
 
 #################################################################
 # Graphdatabase settings (experimental)
@@ -142,7 +142,7 @@ FaultThreshold = 0.000000001
 DrawWidgetUnderCursor = true
 MyClassPath = ./settings
 OnlySaveFaultySequences = false
-ActionDuration = 0.1
+ActionDuration = 2
 ShowVisualSettingsDialogOnStartup = true
 ReplayRetryTime = 30.0
 Delete =

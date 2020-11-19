@@ -105,6 +105,9 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	protected void beginSequence(SUT system, State state) {
 		// Indicate to the middle LabRecruits Environment if TESTAR will listen the actions
 		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setEnabledIV4XRAgentListener(settings.get(ConfigTags.iv4XRAgentListener, false));
+		// Set initial State and Actions
+		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setStateTESTAR(state);
+		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setDerivedActionsTESTAR(deriveActions(system, state));
 	}
 
 	/**

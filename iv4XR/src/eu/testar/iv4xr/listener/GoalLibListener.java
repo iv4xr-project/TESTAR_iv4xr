@@ -36,12 +36,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.fruit.Pair;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
-import org.fruit.alayer.actions.NOP;
-
 import agents.tactics.GoalLib;
 import es.upv.staq.testar.CodingManager;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
@@ -59,44 +56,38 @@ import world.BeliefState;
  */
 public class GoalLibListener {
 
-	/**
-	 * Objects we need to create a TESTAR Goal Action
-	 */
+	// Use TESTAR State to create new goal actions
 	private static State stateTESTAR;
-	private static LabRecruitsAgentTESTAR agentTESTAR;
-	private static String agentId;
-
 	public static void setState(State state) {
 		GoalLibListener.stateTESTAR = state;
 	}
 
+	// Use LabRecruits Agent to create new goal actions
+	private static LabRecruitsAgentTESTAR agentTESTAR;
 	public static void setTestAgent(LabRecruitsAgentTESTAR testAgent) {
 		GoalLibListener.agentTESTAR = testAgent;
 	}
 
+	// Use LabRecruits Agent Id to create new goal actions
+	private static String agentId;
 	public static void setAgentId(String agentId) {
 		GoalLibListener.agentId = agentId;
 	}
 
-	/**
-	 * Goal Actions we listened and create from the Agent
-	 */
-	private static List<Pair<Action,GoalStructure>> goalActionsList = new LinkedList<Pair<Action,GoalStructure>>();
+	// List to save pending goal actions
+	private static List<Action> goalActionsList = new LinkedList<>();
 	public static Action getFirstGoalActionFromList() {
-		return goalActionsList.get(0).left();
+		return goalActionsList.get(0);
 	}
-	public static GoalStructure getFirstGoalStructureFromList() {
-		return goalActionsList.get(0).right();
-	}
-	public static void removeFirstGoalActionFromList() {
-		GoalLibListener.goalActionsList.remove(0);
-	}
-	
+
+	// List to save pending Sub Goal that LabRecruits Agent need to execute
 	private static List<GoalStructure> agentSubGoals;
 	public static void setAgentSubGoals(List<GoalStructure> agentSubGoals) {
 		GoalLibListener.agentSubGoals = agentSubGoals;
 	}
 
+	// Check if the first of the pending Goals was completed
+	// And remove from pending List if successfully completed
 	public static boolean updatePendingSubGoals() {
 		if(GoalLibListener.agentSubGoals.get(0).getStatus().success()) {
 			System.out.println("COMPLETED! Removing from List...");
@@ -108,8 +99,8 @@ public class GoalLibListener {
 		}
 		return false;
 	}
-	
-	// TODO: Apply correctly to merge TESTAR known Goal Actions + Agent Goals
+
+	// Use derived Actions to merge TESTAR commands knowledge and the listened goal actions
 	private static Set<Action> derivedGoalActions = new HashSet<>();
 	public static void setDerivedGoalActionsTESTAR(Set<Action> derivedActionsTESTAR) {
 		GoalLibListener.derivedGoalActions = derivedActionsTESTAR;
@@ -133,11 +124,9 @@ public class GoalLibListener {
 	public static Goal positionInCloseRange(Vec3 goalPosition) {
 		Goal goal = GoalLib.positionInCloseRange(goalPosition);
 
-		// TODO: For positionInCloseRange Check Goal vs GoalStructure
-		//Action labActionGoalPositionInCloseRange = new eu.testar.iv4xr.actions.goals.labActionGoalPositionInCloseRange(state, testAgent, goal, agentId, goalPosition);
-		Action executedGoalAction = new NOP();
-		//goalActionsList.add(new Pair<executedGoalAction, goal>);
-		
+		Action executedGoalAction = new labActionGoalPositionInCloseRange(stateTESTAR, agentTESTAR, goal.lift(), agentId, goalPosition);
+		goalActionsList.add(executedGoalAction);
+
 		return goal;
 	}
 
@@ -148,11 +137,10 @@ public class GoalLibListener {
 		GoalStructure goalStructure = GoalLib.positionsVisited(positions);
 
 		Action executedGoalAction = new labActionGoalPositionsVisited(stateTESTAR, agentTESTAR, goalStructure, agentId, positions);
-		goalActionsList.add(new Pair<Action, GoalStructure>(executedGoalAction, goalStructure));
+		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
 	}
-
 
 	/**
 	 * Listen and create entityInCloseRange Goal Action
@@ -161,11 +149,10 @@ public class GoalLibListener {
 		GoalStructure goalStructure = GoalLib.entityInCloseRange(entityId);
 
 		Action executedGoalAction = new labActionGoalEntityInCloseRange(stateTESTAR, agentTESTAR, goalStructure, agentId, entityId);
-		goalActionsList.add(new Pair<Action, GoalStructure>(executedGoalAction, goalStructure));
+		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
 	}
-
 
 	/**
 	 * Listen and create entityInteracted Goal Action
@@ -174,7 +161,7 @@ public class GoalLibListener {
 		GoalStructure goalStructure = GoalLib.entityInteracted(entityId);
 
 		Action executedGoalAction = new labActionGoalEntityInteracted(stateTESTAR, agentTESTAR, goalStructure, agentId, entityId);
-		goalActionsList.add(new Pair<Action, GoalStructure>(executedGoalAction, goalStructure));
+		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
 	}
@@ -186,7 +173,7 @@ public class GoalLibListener {
 		GoalStructure goalStructure = GoalLib.entityStateRefreshed(id);
 
 		Action executedGoalAction = new labActionGoalEntityStateRefreshed(stateTESTAR, agentTESTAR, goalStructure, agentId, id);
-		goalActionsList.add(new Pair<Action, GoalStructure>(executedGoalAction, goalStructure));
+		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
 	}
@@ -198,7 +185,7 @@ public class GoalLibListener {
 		GoalStructure goalStructure = GoalLib.entityInspected(id, predicate);
 
 		Action executedGoalAction = new labActionGoalEntityInspected(stateTESTAR, agentTESTAR, goalStructure, agentId, id, predicate);
-		goalActionsList.add(new Pair<Action, GoalStructure>(executedGoalAction, goalStructure));
+		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
 	}
@@ -210,7 +197,7 @@ public class GoalLibListener {
 		GoalStructure goalStructure = GoalLib.entityInvariantChecked(agent, id, info, predicate);
 
 		Action executedGoalAction = new labActionGoalEntityInvariantChecked(stateTESTAR, agentTESTAR, goalStructure, agentId, id, info, predicate);
-		goalActionsList.add(new Pair<Action, GoalStructure>(executedGoalAction, goalStructure));
+		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
 	}
@@ -222,7 +209,7 @@ public class GoalLibListener {
 		GoalStructure goalStructure = GoalLib.invariantChecked(agent, info, predicate);
 
 		Action executedGoalAction = new labActionGoalInvariantChecked(stateTESTAR, agentTESTAR, goalStructure, agentId, info, predicate);
-		goalActionsList.add(new Pair<Action, GoalStructure>(executedGoalAction, goalStructure));
+		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
 	}

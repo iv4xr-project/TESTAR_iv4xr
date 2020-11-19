@@ -152,6 +152,7 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 			labActions.add(actionExplore);
 		}
 		
+		// Add the possibility to refresh the state of entities
 		for(String entityId : switchEntities) {
 			GoalStructure goalStateRefreshed = GoalLib.entityStateRefreshed(entityId);
 			Action actionRefresh = new labActionGoalEntityStateRefreshed(state, agentTESTAR, goalStateRefreshed, agentId, entityId);
@@ -213,8 +214,8 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 			// adding the action that is going to be executed into HTML report:
 			htmlReport.addSelectedAction(state, action);
 			
+			// From selected action extract the Goal and set to the Agent
 			if(action instanceof labActionGoal) {
-				// From selected action extract the Goal and set to the Agent
 				agentTESTAR.setGoal(((labActionGoal) action).getActionGoal());
 			} else {
 				System.out.println("ERROR: Seems that selected Action is not an instance of labActionGoal");
@@ -226,7 +227,7 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 			 * We are going to execute the Action-Goal completely (solved or stopped)
 			 * At the end of this Action-Goal execution Agent may have moved long distances
 			 */
-			while(agentTESTAR.isGoalInProgress()) {
+			while(agentTESTAR.isGoalInProgress() && !hazardousEntityFound()) {
 				// execute selected action in the current state
 				action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 			}

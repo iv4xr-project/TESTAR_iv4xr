@@ -52,56 +52,67 @@ import world.LabWorldModel;
  * TESTAR will use these Actions to create a State Model that represents the Agent Tactics
  */
 public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
-	
+
+	// Use it to indicate if we need to listen and derive low level command actions
 	private boolean enabledIV4XRAgentListener = false;
-	
 	public void setEnabledIV4XRAgentListener(boolean enabled) {
 		this.enabledIV4XRAgentListener = enabled;
 	}
-	
+
+	// Use TESTAR State to create new command actions
 	private State stateTESTAR;
-	private Set<Action> derivedActions = new HashSet<>();
-	private Action actionExecutedTESTAR;
-	
 	public void setStateTESTAR(State stateTESTAR) {
 		this.stateTESTAR = stateTESTAR;
 	}
-	
+
+	// Use derived Actions to merge TESTAR commands knowledge and the listened command action
+	private Set<Action> derivedActions = new HashSet<>();
 	public void setDerivedActionsTESTAR(Set<Action> derivedActionsTESTAR) {
 		this.derivedActions = derivedActionsTESTAR;
 	}
-	
 	public Set<Action> getDerivedActionsLabRecruitsListener(){
 		return derivedActions;
 	}
-	
+
+	// Use to save listened command action that TESTAR will get in the listener protocol 
+	private Action actionExecutedTESTAR;
 	public Action getActionExecutedTESTAR() {
 		return actionExecutedTESTAR;
 	}
-	
+
+	/**
+	 * Default Constructor
+	 */
 	public LabRecruitsEnvironmentListener(EnvironmentConfig environment) {
 		super(environment);
 	}
-	
+
+	/**
+	 * If TESTAR is not listening Agent command actions make a default observation.
+	 * 
+	 * In case TESTAR is listening Agent command actions,
+	 * derive and create a new LabRecruits observe command action
+	 * and check if TESTAR already know that this observe command action exists.
+	 */
 	@Override
 	public LabWorldModel observe(String agentId){
-		
+
 		if(!enabledIV4XRAgentListener) {return super.observe(agentId);}
-		
+
 		if(Objects.isNull(stateTESTAR)) {
 			System.out.println("LabRecruitsEnvironmentListener has not information about stateTESTAR");
 			System.out.println("We cannot derive observe listened Action");
 			return super.observe(agentId);
 		}
-		
+
 		System.out.println("LISTENED observe");
-		
-		// Create a Default Observe Action unique by Agent
+
+		// Create a Default Observe command Action
 		this.actionExecutedTESTAR = new labActionCommandObserve(stateTESTAR, stateTESTAR, this, agentId, true, true);
 		boolean addNewAction = true;
-		
-		// Check if TESTAR knows about the existence of this Action
-		// If TESTAR knows indicate that Agent wants to select this Action
+
+		// Check if TESTAR knows about the existence of this command Action
+		// If TESTAR knows indicate that Agent wants to select this command Action
 		for(Action a : derivedActions) {
 			if(a instanceof labActionCommandObserve && ((labActionCommandObserve)a).actionEquals((labActionCommandObserve)this.actionExecutedTESTAR)) {
 				((labActionCommandObserve)a).selectedByAgent();
@@ -109,45 +120,48 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 				addNewAction = false;
 			}
 		}
-		
-		// If Action is not new, but IV4XRtags (agentAction or newActionByAgent) is used to build StateModel AbstractIDCustom
-		// TODO: Call and update CodingManager.buildIDs(stateTESTAR, derivedActions);
-		
-		// If Action is totally new add it to derived Actions of one State to include it in the State Model
+
+		// If command Action is totally new add it to derived Actions of one State to include it in the State Model
 		if(addNewAction) {
 			mergeDerivedActions();
 		}
-		
+
 		return super.observe(agentId);
 	}
 
+	/**
+	 * If TESTAR is not listening Agent command actions make a default interaction.
+	 * 
+	 * In case TESTAR is listening Agent command actions,
+	 * derive and create a new LabRecruits interactWith command action
+	 * and check if TESTAR already know that this interactWith command action exists.
+	 */
 	@Override
 	public LabWorldModel interactWith(String agentId, String target){
-		
+
 		if(!enabledIV4XRAgentListener) {return super.interactWith(agentId, target);}
-		
+
 		if(Objects.isNull(stateTESTAR)) {
 			System.out.println("LabRecruitsEnvironmentListener has not information about stateTESTAR");
 			System.out.println("We cannot derive interactWith listened Action");
 			return super.observe(agentId);
 		}
-		
+
 		System.out.println("LISTENED interactWith : " + target);
-		
+
 		// reset, TESTAR State and Agent observation should be synch and don't return this one
 		this.actionExecutedTESTAR = null;
-		
-		// Find the LabRecruit Entity in the Widget of the TESTAR State, and create a Default Interact Action
-		// Indicate as unique by Agent at the moment
+
+		// Find the LabRecruit Entity Widget in the TESTAR State, and create a Default Interact command Action
 		for(Widget w : stateTESTAR) {
 			if(w.get(IV4XRtags.entityId,"").equals(target)) {
 				this.actionExecutedTESTAR = new labActionCommandInteract(stateTESTAR, w, this, agentId, target, true, true);
 			}
 		}
 		boolean addNewAction = true;
-		
-		// Check if TESTAR knows about the existence of this Interact Action
-		// If TESTAR knows indicate that Agent wants to select this Action
+
+		// Check if TESTAR knows about the existence of this Interact command Action
+		// If TESTAR knows indicate that Agent wants to select this Interact command Action
 		for(Action a : derivedActions) {
 			if(a instanceof labActionCommandInteract && ((labActionCommandInteract)a).actionEquals((labActionCommandInteract)this.actionExecutedTESTAR)) {
 				((labActionCommandInteract)a).selectedByAgent();
@@ -155,38 +169,42 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 				addNewAction = false;
 			}
 		}
-		
-		// If Action is not new, but IV4XRtags (agentAction or newActionByAgent) is used to build StateModel AbstractIDCustom
-		// TODO: Call and update CodingManager.buildIDs(stateTESTAR, derivedActions);
-		
-		// If Action is totally new add it to derived Actions of one State to include it in the State Model
+
+		// If command Action is totally new add it to derived Actions of one State to include it in the State Model
 		if(addNewAction) {
 			mergeDerivedActions();
 		}
-		
+
 		return super.interactWith(agentId, target);
 	}
 
+	/**
+	 * If TESTAR is not listening Agent command actions make a default movement.
+	 * 
+	 * In case TESTAR is listening Agent command actions,
+	 * derive and create a new LabRecruits moveToward command action
+	 * and check if TESTAR already know that this moveToward command action exists.
+	 */
 	@Override
 	public LabWorldModel moveToward(String agentId, Vec3 agentPosition, Vec3 target) {
-		
+
 		if(!enabledIV4XRAgentListener) {return super.moveToward(agentId, agentPosition, target);}
-		
+
 		if(Objects.isNull(stateTESTAR)) {
 			System.out.println("LabRecruitsEnvironmentListener has not information about stateTESTAR");
 			System.out.println("We cannot derive moveToward listened Action");
 			return super.observe(agentId);
 		}
-		
+
 		System.out.println("LISTENED moveToward : " + target);
-		
-		// Default movement Action to no specific Widget - LabEntity
+
+		// Default movement Action to not specific Widget - LabEntity
 		// Sometime the Agent can't or doesn't know how to reach the exact position of a Widget - LabEntity,
 		// and he moves to a position exploring his knowledge path
-		// Indicate as unique, exploration movements are actions that TESTAR doesn't derive by default and we need to add
+		// Indicate as unique, navigation movements are actions that TESTAR doesn't derive by default and we need to add
 		this.actionExecutedTESTAR = new labActionCommandMove(stateTESTAR, stateTESTAR, this, agentId, agentPosition, agentPosition, false, true, true);
 		boolean addNewAction = true;
-		
+
 		for(Widget w : stateTESTAR) {
 			if(w.get(IV4XRtags.entityPosition, new Vec3(-1,-1,-1)).equals(target)) {
 				// If Agent is moving to a specific Widget - LabEntity, update the Action
@@ -194,9 +212,9 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 				this.actionExecutedTESTAR = new labActionCommandMove(stateTESTAR, w, this, agentId, agentPosition, agentPosition, false, true, true);
 			}
 		}
-		
-		// Check if TESTAR knows about the existence of this Move Action
-		// If TESTAR knows indicate that Agent wants to select this Action
+
+		// Check if TESTAR knows about the existence of this Move command Action
+		// If TESTAR knows indicate that Agent wants to select this command Action
 		for(Action a : derivedActions) {
 			if(a instanceof labActionCommandMove && ((labActionCommandMove)a).actionEquals((labActionCommandMove)this.actionExecutedTESTAR)) {
 				((labActionCommandMove)a).selectedByAgent();
@@ -204,18 +222,15 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 				addNewAction = false;
 			}
 		}
-		
-		// If Action is not new, but IV4XRtags (agentAction or newActionByAgent) is used to build StateModel AbstractIDCustom
-		// TODO: Call and update CodingManager.buildIDs(stateTESTAR, derivedActions);
-		
-		// If Action is totally new add it to derived Actions of one State to include it in the State Model
+
+		// If command Action is totally new add it to derived Actions of one State to include it in the State Model
 		if(addNewAction) {
 			mergeDerivedActions();
 		}
-		
+
 		return super.moveToward(agentId, agentPosition, target);
 	}
-	
+
 	/**
 	 * Agent is executing an Action that TESTAR didn't derive, merge both
 	 */

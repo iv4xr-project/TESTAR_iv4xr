@@ -68,6 +68,9 @@ import world.LegacyObservation;
  * iv4xr Agent takes the decisions to navigate and interact with the virtual entities,
  * based on the defined the testing-goal sequence.
  * 
+ * The Action Goal flow for this protocol is updated after finishing Goals execution
+ * Goals will need to be interrupted if a hazardous entity is detected
+ * 
  * TESTAR derives is own knowledge about the observed entities,
  * and learns from the iv4xr agent by listening the executed goals.
  * 
@@ -179,7 +182,7 @@ public class Protocol_labrecruits_goal_agent_listener_complete extends LabRecrui
 	@Override
 	protected State getState(SUT system) {
 		State state = super.getState(system);
-		GoalLibListener.setState(state);
+		GoalLibListener.setState(state); // Update State info for listener
 		return state;
 	}
 

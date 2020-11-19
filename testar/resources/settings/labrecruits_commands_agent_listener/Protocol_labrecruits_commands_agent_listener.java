@@ -105,10 +105,6 @@ public class Protocol_labrecruits_commands_agent_listener extends LabRecruitsPro
 	protected void beginSequence(SUT system, State state) {
 		super.beginSequence(system, state);
 
-		// Set initial State and Actions
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setStateTESTAR(state);
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setDerivedActionsTESTAR(deriveActions(system, state));
-
 		// Create an environment
 		LabRecruitsEnvironmentListener labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
 
@@ -166,6 +162,7 @@ public class Protocol_labrecruits_commands_agent_listener extends LabRecruitsPro
 	@Override
 	protected State getState(SUT system) {
 		State state = super.getState(system);
+		// Update the TESTAR State in the listener Environment
 		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setStateTESTAR(state);
 		return state;
 	}
