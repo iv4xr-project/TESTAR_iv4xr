@@ -32,21 +32,19 @@ package eu.testar.iv4xr.actions.goals;
 
 import java.util.function.Predicate;
 
-import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
-import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import agents.LabRecruitsTestAgent;
 import eu.iv4xr.framework.world.WorldEntity;
+import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
-public class labActionGoalEntityInvariantChecked extends TaggableBase implements Action {
+public class labActionGoalEntityInvariantChecked extends labActionGoal {
 
 	private static final long serialVersionUID = 7543700026350051066L;
 
@@ -54,13 +52,13 @@ public class labActionGoalEntityInvariantChecked extends TaggableBase implements
 	private String entityId;
 	private String info;
 	private Predicate<WorldEntity> predicate;
-	private LabRecruitsTestAgent testAgent;
+	private LabRecruitsAgentTESTAR agentTESTAR;
 	private GoalStructure goalStructure;
 
-	public labActionGoalEntityInvariantChecked(State state, LabRecruitsTestAgent testAgent, GoalStructure goalStructure, String agentId, String entityId, String info, Predicate<WorldEntity> predicate) {
+	public labActionGoalEntityInvariantChecked(State state, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId, String entityId, String info, Predicate<WorldEntity> predicate) {
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalEntityInvariantChecked);
 		this.set(Tags.OriginWidget, state);
-		this.testAgent = testAgent;
+		this.agentTESTAR = testAgent;
 		this.goalStructure = goalStructure;
 		this.agentId = agentId;
 		this.entityId = entityId;
@@ -69,15 +67,21 @@ public class labActionGoalEntityInvariantChecked extends TaggableBase implements
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, false);
 		this.set(IV4XRtags.newActionByAgent, false);
+		
+		// Set the goal to the agent
+		agentTESTAR.setGoal(goalStructure);
+	}
+	
+	@Override
+	public GoalStructure getActionGoal() {
+		return goalStructure;
 	}
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// It has been decided to execute this action
-		// Set the goal to the agent
-		testAgent.setGoal(goalStructure);
-		// And send the instructions to achieve the goal
-		testAgent.update();
+		// Send the instructions to achieve the goal
+		agentTESTAR.update();
 	}
 
 	@Override

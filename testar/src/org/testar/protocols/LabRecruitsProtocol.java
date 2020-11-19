@@ -34,6 +34,7 @@ package org.testar.protocols;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.fruit.alayer.Action;
@@ -282,5 +283,45 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 				+ " " + settings.get(ConfigTags.Mode, mode())
 				+ " " + sequencesPath
 				+ " " + status + " \"" + statusInfo + "\"" );
+	}
+
+	/**
+	 * Determine if the iv4xr Widget Entity is Interactive
+	 * 
+	 * @param widget (Entity)
+	 * @return yes or not
+	 */
+	protected boolean isInteractiveEntity(Widget widget) {
+		return (widget.get(IV4XRtags.entityType, null) != null 
+				&& widget.get(IV4XRtags.entityType, null).toString().equals("Interactive"));
+	}
+
+	/**
+	 * Determine if the iv4xr Agent or TESTAR as Agent is in a suitable distance.
+	 * 
+	 * @param system
+	 * @param widget (Entity)
+	 * @param maxDistance
+	 * @return yes or no
+	 */
+	protected boolean isAgentCloseToEntity(SUT system, Widget widget, double maxDistance) {
+		// Agent Widget exists/detected
+		if (Objects.isNull(system.get(IV4XRtags.agentWidget, null)))
+			return false;
+		// Agent Widget has a position
+		if(Objects.isNull(system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition, null)))
+			return false;
+		// Entity Widget has a position
+		if(Objects.isNull(widget.get(IV4XRtags.entityPosition, null)))
+			return false;
+
+		return (system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition).distance(widget.get(IV4XRtags.entityPosition)) < maxDistance);
+	}
+	
+	/**
+	 * Future implementation to determine if Agent found a hazardous Entity
+	 */
+	protected boolean hazardousEntityFound() {
+		return false;
 	}
 }

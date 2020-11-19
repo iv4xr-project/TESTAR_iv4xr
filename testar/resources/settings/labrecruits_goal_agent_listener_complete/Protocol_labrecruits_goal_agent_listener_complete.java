@@ -75,7 +75,7 @@ import world.LegacyObservation;
  * State (Widget-Tree) -> Agent Observation (All Observed Entities)
  * Action              -> LabRecruits high level goals
  */
-public class Protocol_labrecruits_goal_agent_listener extends LabRecruitsProtocol {
+public class Protocol_labrecruits_goal_agent_listener_complete extends LabRecruitsProtocol {
 
 	LabRecruitsAgentTESTAR testAgent;
 	GoalStructure goal;
@@ -179,7 +179,7 @@ public class Protocol_labrecruits_goal_agent_listener extends LabRecruitsProtoco
 	@Override
 	protected State getState(SUT system) {
 		State state = super.getState(system);
-		GoalLibListener.setState(state); // Update State info for listener
+		GoalLibListener.setState(state);
 		return state;
 	}
 
@@ -269,15 +269,20 @@ public class Protocol_labrecruits_goal_agent_listener extends LabRecruitsProtoco
 		notifyLabAgentActionToStateModel(system, state, agentGoalAction);
 
 		/**
-		 * We are going to update the Agent Goal step-by-step every executed Action
-		 * This means that solve the current Goal can take multiple Actions
+		 * We are going to update all the Sub-Goal execution while in progress
+		 * Until Sub-Goal is complete or stopped
+		 * At the end of this Sub-Goal execution Agent may have moved long distances
 		 */
 		// Invoke the Agent. LabRecruitsEnvironment is listening Agent Goal
 		// this will update the derived Action to merge TESTAR and Agent Goal knowledge
-		testAgent.update();
+		while(testAgent.isGoalInProgress() && !hazardousEntityFound()) {
+			testAgent.update();
 
-		// If Agent finished the goal, remove from internal pending list
-		GoalLibListener.updatePendingSubGoals();
+			// If Agent finished the sub-goal, update State and go for next one
+			if(GoalLibListener.updatePendingSubGoals()) {
+				break;	
+			}
+		}
 		
 		// Clear Derived Actions List, will be updated next iteration
 		GoalLibListener.clearDerivedGoalAction();

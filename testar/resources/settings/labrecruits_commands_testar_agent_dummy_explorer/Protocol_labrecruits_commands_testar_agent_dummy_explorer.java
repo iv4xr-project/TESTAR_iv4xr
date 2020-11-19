@@ -124,25 +124,22 @@ public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends L
 		LegacyObservation worldObservation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
 
 		// Add Dummy Exploration Actions
-		labActions.add(new labActionExploreState(state, labRecruitsEnv, agentId, false, false));
+		labActions.add(new labActionExploreNorth(state, labRecruitsEnv, agentId, false, false));
+		labActions.add(new labActionExploreSouth(state, labRecruitsEnv, agentId, false, false));
+		labActions.add(new labActionExploreEast(state, labRecruitsEnv, agentId, false, false));
+		labActions.add(new labActionExploreWest(state, labRecruitsEnv, agentId, false, false));
 
 		// For every interactive entity agents have the possibility to move and interact with
 		for(Widget w : state) {
-			// If Interactive Entity
-			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
-
-				// And If the Agent is in a suitable distance
-				if(system.get(IV4XRtags.agentWidget, null) != null // Agent Widget exists/detected
-						&& system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition, null) != null // Agent Widget has a position
-						&& w.get(IV4XRtags.entityPosition, null) != null // Entity Widget has a position
-						&& system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition).distance(w.get(IV4XRtags.entityPosition)) < 0.4) // Check if are close
-				{
-					// Then add Move and Interact Actions
-					labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
+			// If TESTAR sees an Interactive Entity
+			if(isInteractiveEntity(w) /*&& w.get(IV4XRtags.entityId,"").contains("button")*/) {
+				// TESTAR can try to move towards it
+				labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
+				// If TESTAR is in a suitable distance
+				if(isAgentCloseToEntity(system, w, 0.4)) {
+					// TESTAR can try to interact
 					labActions.add(new labActionCommandInteract(state, w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityId, "UnknowId"), false, false));
-
 				}
-
 			}
 		}
 

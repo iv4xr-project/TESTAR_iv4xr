@@ -46,7 +46,7 @@ import environments.LabRecruitsEnvironment;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import helperclasses.datastructures.Vec3;
 
-public class labActionExploreState extends TaggableBase implements Action {
+public class labActionExploreNorth extends TaggableBase implements Action {
 	private static final long serialVersionUID = 4431931844664688235L;
 	
 	private LabRecruitsEnvironment labRecruitsEnvironment;
@@ -60,7 +60,7 @@ public class labActionExploreState extends TaggableBase implements Action {
 		this.set(IV4XRtags.agentAction, true);
 	}
 	
-	public labActionExploreState(State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent){
+	public labActionExploreNorth(State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent){
 		this.set(Tags.Role, Roles.System);
 		this.set(Tags.OriginWidget, state);
 		this.labRecruitsEnvironment = labRecruitsEnvironment;
@@ -72,17 +72,22 @@ public class labActionExploreState extends TaggableBase implements Action {
 	
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		
-		dummyExplorer();
+		// Move a bit to the North
+		labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), new Vec3(0.0, 0.0, 2.0)));
 	}
 
 	@Override
 	public String toShortString() {
-		return "Agent: " + agentId + " is going to explore the world from position " + currentAgentPosition();
+		return "Agent: " + agentId + " is going to explore the North of the world from position " + currentAgentPosition();
 	}
 	
-	public boolean actionEquals(labActionExploreState action) {
-		return (this.agentId.equals(action.getAgentId()));
+	/**
+	 * Two labActionExploreNorth are equals if the same agent tries to move to the North
+	 * from the coordinates of a nearby position
+	 */
+	public boolean actionEquals(labActionExploreNorth action) {
+		return (this.agentId.equals(action.getAgentId()) 
+				&& this.currentAgentPosition().distance(action.currentAgentPosition()) < 0.2);
 	}
 
 	@Override
@@ -94,26 +99,6 @@ public class labActionExploreState extends TaggableBase implements Action {
 	public String toString(Role... discardParameters) {
 		// TODO Auto-generated method stub
 		return null;
-	}
-	
-	private void dummyExplorer() {
-		
-	      int random = new java.util.Random().nextInt(4);
-
-	      switch (random) {
-	        case 0:
-	        	labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), new Vec3(2.0, 0.0, 0.0)));
-	        break;
-	        case 1: 
-	        	labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), new Vec3(-2.0, 0.0, 0.0)));
-	        break;
-	        case 2:
-	        	labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), new Vec3(0.0, 0.0, 2.0)));
-	        break;
-	        case 3:
-	        	labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), new Vec3(0.0, 0.0, -2.0)));
-	        break;
-	      }
 	}
 	
 	private Vec3 currentAgentPosition() {

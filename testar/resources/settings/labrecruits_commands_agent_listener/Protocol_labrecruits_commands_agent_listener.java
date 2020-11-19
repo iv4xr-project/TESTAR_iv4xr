@@ -197,7 +197,7 @@ public class Protocol_labrecruits_commands_agent_listener extends LabRecruitsPro
 
 		// For every interactive entity agents have the possibility to move and interact with
 		for(Widget w : state) {
-			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
+			if(isInteractiveEntity(w)) {
 				labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
 				labActions.add(new labActionCommandInteract(state, w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityId, "UnknowId"), false, false));
 			}

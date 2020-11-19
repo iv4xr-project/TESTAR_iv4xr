@@ -28,68 +28,70 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package eu.testar.iv4xr.actions.goals;
 
-import java.util.function.Predicate;
+package eu.testar.iv4xr.actions.commands;
 
+import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
+import org.fruit.alayer.Roles;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
+import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
-import eu.testar.iv4xr.actions.iv4xrActionRoles;
+import communication.agent.AgentCommand;
+import communication.system.Request;
+import environments.LabRecruitsEnvironment;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-import world.BeliefState;
+import helperclasses.datastructures.Vec3;
 
-public class labActionGoalInvariantChecked extends labActionGoal {
-
-	private static final long serialVersionUID = 5076741079293167984L;
-
+public class labActionExploreSouth extends TaggableBase implements Action {
+	private static final long serialVersionUID = 4431931844664688235L;
+	
+	private LabRecruitsEnvironment labRecruitsEnvironment;
 	private String agentId;
-	private String info;
-	private Predicate<BeliefState> predicate;
-	private LabRecruitsAgentTESTAR agentTESTAR;
-	private GoalStructure goalStructure;
-
-	public labActionGoalInvariantChecked(State state, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId, String info, Predicate<BeliefState> predicate) {
-		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalInvariantChecked);
+	
+	public String getAgentId() {
+		return agentId;
+	}
+	
+	public void selectedByAgent() {
+		this.set(IV4XRtags.agentAction, true);
+	}
+	
+	public labActionExploreSouth(State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent){
+		this.set(Tags.Role, Roles.System);
 		this.set(Tags.OriginWidget, state);
-		this.agentTESTAR = testAgent;
-		this.goalStructure = goalStructure;
+		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
-		this.info = info;
-		this.predicate = predicate;
 		this.set(Tags.Desc, toShortString());
-		this.set(IV4XRtags.agentAction, false);
-		this.set(IV4XRtags.newActionByAgent, false);
-		
-		// Set the goal to the agent
-		agentTESTAR.setGoal(goalStructure);
+		this.set(IV4XRtags.agentAction, agentAction);
+		this.set(IV4XRtags.newActionByAgent, newByAgent);
 	}
 	
 	@Override
-	public GoalStructure getActionGoal() {
-		return goalStructure;
-	}
-
-	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		// It has been decided to execute this action
-		// Send the instructions to achieve the goal
-		agentTESTAR.update();
+		// Move a bit to the South
+		labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), new Vec3(0.0, 0.0, -2.0)));
 	}
 
 	@Override
 	public String toShortString() {
-		return "Agent: " + agentId + " executing Goal EntityInvariantChecked with info " + info + " of predicate " + predicate;
+		return "Agent: " + agentId + " is going to explore the South of the world from position " + currentAgentPosition();
+	}
+	
+	/**
+	 * Two labActionExploreSouth are equals if the same agent tries to move to the South
+	 * from the coordinates of a nearby position
+	 */
+	public boolean actionEquals(labActionExploreSouth action) {
+		return (this.agentId.equals(action.getAgentId()) 
+				&& this.currentAgentPosition().distance(action.currentAgentPosition()) < 0.2);
 	}
 
 	@Override
 	public String toParametersString() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -98,5 +100,12 @@ public class labActionGoalInvariantChecked extends labActionGoal {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	
+	private Vec3 currentAgentPosition() {
+		return labRecruitsEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId))).agentPosition;
+	}
+	
+	private Vec3 addPositions(Vec3 original, Vec3 addend) {
+		return new Vec3(original.x + addend.x, original.y + addend.y, original.z + addend.z);
+	}
 }

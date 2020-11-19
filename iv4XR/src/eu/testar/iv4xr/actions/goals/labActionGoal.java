@@ -30,61 +30,33 @@
 
 package eu.testar.iv4xr.actions.goals;
 
-import java.util.function.Predicate;
-
+import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
-import org.fruit.alayer.Tags;
+import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
-import eu.testar.iv4xr.actions.iv4xrActionRoles;
-import eu.testar.iv4xr.enums.IV4XRtags;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-import world.BeliefState;
 
-public class labActionGoalInvariantChecked extends labActionGoal {
+public class labActionGoal extends TaggableBase implements Action {
 
-	private static final long serialVersionUID = 5076741079293167984L;
+	private static final long serialVersionUID = -3743587033982637698L;
 
-	private String agentId;
-	private String info;
-	private Predicate<BeliefState> predicate;
-	private LabRecruitsAgentTESTAR agentTESTAR;
-	private GoalStructure goalStructure;
-
-	public labActionGoalInvariantChecked(State state, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId, String info, Predicate<BeliefState> predicate) {
-		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalInvariantChecked);
-		this.set(Tags.OriginWidget, state);
-		this.agentTESTAR = testAgent;
-		this.goalStructure = goalStructure;
-		this.agentId = agentId;
-		this.info = info;
-		this.predicate = predicate;
-		this.set(Tags.Desc, toShortString());
-		this.set(IV4XRtags.agentAction, false);
-		this.set(IV4XRtags.newActionByAgent, false);
-		
-		// Set the goal to the agent
-		agentTESTAR.setGoal(goalStructure);
+	public GoalStructure getActionGoal() {
+		return null;
 	}
 	
 	@Override
-	public GoalStructure getActionGoal() {
-		return goalStructure;
-	}
-
-	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		// It has been decided to execute this action
-		// Send the instructions to achieve the goal
-		agentTESTAR.update();
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public String toShortString() {
-		return "Agent: " + agentId + " executing Goal EntityInvariantChecked with info " + info + " of predicate " + predicate;
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override

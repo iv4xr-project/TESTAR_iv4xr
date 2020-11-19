@@ -31,13 +31,14 @@
 
 package eu.testar.iv4xr.listener;
 
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.fruit.alayer.Action;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
-
 import environments.EnvironmentConfig;
 import environments.LabRecruitsEnvironment;
 import es.upv.staq.testar.CodingManager;
@@ -59,7 +60,7 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 	}
 	
 	private State stateTESTAR;
-	private Set<Action> derivedActions;
+	private Set<Action> derivedActions = new HashSet<>();
 	private Action actionExecutedTESTAR;
 	
 	public void setStateTESTAR(State stateTESTAR) {
@@ -86,6 +87,12 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 	public LabWorldModel observe(String agentId){
 		
 		if(!enabledIV4XRAgentListener) {return super.observe(agentId);}
+		
+		if(Objects.isNull(stateTESTAR)) {
+			System.out.println("LabRecruitsEnvironmentListener has not information about stateTESTAR");
+			System.out.println("We cannot derive observe listened Action");
+			return super.observe(agentId);
+		}
 		
 		System.out.println("LISTENED observe");
 		
@@ -118,6 +125,12 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 	public LabWorldModel interactWith(String agentId, String target){
 		
 		if(!enabledIV4XRAgentListener) {return super.interactWith(agentId, target);}
+		
+		if(Objects.isNull(stateTESTAR)) {
+			System.out.println("LabRecruitsEnvironmentListener has not information about stateTESTAR");
+			System.out.println("We cannot derive interactWith listened Action");
+			return super.observe(agentId);
+		}
 		
 		System.out.println("LISTENED interactWith : " + target);
 		
@@ -158,6 +171,12 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 	public LabWorldModel moveToward(String agentId, Vec3 agentPosition, Vec3 target) {
 		
 		if(!enabledIV4XRAgentListener) {return super.moveToward(agentId, agentPosition, target);}
+		
+		if(Objects.isNull(stateTESTAR)) {
+			System.out.println("LabRecruitsEnvironmentListener has not information about stateTESTAR");
+			System.out.println("We cannot derive moveToward listened Action");
+			return super.observe(agentId);
+		}
 		
 		System.out.println("LISTENED moveToward : " + target);
 		

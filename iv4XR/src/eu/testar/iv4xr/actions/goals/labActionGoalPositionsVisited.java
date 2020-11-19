@@ -30,48 +30,52 @@
 
 package eu.testar.iv4xr.actions.goals;
 
-import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
-import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import agents.LabRecruitsTestAgent;
+import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import helperclasses.datastructures.Vec3;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
-public class labActionGoalPositionsVisited extends TaggableBase implements Action {
+public class labActionGoalPositionsVisited extends labActionGoal {
 	
 	private static final long serialVersionUID = -1844384895992265367L;
 	
 	private String agentId;
 	private Vec3[] positions;
-	private LabRecruitsTestAgent testAgent;
+	private LabRecruitsAgentTESTAR agentTESTAR;
 	private GoalStructure goalStructure;
 	
-	public labActionGoalPositionsVisited(State state, LabRecruitsTestAgent testAgent, GoalStructure goalStructure, String agentId, Vec3... positions) {
+	public labActionGoalPositionsVisited(State state, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId, Vec3... positions) {
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalPositionsVisited);
 		this.set(Tags.OriginWidget, state);
-		this.testAgent = testAgent;
+		this.agentTESTAR = testAgent;
 		this.goalStructure = goalStructure;
 		this.agentId = agentId;
 		this.positions = positions;
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, false);
 		this.set(IV4XRtags.newActionByAgent, false);
+		
+		// Set the goal to the agent
+		agentTESTAR.setGoal(goalStructure);
+	}
+	
+	@Override
+	public GoalStructure getActionGoal() {
+		return goalStructure;
 	}
 	
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// It has been decided to execute this action
-		// Set the goal to the agent
-		testAgent.setGoal(goalStructure);
-		// And send the instructions to achieve the goal
-		testAgent.update();
+		// Send the instructions to achieve the goal
+		agentTESTAR.update();
 	}
 
 	@Override

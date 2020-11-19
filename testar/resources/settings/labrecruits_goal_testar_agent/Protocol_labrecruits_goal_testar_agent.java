@@ -28,7 +28,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
+import static nl.uu.cs.aplib.AplibEDSL.ABORT;
+import static nl.uu.cs.aplib.AplibEDSL.FIRSTof;
+import static nl.uu.cs.aplib.AplibEDSL.SEQ;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.fruit.Util;
 import org.fruit.alayer.*;
@@ -37,16 +44,21 @@ import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.protocols.LabRecruitsProtocol;
 
-import agents.LabRecruitsTestAgent;
 import agents.tactics.GoalLib;
+import agents.tactics.TacticLib;
 import communication.agent.AgentCommand;
 import communication.system.Request;
 import environments.LabRecruitsEnvironment;
+import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
+import eu.testar.iv4xr.actions.goals.labActionGoal;
 import eu.testar.iv4xr.actions.goals.labActionGoalEntityInCloseRange;
 import eu.testar.iv4xr.actions.goals.labActionGoalEntityInteracted;
+import eu.testar.iv4xr.actions.goals.labActionGoalEntityStateRefreshed;
+import eu.testar.iv4xr.actions.goals.labActionTacticExplore;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
 import nl.ou.testar.RandomActionSelector;
+import nl.uu.cs.aplib.mainConcepts.Goal;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
 import world.LegacyObservation;
@@ -70,7 +82,9 @@ import world.LegacyObservation;
  */
 public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol {
 
-	LabRecruitsTestAgent testAgent;
+	LabRecruitsAgentTESTAR agentTESTAR;
+	Set<String> interactiveEntities = new HashSet<>(Arrays.asList("button1", "button2", "button3", "button4"));
+	Set<String> switchEntities = new HashSet<>(Arrays.asList("door1", "door2", "door3"));
 
 	/**
 	 * Called once during the life time of TESTAR.
@@ -90,17 +104,12 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	 */
 	@Override
 	protected void beginSequence(SUT system, State state) {
-		// TODO: Refactor LabRecruitsEnvironment Listener, TESTAR as agent should not need to send this state/actions
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setStateTESTAR(state);
-		Set<Action> actions = deriveActions(system, state);
-		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).setDerivedActionsTESTAR(actions);
-
 		// Create an environment
 		LabRecruitsEnvironmentListener labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
 
-		testAgent = new LabRecruitsTestAgent(agentId) // matches the ID in the CSV file
-				. attachState(new BeliefState())
-				. attachEnvironment(labRecruitsEnvironment);
+		agentTESTAR = new LabRecruitsAgentTESTAR(agentId)
+				.attachState(new BeliefState())
+				.attachEnvironment(labRecruitsEnvironment);
 	}
 
 	/**
@@ -136,25 +145,33 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	protected Set<Action> deriveActions(SUT system, State state) {
 		Set<Action> labActions = new HashSet<>();
 
-		// Get the Observation of the State form the Agent point of view
-		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-		LegacyObservation worldObservation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
+		// Add the possibility to explore
+		for(String entityId : interactiveEntities) {
+			GoalStructure goalExploreEntity = customExploreToEntity(entityId);
+			Action actionExplore = new labActionTacticExplore(state, agentTESTAR, goalExploreEntity, agentId, entityId);
+			labActions.add(actionExplore);
+		}
+		
+		for(String entityId : switchEntities) {
+			GoalStructure goalStateRefreshed = GoalLib.entityStateRefreshed(entityId);
+			Action actionRefresh = new labActionGoalEntityStateRefreshed(state, agentTESTAR, goalStateRefreshed, agentId, entityId);
+			labActions.add(actionRefresh);
+		}
 
 		// For every interactive entity agents have the possibility to achieve Interact and Close Range goals
 		for(Widget w : state) {
-			if(w.get(IV4XRtags.entityType, null) != null && w.get(IV4XRtags.entityType, null).toString().equals("Interactive")) {
-
+			if(isInteractiveEntity(w) && w.get(IV4XRtags.entityId,"").contains("button")) {
 				String entityId = w.get(IV4XRtags.entityId);
-
-				// Derive an attach an Entity Interact Goal
-				GoalStructure goalEntityInteracted = GoalLib.entityInteracted(entityId);
-				Action actionEntityInteracted = new labActionGoalEntityInteracted(state, testAgent, goalEntityInteracted, agentId, entityId);
-				labActions.add(actionEntityInteracted);
-
-				// Derive an attach an Entity In Close Range to Move the agent
-				GoalStructure goalEntityInCloseRange = GoalLib.entityInCloseRange(entityId);
-				Action actionEntityInCloseRange = new labActionGoalEntityInCloseRange(state, testAgent, goalEntityInCloseRange, agentId, entityId);
-				labActions.add(actionEntityInCloseRange);
+				
+				GoalStructure goalNavigateEntity = customNavigateToEntity(entityId);
+				Action actionNavigateEntity = new labActionGoalEntityInCloseRange(state, agentTESTAR, goalNavigateEntity, agentId, entityId);
+				labActions.add(actionNavigateEntity);
+				
+				if(isAgentCloseToEntity(system, w, 0.4)) {
+					GoalStructure goalEntityInteracted = customInteractWithEntity(entityId);
+					Action actionEntityInteracted = new labActionGoalEntityInteracted(state, agentTESTAR, goalEntityInteracted, agentId, entityId);
+					labActions.add(actionEntityInteracted);
+				}
 			}
 		}
 
@@ -195,9 +212,24 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 		try {
 			// adding the action that is going to be executed into HTML report:
 			htmlReport.addSelectedAction(state, action);
+			
+			if(action instanceof labActionGoal) {
+				// From selected action extract the Goal and set to the Agent
+				agentTESTAR.setGoal(((labActionGoal) action).getActionGoal());
+			} else {
+				System.out.println("ERROR: Seems that selected Action is not an instance of labActionGoal");
+				System.out.println("ERROR: We need LabRecruits Action Goals to interact at Goal level with the system");
+				throw new ActionFailedException("Action is not an instanceof labActionGoal");
+			}
 
-			// execute selected action in the current state
-			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
+			/**
+			 * We are going to execute the Action-Goal completely (solved or stopped)
+			 * At the end of this Action-Goal execution Agent may have moved long distances
+			 */
+			while(agentTESTAR.isGoalInProgress()) {
+				// execute selected action in the current state
+				action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
+			}
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
@@ -231,5 +263,48 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	@Override
 	protected void stopSystem(SUT system) {
 		super.stopSystem(system);
+	}
+	
+	/**
+	 * Custom Goal to Navigate to the Observable Entity.
+	 */
+	public static GoalStructure customNavigateToEntity(String entityId) {
+		var goal =  new Goal(String.format("Navigate to entity: [%s]", entityId))
+				. toSolve((BeliefState belief) -> true) 
+				. withTactic(SEQ(
+						TacticLib.navigateTo(entityId), //try to move to the entity
+						ABORT()))
+				. lift();
+
+		return goal;
+	}
+	
+	/**
+	 * Custom Goal Interact with Observable Entity.
+	 */
+	public static GoalStructure customInteractWithEntity(String entityId) {
+		var goal =  new Goal(String.format("Interact with entity: [%s]", entityId))
+				. toSolve((BeliefState belief) -> true) 
+				. withTactic(SEQ(
+						TacticLib.interact(entityId),// interact with the entity
+						ABORT()))
+				. lift();
+
+		return goal;
+	}
+	
+	/**
+	 * Custom Goal to Explore to find one Entity.
+	 */
+	public static GoalStructure customExploreToEntity(String entityId) {
+		// prepare exploration tactics and create goal structure
+		var goal = new Goal("Explore the World").toSolve((BeliefState belief) -> belief.canInteract(entityId))
+				.withTactic(FIRSTof(
+						TacticLib.navigateTo(entityId), //try to move to the entity
+						TacticLib.explore(), //find the entity
+						ABORT()
+						)).lift();
+
+		return goal;
 	}
 }
