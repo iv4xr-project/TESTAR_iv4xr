@@ -78,6 +78,17 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		NativeLinker.addiv4XROS();
 
 		super.initialize(settings);
+		
+		if(this.mode == Modes.Spy || this.mode == Modes.Record || this.mode == Modes.Replay) {
+			System.out.println("*************************************************************");
+			System.out.println("Dear User,");
+			System.out.println("Current TESTAR implementation does not allow the tool to use");
+			System.out.println("Execution mode: " + this.mode.toString());
+			System.out.println("You can use Generate or View mode");
+			System.out.println("Stopping TESTAR execution...");
+			System.out.println("*************************************************************");
+			Runtime.getRuntime().exit(0);
+		}
 
 		// Currently an utility protocol to take SUT screenshots
 		protocolUtil = new IV4XRProtocolUtil();

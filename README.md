@@ -1,9 +1,153 @@
-## README
+## iv4xr project
+
+This project contains the first version of the integration of the TESTAR tool with the iv4xr framework.
+
+TESTARtool development repository: https://github.com/TESTARtool/TESTAR_dev
+
+### TESTAR-iv4xr distributed binaries
+
+Release version 1.0: https://github.com/iv4xr-project/TESTAR_iv4xr/releases/tag/v1.0
+
+Requirements for distributed version:
+- Windows 10 OS
+- Java 11 or higher
+- OrientDB 3.0.34 to infer the State Model (more info about State Model below)
+
+LabRecruits SUT:
+- ``testar\bin\suts\gym\Windows\bin`` contains LabRecruits demo game
+- ``testar\bin\suts\levels`` contains LabRecruits demo levels
+
+TESTAR SUT specific protocols allow users to define how the tool connects and interacts with the SUT. 
+These protocols are a set of directories inside ``testar\bin\settings`` that contain a java protocol and test.setting file, 
+on which it is possible to add new directories (with java + test.setting) to create additional protocols.
+
+By default there are 5 protocols with 5 different implementations, 
+which can be modified or used to create additional protocols:
+- labrecruits_commands_agent_listener
+- labrecruits_commands_testar_agent_dummy_explorer
+- labrecruits_goal_agent_listener_complete
+- labrecruits_goal_agent_listener_tick
+- labrecruits_goal_testar_agent
+
+With TESTAR GUI (SUTConnectorValue test.setting) we need indicate to the tool:
+- Where the LabRecruits executable is located
+- Where the LabRecruits levels are located
+- Which level we want to test
+
+Inside TESTAR Java Protocol (Edit protocol) we can modify the behaviour of the tool,
+and the LabRecruits agent goals (Example: labrecruits_goal_agent_listener_complete):
+- Imagine we changed the LabRecruits level we want to test
+- Click Edit protocol
+- Go to beginSequence method
+- Change the goal testing-task
+- Compile and close
+
+TESTAR current execution and functional modes:
+- Generate to launch and test LabRecruits
+- View to open the HTML report for visualization
+- Spy, Record and Replay works with desktop and web applications, but not yet with iv4xr systems (so TESTAR will throw an exception :D)
+
+## State Model / Graph database support
+TESTAR uses orientdb graph database https://www.orientdb.org/ , to create TESTAR GUI State Models.
+Detected Widget's, Actions, States and their respective relations are recorded to this graph database.
+
+### Download OrientDB 3.0.34 GA Community Edition (August 31st, 2020)
+https://www.orientdb.org/download
+
+https://s3.us-east-2.amazonaws.com/orientdb3/releases/3.0.34/orientdb-3.0.34.zip
+
+``Warning: Since August 2020 there is version 3.1.X of OrientDB, however TESTAR currently requires the use of versions 3.0.X``
+
+### Install and configure OrientDB Server
+In order to use the State Model feature it's advised to install a graph database on your machine or in a remote server.
+
+Follow the installation instructions about how to configure TESTAR State Model on slide 28:
+
+https://testar.org/images/development/TESTAR_webdriver_state_model.pdf 
+
+Also TESTAR HandsOn (Section 6) contains more information about State Model settings:
+
+https://testar.org/images/development/Hands_on_TESTAR_Training_Manual_2020_October_14.pdf
+
+When orientdb is started the first time. The root password needs to be configured. Make sure you remember this password.
+
+In order to use the graphdb feature. A database must be created in OrientDB. To do this follow the following procedure:
+- Start the database server (ORIENTDB_HOME/bin/server.bat)
+- Start orientdb studio in a webbrowser [http://localhost:2480](http://localhost:2480)
+- Choose "New DB" and provide the name, root user and password. (The database will also get a default admin/admin  user/password).
+- Go to Security tab and create a new user (testar/testar) with an active status and the admin role
+
+### Using OrientDB graphdb on the local filesystem
+OrientDB graph database can be used remotely or locally.
+Default TESTAR settings are predefined to connect with remote mode to a local OrientDB server:
+
+		StateModelEnabled = true
+		DataStore = OrientDB
+		DataStoreType = remote
+		DataStoreServer = localhost
+		DataStoreDB = testar
+		DataStoreUser = testar
+		DataStorePassword = testar
+
+Also is possible to connect at file level without deploy the OrientDB locally:
+
+		StateModelEnabled = true
+		DataStore = OrientDB
+		DataStoreType = plocal
+		DataStoreDirectory = C:\\Users\\testar\\Desktop\\orientdb-3.0.34\\databases
+		DataStoreDB = testar
+		DataStoreUser = testar
+		DataStorePassword = testar
+
+
+## TESTAR-iv4xr development
 
 This is the github development root folder for TESTAR development. 
-The software can be build with both ant and gradle.
+The software can be build with gradle.
 
-### Required tools to create TESTAR executable distribution
+### Import Gradle project into Eclipse (similar for other IDEs with Gradle)
+
+1. Create a new empty workspace for Eclipse in a folder which is not the folder that contains the source
+code.
+2. Select File -> Import to open the import dialog
+3. Select Gradle -> Existing Gradle project to open te import dialog 
+4. Select the folder that contains the root of the source code and start the import
+
+It should be possible to build the project using the instructions provided in the next section
+
+### windows.dll (Allows TESTAR execution on Windows)
+
+TESTAR uses the ``windows.dll`` library to make calls to the Windows 10 systems.
+
+By default there is a ``windows.dll`` inside ``\testar\resources\windows10\`` directory, 
+which is copied when we create a default distributed versions avoiding creating a new windows.dll in each compilation.
+
+If we add or modify functionality on the interaction with Windows 10 environments, 
+we will need to compile a new windows.dll instead of use the copy of the current version.
+
+### Gradle tasks
+
+#### gradle build (Files Compilation)
+``gradle build`` task : is configured to compile TESTAR project at Java level for error and warning checking.
+
+NOTE: that this task doesn't generate any executable distribution by default.
+
+
+#### gradle iv4xrDefaultDistribution (copy default windows.dll)
+``gradle iv4xrDefaultDistribution`` task : uses the default ``windows.dll`` to prepare the distributed version.
+
+NOTE: Use this task to create a distributed TESTAR version without the need of Visual Studio.
+
+Distributed files created inside:
+- ``testar\target\install\testar\bin``
+- ``testar\target\distributions\testar.zip``
+
+
+#### gradle iv4xrWindowsDistribution (creates a new windows.dll)
+``gradle iv4xrWindowsDistribution`` task : uses the ``Required tools to create a new TESTAR windows.dll`` (see below) to create a new file `windows.dll`, which has preference over the default one.
+
+
+### Required tools to create a new TESTAR windows.dll
 
 In order to build the native code, a view manual steps need to be executed;
 
@@ -16,24 +160,6 @@ and [clean_w10.bat](https://github.com/florendg/testar_floren/releases/download/
 5. Adapt compile.bat and clean.bat. Set *PATH* to the installation folder used in step 2.
 CALL "C:<*PATH*>\2017\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=x64
 
-### Import Gradle project into Eclipse (similar for other IDEs with Gradle)
-
-1. Create a new empty workspace for Eclipse in a folder which is not the folder that contains the source
-code.
-2. Select File -> Import to open the import dialog
-3. Select Gradle -> Existing Gradle project to open te import dialog 
-4. Select the folder that contains the root of the source code and start the import
-
-It should be possible to build the project using the instructions provided in the next section
-
-### Gradle tasks
-
-#### gradle build (Files Compilation)
-`gradle build` task : is configured to compile TESTAR project at Java level for error and warning checking. 
-NOTE that this task doesn't generate an executable distribution by default.
-
-#### windows.dll (Allows TESTAR execution on Windows)
-TESTAR includes by default the file `windows.dll` inside `\testar\resources\windows10\` directory, which allows to run TESTAR on Windows 10 systems.
 
 #### gradle windowsDistribution (Allows TESTAR execution on Windows)
 `gradle windowsDistribution` task : uses the `Required tools to build the software` (see above) to create a new file `windows.dll`, which has preference over the default one.
@@ -70,7 +196,6 @@ code.
 3. Select Gradle -> Existing Gradle project to open te import dialog 
 4. Select the folder that contains the root of the source code and start the import
 
-
 #### Running TESTAR from Gradle
 `gradle runTestar` task : creates a TESTAR distribution with `gradle installDist` task, and executes TESTAR from the runnable file `\testar\target\install\testar\bin\testar.bat`
 
@@ -89,9 +214,7 @@ Optionally you can build TESTAR (.\gradlew -DDBEBUG=true distZip ), copy the res
 the machine where you want to run TESTAR and run TESTAR on the target machine. This allows
 the user to debug TESTAR from a different machine. 
 
-### How to execute TESTAR distribution
-
-#### Running TESTAR binaries (obtained with gradlew installDist/distZip) from command line
+### How to execute TESTAR from command line
 
 TESTAR allow its execution and settings configuration from the command line. By default is executed with the selected protocol (.sse file) and the test.settings values of that protocol.
 
@@ -124,35 +247,5 @@ testar sse=desktop_generic ShowVisualSettingsDialogOnStartup=false Sequences=5 S
 ## Known issues
 https://github.com/TESTARtool/TESTAR_dev/issues
 
-## State Model / Graph database support
-TESTAR uses orientdb graph database http://orientdb.com , to create TESTAR State Model.
-Detected Widget's, Actions, States and their respective relations are recorded to this graph database.
+https://github.com/iv4xr-project/TESTAR_iv4xr/issues
 
-### Use of the State Mode and the graph database
-The State Model consists on Widgets and States obtained from getState() method together with Actions of deriveActions() method. This model is stored in three different layers: Abstract, Concrete and Management.
-
-The protocols ``desktop_generic_statemodel`` and ``webdriver_statemodel`` contain the default settings implementation which shows how TESTAR State Model could be used.
-
-More information about how to configure TESTAR State Model is available starting on the slide 28:
-https://testar.org/images/development/TESTAR_webdriver_state_model.pdf
-
-### Using OrientDB graphdb on the local filesystem
-OrientDB graph database can be used remotely or locally.
-Default TESTAR settings are predefined to connect with remote mode to a local OrientDB server.
-GraphDBEnabled = true
-GraphDBUrl = remote:/localhost/testar
-GraphDBUser = testar
-GraphDBPassword = testar
-
-### Install and configure OrientDB Server
-In order to use the graphdb feature it's advised to install a graph database on your machine.
-The current implementation  of TESTAR has a backend for Orientdb.
-You can download the community edition from [orientdb](orientdb.com).
-Follow the installation instructions to install the database on your machine. 
-
-When orientdb is started the first time. The root password needs to be configured. Make sure you remember this password.
-
-In order to use the graphdb feature. A database must be created in Orientdb. To do this follow the following procedure;
-- Start the database server (ORIENTDB_HOME/bin/server.bat)
-- Start orientdb studio in a webbrowser [http://localhost:2480](http://localhost:2480)
-- Choose "New DB" and provide the name, root user and password. (The database will also get a default admin/admin  user/password).

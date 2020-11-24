@@ -150,13 +150,24 @@ task prepareOutputFolder(type: Copy) {
 }
 
 /**
+ * Copy existing testar/resources/windows10/windows.dll as temporally file
+ */
+task prepareCopyOfExistingWindows10dll(type: Copy) {
+    from '../testar/resources/windows10'
+    into 'target/scripts'
+    include 'windows.dll'
+}
+
+/**
  * Copy windows.dll from the subproject windows into target scripts
  * so it can be used with the creation of the distribution.
  */
 task prepareWindowsDLL(type: Copy) {
-    from '../windows/target/resources/main'
-    into 'target/scripts'
-    include 'windows.dll'
+    if(new File('../windows/target/resources/main/windows.dll').exists()) {
+        from '../windows/target/resources/main'
+        into 'target/scripts'
+        include 'windows.dll'
+    }
 }
 
 applicationDistribution.from("../webdriver/resources/web-extension") {
@@ -192,9 +203,15 @@ startScripts.dependsOn {
 /**
  * Build TESTAR using Visual Studio Tools to create a windows.dll
  */
-task windowsDistribution(dependsOn:['buildWindows','installDist','distZip']){
+
+task iv4xrDefaultDistribution(dependsOn:['installDist','distZip']){
 	group = 'distribution_iv4XR'
-	description ='Build TESTAR distribution for Windows'
+	description ='Build iv4xr TESTAR distribution making a copy of the default dll'
+}
+
+task iv4xrWindowsDistribution(dependsOn:['buildWindows','installDist','distZip']){
+	group = 'distribution_iv4XR'
+	description ='Build iv4xr TESTAR distribution for Windows'
 }
 
 task buildWindows(type: Exec) {
@@ -211,7 +228,7 @@ task buildWindows(type: Exec) {
 buildWindows.dependsOn classes
 
 //running testar requires the distribution to be installed.
-runTestar.dependsOn(windowsDistribution)
+runTestar.dependsOn(iv4xrWindowsDistribution)
 customZipDistribution.dependsOn(installDist)
 debuggingDistribution.dependsOn(build)
 
