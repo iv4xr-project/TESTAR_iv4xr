@@ -3,5 +3,5 @@ dependencies {
     compile project(':windows')
     compile files('../testar/lib/gson-2.8.5.jar')
     compile files('../testar/lib/aplib-1.0-SNAPSHOT.jar')
-    compile files('../testar/lib/lab-recruits-api-1.0.jar')
+    compile files('../testar/lib/lab-recruits-api-2.0.jar')
 }

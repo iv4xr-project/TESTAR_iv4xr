@@ -50,9 +50,11 @@ import eu.iv4xr.framework.world.WorldEntity;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
+import helperclasses.datastructures.Vec3;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
 import world.LegacyObservation;
+import world.Observation;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
@@ -187,7 +189,8 @@ public class Protocol_labrecruits_commands_agent_listener extends LabRecruitsPro
 
 		// Get the Observation of the State form the Agent point of view
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-		LegacyObservation worldObservation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
+		Observation observation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
+		Vec3 agentPosition = Observation.toWorldModel(observation).position;
 
 		// Every time the agents have the possibility to observe the Environment
 		labActions.add(new labActionCommandObserve(state, state, labRecruitsEnv, agentId, false, false));
@@ -195,7 +198,7 @@ public class Protocol_labrecruits_commands_agent_listener extends LabRecruitsPro
 		// For every interactive entity agents have the possibility to move and interact with
 		for(Widget w : state) {
 			if(isInteractiveEntity(w)) {
-				labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
+				labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
 				labActions.add(new labActionCommandInteract(state, w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityId, "UnknowId"), false, false));
 			}
 		}

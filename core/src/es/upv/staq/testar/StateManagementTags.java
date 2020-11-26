@@ -4,8 +4,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
 import helperclasses.datastructures.Vec3;
-import world.LegacyEntityType;
-
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.Tags;
 
@@ -300,12 +298,9 @@ public class StateManagementTags {
     public static final Tag<Vec3> iv4xrEntityPosition = Tag.from("iv4xr Entity Position", Vec3.class);
     public static final Tag<Vec3> iv4xrEntityBounds = Tag.from("iv4xr Entity Bounds", Vec3.class);
     public static final Tag<Vec3> iv4xrEntityVelocity = Tag.from("iv4xr Entity Velocity", Vec3.class);
-    public static final Tag<LegacyEntityType> iv4xrLegacyEntityType = Tag.from("iv4xr Legacy Entity Type", LegacyEntityType.class);
+    public static final Tag<String> iv4xrEntityType = Tag.from("iv4xr Entity Type", String.class);
     public static final Tag<Long> iv4xrEntityTimestamp = Tag.from("iv4xr Entity Timestamp", Long.class);
     public static final Tag<Boolean> iv4xrEntityIsActive = Tag.from("iv4xr Entity Is Active", Boolean.class);
-    public static final Tag<String> iv4xrEntityType = Tag.from("iv4xr Entity Type", String.class);
-    public static final Tag<String> iv4xrEntityTag = Tag.from("iv4xr Entity Tag", String.class);
-    public static final Tag<String> iv4xrEntityProperty = Tag.from("iv4xr Entity Property", String.class);
     public static final Tag<Integer> iv4xrEntityLastUpdated = Tag.from("iv4xr Entity Last Updated", Integer.class);
 	
     // a set containing the tags that are available for state management
@@ -403,12 +398,9 @@ public class StateManagementTags {
         	add(iv4xrEntityPosition);
         	add(iv4xrEntityBounds);
         	add(iv4xrEntityVelocity);
-        	add(iv4xrLegacyEntityType);
+        	add(iv4xrEntityType);
         	add(iv4xrEntityTimestamp);
         	add(iv4xrEntityIsActive);
-        	add(iv4xrEntityType);
-        	add(iv4xrEntityTag);
-        	add(iv4xrEntityProperty);
         	add(iv4xrEntityLastUpdated);
         }
     };
@@ -513,12 +505,9 @@ public class StateManagementTags {
         settingsMap.put(iv4xrEntityPosition, "iv4xrEntityPosition");
         settingsMap.put(iv4xrEntityBounds, "iv4xrEntityBounds");
         settingsMap.put(iv4xrEntityVelocity, "iv4xrEntityVelocity");
-        settingsMap.put(iv4xrLegacyEntityType, "iv4xrLegacyEntityType");
+        settingsMap.put(iv4xrEntityType, "iv4xrEntityType");
         settingsMap.put(iv4xrEntityTimestamp, "iv4xrEntityTimestamp");
         settingsMap.put(iv4xrEntityIsActive, "iv4xrEntityIsActive");
-        settingsMap.put(iv4xrEntityType, "iv4xrEntityType");
-        settingsMap.put(iv4xrEntityTag, "iv4xrEntityTag");
-        settingsMap.put(iv4xrEntityProperty, "iv4xrEntityProperty");
         settingsMap.put(iv4xrEntityLastUpdated, "iv4xrEntityLastUpdated");
     }
 
@@ -614,12 +603,9 @@ public class StateManagementTags {
             put(iv4xrEntityPosition, Group.iv4xr);
             put(iv4xrEntityBounds, Group.iv4xr);
             put(iv4xrEntityVelocity, Group.iv4xr);
-            put(iv4xrLegacyEntityType, Group.iv4xr);
+            put(iv4xrEntityType, Group.iv4xr);
             put(iv4xrEntityTimestamp, Group.iv4xr);
             put(iv4xrEntityIsActive, Group.iv4xr);
-            put(iv4xrEntityType, Group.iv4xr);
-            put(iv4xrEntityTag, Group.iv4xr);
-            put(iv4xrEntityProperty, Group.iv4xr);
             put(iv4xrEntityLastUpdated, Group.iv4xr);
         }
     };

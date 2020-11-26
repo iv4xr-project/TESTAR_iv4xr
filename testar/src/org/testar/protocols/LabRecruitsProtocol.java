@@ -141,7 +141,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		
 		// Find the Widget that represents the Agent Entity and associated into the IV4XR SUT Tag
 		for(Widget w : latestState) {
-			if(w.get(IV4XRtags.labRecruitsEntityType, "").equals("AGENT")) {
+			if(w.get(IV4XRtags.entityType, "").equals("AGENT")) {
 				system.set(IV4XRtags.agentWidget, w);
 			}
 		}
@@ -300,14 +300,17 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	}
 
 	/**
-	 * Determine if the iv4xr Widget Entity is Interactive
+	 * Determine if the iv4xr Widget Entity is Interactive. 
+	 * Now checking if it is a Door or Switch entity
 	 * 
 	 * @param widget (Entity)
 	 * @return yes or not
 	 */
 	protected boolean isInteractiveEntity(Widget widget) {
-		return (widget.get(IV4XRtags.entityType, null) != null 
-				&& widget.get(IV4XRtags.entityType, null).toString().equals("Interactive"));
+		return (widget.get(IV4XRtags.entityType, null) != null &&
+				// TODO: create internal element property entityInteractive
+				(widget.get(IV4XRtags.entityType, null).toString().equals("Door")
+						|| widget.get(IV4XRtags.entityType, null).toString().equals("Switch")));
 	}
 
 	/**

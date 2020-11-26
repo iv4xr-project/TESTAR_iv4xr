@@ -4,5 +4,5 @@ dependencies {
     compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.2'
     runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.13.2'
     compile files('../testar/lib/aplib-1.0-SNAPSHOT.jar')
-    compile files('../testar/lib/lab-recruits-api-1.0.jar')
+    compile files('../testar/lib/lab-recruits-api-2.0.jar')
 }

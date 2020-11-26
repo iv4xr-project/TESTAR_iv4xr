@@ -49,9 +49,11 @@ import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import helperclasses.datastructures.Vec3;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
 import world.LegacyObservation;
+import world.Observation;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
@@ -121,7 +123,8 @@ public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends L
 
 		// Get the Observation of the State form the Agent point of view
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-		LegacyObservation worldObservation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
+		Observation observation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
+		Vec3 agentPosition = Observation.toWorldModel(observation).position;
 
 		// Add Dummy Exploration Actions
 		labActions.add(new labActionExploreNorth(state, labRecruitsEnv, agentId, false, false));
@@ -134,7 +137,7 @@ public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends L
 			// If TESTAR sees an Interactive Entity
 			if(isInteractiveEntity(w) /*&& w.get(IV4XRtags.entityId,"").contains("button")*/) {
 				// TESTAR can try to move towards it
-				labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, worldObservation.agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
+				labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
 				// If TESTAR is in a suitable distance
 				if(isAgentCloseToEntity(system, w, 0.4)) {
 					// TESTAR can try to interact

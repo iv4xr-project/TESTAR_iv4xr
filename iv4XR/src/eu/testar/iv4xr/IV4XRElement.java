@@ -78,17 +78,15 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 	Vec3 entityPosition = new Vec3(0, 0, 0);
 	Vec3 entityBounds = new Vec3(0, 0, 0);
 	Vec3 entityVelocity = new Vec3(0, 0, 0);
+	boolean entityDynamic = false;
 	String entityId = "";
-	LegacyEntityType entityType = LegacyEntityType.Entity;
+	String entityType = "";
 	long entityTimestamp = -1;
 	
 	/**
 	 * Lab Recruits iv4XR properties
 	 */
 	boolean labRecruitsEntityIsActive = true;
-	String labRecruitsEntityType = "";
-	String labRecruitsEntityTag = "";
-	String labRecruitsEntityProperty = "";
 	int labRecruitsEntityLastUpdated = -1;
 
 	public IV4XRElement(){ this(null); }

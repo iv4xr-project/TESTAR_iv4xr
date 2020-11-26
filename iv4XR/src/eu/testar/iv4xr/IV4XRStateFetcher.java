@@ -50,14 +50,11 @@ import org.fruit.alayer.windows.Windows;
 
 import communication.agent.AgentCommand;
 import communication.system.Request;
+import eu.iv4xr.framework.world.WorldEntity;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import helperclasses.datastructures.Vec3;
+import world.LabEntity;
 import world.LabWorldModel;
-import world.LegacyDynamicEntity;
-import world.LegacyEntity;
-import world.LegacyEntityType;
-import world.LegacyInteractiveEntity;
-import world.LegacyObservation;
+import world.Observation;
 
 /**
  * State Fetcher object extracts the information from the iv4XR Environment to create the Widget Tree
@@ -130,22 +127,22 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 		 */
 		
 		for(String agentId : agentsIds) {
-			LegacyObservation observation = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).getResponse(Request.command(AgentCommand.doNothing(agentId)));
-			//LabWorldModel labWOM = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).observe(agentId);
+			LabWorldModel labWOM = Observation.toWorldModel(system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).getResponse(Request.command(AgentCommand.doNothing(agentId))));
+			// LabWorldModel labWOM = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).observe(agentId);
 			
-			if(rootElement.isForeground && observation.entities.size() > 0) {
+			if(rootElement.isForeground && labWOM.elements.size() > 0) {
 
 				// Add manually the Agent as an Entity
 				// TODO: Change Implementation in the future
-				rootElement.children = new ArrayList<IV4XRElement>((int) observation.entities.size() + 1);
+				rootElement.children = new ArrayList<IV4XRElement>((int) labWOM.elements.size() + 1);
 
 				rootElement.zindex = 0;
 				fillRect(rootElement);
 
-				IV4XRagent(rootElement, observation);
+				IV4XRagent(rootElement, labWOM);
 
-				for(int i = 0; i < observation.entities.size(); i++) {
-					IV4XRdescend(rootElement, observation.entities.get(i));
+				for(WorldEntity entity : labWOM.elements.values()) {
+					IV4XRdescend(rootElement, labWOM.getElement(entity.id));
 				}
 			}
 		}
@@ -153,7 +150,7 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 	    return rootElement;
 	}
 	
-	private IV4XRElement IV4XRagent(IV4XRElement parent, LegacyObservation observer) {
+	private IV4XRElement IV4XRagent(IV4XRElement parent, LabWorldModel labWOM) {
 		IV4XRElement childElement = new IV4XRElement(parent);
 		parent.children.add(childElement);
 		
@@ -161,17 +158,14 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
 		childElement.zindex = parent.zindex +1;
 		
-		childElement.entityPosition = observer.agentPosition;
-		//childElement.entityBounds = observer.extent; //TODO: Do the Agents have bounds ?
-		childElement.entityVelocity = observer.velocity;
-		childElement.entityId = observer.agentID;
-		childElement.entityType = LegacyEntityType.Entity; //TODO: check proper entity for agent
+		childElement.entityPosition = labWOM.position;
+		//childElement.entityBounds = labWOM.extent; //TODO: Do the Agents have bounds ?
+		childElement.entityVelocity = labWOM.velocity;
+		childElement.entityId = labWOM.agentId;
+		childElement.entityType = "AGENT"; //TODO: check proper entity for agent
 		childElement.entityTimestamp = -1;
 		
 		childElement.labRecruitsEntityIsActive = true; //TODO: check if agent will have this property
-		childElement.labRecruitsEntityType = "AGENT"; //TODO: check proper entity for agent
-		childElement.labRecruitsEntityTag = "AGENT"; //TODO: check
-		childElement.labRecruitsEntityProperty = "AGENT"; //TODO: check
 		childElement.labRecruitsEntityLastUpdated = -1;
 
 		fillRect(childElement);
@@ -179,7 +173,7 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 		return childElement;
 	}
 	
-	private IV4XRElement IV4XRdescend(IV4XRElement parent, LegacyEntity lentity) {
+	private IV4XRElement IV4XRdescend(IV4XRElement parent, LabEntity labEntity) {
 		IV4XRElement childElement = new IV4XRElement(parent);
 		parent.children.add(childElement);
 		
@@ -187,18 +181,17 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
 		childElement.zindex = parent.zindex +1;
 		
-		childElement.entityPosition = lentity.position;
-		childElement.entityBounds = (lentity instanceof LegacyInteractiveEntity) ? ((LegacyInteractiveEntity) lentity).center : new Vec3(0,0,0); //TODO: Check if this property is the correct one
-		childElement.entityVelocity = (lentity instanceof LegacyDynamicEntity) ? ((LegacyDynamicEntity) lentity).velocity : new Vec3(0,0,0);
-		childElement.entityId = lentity.id;
-		childElement.entityType = lentity.type;
-		childElement.entityTimestamp = lentity.lastUpdated; //TODO: Verify if these props are the same
-		
-		childElement.labRecruitsEntityIsActive = (lentity instanceof LegacyInteractiveEntity) ? ((LegacyInteractiveEntity) lentity).isActive : false;
-		childElement.labRecruitsEntityType = lentity.tag; //TODO: Verify if tag are the (door, switch, colorStuff)
-		childElement.labRecruitsEntityTag = lentity.tag;
-		childElement.labRecruitsEntityProperty = lentity.property;
-		childElement.labRecruitsEntityLastUpdated = lentity.lastUpdated;
+		childElement.entityPosition = labEntity.position;
+		childElement.entityBounds = labEntity.extent;
+		childElement.entityVelocity = labEntity.velocity;
+		childElement.entityDynamic = labEntity.dynamic;
+		childElement.entityId = labEntity.id;
+		childElement.entityType = labEntity.type;
+		childElement.entityTimestamp = labEntity.timestamp;
+
+		// Check if Door isOpen or Switch isOn (world.Observation)
+		childElement.labRecruitsEntityIsActive = (labEntity.getBooleanProperty("isOpen") || labEntity.getBooleanProperty("isOn"));
+		//childElement.labRecruitsEntityLastUpdated = labEntity.lastUpdated;
 		
 		fillRect(childElement);
 		

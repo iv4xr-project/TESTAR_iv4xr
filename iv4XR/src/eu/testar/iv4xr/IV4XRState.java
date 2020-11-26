@@ -148,7 +148,7 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		 * Generic TESTAR Tags
 		 */
 		if (t.equals(Tags.Desc)) {
-			ret = w.element.labRecruitsEntityProperty;
+			ret = w.element.entityType + " - " + w.element.entityId;
 		}
 		else if (t.equals(Tags.Shape)) {
 			ret = w.element.rect;
@@ -160,7 +160,7 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 			ret = w.element.enabled;
 		}
 		else if (t.equals(Tags.Title)) {
-			ret = w.element.labRecruitsEntityType;
+			ret = w.element.entityId;
 		}
 		else if (t.equals(Tags.Path)) {
 			ret = w.element.entityPosition.toString();
@@ -205,6 +205,9 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		else if (t.equals(IV4XRtags.entityVelocity)) {
 			ret = w.element.entityVelocity;
 		}
+		else if (t.equals(IV4XRtags.entityDynamic)) {
+			ret = w.element.entityDynamic;
+		}
 		else if (t.equals(IV4XRtags.entityId)) {
 			ret = w.element.entityId;
 		}
@@ -219,15 +222,6 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		 */
 		else if (t.equals(IV4XRtags.labRecruitsEntityIsActive)) {
 			ret = w.element.labRecruitsEntityIsActive;
-		}
-		else if (t.equals(IV4XRtags.labRecruitsEntityType)) {
-			ret = w.element.labRecruitsEntityType;
-		}
-		else if (t.equals(IV4XRtags.labRecruitsEntityTag)) {
-			ret = w.element.labRecruitsEntityTag;
-		}
-		else if (t.equals(IV4XRtags.labRecruitsEntityProperty)) {
-			ret = w.element.labRecruitsEntityProperty;
 		}
 		else if (t.equals(IV4XRtags.labRecruitsEntityLastUpdated)) {
 			ret = w.element.labRecruitsEntityLastUpdated;

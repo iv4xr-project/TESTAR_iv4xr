@@ -49,12 +49,9 @@ public class IV4XRMapping {
             put(iv4xrEntityPosition, IV4XRtags.entityPosition);
             put(iv4xrEntityBounds, IV4XRtags.entityBounds);
             put(iv4xrEntityVelocity, IV4XRtags.entityVelocity);
-            put(iv4xrLegacyEntityType, IV4XRtags.entityType);
+            put(iv4xrEntityType, IV4XRtags.entityType);
             put(iv4xrEntityTimestamp, IV4XRtags.entityTimestamp);
             put(iv4xrEntityIsActive, IV4XRtags.labRecruitsEntityIsActive);
-            put(iv4xrEntityType, IV4XRtags.labRecruitsEntityType);
-            put(iv4xrEntityTag, IV4XRtags.labRecruitsEntityTag);
-            put(iv4xrEntityProperty, IV4XRtags.labRecruitsEntityProperty);
             put(iv4xrEntityLastUpdated, IV4XRtags.labRecruitsEntityLastUpdated);
         }
     };

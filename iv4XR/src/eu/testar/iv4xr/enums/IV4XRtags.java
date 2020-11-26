@@ -41,8 +41,7 @@ import eu.testar.iv4xr.listener.GoalLibListener;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
 import helperclasses.datastructures.Vec3;
 import world.LabWorldModel;
-import world.LegacyEntityType;
-import world.LegacyObservation;
+import world.Observation;
 
 public class IV4XRtags extends TagsBase {
 	
@@ -68,7 +67,7 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<LabWorldModel> iv4xrLabWorldModel = from("iv4xrLabWorldModel", LabWorldModel.class);
 	
 	// Specific Entities Observation for Lab Recruits game 
-	public static final Tag<LegacyObservation> iv4xrLegacyObservation = from("LegacyObservation", LegacyObservation.class);
+	public static final Tag<Observation> iv4xrObservation = from("Observation", Observation.class);
 	
 	// TESTAR Windows Process layer, that allows interact with iv4XR SUTs using Windows API
 	public static final Tag<WinProcess> windowsProcess = from("windowsProcess", WinProcess.class);
@@ -108,6 +107,9 @@ public class IV4XRtags extends TagsBase {
 	// Velocity of WOM Entity
 	public static final Tag<Vec3> entityVelocity = from("entityVelocity", Vec3.class);
 	
+	// If WOM Entity is Dynamic
+	public static final Tag<Boolean> entityDynamic = from("entityDynamic", Boolean.class);
+	
 	// A unique identifier of the WOM Entity
 	public static final Tag<String> entityId = from("entityId", String.class);
 	
@@ -115,22 +117,13 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<String> agentId = from("agentId", String.class);
 	
 	// Generic Type or Role of the WOM Entity
-	public static final Tag<LegacyEntityType> entityType = from("entityType", LegacyEntityType.class);
+	public static final Tag<String> entityType = from("entityType", String.class);
 	
 	// Last time the State of the WOM Entity is sampled
 	public static final Tag<Long> entityTimestamp = from("entityTimestamp", Long.class);
 	
 	// Property used by Lab Recruits game to determine if some Entity is Active or not
 	public static final Tag<Boolean> labRecruitsEntityIsActive = from("labRecruitsEntityIsActive", Boolean.class);
-	
-	// Specific Type or Role of the Lab Recruits game Entity
-	public static final Tag<String> labRecruitsEntityType = from("labRecruitsEntityType", String.class);
-	
-	// Specific Lab Recruits game property with information about the Entity
-	public static final Tag<String> labRecruitsEntityTag = from("labRecruitsEntityTag", String.class);
-	
-	// Specific Lab Recruits game description about the Entity
-	public static final Tag<String> labRecruitsEntityProperty = from("labRecruitsEntityProperty", String.class);
 	
 	// Specific Lab Recruits game property ...
 	public static final Tag<Integer> labRecruitsEntityLastUpdated = from("labRecruitsEntityLastUpdated", Integer.class);

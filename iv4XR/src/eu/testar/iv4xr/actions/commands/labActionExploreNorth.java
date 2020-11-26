@@ -102,7 +102,7 @@ public class labActionExploreNorth extends TaggableBase implements Action {
 	}
 	
 	private Vec3 currentAgentPosition() {
-		return labRecruitsEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId))).agentPosition;
+		return labRecruitsEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId))).agent.position;
 	}
 	
 	private Vec3 addPositions(Vec3 original, Vec3 addend) {
