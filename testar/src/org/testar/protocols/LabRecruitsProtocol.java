@@ -271,8 +271,6 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	protected void stopSystem(SUT system) {
 		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).close();
 		super.stopSystem(system);
-		// Something is not being closed properly, for now we close all
-		Runtime.getRuntime().exit(0);
 	}
 
 	/**
@@ -297,6 +295,18 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 				+ " " + settings.get(ConfigTags.Mode, mode())
 				+ " " + sequencesPath
 				+ " " + status + " \"" + statusInfo + "\"" );
+
+		htmlReport.close();
+	}
+	
+	/**
+	 * This method is called after the last sequence, to allow for example handling the reporting of the session
+	 */
+	@Override
+	protected void closeTestSession() {
+		super.closeTestSession();
+		// Something is not being closed properly, for now we close all
+		Runtime.getRuntime().exit(0);
 	}
 
 	/**
