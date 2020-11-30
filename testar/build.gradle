@@ -259,3 +259,23 @@ task runTestLabrecruitsCommandAgentListener(type: Exec, dependsOn:'iv4xrDefaultD
         }
     }
 }
+
+// Test labrecruits goal agent listener
+task runTestLabrecruitsGoalAgentListener(type: Exec, dependsOn:'iv4xrDefaultDistribution') {
+    // Read command line output
+    standardOutput = new ByteArrayOutputStream()
+    group = 'test_testar_iv4xr_workflow'
+    description ='runTestLabrecruitsGoalAgentListener'
+    workingDir 'target/install/testar/bin'
+    commandLine 'cmd', '/c', 'testar sse=test_workflow_labrecruits_goal_agent_listener_complete ApplicationName="goal_listener" ShowVisualSettingsDialogOnStartup=false Mode=Generate StateModelEnabled=false'
+    doLast {
+        String output = standardOutput.toString()
+
+        // Check that output contains No problem detected. message to verify the correct execution
+        if(output.readLines().any{line->line.contains("No problem detected.")}) {
+            println "\n${output} \nTESTAR has been executed sucessfully"
+        } else {
+            throw new GradleException("\n${output} \nERROR: Executing TESTAR")
+        }
+    }
+}

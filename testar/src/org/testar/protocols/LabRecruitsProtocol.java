@@ -305,8 +305,6 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	@Override
 	protected void closeTestSession() {
 		super.closeTestSession();
-		// Something is not being closed properly, for now we close all
-		Runtime.getRuntime().exit(0);
 	}
 
 	/**

@@ -32,4 +32,11 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: runTestLabrecruitsCommandAgentListener-artifact
-        path: target/install/testar/bin/command_listener
+        path: D:/a/TESTAR_iv4xr/TESTAR_iv4xr/testar/target/install/testar/bin/command_listener
+    - name: Run test_workflow_labrecruits_goal_agent_listener_complete protocol with TESTAR iv4xr
+      run: ./gradlew runTestLabrecruitsGoalAgentListener
+    - name: Save runTestLabrecruitsGoalAgentListener HTML report artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: runTestLabrecruitsGoalAgentListener-artifact
+        path: D:/a/TESTAR_iv4xr/TESTAR_iv4xr/testar/target/install/testar/bin/goal_listener
