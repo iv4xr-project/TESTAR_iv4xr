@@ -30,9 +30,6 @@
 
 package eu.testar.iv4xr;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import agents.LabRecruitsTestAgent;
 import environments.LabRecruitsEnvironment;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;

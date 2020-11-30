@@ -298,14 +298,6 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 		htmlReport.close();
 	}
-	
-	/**
-	 * This method is called after the last sequence, to allow for example handling the reporting of the session
-	 */
-	@Override
-	protected void closeTestSession() {
-		super.closeTestSession();
-	}
 
 	/**
 	 * Determine if the iv4xr Widget Entity is Interactive

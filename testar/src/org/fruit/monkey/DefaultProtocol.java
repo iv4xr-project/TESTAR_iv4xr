@@ -94,6 +94,10 @@ import org.jnativehook.NativeHookException;
 import org.openqa.selenium.SessionNotCreatedException;
 import org.testar.OutputStructure;
 
+import com.orientechnologies.orient.core.exception.ODatabaseException;
+import com.orientechnologies.orient.core.exception.OSecurityAccessException;
+import com.orientechnologies.orient.core.exception.OStorageException;
+
 public class DefaultProtocol extends RuntimeControlsProtocol {
 
 	public static boolean faultySequence;
@@ -214,8 +218,44 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 
 		SUT system = null;
 
-		//initialize TESTAR with the given settings:
-		initialize(settings);
+		try {
+			//initialize TESTAR with the given settings:
+			initialize(settings);
+		} catch (OStorageException | ODatabaseException ode) {
+			String msg = "Error trying to connect with OrientDB database\n"
+					+ String.format("Check settings connection and OrientDB database name:\n %s %s %s %s", 
+							settings.get(ConfigTags.DataStoreType), settings.get(ConfigTags.DataStoreServer), 
+							settings.get(ConfigTags.DataStoreDirectory), settings.get(ConfigTags.DataStoreDB));
+
+			popupMessage(msg);
+			System.err.println(msg);
+			System.err.println(ode.getMessage());
+
+			this.mode = Modes.Quit;
+			return;
+
+		} catch (OSecurityAccessException osae) {
+			String msg = "Error trying to connect with OrientDB database\n"
+					+ String.format("Credentials error:\n %s %s", 
+							settings.get(ConfigTags.DataStoreUser), "NotCorrectPassword");
+
+			popupMessage(msg);
+			System.err.println(msg);
+			System.err.println(osae.getMessage());
+
+			this.mode = Modes.Quit;
+			return;
+
+		} catch (IllegalArgumentException iae) {
+			String msg = String.format("Error with DataStore type: %s", settings.get(ConfigTags.DataStore));
+
+			popupMessage(msg);
+			System.err.println(msg);
+			System.err.println(iae.getMessage());
+
+			this.mode = Modes.Quit;
+			return;
+		}
 
 		try {
 

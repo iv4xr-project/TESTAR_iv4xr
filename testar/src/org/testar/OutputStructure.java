@@ -103,7 +103,7 @@ public class OutputStructure {
 					executedSUTname = sutName;
 				}
 			}catch(Exception e) {
-				System.out.println("Error: This run generation will be stored with empty name");
+				System.out.println("WARNING: This run generation will be stored with empty name");
 			}
 			
 		}else {
