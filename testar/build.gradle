@@ -120,6 +120,7 @@ dependencies {
     compile group: 'org.eclipse.jetty', name: 'jetty-annotations', version: '9.4.30.v20200611'
     compile group: 'org.eclipse.jetty', name: 'apache-jsp', version: '9.4.30.v20200611'
     compile group: 'org.eclipse.jetty', name: 'apache-jstl', version: '9.4.30.v20200611'
+    compile group: 'commons-io', name: 'commons-io', version: '2.7'
     runtime project(':windows')
 }
 evaluationDependsOn(':windows')
@@ -233,3 +234,48 @@ customZipDistribution.dependsOn(installDist)
 debuggingDistribution.dependsOn(build)
 
 mainClassName='org.fruit.monkey.Main'
+
+
+/**
+ * Tasks to test TESTAR iv4xr using gradle
+ */
+
+// Test labrecruits commands agent listener
+task runTestLabrecruitsCommandAgentListener(type: Exec, dependsOn:'iv4xrDefaultDistribution') {
+    // Read command line output
+    standardOutput = new ByteArrayOutputStream()
+    group = 'test_testar_iv4xr_workflow'
+    description ='runTestLabrecruitsCommandAgentListener'
+    workingDir 'target/install/testar/bin'
+    commandLine 'cmd', '/c', 'testar sse=test_workflow_labrecruits_commands_agent_listener ApplicationName="command_listener" ShowVisualSettingsDialogOnStartup=false Mode=Generate StateModelEnabled=false'
+    doLast {
+        String output = standardOutput.toString()
+
+        // Check that output contains No problem detected. message to verify the correct execution
+        if(output.readLines().any{line->line.contains("No problem detected.")}) {
+            println "\n${output} \nTESTAR has been executed sucessfully"
+        } else {
+            throw new GradleException("\n${output} \nERROR: Executing TESTAR")
+        }
+    }
+}
+
+// Test labrecruits goal agent listener
+task runTestLabrecruitsGoalAgentListener(type: Exec, dependsOn:'iv4xrDefaultDistribution') {
+    // Read command line output
+    standardOutput = new ByteArrayOutputStream()
+    group = 'test_testar_iv4xr_workflow'
+    description ='runTestLabrecruitsGoalAgentListener'
+    workingDir 'target/install/testar/bin'
+    commandLine 'cmd', '/c', 'testar sse=test_workflow_labrecruits_goal_agent_listener_complete ApplicationName="goal_listener" ShowVisualSettingsDialogOnStartup=false Mode=Generate StateModelEnabled=false'
+    doLast {
+        String output = standardOutput.toString()
+
+        // Check that output contains No problem detected. message to verify the correct execution
+        if(output.readLines().any{line->line.contains("No problem detected.")}) {
+            println "\n${output} \nTESTAR has been executed sucessfully"
+        } else {
+            throw new GradleException("\n${output} \nERROR: Executing TESTAR")
+        }
+    }
+}

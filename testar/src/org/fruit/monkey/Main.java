@@ -179,8 +179,9 @@ public class Main {
 	 * Find or create the .sse file, to known with what settings and protocol start TESTAR
 	 * 
 	 * @param args
+	 * @throws IOException 
 	 */
-	private static void initTestarSSE(String[] args){
+	private static void initTestarSSE(String[] args) throws IOException{
 
 		Locale.setDefault(Locale.ENGLISH);
 
@@ -190,10 +191,9 @@ public class Main {
 
 		//Allow users to use command line to choose a protocol modifying sse file
 		for(String sett : args) {
-			if(sett.toString().contains("sse="))
-				try {
-					protocolFromCmd(sett);
-				}catch(Exception e) {System.out.println("Error trying to modify sse from command line");}
+			if(sett.toString().contains("sse=")){
+				protocolFromCmd(sett);
+			}
 		}
 
 		String[] files = getSSE();
@@ -517,7 +517,9 @@ public class Main {
 		}
 
 		//Command line protocol doesn't exist
-		if(!existSSE) {System.out.println("Protocol: "+sseName+" doesn't exist");}
+		if(!existSSE) {
+			throw new IllegalArgumentException(String.format("ERROR: Command line SSE protocol %s doesn't exist", sseName));
+		}
 
 		else{
 			//Obtain previous sse file and delete it (if exist)
