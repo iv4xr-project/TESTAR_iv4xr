@@ -127,22 +127,22 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 		 */
 		
 		for(String agentId : agentsIds) {
-			LabWorldModel labWOM = Observation.toWorldModel(system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).getResponse(Request.command(AgentCommand.doNothing(agentId))));
-			// LabWorldModel labWOM = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).observe(agentId);
+			LabWorldModel observedLabWOM = Observation.toWorldModel(system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).getResponse(Request.command(AgentCommand.doNothing(agentId))));
 			
-			if(rootElement.isForeground && labWOM.elements.size() > 0) {
-
-				// Add manually the Agent as an Entity
-				// TODO: Change Implementation in the future
-				rootElement.children = new ArrayList<IV4XRElement>((int) labWOM.elements.size() + 1);
+			if(rootElement.isForeground) {
+				// Add manually the Agent as an Element (Observed Entities + 1)
+				rootElement.children = new ArrayList<IV4XRElement>((int) observedLabWOM.elements.size() + 1);
 
 				rootElement.zindex = 0;
 				fillRect(rootElement);
 
-				IV4XRagent(rootElement, labWOM);
+				IV4XRagent(rootElement, observedLabWOM);
 
-				for(WorldEntity entity : labWOM.elements.values()) {
-					IV4XRdescend(rootElement, labWOM.getElement(entity.id));
+				// If Agent observes entities create the elements-entities
+				if(observedLabWOM.elements.size() > 0) {
+					for(WorldEntity entity : observedLabWOM.elements.values()) {
+						IV4XRdescend(rootElement, observedLabWOM.getElement(entity.id));
+					}
 				}
 			}
 		}
