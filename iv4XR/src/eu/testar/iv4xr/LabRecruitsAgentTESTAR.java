@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -77,6 +77,10 @@ public class LabRecruitsAgentTESTAR extends LabRecruitsTestAgent {
     		System.out.println(e.getMessage());
     		return false;
     	}
+    }
+    
+    public nl.uu.cs.aplib.mainConcepts.GoalStructure.PrimitiveGoal getCurrentGoal() {
+    	return currentGoal;
     }
 
 }

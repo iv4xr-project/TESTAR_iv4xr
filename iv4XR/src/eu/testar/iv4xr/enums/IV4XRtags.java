@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -137,4 +137,12 @@ public class IV4XRtags extends TagsBase {
 	
 	// Property used to know if an Action discern between TESTAR and the Agent
 	public static final Tag<Boolean> newActionByAgent = from("newActionByAgent", Boolean.class);
+	
+	/**
+	 * Agent - SocioEmotional values
+	 */
+	
+	public static final Tag<Double> agentPleasure = from("agentPleasure", Double.class);
+	public static final Tag<Double> agentDominance = from("agentDominance", Double.class);
+	public static final Tag<Double> agentArousal = from("agentArousal", Double.class);
 }
