@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,39 +30,28 @@
 
 package eu.testar.iv4xr.actions.commands;
 
-import org.fruit.alayer.Action;
-import org.fruit.alayer.Role;
-import org.fruit.alayer.Roles;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
-import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import environments.LabRecruitsEnvironment;
+import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 
-public class labActionCommandObserve extends TaggableBase implements Action {
-	
+public class labActionCommandObserve extends labActionCommand {
 	private static final long serialVersionUID = 810855276392071973L;
-
-	private LabRecruitsEnvironment labRecruitsEnvironment;
-	private String agentId;
-	
-	public String getAgentId() {
-		return agentId;
-	}
 	
 	public void selectedByAgent() {
 		this.set(IV4XRtags.agentAction, true);
 	}
 	
 	public labActionCommandObserve(State state, Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent) {
-		this.set(Tags.Role, Roles.System);
-		this.set(Tags.OriginWidget, w);
 		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
+		this.set(Tags.OriginWidget, w);
+		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandObserver);
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, agentAction);
 		this.set(IV4XRtags.newActionByAgent, newByAgent);
@@ -80,18 +69,6 @@ public class labActionCommandObserve extends TaggableBase implements Action {
 	
 	public boolean actionEquals(labActionCommandObserve action) {
 		return (this.agentId.equals(action.getAgentId()));
-	}
-
-	@Override
-	public String toParametersString() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String toString(Role... discardParameters) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019, 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019, 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,39 +28,24 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-
 package eu.testar.iv4xr.actions.commands;
 
-import org.fruit.alayer.Action;
-import org.fruit.alayer.Role;
-import org.fruit.alayer.Roles;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
-import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import environments.LabRecruitsEnvironment;
+import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import helperclasses.datastructures.Vec3;
 
-public class labActionCommandMove extends TaggableBase implements Action {
+public class labActionCommandMove extends labActionCommand {
 	private static final long serialVersionUID = 4431931844664688235L;
 	
-	private LabRecruitsEnvironment labRecruitsEnvironment;
-	private String agentId;
-	private Vec3 agentPosition;
 	private Vec3 targetPosition;
 	private boolean jump;
-	
-	public String getAgentId() {
-		return agentId;
-	}
-	
-	public Vec3 getAgentPosition() {
-		return agentPosition;
-	}
 	
 	public Vec3 getTargetPosition() {
 		return targetPosition;
@@ -74,12 +59,11 @@ public class labActionCommandMove extends TaggableBase implements Action {
 		this.set(IV4XRtags.agentAction, true);
 	}
 	
-	public labActionCommandMove(State state, Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 agentPosition, Vec3 targetPosition, boolean jump, boolean agentAction, boolean newByAgent){
-		this.set(Tags.Role, Roles.System);
-		this.set(Tags.OriginWidget, w);
+	public labActionCommandMove(Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 targetPosition, boolean jump, boolean agentAction, boolean newByAgent){
 		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
-		this.agentPosition = agentPosition;
+		this.set(Tags.OriginWidget, w);
+		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
 		this.targetPosition = targetPosition;
 		this.jump = jump;
 		this.set(Tags.Desc, toShortString());
@@ -89,29 +73,16 @@ public class labActionCommandMove extends TaggableBase implements Action {
 	
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		
-		labRecruitsEnvironment.moveToward(agentId, agentPosition, targetPosition);
-		
+		labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), targetPosition);
 	}
 
 	@Override
 	public String toShortString() {
-		return "Move agent: " + agentId + " from: " + agentPosition + " to: " + targetPosition;
+		return "Move agent: " + agentId + " from: " + currentAgentPosition() + " to: " + targetPosition;
 	}
 	
 	public boolean actionEquals(labActionCommandMove action) {
-		return (this.agentId.equals(action.getAgentId())) && (this.agentPosition.equals(action.getAgentPosition())) 
+		return (this.agentId.equals(action.getAgentId())) && (this.currentAgentPosition().equals(action.currentAgentPosition())) 
 				&& (this.targetPosition.equals(action.getTargetPosition())); /* && (this.jump == jump)*/
-	}
-
-	@Override
-	public String toParametersString() {
-		return null;
-	}
-
-	@Override
-	public String toString(Role... discardParameters) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019, 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019, 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2019 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2019 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,14 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-import static nl.uu.cs.aplib.AplibEDSL.ABORT;
-import static nl.uu.cs.aplib.AplibEDSL.FIRSTof;
-import static nl.uu.cs.aplib.AplibEDSL.SEQ;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import org.fruit.Util;
 import org.fruit.alayer.*;
@@ -45,23 +38,16 @@ import org.fruit.monkey.Settings;
 import org.testar.protocols.LabRecruitsProtocol;
 
 import agents.tactics.GoalLib;
-import agents.tactics.TacticLib;
-import communication.agent.AgentCommand;
-import communication.system.Request;
 import environments.LabRecruitsEnvironment;
 import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.actions.goals.labActionGoal;
 import eu.testar.iv4xr.actions.goals.labActionGoalEntityInCloseRange;
 import eu.testar.iv4xr.actions.goals.labActionGoalEntityInteracted;
-import eu.testar.iv4xr.actions.goals.labActionGoalEntityStateRefreshed;
-import eu.testar.iv4xr.actions.goals.labActionTacticExplore;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
 import nl.ou.testar.RandomActionSelector;
-import nl.uu.cs.aplib.mainConcepts.Goal;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
-import world.LegacyObservation;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
@@ -83,8 +69,6 @@ import world.LegacyObservation;
 public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol {
 
 	LabRecruitsAgentTESTAR agentTESTAR;
-	Set<String> interactiveEntities = new HashSet<>(Arrays.asList("button1", "button2", "button3", "button4"));
-	Set<String> switchEntities = new HashSet<>(Arrays.asList("door1", "door2", "door3"));
 
 	/**
 	 * Called once during the life time of TESTAR.
@@ -144,33 +128,25 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	@Override
 	protected Set<Action> deriveActions(SUT system, State state) {
 		Set<Action> labActions = new HashSet<>();
-
-		// Add the possibility to explore
-		for(String entityId : interactiveEntities) {
-			GoalStructure goalExploreEntity = customExploreToEntity(entityId);
-			Action actionExplore = new labActionTacticExplore(state, agentTESTAR, goalExploreEntity, agentId, entityId);
-			labActions.add(actionExplore);
-		}
 		
-		// Add the possibility to refresh the state of entities
-		for(String entityId : switchEntities) {
-			GoalStructure goalStateRefreshed = GoalLib.entityStateRefreshed(entityId);
-			Action actionRefresh = new labActionGoalEntityStateRefreshed(state, agentTESTAR, goalStateRefreshed, agentId, entityId);
-			labActions.add(actionRefresh);
-		}
-
+		// Get the LabRecruitsEnvironment
+		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
+		
+		// NavMesh Exploration : Add one exploration movement for each visible node
+		labActions = exploreVisibleNodesActions(labActions, state, labRecruitsEnv, agentId);
+		
 		// For every interactive entity agents have the possibility to achieve Interact and Close Range goals
 		for(Widget w : state) {
-			if(isInteractiveEntity(w) && w.get(IV4XRtags.entityId,"").contains("button")) {
+			if(isInteractiveEntity(w)) {
 				String entityId = w.get(IV4XRtags.entityId);
 				
-				GoalStructure goalNavigateEntity = customNavigateToEntity(entityId);
-				Action actionNavigateEntity = new labActionGoalEntityInCloseRange(state, agentTESTAR, goalNavigateEntity, agentId, entityId);
+				GoalStructure goalNavigateEntity = GoalLib.entityInCloseRange(entityId);
+				Action actionNavigateEntity = new labActionGoalEntityInCloseRange(w, agentTESTAR, goalNavigateEntity, agentId);
 				labActions.add(actionNavigateEntity);
 				
-				if(isAgentCloseToEntity(system, w, 0.4)) {
-					GoalStructure goalEntityInteracted = customInteractWithEntity(entityId);
-					Action actionEntityInteracted = new labActionGoalEntityInteracted(state, agentTESTAR, goalEntityInteracted, agentId, entityId);
+				if(isAgentCloseToEntity(system, w, 1.0)) {
+					GoalStructure goalEntityInteracted = GoalLib.entityInteracted(entityId);
+					Action actionEntityInteracted = new labActionGoalEntityInteracted(w, agentTESTAR, goalEntityInteracted, agentId);
 					labActions.add(actionEntityInteracted);
 				}
 			}
@@ -218,9 +194,19 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 			if(action instanceof labActionGoal) {
 				agentTESTAR.setGoal(((labActionGoal) action).getActionGoal());
 			} else {
-				System.out.println("ERROR: Seems that selected Action is not an instance of labActionGoal");
-				System.out.println("ERROR: We need LabRecruits Action Goals to interact at Goal level with the system");
-				throw new ActionFailedException("Action is not an instanceof labActionGoal");
+				//System.out.println("ERROR: Seems that selected Action is not an instance of labActionGoal");
+				//System.out.println("ERROR: We need LabRecruits Action Goals to interact at Goal level with the system");
+				//throw new ActionFailedException("Action is not an instanceof labActionGoal");
+				
+				// execute selected action in the current state
+				action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
+
+				double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
+				Util.pause(waitTime);
+
+				System.out.println(action.toShortString());
+
+				return true;
 			}
 
 			/**
@@ -266,46 +252,4 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 		super.stopSystem(system);
 	}
 	
-	/**
-	 * Custom Goal to Navigate to the Observable Entity.
-	 */
-	public static GoalStructure customNavigateToEntity(String entityId) {
-		var goal =  new Goal(String.format("Navigate to entity: [%s]", entityId))
-				. toSolve((BeliefState belief) -> true) 
-				. withTactic(SEQ(
-						TacticLib.navigateTo(entityId), //try to move to the entity
-						ABORT()))
-				. lift();
-
-		return goal;
-	}
-	
-	/**
-	 * Custom Goal Interact with Observable Entity.
-	 */
-	public static GoalStructure customInteractWithEntity(String entityId) {
-		var goal =  new Goal(String.format("Interact with entity: [%s]", entityId))
-				. toSolve((BeliefState belief) -> true) 
-				. withTactic(SEQ(
-						TacticLib.interact(entityId),// interact with the entity
-						ABORT()))
-				. lift();
-
-		return goal;
-	}
-	
-	/**
-	 * Custom Goal to Explore to find one Entity.
-	 */
-	public static GoalStructure customExploreToEntity(String entityId) {
-		// prepare exploration tactics and create goal structure
-		var goal = new Goal("Explore the World").toSolve((BeliefState belief) -> belief.canInteract(entityId))
-				.withTactic(FIRSTof(
-						TacticLib.navigateTo(entityId), //try to move to the entity
-						TacticLib.explore(), //find the entity
-						ABORT()
-						)).lift();
-
-		return goal;
-	}
 }

@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,12 +30,8 @@
 
 package eu.testar.iv4xr.actions.goals;
 
-import org.fruit.alayer.Role;
-import org.fruit.alayer.SUT;
-import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
-import org.fruit.alayer.exceptions.ActionFailedException;
-
+import org.fruit.alayer.Widget;
 import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
@@ -46,17 +42,15 @@ public class labActionGoalPositionInCloseRange extends labActionGoal {
 
 	private static final long serialVersionUID = -3142712768999384558L;
 
-	private String agentId;
 	private Vec3 goalPosition;
-	private LabRecruitsAgentTESTAR agentTESTAR;
-	private GoalStructure goalStructure;
 
-	public labActionGoalPositionInCloseRange(State state, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId, Vec3 goalPosition) {
-		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalPositionInCloseRange);
-		this.set(Tags.OriginWidget, state);
+	public labActionGoalPositionInCloseRange(Widget w, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId, Vec3 goalPosition) {
 		this.agentTESTAR = testAgent;
 		this.goalStructure = goalStructure;
 		this.agentId = agentId;
+		this.set(Tags.OriginWidget, w);
+		this.entityId = w.get(IV4XRtags.entityId);
+		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionGoalPositionInCloseRange);
 		this.goalPosition = goalPosition;
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, false);
@@ -65,34 +59,10 @@ public class labActionGoalPositionInCloseRange extends labActionGoal {
 		// Set the goal to the agent
 		agentTESTAR.setGoal(goalStructure);
 	}
-	
-	@Override
-	public GoalStructure getActionGoal() {
-		return goalStructure;
-	}
-
-	@Override
-	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		// It has been decided to execute this action
-		// Send the instructions to achieve the goal
-		agentTESTAR.update();
-	}
 
 	@Override
 	public String toShortString() {
 		return "Agent: " + agentId + " executing Goal PositionInCloseRange to " + goalPosition;
-	}
-
-	@Override
-	public String toParametersString() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String toString(Role... discardParameters) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

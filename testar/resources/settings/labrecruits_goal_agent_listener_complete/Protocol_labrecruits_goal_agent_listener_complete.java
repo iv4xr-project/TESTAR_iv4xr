@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019, 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019, 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2019 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2019 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -40,21 +40,14 @@ import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.protocols.LabRecruitsProtocol;
 
-import agents.tactics.GoalLib;
-import communication.agent.AgentCommand;
-import communication.system.Request;
-import environments.LabRecruitsEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.world.WorldEntity;
 import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
-import eu.testar.iv4xr.actions.goals.labActionGoalEntityInCloseRange;
-import eu.testar.iv4xr.actions.goals.labActionGoalEntityInteracted;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.listener.GoalLibListener;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
-import world.LegacyObservation;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
@@ -207,28 +200,7 @@ public class Protocol_labrecruits_goal_agent_listener_complete extends LabRecrui
 		/**
 		 * We can derive Actions trying to merge TESTAR knowledge with LabRecruitsAgent knowledge
 		 * But these actions will not be selected
-		 * 
-
-		// For every interactive entity agents have the possibility to achieve Interact and Close Range goals
-		for(Widget w : state) {
-			if(isInteractiveEntity(w)) {
-				String entityId = w.get(IV4XRtags.entityId);
-
-				// Derive an attach an Entity Interact Goal
-				GoalStructure goalEntityInteracted = GoalLib.entityInteracted(entityId);
-				Action actionEntityInteracted = new labActionGoalEntityInteracted(state, testAgent, goalEntityInteracted, agentId, entityId);
-				labActions.add(actionEntityInteracted);
-
-				// Derive an attach an Entity In Close Range to Move the agent
-				GoalStructure goalEntityInCloseRange = GoalLib.entityInCloseRange(entityId);
-				Action actionEntityInCloseRange = new labActionGoalEntityInCloseRange(state, testAgent, goalEntityInCloseRange, agentId, entityId);
-				labActions.add(actionEntityInCloseRange);
-			}
-		}
-
-		// Set derived actions to middle goal listener
-		GoalLibListener.setDerivedGoalActionsTESTAR(labActions);
-		**/
+		 */
 
 		return labActions;
 	}

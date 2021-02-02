@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -42,22 +42,23 @@ public class iv4xrActionRoles {
 	iv4xrAction = Role.from("iv4xrAction", ActionRoles.Action),
 
 	// Command Actions based on environments.LabRecruitsEnvironment
-	iv4xrLowActionCommand = Role.from("iv4xrLowActionCommand", iv4xrAction),
-	iv4xrLowActionCommandInteract = Role.from("iv4xrLowActionCommandInteract", iv4xrLowActionCommand),
-	iv4xrLowActionCommandMove = Role.from("iv4xrLowActionCommandMove", iv4xrLowActionCommand),
-	iv4xrLowActionCommandObserver = Role.from("iv4xrLowActionCommandObserver", iv4xrLowActionCommand),
+	iv4xrActionCommand = Role.from("iv4xrActionCommand", iv4xrAction),
+	iv4xrActionCommandInteract = Role.from("iv4xrActionCommandInteract", iv4xrActionCommand),
+	iv4xrActionCommandMove = Role.from("iv4xrActionCommandMove", iv4xrActionCommand),
+	iv4xrActionCommandObserver = Role.from("iv4xrActionCommandObserver", iv4xrActionCommand),
+	iv4xrActionCommandExplore = Role.from("iv4xrActionCommandExplore", iv4xrActionCommandMove),
 
 	// Goal Actions based on agents.tactics.GoalLib
-	iv4xrHighActionGoal = Role.from("iv4xrHighActionGoal", iv4xrAction),
-	iv4xrHighActionGoalPositionInCloseRange = Role.from("iv4xrHighActionGoalPositionInCloseRange", iv4xrHighActionGoal),
-	iv4xrHighActionGoalPositionsVisited = Role.from("iv4xrHighActionGoalPositionsVisited", iv4xrHighActionGoal),
-	iv4xrHighActionGoalEntityInCloseRange = Role.from("iv4xrHighActionGoalEntityInCloseRange", iv4xrHighActionGoal),
-	iv4xrHighActionGoalEntityInteracted = Role.from("iv4xrHighActionGoalEntityInteracted", iv4xrHighActionGoal),
-	iv4xrHighActionGoalEntityStateRefreshed = Role.from("iv4xrHighActionGoalEntityStateRefreshed", iv4xrHighActionGoal),
-	iv4xrHighActionGoalEntityInspected = Role.from("iv4xrHighActionGoalEntityInspected", iv4xrHighActionGoal),
-	iv4xrHighActionGoalEntityInvariantChecked = Role.from("iv4xrHighActionGoalEntityInvariantChecked", iv4xrHighActionGoal),
-	iv4xrHighActionGoalInvariantChecked = Role.from("iv4xrHighActionGoalInvariantChecked", iv4xrHighActionGoal),
-	iv4xrHighActionGoalMemorySent= Role.from("iv4xrHighActionGoalMemorySent", iv4xrHighActionGoal),
-	iv4xrHighActionGoalPingSent = Role.from("iv4xrHighActionGoalPingSent", iv4xrHighActionGoal);
+	iv4xrActionGoal = Role.from("iv4xrActionGoal", iv4xrAction),
+	iv4xrActionGoalPositionInCloseRange = Role.from("iv4xrActionGoalPositionInCloseRange", iv4xrActionGoal),
+	iv4xrActionGoalPositionsVisited = Role.from("iv4xrActionGoalPositionsVisited", iv4xrActionGoal),
+	iv4xrActionGoalEntityInCloseRange = Role.from("iv4xrActionGoalEntityInCloseRange", iv4xrActionGoal),
+	iv4xrActionGoalEntityInteracted = Role.from("iv4xrActionGoalEntityInteracted", iv4xrActionGoal),
+	iv4xrActionGoalEntityStateRefreshed = Role.from("iv4xrActionGoalEntityStateRefreshed", iv4xrActionGoal),
+	iv4xrActionGoalEntityInspected = Role.from("iv4xrActionGoalEntityInspected", iv4xrActionGoal),
+	iv4xrActionGoalEntityInvariantChecked = Role.from("iv4xrActionGoalEntityInvariantChecked", iv4xrActionGoal),
+	iv4xrActionGoalInvariantChecked = Role.from("iv4xrActionGoalInvariantChecked", iv4xrActionGoal),
+	iv4xrActionGoalMemorySent= Role.from("iv4xrActionGoalMemorySent", iv4xrActionGoal),
+	iv4xrActionGoalPingSent = Role.from("iv4xrActionGoalPingSent", iv4xrActionGoal);
 
 }

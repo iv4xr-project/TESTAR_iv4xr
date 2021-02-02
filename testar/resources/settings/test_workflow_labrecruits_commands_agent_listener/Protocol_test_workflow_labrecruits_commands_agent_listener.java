@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019, 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019, 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2019 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2019 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -47,19 +47,14 @@ import org.testar.protocols.LabRecruitsProtocol;
 
 import agents.LabRecruitsTestAgent;
 import agents.tactics.GoalLib;
-import communication.agent.AgentCommand;
-import communication.system.Request;
 import environments.LabRecruitsEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.world.WorldEntity;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
-import helperclasses.datastructures.Vec3;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
-import world.LegacyObservation;
-import world.Observation;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
@@ -198,8 +193,6 @@ public class Protocol_test_workflow_labrecruits_commands_agent_listener extends 
 
 		// Get the Observation of the State form the Agent point of view
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-		Observation observation = labRecruitsEnv.getResponse(Request.command(AgentCommand.doNothing(agentId)));
-		Vec3 agentPosition = Observation.toWorldModel(observation).position;
 
 		// Every time the agents have the possibility to observe the Environment
 		labActions.add(new labActionCommandObserve(state, state, labRecruitsEnv, agentId, false, false));
@@ -207,8 +200,8 @@ public class Protocol_test_workflow_labrecruits_commands_agent_listener extends 
 		// For every interactive entity agents have the possibility to move and interact with
 		for(Widget w : state) {
 			if(isInteractiveEntity(w)) {
-				labActions.add(new labActionCommandMove(state, w, labRecruitsEnv, agentId, agentPosition, w.get(IV4XRtags.entityPosition), false, false, false));
-				labActions.add(new labActionCommandInteract(state, w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityId, "UnknowId"), false, false));
+				labActions.add(new labActionCommandMove(w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
+				labActions.add(new labActionCommandInteract(w, labRecruitsEnv, agentId, false, false));
 			}
 		}
 

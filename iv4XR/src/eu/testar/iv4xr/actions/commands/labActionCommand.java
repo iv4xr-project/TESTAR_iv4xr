@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,60 +28,44 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package eu.testar.iv4xr.actions.goals;
+package eu.testar.iv4xr.actions.commands;
 
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.TaggableBase;
-import org.fruit.alayer.Tags;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
-import eu.testar.iv4xr.actions.iv4xrActionRoles;
-import eu.testar.iv4xr.enums.IV4XRtags;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure;
+import communication.agent.AgentCommand;
+import communication.system.Request;
+import environments.LabRecruitsEnvironment;
+import helperclasses.datastructures.Vec3;
 
-public class labActionTacticExplore extends labActionGoal {
-
-	private static final long serialVersionUID = 339827287283794783L;
-
-	private String agentId;
-	private String entityId;
-	private LabRecruitsAgentTESTAR agentTESTAR;
-	private GoalStructure goalStructure;
-
-	public labActionTacticExplore(State state, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId, String entityId) {
-		this.set(Tags.Role, iv4xrActionRoles.iv4xrHighActionGoalEntityInteracted);
-		this.set(Tags.OriginWidget, state);
-		this.agentTESTAR = testAgent;
-		this.agentId = agentId;
-		this.entityId = entityId;
-		this.goalStructure = goalStructure;
-		this.set(Tags.Desc, toShortString());
-		this.set(IV4XRtags.agentAction, false);
-		this.set(IV4XRtags.newActionByAgent, false);
-
-		// Set the goal to the agent
-		agentTESTAR.setGoal(goalStructure);
+public class labActionCommand extends TaggableBase implements Action {
+	private static final long serialVersionUID = 3825016139364224082L;
+	
+	protected LabRecruitsEnvironment labRecruitsEnvironment;
+	protected String agentId;
+	
+	public String getAgentId() {
+		return agentId;
 	}
 	
-	@Override
-	public GoalStructure getActionGoal() {
-		return goalStructure;
+	protected Vec3 currentAgentPosition() {
+		return labRecruitsEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId))).agent.position;
 	}
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		// It has been decided to execute this action	
-		// Send the instructions to achieve the goal
-		agentTESTAR.update();
+		// TODO Auto-generated method stub
+		
 	}
 
 	@Override
 	public String toShortString() {
-		return "Agent: " + agentId + " is Exploring the World trying to find Entity: " + entityId;
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override

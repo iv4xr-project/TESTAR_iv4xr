@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -37,20 +37,26 @@ import org.fruit.alayer.State;
 import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
+import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
 public class labActionGoal extends TaggableBase implements Action {
 
 	private static final long serialVersionUID = -3743587033982637698L;
+	
+	protected String agentId;
+	protected String entityId;
+	protected LabRecruitsAgentTESTAR agentTESTAR;
+	protected GoalStructure goalStructure;
 
 	public GoalStructure getActionGoal() {
-		return null;
+		return goalStructure;
 	}
 	
-	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		// TODO Auto-generated method stub
-		
+		// It has been decided to execute this action
+		// Send the instructions to achieve the goal
+		agentTESTAR.update();
 	}
 
 	@Override

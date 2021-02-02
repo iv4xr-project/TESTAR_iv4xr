@@ -30,44 +30,32 @@
 
 package eu.testar.iv4xr.actions.commands;
 
-import java.util.Random;
-
-import org.fruit.alayer.Action;
-import org.fruit.alayer.Role;
-import org.fruit.alayer.Roles;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
-import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.Tags;
+import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import communication.agent.AgentCommand;
-import communication.system.Request;
 import environments.LabRecruitsEnvironment;
+import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import helperclasses.datastructures.Vec3;
-import pathfinding.TriangleGraph;
 
-public class labActionExploreNavMesh extends TaggableBase implements Action {
+public class labActionExplorePosition extends labActionCommand {
 	private static final long serialVersionUID = 885421289057696013L;
 
-	private LabRecruitsEnvironment labRecruitsEnvironment;
-	private String agentId;
-	private Vec3 targetPosition;
-
-	public String getAgentId() {
-		return agentId;
-	}
+	private Vec3 explorePosition;
 
 	public void selectedByAgent() {
 		this.set(IV4XRtags.agentAction, true);
 	}
 
-	public labActionExploreNavMesh(State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent) {
-		this.set(Tags.Role, Roles.System);
-		this.set(Tags.OriginWidget, state);
+	public labActionExplorePosition(Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 explorePosition, boolean agentAction, boolean newByAgent) {
 		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
+		this.set(Tags.OriginWidget, w);
+		this.explorePosition = explorePosition;
+		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandExplore);
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, agentAction);
 		this.set(IV4XRtags.newActionByAgent, newByAgent);
@@ -75,53 +63,21 @@ public class labActionExploreNavMesh extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		// Move randomly using NavMesh
-		
-		// we need to use the pathfinder graph, if i'm not wrong this maps indexes and vec3
-		TriangleGraph navGraph = labRecruitsEnvironment.pathFinder.graph;
-		
-		// indexes, but we need to obtain Vec3 of these indexes using the graph
-		int[] visibleNavigationNodes = labRecruitsEnvironment.observe(agentId).visibleNavigationNodes;
-		System.out.println("labActionExploreNavMesh visibleNavigationNodes : " + visibleNavigationNodes.length);
-		for(int i = 0; i < visibleNavigationNodes.length; i++) {
-			System.out.println("VisibleNode " + visibleNavigationNodes[i] + " : " + navGraph.toVec3(visibleNavigationNodes[i]));
-		}
-		
-		int random = new Random().nextInt(visibleNavigationNodes.length);
-		System.out.println("Random Node Selected " + visibleNavigationNodes[random] + " : " + navGraph.toVec3(visibleNavigationNodes[random]));
-		
-		targetPosition = navGraph.toVec3(visibleNavigationNodes[random]);
-		labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), targetPosition);
+		labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), explorePosition);
 	}
 
 	@Override
 	public String toShortString() {
-		return "Agent: " + agentId + " explore NavMesh  from: " + currentAgentPosition() + " to: " + targetPosition;
+		return "Agent: " + agentId + " explore NavMesh  from: " + currentAgentPosition() + " to: " + explorePosition;
 	}
 
 	/**
 	 * Two labActionExploreNavMesh are equals if the same agent tries to move to the North
 	 * from the coordinates of a nearby position
 	 */
-	public boolean actionEquals(labActionExploreNavMesh action) {
+	public boolean actionEquals(labActionExplorePosition action) {
 		return (this.agentId.equals(action.getAgentId()) 
 				&& this.currentAgentPosition().distance(action.currentAgentPosition()) < 0.2);
 	}
-
-	@Override
-	public String toParametersString() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String toString(Role... discardParameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	private Vec3 currentAgentPosition() {
-		return labRecruitsEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId))).agent.position;
-	}
-
+	
 }

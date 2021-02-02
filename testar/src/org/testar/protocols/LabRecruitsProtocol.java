@@ -51,13 +51,17 @@ import org.testar.OutputStructure;
 
 import com.google.common.collect.Sets;
 
+import environments.LabRecruitsEnvironment;
 import es.upv.staq.testar.CodingManager;
 import es.upv.staq.testar.NativeLinker;
 import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.IV4XRStateFetcher;
+import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import helperclasses.datastructures.Vec3;
 import nl.ou.testar.RandomActionSelector;
 import nl.ou.testar.HtmlReporting.HtmlSequenceReport;
+import pathfinding.TriangleGraph;
 
 public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
@@ -340,5 +344,19 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	 */
 	protected boolean hazardousEntityFound() {
 		return false;
+	}
+	
+	protected static Set<Action> exploreVisibleNodesActions(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
+		// we need to use the pathfinder graph, if i'm not wrong this maps indexes and vec3
+		TriangleGraph navGraph = labRecruitsEnvironment.pathFinder.graph;
+		
+		// indexes, but we need to obtain Vec3 of these indexes using the graph
+		int[] visibleNavigationNodes = labRecruitsEnvironment.observe(agentId).visibleNavigationNodes;
+		for(int i = 0; i < visibleNavigationNodes.length; i++) {
+			Vec3 nodePosition = navGraph.toVec3(visibleNavigationNodes[i]);
+			actions.add(new labActionExplorePosition(state, labRecruitsEnvironment, agentId, nodePosition, false, false));
+		}
+		
+		return actions;
 	}
 }
