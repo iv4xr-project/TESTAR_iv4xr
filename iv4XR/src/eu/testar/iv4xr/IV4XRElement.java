@@ -40,8 +40,7 @@ import java.util.List;
 import org.fruit.alayer.Rect;
 import org.fruit.alayer.TaggableBase;
 
-import helperclasses.datastructures.Vec3;
-import world.LegacyEntityType;
+import eu.iv4xr.framework.spatial.Vec3;
 
 /**
  * The Object or Node element of an application that will represent a TESTAR Widget

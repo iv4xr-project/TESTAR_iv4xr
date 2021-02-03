@@ -32,6 +32,7 @@
 package org.testar.protocols;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
@@ -58,10 +59,9 @@ import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import helperclasses.datastructures.Vec3;
+import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
 import nl.ou.testar.HtmlReporting.HtmlSequenceReport;
-import pathfinding.TriangleGraph;
 
 public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
@@ -336,7 +336,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		if(Objects.isNull(widget.get(IV4XRtags.entityPosition, null)))
 			return false;
 
-		return (system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition).distance(widget.get(IV4XRtags.entityPosition)) < maxDistance);
+		return (Vec3.dist(system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition), widget.get(IV4XRtags.entityPosition)) < maxDistance);
 	}
 	
 	/**
@@ -347,13 +347,8 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	}
 	
 	protected static Set<Action> exploreVisibleNodesActions(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
-		// we need to use the pathfinder graph, if i'm not wrong this maps indexes and vec3
-		TriangleGraph navGraph = labRecruitsEnvironment.pathFinder.graph;
-		
-		// indexes, but we need to obtain Vec3 of these indexes using the graph
-		int[] visibleNavigationNodes = labRecruitsEnvironment.observe(agentId).visibleNavigationNodes;
-		for(int i = 0; i < visibleNavigationNodes.length; i++) {
-			Vec3 nodePosition = navGraph.toVec3(visibleNavigationNodes[i]);
+		ArrayList<Vec3> visibleNavigationNodes = labRecruitsEnvironment.worldNavigableMesh.vertices;
+		for(Vec3 nodePosition : visibleNavigationNodes) {
 			actions.add(new labActionExplorePosition(state, labRecruitsEnvironment, agentId, nodePosition, false, false));
 		}
 		

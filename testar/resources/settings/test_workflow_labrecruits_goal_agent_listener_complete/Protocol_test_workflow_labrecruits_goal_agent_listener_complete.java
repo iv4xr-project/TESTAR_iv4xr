@@ -45,8 +45,9 @@ import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
 import org.testar.protocols.LabRecruitsProtocol;
 
+import agents.tactics.GoalLib;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
-import eu.iv4xr.framework.world.WorldEntity;
+import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.listener.GoalLibListener;
@@ -158,7 +159,8 @@ public class Protocol_test_workflow_labrecruits_goal_agent_listener_complete ext
 				GoalLibListener.entityInvariantChecked(testAgent,
 						"door3", 
 						"door3 should be open", 
-						(WorldEntity e) -> e.getBooleanProperty("isOpen"))
+						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
+				GoalLib.entityInCloseRange("door3")
 				);
 
 		// Set SubGoals List into the internal Map

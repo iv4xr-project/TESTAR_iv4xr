@@ -39,7 +39,7 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import environments.LabRecruitsEnvironment;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import helperclasses.datastructures.Vec3;
+import eu.iv4xr.framework.spatial.Vec3;
 
 public class labActionCommandMove extends labActionCommand {
 	private static final long serialVersionUID = 4431931844664688235L;

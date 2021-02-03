@@ -48,13 +48,10 @@ import org.fruit.alayer.Tags;
 import org.fruit.alayer.exceptions.StateBuildException;
 import org.fruit.alayer.windows.Windows;
 
-import communication.agent.AgentCommand;
-import communication.system.Request;
-import eu.iv4xr.framework.world.WorldEntity;
+import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import world.LabEntity;
 import world.LabWorldModel;
-import world.Observation;
 
 /**
  * State Fetcher object extracts the information from the iv4XR Environment to create the Widget Tree
@@ -127,7 +124,7 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 		 */
 		
 		for(String agentId : agentsIds) {
-			LabWorldModel observedLabWOM = Observation.toWorldModel(system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).getResponse(Request.command(AgentCommand.doNothing(agentId))));
+			LabWorldModel observedLabWOM = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).observe(agentId);
 			
 			if(rootElement.isForeground) {
 				// Add manually the Agent as an Element (Observed Entities + 1)

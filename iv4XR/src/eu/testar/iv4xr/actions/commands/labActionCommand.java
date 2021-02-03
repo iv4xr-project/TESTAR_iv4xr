@@ -37,10 +37,8 @@ import org.fruit.alayer.State;
 import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import communication.agent.AgentCommand;
-import communication.system.Request;
 import environments.LabRecruitsEnvironment;
-import helperclasses.datastructures.Vec3;
+import eu.iv4xr.framework.spatial.Vec3;
 
 public class labActionCommand extends TaggableBase implements Action {
 	private static final long serialVersionUID = 3825016139364224082L;
@@ -53,7 +51,7 @@ public class labActionCommand extends TaggableBase implements Action {
 	}
 	
 	protected Vec3 currentAgentPosition() {
-		return labRecruitsEnvironment.getResponse(Request.command(AgentCommand.doNothing(agentId))).agent.position;
+		return labRecruitsEnvironment.observe(agentId).position;
 	}
 
 	@Override

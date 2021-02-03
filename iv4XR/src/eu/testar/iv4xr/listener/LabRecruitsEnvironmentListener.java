@@ -38,12 +38,12 @@ import org.fruit.alayer.Action;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
-import environments.EnvironmentConfig;
+import environments.LabRecruitsConfig;
 import environments.LabRecruitsEnvironment;
 import es.upv.staq.testar.CodingManager;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import helperclasses.datastructures.Vec3;
+import eu.iv4xr.framework.spatial.Vec3;
 import world.LabWorldModel;
 
 /**
@@ -62,6 +62,8 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 	private State stateTESTAR;
 	public void setStateTESTAR(State stateTESTAR) {
 		this.stateTESTAR = stateTESTAR;
+		// reset executed action for this new state iteration
+		this.actionExecutedTESTAR = null;
 	}
 
 	// Use derived Actions to merge TESTAR commands knowledge and the listened command action
@@ -82,7 +84,7 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 	/**
 	 * Default Constructor
 	 */
-	public LabRecruitsEnvironmentListener(EnvironmentConfig environment) {
+	public LabRecruitsEnvironmentListener(LabRecruitsConfig environment) {
 		super(environment);
 	}
 
@@ -103,6 +105,10 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 			System.out.println("We cannot derive observe listened Action");
 			return super.observe(agentId);
 		}
+		
+		// One agent update tick can contains a combination of observe + move, or observe + interact
+		// If observe is not the unique action, ignore and return
+		if(this.actionExecutedTESTAR != null) {return super.observe(agentId);}
 
 		System.out.println("LISTENED observe");
 
@@ -113,10 +119,12 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 		// Check if TESTAR knows about the existence of this command Action
 		// If TESTAR knows indicate that Agent wants to select this command Action
 		for(Action a : derivedActions) {
-			if(a instanceof labActionCommandObserve && ((labActionCommandObserve)a).actionEquals((labActionCommandObserve)this.actionExecutedTESTAR)) {
-				((labActionCommandObserve)a).selectedByAgent();
-				this.actionExecutedTESTAR = a;
-				addNewAction = false;
+			if(a instanceof labActionCommandObserve && this.actionExecutedTESTAR instanceof labActionCommandObserve) {
+				if(((labActionCommandObserve)a).actionEquals((labActionCommandObserve)this.actionExecutedTESTAR)) {
+					((labActionCommandObserve)a).selectedByAgent();
+					this.actionExecutedTESTAR = a;
+					addNewAction = false;
+				}
 			}
 		}
 
@@ -136,20 +144,17 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 	 * and check if TESTAR already know that this interactWith command action exists.
 	 */
 	@Override
-	public LabWorldModel interactWith(String agentId, String target){
+	public LabWorldModel interact(String agentId, String target, String interactionType){
 
-		if(!enabledIV4XRAgentListener) {return super.interactWith(agentId, target);}
+		if(!enabledIV4XRAgentListener) {return super.interact(agentId, target, interactionType);}
 
 		if(Objects.isNull(stateTESTAR)) {
 			System.out.println("LabRecruitsEnvironmentListener has not information about stateTESTAR");
 			System.out.println("We cannot derive interactWith listened Action");
-			return super.observe(agentId);
+			return super.interact(agentId, target, interactionType);
 		}
 
 		System.out.println("LISTENED interactWith : " + target);
-
-		// reset, TESTAR State and Agent observation should be synch and don't return this one
-		this.actionExecutedTESTAR = null;
 
 		// Find the LabRecruit Entity Widget in the TESTAR State, and create a Default Interact command Action
 		for(Widget w : stateTESTAR) {
@@ -162,10 +167,12 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 		// Check if TESTAR knows about the existence of this Interact command Action
 		// If TESTAR knows indicate that Agent wants to select this Interact command Action
 		for(Action a : derivedActions) {
-			if(a instanceof labActionCommandInteract && ((labActionCommandInteract)a).actionEquals((labActionCommandInteract)this.actionExecutedTESTAR)) {
-				((labActionCommandInteract)a).selectedByAgent();
-				this.actionExecutedTESTAR = a;
-				addNewAction = false;
+			if(a instanceof labActionCommandInteract && this.actionExecutedTESTAR instanceof labActionCommandInteract) {
+				if (((labActionCommandInteract)a).actionEquals((labActionCommandInteract)this.actionExecutedTESTAR)) {
+					((labActionCommandInteract)a).selectedByAgent();
+					this.actionExecutedTESTAR = a;
+					addNewAction = false;
+				}
 			}
 		}
 
@@ -174,7 +181,7 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 			mergeDerivedActions();
 		}
 
-		return super.interactWith(agentId, target);
+		return super.interact(agentId, target, interactionType);
 	}
 
 	/**
@@ -192,7 +199,7 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 		if(Objects.isNull(stateTESTAR)) {
 			System.out.println("LabRecruitsEnvironmentListener has not information about stateTESTAR");
 			System.out.println("We cannot derive moveToward listened Action");
-			return super.observe(agentId);
+			return super.moveToward(agentId, agentPosition, target);
 		}
 
 		System.out.println("LISTENED moveToward : " + target);
@@ -215,10 +222,12 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 		// Check if TESTAR knows about the existence of this Move command Action
 		// If TESTAR knows indicate that Agent wants to select this command Action
 		for(Action a : derivedActions) {
-			if(a instanceof labActionCommandMove && ((labActionCommandMove)a).actionEquals((labActionCommandMove)this.actionExecutedTESTAR)) {
-				((labActionCommandMove)a).selectedByAgent();
-				this.actionExecutedTESTAR = a;
-				addNewAction = false;
+			if(a instanceof labActionCommandMove && this.actionExecutedTESTAR instanceof labActionCommandMove) {
+				if(((labActionCommandMove)a).actionEquals((labActionCommandMove)this.actionExecutedTESTAR)) {
+					((labActionCommandMove)a).selectedByAgent();
+					this.actionExecutedTESTAR = a;
+					addNewAction = false;
+				}
 			}
 		}
 
@@ -226,6 +235,8 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 		if(addNewAction) {
 			mergeDerivedActions();
 		}
+		
+		System.out.println("this.actionExecutedTESTAR: " + this.actionExecutedTESTAR.toShortString());
 
 		return super.moveToward(agentId, agentPosition, target);
 	}

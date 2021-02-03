@@ -3,7 +3,7 @@ package es.upv.staq.testar;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 
-import helperclasses.datastructures.Vec3;
+import eu.iv4xr.framework.spatial.Vec3;
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.Tags;
 
