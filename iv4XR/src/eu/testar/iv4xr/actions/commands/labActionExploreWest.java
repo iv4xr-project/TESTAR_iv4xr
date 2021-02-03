@@ -39,7 +39,7 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import environments.LabRecruitsEnvironment;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import helperclasses.datastructures.Vec3;
+import eu.iv4xr.framework.spatial.Vec3;
 
 public class labActionExploreWest extends labActionCommand {
 	private static final long serialVersionUID = 4431931844664688235L;
@@ -61,7 +61,7 @@ public class labActionExploreWest extends labActionCommand {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// Move a bit to the West
-		labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), new Vec3(-2.0, 0.0, 0.0)));
+		labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), new Vec3(-2.0f, 0.0f, 0.0f)));
 	}
 
 	@Override
@@ -75,7 +75,7 @@ public class labActionExploreWest extends labActionCommand {
 	 */
 	public boolean actionEquals(labActionExploreWest action) {
 		return (this.agentId.equals(action.getAgentId()) 
-				&& this.currentAgentPosition().distance(action.currentAgentPosition()) < 0.2);
+				&& Vec3.dist(this.currentAgentPosition(), action.currentAgentPosition()) < 0.2);
 	}
 	
 	private Vec3 addPositions(Vec3 original, Vec3 addend) {

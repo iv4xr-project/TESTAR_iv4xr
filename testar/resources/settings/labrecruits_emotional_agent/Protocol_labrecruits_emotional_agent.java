@@ -41,6 +41,7 @@ import org.fruit.monkey.Settings;
 import org.testar.protocols.LabRecruitsProtocol;
 
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
+import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.listener.GoalLibListener;
@@ -261,7 +262,7 @@ public class Protocol_labrecruits_emotional_agent extends LabRecruitsProtocol {
 		// agent should be close to button1
         var agent_p  = testAgent.getState().worldmodel.getFloorPosition() ;
         var button_p = ((LabEntity) testAgent.getState().worldmodel.getElement("button1")).getFloorPosition() ;
-        assertTrue(agent_p.distance(button_p) < 0.5) ;
+        assertTrue(Vec3.dist(agent_p, button_p) < 0.5) ;
 		super.stopSystem(system);
 	}
 }

@@ -35,11 +35,9 @@ import org.fruit.alayer.TagsBase;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.windows.WinProcess;
 
-import environments.SocketEnvironment;
-import eu.iv4xr.framework.world.WorldModel;
 import eu.testar.iv4xr.listener.GoalLibListener;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
-import helperclasses.datastructures.Vec3;
+import eu.iv4xr.framework.spatial.Vec3;
 import world.LabWorldModel;
 import world.Observation;
 
@@ -50,12 +48,6 @@ public class IV4XRtags extends TagsBase {
 	/**
 	 * System - Environment Tags 
 	 */
-	
-	// Generic JSON Socket Environment, layer to interact with the real environment exchanging JSON objects
-	public static final Tag<SocketEnvironment> iv4xrSocketEnvironment = from("iv4xrSocketEnvironment", SocketEnvironment.class);
-	
-	// Generic WOM, structure and representation of the virtual world
-	public static final Tag<WorldModel> iv4xrWorldModel = from("iv4xrWorldModel", WorldModel.class);
 	
 	// Specific Lab Recruits Environment, layer that facilitates the communication between agents and the Lab Recruits game
 	public static final Tag<LabRecruitsEnvironmentListener> iv4xrLabRecruitsEnvironment = from("LabRecruitsEnvironment", LabRecruitsEnvironmentListener.class);

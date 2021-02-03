@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.Vector;
 
 import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
-import helperclasses.datastructures.Vec3;
+import eu.iv4xr.framework.spatial.Vec3;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
 public class EmotionalCritic {

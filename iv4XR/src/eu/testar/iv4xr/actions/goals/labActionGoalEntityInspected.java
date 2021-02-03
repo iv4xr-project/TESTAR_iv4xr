@@ -35,7 +35,7 @@ import java.util.function.Predicate;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
-import eu.iv4xr.framework.world.WorldEntity;
+import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;

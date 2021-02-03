@@ -30,8 +30,6 @@
 
 package eu.testar.iv4xr;
 
-import pathfinding.Pathfinder;
-
 /**
  * The Elementary Object or root application node that will define the TESTAR State
  * 
@@ -46,8 +44,6 @@ public class IV4XRRootElement extends IV4XRElement {
 	public long timeStamp;
 	public boolean isRunning;
 	public boolean isForeground;
-	
-	public Pathfinder pathFinder;
 
 	public IV4XRRootElement() {
 		super(null);

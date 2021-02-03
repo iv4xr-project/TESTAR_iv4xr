@@ -49,7 +49,7 @@ import agents.LabRecruitsTestAgent;
 import agents.tactics.GoalLib;
 import environments.LabRecruitsEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
-import eu.iv4xr.framework.world.WorldEntity;
+import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
@@ -145,7 +145,8 @@ public class Protocol_test_workflow_labrecruits_commands_agent_listener extends 
 				GoalLib.entityInvariantChecked(testAgent,
 						"door3", 
 						"door3 should be open", 
-						(WorldEntity e) -> e.getBooleanProperty("isOpen"))
+						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
+				GoalLib.entityInCloseRange("door3")
 				);
 
 		// attaching the goal and testdata-collector

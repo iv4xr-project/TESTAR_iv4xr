@@ -44,11 +44,11 @@ import org.fruit.alayer.Widget;
 import agents.tactics.GoalLib;
 import es.upv.staq.testar.CodingManager;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
-import eu.iv4xr.framework.world.WorldEntity;
+import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.actions.goals.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import helperclasses.datastructures.Vec3;
+import eu.iv4xr.framework.spatial.Vec3;
 import nl.uu.cs.aplib.mainConcepts.Goal;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
@@ -225,13 +225,6 @@ public class GoalLibListener {
 		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
-	}
-
-	/**
-	 * TODO: Implement this Goal Action
-	 */
-	public static GoalStructure memorySent(String id){
-		return GoalLib.memorySent(id);
 	}
 
 	/**

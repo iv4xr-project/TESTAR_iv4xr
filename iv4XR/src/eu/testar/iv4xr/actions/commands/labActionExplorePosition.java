@@ -39,7 +39,7 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import environments.LabRecruitsEnvironment;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import helperclasses.datastructures.Vec3;
+import eu.iv4xr.framework.spatial.Vec3;
 
 public class labActionExplorePosition extends labActionCommand {
 	private static final long serialVersionUID = 885421289057696013L;
@@ -77,7 +77,7 @@ public class labActionExplorePosition extends labActionCommand {
 	 */
 	public boolean actionEquals(labActionExplorePosition action) {
 		return (this.agentId.equals(action.getAgentId()) 
-				&& this.currentAgentPosition().distance(action.currentAgentPosition()) < 0.2);
+				&& Vec3.dist(this.currentAgentPosition(), action.currentAgentPosition()) < 0.2);
 	}
 	
 }

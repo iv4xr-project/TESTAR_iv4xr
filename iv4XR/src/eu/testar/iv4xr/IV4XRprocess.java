@@ -42,7 +42,7 @@ import org.fruit.alayer.exceptions.SystemStopException;
 import org.fruit.alayer.windows.WinApiException;
 import org.fruit.alayer.windows.WinProcess;
 
-import environments.EnvironmentConfig;
+import environments.LabRecruitsConfig;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
 
@@ -112,7 +112,7 @@ public class IV4XRprocess extends SUTBase {
 
 		try {
 			// Define the desired level Environment and starts the Lab Recruits Game Environment
-			EnvironmentConfig environment = new EnvironmentConfig(levelName, levelsPath);
+			LabRecruitsConfig environment = new LabRecruitsConfig(levelName, levelsPath);
 			LabRecruitsEnvironmentListener labRecruitsEnvironment = new LabRecruitsEnvironmentListener(environment);
 			
 			Util.pause(5);
