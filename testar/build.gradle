@@ -205,19 +205,41 @@ startScripts.dependsOn {
     tasks.findAll { task -> task.name.startsWith('prepare')}
 }
 
+// Download LabRecruits SUT from the GitHub repository
+task downloadLabRecruits(type: Download) {
+    src 'https://github.com/iv4xr-project/TESTAR_iv4xr/releases/download/v2.0/labrecruits_v2_11_Jan_2021.zip'
+    dest '../iv4XR/resources/gym/Windows/bin'
+    overwrite false
+}
+// Verify that we downloaded the correct file
+task verifyLabRecruits(type: Verify, dependsOn: downloadLabRecruits) {
+    src new File(downloadLabRecruits.dest, 'labrecruits_v2_11_Jan_2021.zip')
+    algorithm 'MD5'
+    checksum '3f5cab5ad2e5bb3b5d2eea87f0e887f1'
+}
+// Extract LabRecruits binary files
+task downloadAndUnzipLabRecruits(type: Copy, dependsOn: verifyLabRecruits) {
+    group = 'distribution_iv4XR'
+    description ='downloadAndUnzipLabRecruits'
+    from zipTree(new File(downloadLabRecruits.dest, 'labrecruits_v2_11_Jan_2021.zip'))
+    into downloadLabRecruits.dest
+}
+
 /**
  * Build TESTAR using Visual Studio Tools to create a windows.dll
  */
 
-task iv4xrDefaultDistribution(dependsOn:['installDist','distZip']){
+task iv4xrDefaultDistribution(dependsOn:['downloadAndUnzipLabRecruits','installDist','distZip']){
 	group = 'distribution_iv4XR'
 	description ='Build iv4xr TESTAR distribution making a copy of the default dll'
 }
 
-task iv4xrWindowsDistribution(dependsOn:['buildWindows','installDist','distZip']){
+task iv4xrWindowsDistribution(dependsOn:['downloadAndUnzipLabRecruits','buildWindows','installDist','distZip']){
 	group = 'distribution_iv4XR'
 	description ='Build iv4xr TESTAR distribution for Windows'
 }
+
+build.dependsOn(downloadAndUnzipLabRecruits)
 
 task buildWindows(type: Exec) {
     if( System.getProperty('os.name').toLowerCase().contains('windows 7')) {
@@ -244,28 +266,8 @@ mainClassName='org.fruit.monkey.Main'
  * Tasks to test TESTAR iv4xr using gradle
  */
  
-// Download LabRecruits SUT from the GitHub repository
-task downloadLabRecruits(type: Download) {
-    src 'https://github.com/iv4xr-project/TESTAR_iv4xr/releases/download/v2.0/labrecruits_v2_11_Jan_2021.zip'
-    dest '../iv4XR/resources/gym/Windows/bin'
-    overwrite false
-}
-// Verify that we downloaded the correct file
-task verifyLabRecruits(type: Verify, dependsOn: downloadLabRecruits) {
-    src new File(downloadLabRecruits.dest, 'labrecruits_v2_11_Jan_2021.zip')
-    algorithm 'MD5'
-    checksum '3f5cab5ad2e5bb3b5d2eea87f0e887f1'
-}
-// Extract LabRecruits binary files
-task downloadAndUnzipLabRecruits(type: Copy, dependsOn: verifyLabRecruits) {
-    group = 'distribution_iv4XR'
-    description ='downloadAndUnzipLabRecruits'
-    from zipTree(new File(downloadLabRecruits.dest, 'labrecruits_v2_11_Jan_2021.zip'))
-    into downloadLabRecruits.dest
-}
-
 // Test labrecruits commands agent listener
-task runTestLabrecruitsCommandAgentListener(type: Exec, dependsOn:['downloadAndUnzipLabRecruits','iv4xrDefaultDistribution']) {
+task runTestLabrecruitsCommandAgentListener(type: Exec, dependsOn:'iv4xrDefaultDistribution') {
     // Read command line output
     standardOutput = new ByteArrayOutputStream()
     group = 'test_testar_iv4xr_workflow'
@@ -285,7 +287,7 @@ task runTestLabrecruitsCommandAgentListener(type: Exec, dependsOn:['downloadAndU
 }
 
 // Test labrecruits goal agent listener
-task runTestLabrecruitsGoalAgentListener(type: Exec, dependsOn:['downloadAndUnzipLabRecruits','iv4xrDefaultDistribution']) {
+task runTestLabrecruitsGoalAgentListener(type: Exec, dependsOn:'iv4xrDefaultDistribution') {
     // Read command line output
     standardOutput = new ByteArrayOutputStream()
     group = 'test_testar_iv4xr_workflow'
