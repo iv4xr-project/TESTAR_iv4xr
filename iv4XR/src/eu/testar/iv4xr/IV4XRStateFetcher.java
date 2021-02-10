@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -49,9 +49,8 @@ import org.fruit.alayer.exceptions.StateBuildException;
 import org.fruit.alayer.windows.Windows;
 
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
+import eu.iv4xr.framework.mainConcepts.WorldModel;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import world.LabEntity;
-import world.LabWorldModel;
 
 /**
  * State Fetcher object extracts the information from the iv4XR Environment to create the Widget Tree
@@ -61,7 +60,7 @@ import world.LabWorldModel;
  */
 public class IV4XRStateFetcher implements Callable<IV4XRState> {
 
-	private final SUT system;
+	protected final SUT system;
 	
 	// Default agent id
 	public static Set<String> agentsIds = new HashSet<>(Arrays.asList("agent1"));
@@ -89,7 +88,7 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 	      return new IV4XRState(null);
 	    }
 
-	    system.set(Tags.Desc, "labRecruit system IV4XRStateFetcher Desc");
+	    system.set(Tags.Desc, "iv4XR system IV4XRStateFetcher Desc");
 
 	    IV4XRState root = createWidgetTree(rootElement);
 	    root.set(Tags.Role, Roles.Process);
@@ -98,11 +97,12 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 	    return root;
 	}
 	
-	private IV4XRRootElement buildVirtualEnvironment(SUT system) {
+	protected IV4XRRootElement buildVirtualEnvironment(SUT system) {
 		IV4XRRootElement rootElement = buildRoot(system);
 		
-		if(!rootElement.isRunning)
+		if(!rootElement.isRunning) {
 			return rootElement;
+		}
 		
 		rootElement.pid = system.get(Tags.PID, (long)-1);
 		
@@ -114,88 +114,83 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 			}
 		}
 		
-		//WorldModel WOM = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).observe(agentId);
-		//LabWorldModel labWOM = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).observe(agentId);
-	    //system.set(IV4XRtags.iv4xrLabWorldModel, labWOM);
-	    
-		/**
-		 * Legacy Observation = Objects Agent can observe - Dynamically appearing and disappearing WOM
-		 * LabWorldModel = All Objects from WOM - Static Object with dynamic properties
-		 */
-		
+		return fetchIV4XRElements(rootElement);
+	}
+	
+	/**
+	 * Observation = Objects Agent can observe - Dynamically appearing and disappearing WOM. 
+	 * WorldModel = All Objects from WOM with their properties. 
+	 * 
+	 * @param rootElement
+	 * @return
+	 */
+	protected IV4XRRootElement fetchIV4XRElements(IV4XRRootElement rootElement) {	    
 		for(String agentId : agentsIds) {
-			LabWorldModel observedLabWOM = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).observe(agentId);
-			
+			WorldModel observedWOM = system.get(IV4XRtags.iv4xrW3DEnvironment).observe(agentId);
+
 			if(rootElement.isForeground) {
 				// Add manually the Agent as an Element (Observed Entities + 1)
-				rootElement.children = new ArrayList<IV4XRElement>((int) observedLabWOM.elements.size() + 1);
+				rootElement.children = new ArrayList<IV4XRElement>((int) observedWOM.elements.size() + 1);
 
 				rootElement.zindex = 0;
 				fillRect(rootElement);
 
-				IV4XRagent(rootElement, observedLabWOM);
+				IV4XRagent(rootElement, observedWOM);
 
 				// If Agent observes entities create the elements-entities
-				if(observedLabWOM.elements.size() > 0) {
-					for(WorldEntity entity : observedLabWOM.elements.values()) {
-						IV4XRdescend(rootElement, observedLabWOM.getElement(entity.id));
+				if(observedWOM.elements.size() > 0) {
+					for(WorldEntity entity : observedWOM.elements.values()) {
+						IV4XRdescend(rootElement, observedWOM.getElement(entity.id));
 					}
 				}
 			}
 		}
-	    
-	    return rootElement;
+
+		return rootElement;
 	}
-	
-	private IV4XRElement IV4XRagent(IV4XRElement parent, LabWorldModel labWOM) {
+
+	protected IV4XRElement IV4XRagent(IV4XRElement parent, WorldModel wom) {
 		IV4XRElement childElement = new IV4XRElement(parent);
 		parent.children.add(childElement);
-		
-		childElement.enabled = true; //TODO: check when should be enabled (careful with createWidgetTree)
-		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
+
+		childElement.enabled = true;
+		childElement.blocked = false;
 		childElement.zindex = parent.zindex +1;
-		
-		childElement.entityPosition = labWOM.position;
-		//childElement.entityBounds = labWOM.extent; //TODO: Do the Agents have bounds ?
-		childElement.entityVelocity = labWOM.velocity;
-		childElement.entityId = labWOM.agentId;
-		childElement.entityType = "AGENT"; //TODO: check proper entity for agent
+
+		childElement.entityPosition = wom.position;
+		childElement.entityBounds = wom.extent;
+		childElement.entityVelocity = wom.velocity;
+		childElement.entityId = wom.agentId;
+		childElement.entityType = "AGENT";
 		childElement.entityTimestamp = -1;
-		
-		childElement.labRecruitsEntityIsActive = true; //TODO: check if agent will have this property
-		childElement.labRecruitsEntityLastUpdated = -1;
 
 		fillRect(childElement);
-		
+
 		return childElement;
 	}
-	
-	private IV4XRElement IV4XRdescend(IV4XRElement parent, LabEntity labEntity) {
+
+	protected IV4XRElement IV4XRdescend(IV4XRElement parent, WorldEntity womEntity) {
 		IV4XRElement childElement = new IV4XRElement(parent);
 		parent.children.add(childElement);
-		
-		childElement.enabled = true; //TODO: check when should be enabled (careful with createWidgetTree)
-		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
-		childElement.zindex = parent.zindex +1;
-		
-		childElement.entityPosition = labEntity.position;
-		childElement.entityBounds = labEntity.extent;
-		childElement.entityVelocity = labEntity.velocity;
-		childElement.entityDynamic = labEntity.dynamic;
-		childElement.entityId = labEntity.id;
-		childElement.entityType = labEntity.type;
-		childElement.entityTimestamp = labEntity.timestamp;
 
-		// Check if Door isOpen or Switch isOn (world.Observation)
-		childElement.labRecruitsEntityIsActive = (labEntity.getBooleanProperty("isOpen") || labEntity.getBooleanProperty("isOn"));
-		//childElement.labRecruitsEntityLastUpdated = labEntity.lastUpdated;
-		
+		childElement.enabled = true;
+		childElement.blocked = false;
+		childElement.zindex = parent.zindex +1;
+
+		childElement.entityPosition = womEntity.position;
+		childElement.entityBounds = womEntity.extent;
+		childElement.entityVelocity = womEntity.velocity;
+		childElement.entityDynamic = womEntity.dynamic;
+		childElement.entityId = womEntity.id;
+		childElement.entityType = womEntity.type;
+		childElement.entityTimestamp = womEntity.timestamp;
+
 		fillRect(childElement);
-		
+
 		return childElement;
 	}
 
-	private IV4XRState createWidgetTree(IV4XRRootElement root) {
+	protected IV4XRState createWidgetTree(IV4XRRootElement root) {
 		IV4XRState state = new IV4XRState(root);
 		root.backRef = state;
 		for (IV4XRElement childElement : root.children) {
@@ -204,7 +199,7 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 		return state;
 	}
 
-	private void createWidgetTree(IV4XRWidgetEntity parent, IV4XRElement element) {
+	protected void createWidgetTree(IV4XRWidgetEntity parent, IV4XRElement element) {
 		IV4XRWidgetEntity w = parent.root().addChild(parent, element);
 		element.backRef = w;
 		
@@ -214,7 +209,7 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 	}
 
 	/* lists all visible top level windows in ascending z-order (foreground window last) */
-	private Iterable<Long> getVisibleTopLevelWindowHandles(){
+	protected Iterable<Long> getVisibleTopLevelWindowHandles(){
 		Deque<Long> ret = new ArrayDeque<Long>();
 		long windowHandle = Windows.GetWindow(Windows.GetDesktopWindow(), Windows.GW_CHILD);
 
@@ -238,7 +233,7 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 	 * 
 	 * @param element
 	 */
-	private void fillRect(IV4XRElement element) {
+	protected void fillRect(IV4XRElement element) {
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		Rectangle screenRectangle = new Rectangle(screenSize);
 		Rect rect = Rect.from(screenRectangle.getX(), screenRectangle.getY(), screenRectangle.getWidth(), screenRectangle.getHeight());

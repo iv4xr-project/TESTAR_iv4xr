@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package eu.testar.iv4xr;
+package eu.testar.iv4xr.labrecruits;
 
 import agents.LabRecruitsTestAgent;
 import environments.LabRecruitsEnvironment;

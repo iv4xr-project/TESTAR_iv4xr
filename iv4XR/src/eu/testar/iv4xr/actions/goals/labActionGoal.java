@@ -37,7 +37,7 @@ import org.fruit.alayer.State;
 import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
+import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
 public class labActionGoal extends TaggableBase implements Action {

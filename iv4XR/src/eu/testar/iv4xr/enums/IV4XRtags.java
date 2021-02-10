@@ -35,8 +35,9 @@ import org.fruit.alayer.TagsBase;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.windows.WinProcess;
 
-import eu.testar.iv4xr.listener.GoalLibListener;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
+import spaceEngineers.SpaceEngEnvironment;
+import eu.iv4xr.framework.mainConcepts.W3DEnvironment;
 import eu.iv4xr.framework.spatial.Vec3;
 import world.LabWorldModel;
 import world.Observation;
@@ -46,23 +47,30 @@ public class IV4XRtags extends TagsBase {
 	private IV4XRtags() {}
 	
 	/**
-	 * System - Environment Tags 
+	 * iv4XR Environment Tags 
 	 */
+	
+	// Generic W3D Environment
+	public static final Tag<W3DEnvironment> iv4xrW3DEnvironment = from("iv4xrW3DEnvironment", W3DEnvironment.class);
+	
+	// TESTAR Windows Process layer, that allows interact with iv4XR SUTs using Windows API
+	public static final Tag<WinProcess> windowsProcess = from("windowsProcess", WinProcess.class);
 	
 	// Specific Lab Recruits Environment, layer that facilitates the communication between agents and the Lab Recruits game
 	public static final Tag<LabRecruitsEnvironmentListener> iv4xrLabRecruitsEnvironment = from("LabRecruitsEnvironment", LabRecruitsEnvironmentListener.class);
 	
-	// Specific Goal Lib Listener to match Agent Goals with TESTAR Action Goals
-	//public static final Tag<GoalLibListener> iv4xrGoalLib = from("GoalLibListener", GoalLibListener.class);
+	// Specific SpaceEngineers Environment, layer that facilitates the communication between agents and the SpaceEngineers game
+	public static final Tag<SpaceEngEnvironment> iv4xrSpaceEngEnvironment = from("SpaceEngEnvironment", SpaceEngEnvironment.class);
+	
+	/**
+	 * World Object Model Tags
+	 */
 	
 	// Specific WOM for Lab Recruits game
 	public static final Tag<LabWorldModel> iv4xrLabWorldModel = from("iv4xrLabWorldModel", LabWorldModel.class);
 	
 	// Specific Entities Observation for Lab Recruits game 
 	public static final Tag<Observation> iv4xrObservation = from("Observation", Observation.class);
-	
-	// TESTAR Windows Process layer, that allows interact with iv4XR SUTs using Windows API
-	public static final Tag<WinProcess> windowsProcess = from("windowsProcess", WinProcess.class);
 	
 	// Specific tag to check if Lab Recruits game is in the foreground (is generic because it works at Windows process level)
 	public static final Tag<Boolean> labRecruitsForeground = from("labRecruitsForeground", Boolean.class);

@@ -42,8 +42,8 @@ import org.testar.protocols.LabRecruitsProtocol;
 
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.spatial.Vec3;
-import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.listener.GoalLibListener;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;

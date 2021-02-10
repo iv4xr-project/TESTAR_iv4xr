@@ -33,9 +33,9 @@ package eu.testar.iv4xr.actions.goals;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 
-import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
 public class labActionGoalEntityInCloseRange extends labActionGoal {

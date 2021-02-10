@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,42 +28,58 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package eu.testar.iv4xr.actions.goals;
+package eu.testar.iv4xr.actions.commands;
 
+import org.fruit.alayer.Action;
+import org.fruit.alayer.Role;
+import org.fruit.alayer.SUT;
+import org.fruit.alayer.State;
+import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
+import org.fruit.alayer.exceptions.ActionFailedException;
 
-import eu.testar.iv4xr.actions.iv4xrActionRoles;
-import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import eu.iv4xr.framework.spatial.Vec3;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure;
+import eu.testar.iv4xr.actions.iv4xrActionRoles;
+import spaceEngineers.SeRequest;
+import spaceEngineers.SpaceEngEnvironment;
+import spaceEngineers.commands.SeAgentCommand;
 
-public class labActionGoalPositionInCloseRange extends labActionGoal {
-
-	private static final long serialVersionUID = -3142712768999384558L;
-
-	private Vec3 goalPosition;
-
-	public labActionGoalPositionInCloseRange(Widget w, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId, Vec3 goalPosition) {
-		this.agentTESTAR = testAgent;
-		this.goalStructure = goalStructure;
+public class seActionCommandMove extends TaggableBase implements Action {
+	private static final long serialVersionUID = -6582285412839242075L;
+	
+	private SpaceEngEnvironment spaceEngEnvironment;
+	private String agentId;
+	private Vec3 targetPosition;
+	
+	public seActionCommandMove(Widget w, SpaceEngEnvironment spaceEngEnvironment, String agentId, Vec3 targetPosition){
+		this.spaceEngEnvironment = spaceEngEnvironment;
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
-		this.entityId = w.get(IV4XRtags.entityId);
-		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionGoalPositionInCloseRange);
-		this.goalPosition = goalPosition;
+		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
+		this.targetPosition = targetPosition;
 		this.set(Tags.Desc, toShortString());
-		this.set(IV4XRtags.agentAction, false);
-		this.set(IV4XRtags.newActionByAgent, false);
-		
-		// Set the goal to the agent
-		agentTESTAR.setGoal(goalStructure);
+	}
+
+	@Override
+	public void run(SUT system, State state, double duration) throws ActionFailedException {
+		spaceEngEnvironment.getSeResponse(SeRequest.command(SeAgentCommand.moveTowardCommand(agentId, targetPosition, false)));
 	}
 
 	@Override
 	public String toShortString() {
-		return "Agent: " + agentId + " executing Goal PositionInCloseRange to " + goalPosition;
+		return "Move agent: " + agentId + " to: " + targetPosition;
 	}
 
+	@Override
+	public String toParametersString() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String toString(Role... discardParameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -43,6 +43,9 @@ import org.fruit.alayer.StateBuilder;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.exceptions.StateBuildException;
 
+import eu.testar.iv4xr.labrecruits.LabStateFetcher;
+import eu.testar.iv4xr.se.SeStateFetcher;
+
 /**
  * This object builder will execute IV4XRStateFetcher to obtain the Widget Tree of the SUT
  */
@@ -53,10 +56,12 @@ public class IV4XRStateBuilder implements StateBuilder {
 	private static final int defaultThreadPoolCount = 1;
 	private final double timeOut;
 	private transient ExecutorService executor;
+	private String iv4xrSystem = "";
 
-	public IV4XRStateBuilder(double timeOut) {
+	public IV4XRStateBuilder(double timeOut, String iv4xrSystem) {
 		Assert.isTrue(timeOut > 0);
 		this.timeOut = timeOut;
+		this.iv4xrSystem = iv4xrSystem;
 		
 		// Needed to be able to schedule asynchronous tasks conveniently.
 		executor = Executors.newFixedThreadPool(defaultThreadPoolCount);
@@ -65,7 +70,15 @@ public class IV4XRStateBuilder implements StateBuilder {
 	@Override
 	public IV4XRState apply(SUT system) throws StateBuildException {
 		try {
-			Future<IV4XRState> future = executor.submit(new IV4XRStateFetcher(system));
+			Future<IV4XRState> future;
+			if(iv4xrSystem.equals("Lab")) {
+				future = executor.submit(new LabStateFetcher(system));
+			} else if(iv4xrSystem.equals("Se")) {
+				future = executor.submit(new SeStateFetcher(system));
+			} else {
+				future = executor.submit(new IV4XRStateFetcher(system));
+			}
+
 			IV4XRState state = future.get((long) (timeOut), TimeUnit.SECONDS);
 			// When the SUT has a valid windowHandle store it in the state, it's required to create well aligned screenshots.
 			if (system.get(Tags.HWND, null) != null){
@@ -78,11 +91,19 @@ public class IV4XRStateBuilder implements StateBuilder {
 			throw new StateBuildException(e.getMessage());
 		}
 		catch (TimeoutException e) {
-			IV4XRRootElement iv4XRrootElement = IV4XRStateFetcher.buildRoot(system);
+			IV4XRRootElement iv4XRrootElement;
+			if(iv4xrSystem.equals("Lab")) {
+				iv4XRrootElement = LabStateFetcher.buildRoot(system);
+			} else if(iv4xrSystem.equals("Se")) {
+				iv4XRrootElement = SeStateFetcher.buildRoot(system);
+			} else {
+				iv4XRrootElement = IV4XRStateFetcher.buildRoot(system);
+			}
+
 			IV4XRState iv4XRState = new IV4XRState(iv4XRrootElement);
 			iv4XRState.set(Tags.Role, Roles.Process);
 			iv4XRState.set(Tags.NotResponding, true);
-			
+
 			return iv4XRState;
 		}
 	}

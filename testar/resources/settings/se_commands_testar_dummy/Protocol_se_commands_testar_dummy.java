@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019 - 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,40 +35,17 @@ import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
-import org.testar.protocols.LabRecruitsProtocol;
+import org.testar.protocols.SEProtocol;
 
-import agents.tactics.GoalLib;
-import environments.LabRecruitsEnvironment;
-import eu.testar.iv4xr.actions.goals.labActionGoal;
-import eu.testar.iv4xr.actions.goals.labActionGoalEntityInCloseRange;
-import eu.testar.iv4xr.actions.goals.labActionGoalEntityInteracted;
+import eu.iv4xr.framework.spatial.Vec3;
+import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
-import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
-import nl.ou.testar.RandomActionSelector;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-import world.BeliefState;
+import spaceEngineers.SpaceEngEnvironment;
 
 /**
- * iv4xr EU H2020 project - LabRecruits Demo
- * 
- * In this protocol LabRecruits game will act as SUT.
- * labrecruits_goal_testar_agent / test.setting file contains the:
- * - COMMAND_LINE definition to start the SUT and load the desired level
- * - State model inference settings to connect and create the State Model inside OrientDB
- * 
- * TESTAR is the Agent itself, derives is own knowledge about the observed entities,
- * and takes decisions about the Goals to execute
- * 
- * TESTAR uses the Navigation map internally to achieve derived Goals.
- * 
- * Widget              -> Virtual Entity
- * State (Widget-Tree) -> Agent Observation (All Observed Entities)
- * Action              -> LabRecruits high level goals
+ * iv4xr EU H2020 project - SpaceEngineers Use Case
  */
-public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol {
-
-	LabRecruitsAgentTESTAR agentTESTAR;
+public class Protocol_se_commands_testar_dummy extends SEProtocol {
 
 	/**
 	 * Called once during the life time of TESTAR.
@@ -78,22 +55,9 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	@Override
 	protected void initialize(Settings settings) {
 		// Agent point of view that will Observe and extract Widgets information
-		agentId = "agent1";
+		agentId = "you";
 
 		super.initialize(settings);
-	}
-
-	/**
-	 * This method is invoked each time the TESTAR starts the SUT to generate a new sequence.
-	 */
-	@Override
-	protected void beginSequence(SUT system, State state) {
-		// Create an environment
-		LabRecruitsEnvironmentListener labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-
-		agentTESTAR = new LabRecruitsAgentTESTAR(agentId)
-				.attachState(new BeliefState())
-				.attachEnvironment(labRecruitsEnvironment);
 	}
 
 	/**
@@ -107,8 +71,7 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	 */
 	@Override
 	protected State getState(SUT system) {
-		State state = super.getState(system);
-		return state;
+		return super.getState(system);
 	}
 
 	/**
@@ -123,34 +86,17 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	}
 
 	/**
-	 * Derive all possible actions goals that TESTAR can execute in each specific LabRecruits state.
+	 * Derive all possible actions that TESTAR can execute in each specific Space Engineers state.
 	 */
 	@Override
 	protected Set<Action> deriveActions(SUT system, State state) {
 		Set<Action> labActions = new HashSet<>();
-		
-		// Get the LabRecruitsEnvironment
-		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-		
-		// NavMesh Exploration : Add one exploration movement for each visible node
-		labActions = exploreVisibleNodesActions(labActions, state, labRecruitsEnv, agentId);
-		
-		// For every interactive entity agents have the possibility to achieve Interact and Close Range goals
-		for(Widget w : state) {
-			if(isInteractiveEntity(w)) {
-				String entityId = w.get(IV4XRtags.entityId);
-				
-				GoalStructure goalNavigateEntity = GoalLib.entityInCloseRange(entityId);
-				Action actionNavigateEntity = new labActionGoalEntityInCloseRange(w, agentTESTAR, goalNavigateEntity, agentId);
-				labActions.add(actionNavigateEntity);
-				
-				if(isAgentCloseToEntity(system, w, 1.0)) {
-					GoalStructure goalEntityInteracted = GoalLib.entityInteracted(entityId);
-					Action actionEntityInteracted = new labActionGoalEntityInteracted(w, agentTESTAR, goalEntityInteracted, agentId);
-					labActions.add(actionEntityInteracted);
-				}
-			}
-		}
+
+		// Get the Observation of the State form the Agent point of view
+		SpaceEngEnvironment SeEnvironment = system.get(IV4XRtags.iv4xrSpaceEngEnvironment);
+
+		// Add Dummy Exploration Actions
+		labActions.add(new seActionCommandMove(state, SeEnvironment, agentId, new Vec3(0,0,-1)));
 
 		return labActions;
 	}
@@ -174,49 +120,24 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 			retAction = stateModelManager.getAbstractActionToExecute(actions);
 		}
 		if(retAction==null) {
-			System.out.println("State model based action selection did not find an action. Using random action selection.");
-			// if state model fails, use random (default would call preSelectAction() again, causing double actions HTML report):
-			retAction = RandomActionSelector.selectAction(actions);
+			System.out.println("State model based action selection did not find an action. Using default action selection.");
+			// if state model fails, use default:
+			retAction = super.selectAction(state, actions);
 		}
 		return retAction;
 	}
 
 	/**
-	 * Execute TESTAR as agent Goal Action
+	 * Execute TESTAR as agent command Action
 	 */
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
 		try {
 			// adding the action that is going to be executed into HTML report:
 			htmlReport.addSelectedAction(state, action);
-			
-			// From selected action extract the Goal and set to the Agent
-			if(action instanceof labActionGoal) {
-				agentTESTAR.setGoal(((labActionGoal) action).getActionGoal());
-			} else {
-				//System.out.println("ERROR: Seems that selected Action is not an instance of labActionGoal");
-				//System.out.println("ERROR: We need LabRecruits Action Goals to interact at Goal level with the system");
-				//throw new ActionFailedException("Action is not an instanceof labActionGoal");
-				
-				// execute selected action in the current state
-				action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 
-				double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
-				Util.pause(waitTime);
-
-				System.out.println(action.toShortString());
-
-				return true;
-			}
-
-			/**
-			 * We are going to execute the Action-Goal completely (solved or stopped)
-			 * At the end of this Action-Goal execution Agent may have moved long distances
-			 */
-			while(agentTESTAR.isGoalInProgress() && !hazardousEntityFound()) {
-				// execute selected action in the current state
-				action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
-			}
+			// execute selected action in the current state
+			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
@@ -251,5 +172,4 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	protected void stopSystem(SUT system) {
 		super.stopSystem(system);
 	}
-	
 }

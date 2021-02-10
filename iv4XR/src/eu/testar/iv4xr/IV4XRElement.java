@@ -55,38 +55,38 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 	/**
 	 * Widget Tree Node Map
 	 */
-	List<IV4XRElement> children = new ArrayList<>();
-	IV4XRElement parent;
-	IV4XRRootElement root;
-	IV4XRWidgetEntity backRef;
+	public List<IV4XRElement> children = new ArrayList<>();
+	public IV4XRElement parent;
+	public IV4XRRootElement root;
+	public IV4XRWidgetEntity backRef;
 
 	/**
 	 * Generic TESTAR Properties
 	 */
-	boolean enabled;
-	boolean blocked;
+	public boolean enabled;
+	public boolean blocked;
 	
-	double zindex;
+	public double zindex;
 	
-	Rect rect;
+	public Rect rect;
 
 	//TODO: Check these default values needed for State Model (State does not exist as widget with properties, should be Windows hwnd?)
 	/**
 	 * Generic iv4XR properties
 	 */
-	Vec3 entityPosition = new Vec3(0, 0, 0);
-	Vec3 entityBounds = new Vec3(0, 0, 0);
-	Vec3 entityVelocity = new Vec3(0, 0, 0);
-	boolean entityDynamic = false;
-	String entityId = "";
-	String entityType = "";
-	long entityTimestamp = -1;
+	public Vec3 entityPosition = new Vec3(0, 0, 0);
+	public Vec3 entityBounds = new Vec3(0, 0, 0);
+	public Vec3 entityVelocity = new Vec3(0, 0, 0);
+	public boolean entityDynamic = false;
+	public String entityId = "";
+	public String entityType = "";
+	public long entityTimestamp = -1;
 	
 	/**
 	 * Lab Recruits iv4XR properties
 	 */
-	boolean labRecruitsEntityIsActive = true;
-	int labRecruitsEntityLastUpdated = -1;
+	public boolean labRecruitsEntityIsActive = true;
+	public int labRecruitsEntityLastUpdated = -1;
 
 	public IV4XRElement(){ this(null); }
 

@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package eu.testar.iv4xr;
+package eu.testar.iv4xr.se;
 
 import java.util.List;
 
@@ -42,48 +42,34 @@ import org.fruit.alayer.exceptions.SystemStopException;
 import org.fruit.alayer.windows.WinApiException;
 import org.fruit.alayer.windows.WinProcess;
 
-import environments.LabRecruitsConfig;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
+import spaceEngineers.SpaceEngEnvironment;
 
-/**
- * This class represents the IV4XR process, is creating the OS process and the IV4XR Environment
- * 
- * Because Lab Recruits is currently the only SUT example, we are using only Windows OS process functionality
- */
-public class IV4XRprocess extends SUTBase {
+public class SpaceEngineersProcess extends SUTBase {
 
-	public static IV4XRprocess iv4XR = null;
+	public static SpaceEngineersProcess iv4XR = null;
 
 	private static WinProcess win;
 
-	private IV4XRprocess(String path) {
-		Assert.notNull(path);
+	private SpaceEngineersProcess(String processName) {
+		Assert.notNull(processName);
 		
-		String[] parts = path.split(" ");
+		String[] parts = processName.split(" ");
 		
-		if(parts.length != 3) {
-			String message = "ERROR: For LabRecruits iv4xr SUT we need to know:\n" 
-					+ "1.- LabRecruits executable path\n"
-					+ "2.- LabRecruits levels path\n"
-					+ "3.- LabRecruits level name (to solve)\n"
-					+ "Example:\n"
-					+ "\"suts\\gym\\Windows\\bin\\LabRecruits.exe\" \"suts/levels\" \"buttons_doors_1\"";
+		if(parts.length != 1) {
+			String message = "ERROR: For SpaceEngineers iv4xr SUT we only need to know:\n" 
+					+ "1.- SpaceEngineers process name\n"
+					+ "Example: SpaceEngineers.exe";
 			throw new IllegalArgumentException(message);
 		}
-		
-		String labPath = parts[0].replace("\"", "");
-		String levelsPath = parts[1].replace("\"", "");
-		String levelName = parts[2].replace("\"", "");
 
 		/**
 		 * Start IV4XR SUT at Windows level
 		 */
 		try {
-			win = WinProcess.fromExecutable(labPath, false);
+			win = WinProcess.fromProcName(processName);
 		} catch (SystemStartException | WinApiException we) {
-			System.err.println(String.format("ERROR: Trying to execute %s using Windows API", path));
-			System.err.println(String.format("Please check if LabRecruits executable path exists %s", labPath));
+			System.err.println(String.format("ERROR: Trying to connect %s using Windows API", processName));
 			throw new SystemStartException(we.getMessage());
 		}
 		
@@ -98,11 +84,11 @@ public class IV4XRprocess extends SUTBase {
 			}
 		}
 		
-		// (Lab Recruits) Also wait a bit for initial printed information
+		// (SpaceEngineers) Wait a bit for initial printed information
 		Util.pause(10);
 		
 		if(!win.isRunning()) {
-			throw new SystemStartException(String.format("ERROR trying to start iv4xr SUT : %s", path));
+			throw new SystemStartException(String.format("ERROR trying to connect with iv4xr SUT : %s", processName));
 		}
 		
 		/**
@@ -111,25 +97,19 @@ public class IV4XRprocess extends SUTBase {
 		 */
 
 		try {
-			// Define the desired level Environment and starts the Lab Recruits Game Environment
-			LabRecruitsConfig environment = new LabRecruitsConfig(levelName, levelsPath);
-			LabRecruitsEnvironmentListener labRecruitsEnvironment = new LabRecruitsEnvironmentListener(environment);
+			// Prepare SpaceEngineers Environment
+			SpaceEngEnvironment seSocketEnvironment = SpaceEngEnvironment.localhost();
 			
 			Util.pause(5);
 
-			// presses "Play" in the game for you
-			labRecruitsEnvironment.startSimulation();
-			
-			Util.pause(5);
-
-			System.out.println("Welcome to the iv4XR test: " + levelName);
+			System.out.println("Welcome to the iv4XR test: " + processName);
 
 			this.set(IV4XRtags.windowsProcess, win);
 			this.set(Tags.PID, win.pid());
-			this.set(IV4XRtags.iv4xrLabRecruitsEnvironment, labRecruitsEnvironment);
+			this.set(IV4XRtags.iv4xrSpaceEngEnvironment, seSocketEnvironment);
 			
 		} catch(Exception e) {
-			System.err.println(String.format("EnvironmentConfig ERROR: Trying to loas LabRecruits level %s - %s ", levelsPath, levelName));
+			System.err.println(String.format("EnvironmentConfig ERROR: Trying to connect with %s", processName));
 			System.err.println(e.getMessage());
 			win.stop();
 			throw new SystemStartException(e);
@@ -138,11 +118,11 @@ public class IV4XRprocess extends SUTBase {
 		iv4XR = this;
 	}
 
-	public static IV4XRprocess fromExecutable(String path) throws SystemStartException {
+	public static SpaceEngineersProcess fromExecutable(String processName) throws SystemStartException {
 		if (iv4XR != null) {
 			win.stop();
 		}
-		return new IV4XRprocess(path);
+		return new SpaceEngineersProcess(processName);
 	}
 
 	public static List<SUT> fromAll(){
