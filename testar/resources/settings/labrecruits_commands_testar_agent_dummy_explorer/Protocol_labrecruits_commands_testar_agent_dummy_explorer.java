@@ -96,8 +96,7 @@ public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends L
 	 */
 	@Override
 	protected Verdict getVerdict(State state) {
-		// No verdicts implemented for now.
-		return Verdict.OK;
+		return super.getVerdict(state);
 	}
 
 	/**

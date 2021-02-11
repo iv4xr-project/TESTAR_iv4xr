@@ -74,7 +74,6 @@ import world.BeliefState;
  */
 public class Protocol_labrecruits_goal_agent_listener_complete extends LabRecruitsProtocol {
 
-	LabRecruitsAgentTESTAR testAgent;
 	GoalStructure goal;
 
 	/**
@@ -151,7 +150,7 @@ public class Protocol_labrecruits_goal_agent_listener_complete extends LabRecrui
 						"door3", 
 						"door3 should be open", 
 						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-				GoalLib.entityInCloseRange("door3")
+				GoalLibListener.entityInCloseRange("door3")
 				);
 
 		// Set SubGoals List into the internal Map
@@ -188,8 +187,7 @@ public class Protocol_labrecruits_goal_agent_listener_complete extends LabRecrui
 	 */
 	@Override
 	protected Verdict getVerdict(State state) {
-		// No verdicts implemented for now.
-		return Verdict.OK;
+		return super.getVerdict(state);
 	}
 
 	/**

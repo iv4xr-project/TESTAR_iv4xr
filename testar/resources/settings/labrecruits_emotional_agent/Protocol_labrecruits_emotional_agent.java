@@ -57,7 +57,6 @@ import world.LabEntity;
  */
 public class Protocol_labrecruits_emotional_agent extends LabRecruitsProtocol {
 
-	LabRecruitsAgentTESTAR testAgent;
 	GoalStructure goal;
 	eu.testar.iv4xr.emotions.EmotionalCritic emotionalCritic;
 
@@ -161,8 +160,7 @@ public class Protocol_labrecruits_emotional_agent extends LabRecruitsProtocol {
 	 */
 	@Override
 	protected Verdict getVerdict(State state) {
-		// No verdicts implemented for now.
-		return Verdict.OK;
+		return super.getVerdict(state);
 	}
 
 	/**
