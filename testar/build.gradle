@@ -265,7 +265,15 @@ mainClassName='org.fruit.monkey.Main'
 /**
  * Tasks to test TESTAR iv4xr using gradle
  */
- 
+
+// Copy test protocols for CI
+task init_workflow_test(type: Copy) {
+    group = 'test_testar_iv4xr_workflow'
+    description ='init_workflow_test'
+    from 'resources/workflow/settings'
+    into 'target/scripts/settings'
+}
+
 // Test labrecruits commands agent listener
 task runTestLabrecruitsCommandAgentListener(type: Exec, dependsOn:'iv4xrDefaultDistribution') {
     // Read command line output
@@ -273,7 +281,7 @@ task runTestLabrecruitsCommandAgentListener(type: Exec, dependsOn:'iv4xrDefaultD
     group = 'test_testar_iv4xr_workflow'
     description ='runTestLabrecruitsCommandAgentListener'
     workingDir 'target/install/testar/bin'
-    commandLine 'cmd', '/c', 'testar sse=test_workflow_labrecruits_commands_agent_listener ApplicationName="command_listener" ShowVisualSettingsDialogOnStartup=false Mode=Generate StateModelEnabled=false'
+    commandLine 'cmd', '/c', 'testar sse=test_workflow_labrecruits_commands_agent_listener AlwaysCompile=true ApplicationName="command_listener" ShowVisualSettingsDialogOnStartup=false Mode=Generate StateModelEnabled=false'
     doLast {
         String output = standardOutput.toString()
 
@@ -293,7 +301,7 @@ task runTestLabrecruitsGoalAgentListener(type: Exec, dependsOn:'iv4xrDefaultDist
     group = 'test_testar_iv4xr_workflow'
     description ='runTestLabrecruitsGoalAgentListener'
     workingDir 'target/install/testar/bin'
-    commandLine 'cmd', '/c', 'testar sse=test_workflow_labrecruits_goal_agent_listener_complete ApplicationName="goal_listener" ShowVisualSettingsDialogOnStartup=false Mode=Generate StateModelEnabled=false'
+    commandLine 'cmd', '/c', 'testar sse=test_workflow_labrecruits_goal_agent_listener_complete AlwaysCompile=true ApplicationName="goal_listener" ShowVisualSettingsDialogOnStartup=false Mode=Generate StateModelEnabled=false'
     doLast {
         String output = standardOutput.toString()
 
