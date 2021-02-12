@@ -53,6 +53,11 @@ public class IV4XRMapping {
             put(iv4xrEntityTimestamp, IV4XRtags.entityTimestamp);
             put(iv4xrEntityIsActive, IV4XRtags.labRecruitsEntityIsActive);
             put(iv4xrEntityLastUpdated, IV4XRtags.labRecruitsEntityLastUpdated);
+            
+            // LabRecruits
+            put(iv4xrLabRecruitsAgentHealth, IV4XRtags.labRecruitsAgentHealth);
+            put(iv4xrLabRecruitsAgentScore, IV4XRtags.labRecruitsAgentScore);
+            put(iv4xrLabRecruitsAgentMood, IV4XRtags.labRecruitsAgentMood);
         }
     };
     

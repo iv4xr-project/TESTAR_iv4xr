@@ -29,7 +29,7 @@
  *******************************************************************************************************/
 
 
-package org.testar.protocols;
+package org.testar.protocols.iv4xr;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,6 +49,7 @@ import org.fruit.alayer.exceptions.StateBuildException;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
+import org.testar.protocols.GenericUtilsProtocol;
 
 import com.google.common.collect.Sets;
 
@@ -57,10 +58,10 @@ import es.upv.staq.testar.CodingManager;
 import es.upv.staq.testar.NativeLinker;
 import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.IV4XRStateFetcher;
-import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.testar.iv4xr.listener.GoalLibListener;
+import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
+import eu.testar.iv4xr.labrecruits.listener.GoalLibListener;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
 import nl.ou.testar.HtmlReporting.HtmlSequenceReport;
@@ -86,7 +87,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	@Override
 	protected void initialize(Settings settings) {
 		// Start iv4xr plugin (Windows + LabRecruitsEnvironment)
-		NativeLinker.addiv4XROS();
+		NativeLinker.addiv4XRLab();
 
 		super.initialize(settings);
 		
@@ -313,6 +314,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	protected void stopSystem(SUT system) {
 		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).close();
 		super.stopSystem(system);
+		NativeLinker.cleaniv4XRLab();
 	}
 
 	/**

@@ -35,7 +35,7 @@ import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
-import org.testar.protocols.LabRecruitsProtocol;
+import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import agents.tactics.GoalLib;
 import environments.LabRecruitsEnvironment;
@@ -44,7 +44,7 @@ import eu.testar.iv4xr.actions.goals.labActionGoalEntityInCloseRange;
 import eu.testar.iv4xr.actions.goals.labActionGoalEntityInteracted;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
-import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
+import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
 import nl.ou.testar.RandomActionSelector;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;

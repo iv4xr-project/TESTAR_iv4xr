@@ -97,6 +97,9 @@ public class LabStateFetcher extends IV4XRStateFetcher {
 
 		childElement.labRecruitsEntityIsActive = true; //TODO: check if agent will have this property
 		childElement.labRecruitsEntityLastUpdated = -1;
+		childElement.labRecruitsAgentHealth = ((LabWorldModel) labWOM).health;
+		childElement.labRecruitsAgentScore = ((LabWorldModel) labWOM).score;
+		childElement.labRecruitsAgentMood = ((LabWorldModel) labWOM).mood;
 
 		fillRect(childElement);
 

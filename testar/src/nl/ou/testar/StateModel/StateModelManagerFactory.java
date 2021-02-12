@@ -60,7 +60,8 @@ public class StateModelManagerFactory {
         SequenceManager sequenceManager = new SequenceManager(eventListeners, modelIdentifier);
 
         //if(settings.get(ConfigTags.iv4XRAgentListener, false)) {
-        if(NativeLinker.getPLATFORM_OS().contains(OperatingSystems.IV4XR)) {
+        if(NativeLinker.getPLATFORM_OS().contains(OperatingSystems.IV4XR_LAB)
+        		|| NativeLinker.getPLATFORM_OS().contains(OperatingSystems.IV4XR_SE)) {
 
         	// create the abstract state model and then the state model manager
         	AbstractStateModel abstractStateModelListener = new AbstractStateModel(modelIdentifier,

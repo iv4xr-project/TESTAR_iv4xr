@@ -35,7 +35,7 @@ import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
-import org.testar.protocols.SEProtocol;
+import org.testar.protocols.iv4xr.SEProtocol;
 
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.commands.*;

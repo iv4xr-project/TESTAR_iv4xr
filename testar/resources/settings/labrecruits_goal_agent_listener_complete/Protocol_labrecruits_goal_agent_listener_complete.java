@@ -38,15 +38,15 @@ import org.fruit.alayer.*;
 import org.fruit.alayer.actions.NOP;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
-import org.testar.protocols.LabRecruitsProtocol;
+import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import agents.tactics.GoalLib;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
-import eu.testar.iv4xr.listener.GoalLibListener;
-import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
+import eu.testar.iv4xr.labrecruits.listener.GoalLibListener;
+import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.BeliefState;
 

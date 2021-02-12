@@ -35,10 +35,10 @@ import org.fruit.alayer.TagsBase;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.windows.WinProcess;
 
-import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
 import spaceEngineers.SpaceEngEnvironment;
 import eu.iv4xr.framework.mainConcepts.W3DEnvironment;
 import eu.iv4xr.framework.spatial.Vec3;
+import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
 import world.LabWorldModel;
 import world.Observation;
 
@@ -127,6 +127,11 @@ public class IV4XRtags extends TagsBase {
 	
 	// Specific Lab Recruits game property ...
 	public static final Tag<Integer> labRecruitsEntityLastUpdated = from("labRecruitsEntityLastUpdated", Integer.class);
+	
+	// Specific LabRecruits Agent properties
+	public static final Tag<Integer> labRecruitsAgentHealth = from("labRecruitsAgentHealth", Integer.class);
+	public static final Tag<Integer> labRecruitsAgentScore = from("labRecruitsAgentScore", Integer.class);
+	public static final Tag<String> labRecruitsAgentMood = from("labRecruitsAgentMood", String.class);
 	
 	/**
 	 * Agent - TESTAR comparison

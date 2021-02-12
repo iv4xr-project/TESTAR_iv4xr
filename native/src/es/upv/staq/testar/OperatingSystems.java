@@ -37,7 +37,7 @@ public enum OperatingSystems {
      * Possible Operating Systems.
      */
     UNKNOWN(0), WINDOWS(1), UNIX(2), MAC(3), ANDROID(4),
-    WINDOWS_7(5), WINDOWS_10(6), WEBDRIVER(7), IV4XR(8), SE(9) ;
+    WINDOWS_7(5), WINDOWS_10(6), WEBDRIVER(7), IV4XR_LAB(8), IV4XR_SE(9) ;
 
     // Internal value of the enum.
     private int value;
@@ -73,9 +73,9 @@ public enum OperatingSystems {
         } else if (value == 7){
             return "WebDriver";
         } else if (value == 8){
-            return "iv4XR";
+            return "iv4xr_Lab";
         } else if (value == 9){
-            return "SE";
+            return "iv4xr_Se";
         } else {
             return super.toString();
         }

@@ -302,6 +302,11 @@ public class StateManagementTags {
     public static final Tag<Long> iv4xrEntityTimestamp = Tag.from("iv4xr Entity Timestamp", Long.class);
     public static final Tag<Boolean> iv4xrEntityIsActive = Tag.from("iv4xr Entity Is Active", Boolean.class);
     public static final Tag<Integer> iv4xrEntityLastUpdated = Tag.from("iv4xr Entity Last Updated", Integer.class);
+
+    // iv4xr LabRecruits
+    public static final Tag<Integer> iv4xrLabRecruitsAgentHealth = Tag.from("iv4xr LabRecruits Agent Health", Integer.class);
+    public static final Tag<Integer> iv4xrLabRecruitsAgentScore= Tag.from("iv4xr LabRecruits Agent Score", Integer.class);
+    public static final Tag<String> iv4xrLabRecruitsAgentMood = Tag.from("iv4xr LabRecruits Agent Mood", String.class);
 	
     // a set containing the tags that are available for state management
     private static Set<Tag<?>> stateManagementTags = new HashSet<Tag<?>>() {
@@ -402,6 +407,11 @@ public class StateManagementTags {
         	add(iv4xrEntityTimestamp);
         	add(iv4xrEntityIsActive);
         	add(iv4xrEntityLastUpdated);
+
+        	// iv4xr LabRecruits
+        	add(iv4xrLabRecruitsAgentHealth);
+        	add(iv4xrLabRecruitsAgentScore);
+        	add(iv4xrLabRecruitsAgentMood);
         }
     };
 
@@ -509,6 +519,11 @@ public class StateManagementTags {
         settingsMap.put(iv4xrEntityTimestamp, "iv4xrEntityTimestamp");
         settingsMap.put(iv4xrEntityIsActive, "iv4xrEntityIsActive");
         settingsMap.put(iv4xrEntityLastUpdated, "iv4xrEntityLastUpdated");
+
+        // iv4xr LabRecruits
+        settingsMap.put(iv4xrLabRecruitsAgentHealth, "iv4xrLabRecruitsAgentHealth");
+        settingsMap.put(iv4xrLabRecruitsAgentScore, "iv4xrLabRecruitsAgentScore");
+        settingsMap.put(iv4xrLabRecruitsAgentMood, "iv4xrLabRecruitsAgentMood");
     }
 
     // a mapping of a tag to its group
@@ -607,6 +622,11 @@ public class StateManagementTags {
             put(iv4xrEntityTimestamp, Group.iv4xr);
             put(iv4xrEntityIsActive, Group.iv4xr);
             put(iv4xrEntityLastUpdated, Group.iv4xr);
+
+            // iv4xr LabRecruits
+            put(iv4xrLabRecruitsAgentHealth, Group.iv4xr);
+            put(iv4xrLabRecruitsAgentScore, Group.iv4xr);
+            put(iv4xrLabRecruitsAgentMood, Group.iv4xr);
         }
     };
 

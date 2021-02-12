@@ -218,13 +218,22 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 			ret = w.element.entityTimestamp;
 		}
 		/**
-		 *  Lab Recruits IV4XR Tags
+		 *  Specific iv4xr System Tags (LabRecruits, SpaceEngineers)
 		 */
 		else if (t.equals(IV4XRtags.labRecruitsEntityIsActive)) {
 			ret = w.element.labRecruitsEntityIsActive;
 		}
 		else if (t.equals(IV4XRtags.labRecruitsEntityLastUpdated)) {
 			ret = w.element.labRecruitsEntityLastUpdated;
+		}
+		else if (t.equals(IV4XRtags.labRecruitsAgentHealth)) {
+			ret = w.element.labRecruitsAgentHealth;
+		}
+		else if (t.equals(IV4XRtags.labRecruitsAgentScore)) {
+			ret = w.element.labRecruitsAgentScore;
+		}
+		else if (t.equals(IV4XRtags.labRecruitsAgentMood)) {
+			ret = w.element.labRecruitsAgentMood;
 		}
 
 		cacheTag(w, t, ret);

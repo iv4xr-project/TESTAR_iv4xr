@@ -29,7 +29,7 @@
  *******************************************************************************************************/
 
 
-package org.testar.protocols;
+package org.testar.protocols.iv4xr;
 
 import java.io.File;
 import java.util.Arrays;
@@ -48,6 +48,7 @@ import org.fruit.alayer.exceptions.StateBuildException;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
+import org.testar.protocols.GenericUtilsProtocol;
 
 import com.google.common.collect.Sets;
 
@@ -76,7 +77,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 	@Override
 	protected void initialize(Settings settings) {
 		// Start SE iv4xr plugin
-		NativeLinker.addSE();
+		NativeLinker.addiv4XRSe();
 
 		super.initialize(settings);
 
@@ -267,8 +268,8 @@ public class SEProtocol extends GenericUtilsProtocol {
 	@Override
 	protected void stopSystem(SUT system) {
 		system.get(IV4XRtags.iv4xrSpaceEngEnvironment).close();
-		NativeLinker.cleanSE();
 		super.stopSystem(system);
+		NativeLinker.cleaniv4XRSe();
 	}
 
 	/**

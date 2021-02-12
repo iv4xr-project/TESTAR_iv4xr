@@ -94,20 +94,20 @@ public class NativeLinker {
 		PLATFORM_OS.remove(OperatingSystems.WEBDRIVER);
 	}
 	
-	public static void addiv4XROS() {
-		PLATFORM_OS.add(OperatingSystems.IV4XR);
+	// iv4xr LabRecruits System
+	public static void addiv4XRLab() {
+		PLATFORM_OS.add(OperatingSystems.IV4XR_LAB);
+	}
+	public static void cleaniv4XRLab() {
+		PLATFORM_OS.remove(OperatingSystems.IV4XR_LAB);
 	}
 	
-	public static void cleaniv4XROS() {
-		PLATFORM_OS.remove(OperatingSystems.IV4XR);
+	// iv4xr SpaceEngineers System
+	public static void addiv4XRSe() {
+		PLATFORM_OS.add(OperatingSystems.IV4XR_SE);
 	}
-	
-	public static void addSE() {
-		PLATFORM_OS.add(OperatingSystems.SE);
-	}
-	
-	public static void cleanSE() {
-		PLATFORM_OS.remove(OperatingSystems.SE);
+	public static void cleaniv4XRSe() {
+		PLATFORM_OS.remove(OperatingSystems.IV4XR_SE);
 	}
 	
 	public static Set<OperatingSystems> getPLATFORM_OS() {
@@ -122,10 +122,10 @@ public class NativeLinker {
 	 * @return A StateBuilder instance.
 	 */
 	public static StateBuilder getNativeStateBuilder(Double timeToFreeze, boolean accessBridgeEnabled, String SUTProcesses){
-		if (PLATFORM_OS.contains(OperatingSystems.IV4XR)) {
+		if (PLATFORM_OS.contains(OperatingSystems.IV4XR_LAB)) {
 			return new IV4XRStateBuilder(timeToFreeze, "Lab");
 		}
-		if (PLATFORM_OS.contains(OperatingSystems.SE)) {
+		if (PLATFORM_OS.contains(OperatingSystems.IV4XR_SE)) {
 			return new IV4XRStateBuilder(timeToFreeze, "Se");
 		}
 		if (PLATFORM_OS.contains(OperatingSystems.WEBDRIVER))
@@ -150,7 +150,7 @@ public class NativeLinker {
 	 * @return A Canvas on which Testar can paint elements in Spy mode.
 	 */
 	public static Canvas getNativeCanvas(Pen pen){
-		if(PLATFORM_OS.contains(OperatingSystems.IV4XR) || PLATFORM_OS.contains(OperatingSystems.SE)) {
+		if(PLATFORM_OS.contains(OperatingSystems.IV4XR_LAB) || PLATFORM_OS.contains(OperatingSystems.IV4XR_SE)) {
 			return new IV4XRCanvas(pen);
 		}
 		if (PLATFORM_OS.contains(OperatingSystems.WEBDRIVER))
@@ -175,10 +175,10 @@ public class NativeLinker {
 	public static SUT getNativeSUT(String executableCommand, boolean ProcessListenerEnabled){
 		if (PLATFORM_OS.contains(OperatingSystems.WEBDRIVER))
 			return WdDriver.fromExecutable(executableCommand);
-		if(PLATFORM_OS.contains(OperatingSystems.IV4XR)) {
+		if(PLATFORM_OS.contains(OperatingSystems.IV4XR_LAB)) {
 			return LabRecruitsProcess.fromExecutable(executableCommand);
 		}
-		if(PLATFORM_OS.contains(OperatingSystems.SE)) {
+		if(PLATFORM_OS.contains(OperatingSystems.IV4XR_SE)) {
 			return SpaceEngineersProcess.fromExecutable(executableCommand);
 		}
 		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS)) {
@@ -201,7 +201,7 @@ public class NativeLinker {
 	 * @return A list of running processes wrapped in a SUT class.
 	 */
 	public static List<SUT> getNativeProcesses(){
-		if(PLATFORM_OS.contains(OperatingSystems.IV4XR) || PLATFORM_OS.contains(OperatingSystems.SE)) {
+		if(PLATFORM_OS.contains(OperatingSystems.IV4XR_LAB) || PLATFORM_OS.contains(OperatingSystems.IV4XR_SE)) {
 			return LabRecruitsProcess.fromAll();
 		}
 		if (PLATFORM_OS.contains(OperatingSystems.WEBDRIVER))
@@ -215,7 +215,7 @@ public class NativeLinker {
 
 	public static SUT getNativeProcess(String processName){
 		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS) 
-				|| PLATFORM_OS.contains(OperatingSystems.IV4XR) || PLATFORM_OS.contains(OperatingSystems.SE))
+				|| PLATFORM_OS.contains(OperatingSystems.IV4XR_LAB) || PLATFORM_OS.contains(OperatingSystems.IV4XR_SE))
 			return WinProcess.fromProcName(processName);
 		//else if (PLATFORM_OS.contains(OperatingSystems.UNIX))
 		// TODO
@@ -224,7 +224,7 @@ public class NativeLinker {
 
 	public static ProcessHandle getNativeProcessHandle(long processPID){
 		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS) 
-				|| PLATFORM_OS.contains(OperatingSystems.IV4XR) || PLATFORM_OS.contains(OperatingSystems.SE))
+				|| PLATFORM_OS.contains(OperatingSystems.IV4XR_LAB) || PLATFORM_OS.contains(OperatingSystems.IV4XR_SE))
 			return new WinProcHandle(processPID);
 		else if (PLATFORM_OS.contains(OperatingSystems.UNIX))
 			return new LinuxProcessHandle(processPID);
@@ -239,7 +239,7 @@ public class NativeLinker {
 		if (PLATFORM_OS.contains(OperatingSystems.WEBDRIVER))
 			return 0;
 		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS) 
-				|| PLATFORM_OS.contains(OperatingSystems.IV4XR) || PLATFORM_OS.contains(OperatingSystems.SE))
+				|| PLATFORM_OS.contains(OperatingSystems.IV4XR_LAB) || PLATFORM_OS.contains(OperatingSystems.IV4XR_SE))
 			return (int)(WinProcess.getMemUsage((WinProcess)nativeSUT) / 1024); // byte -> KB
 		else if (PLATFORM_OS.contains(OperatingSystems.UNIX))
 			return (int)(LinuxProcess.getMemUsage((LinuxProcess)nativeSUT) / 1024);
@@ -257,7 +257,7 @@ public class NativeLinker {
 			return new long[]{0, 0, 0};
 		}
 		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS) 
-				|| PLATFORM_OS.contains(OperatingSystems.IV4XR) || PLATFORM_OS.contains(OperatingSystems.SE)) {
+				|| PLATFORM_OS.contains(OperatingSystems.IV4XR_LAB) || PLATFORM_OS.contains(OperatingSystems.IV4XR_SE)) {
 			long now = System.currentTimeMillis();
 			long cpuFrame = now - lastCPUquery;
 			lastCPUquery = now;

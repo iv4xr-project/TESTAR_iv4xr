@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package eu.testar.iv4xr.listener;
+package eu.testar.iv4xr.labrecruits.listener;
 
 import java.util.HashSet;
 import java.util.LinkedList;

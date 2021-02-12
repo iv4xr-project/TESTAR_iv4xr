@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -83,10 +83,13 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 	public long entityTimestamp = -1;
 	
 	/**
-	 * Lab Recruits iv4XR properties
+	 * Specific Lab Recruits iv4XR properties
 	 */
-	public boolean labRecruitsEntityIsActive = true;
+	public boolean labRecruitsEntityIsActive = false;
 	public int labRecruitsEntityLastUpdated = -1;
+	public int labRecruitsAgentHealth = -1;
+	public int labRecruitsAgentScore = -1;
+	public String labRecruitsAgentMood = "";
 
 	public IV4XRElement(){ this(null); }
 
