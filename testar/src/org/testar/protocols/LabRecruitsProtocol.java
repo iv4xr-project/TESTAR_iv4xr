@@ -57,11 +57,14 @@ import es.upv.staq.testar.CodingManager;
 import es.upv.staq.testar.NativeLinker;
 import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.IV4XRStateFetcher;
+import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.listener.GoalLibListener;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
 import nl.ou.testar.HtmlReporting.HtmlSequenceReport;
+import nl.uu.cs.aplib.mainConcepts.GoalStructure.PrimitiveGoal;
 
 public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
@@ -70,6 +73,10 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 	// Agent point of view that will Observe and extract Widgets information
 	protected String agentId = "agent1";
+	
+	protected LabRecruitsAgentTESTAR testAgent;
+	private PrimitiveGoal previousGoal;
+	private int triesGoalInExecution = 0;
 
 	/**
 	 * Called once during the life time of TESTAR
@@ -150,7 +157,38 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 			}
 		}
 		
+		if(testAgent != null) {
+			if(previousGoal != null && previousGoal.equals(testAgent.getCurrentGoal())) {
+				triesGoalInExecution = triesGoalInExecution + 1;
+			} else {
+				triesGoalInExecution = 0;
+			}
+			previousGoal = testAgent.getCurrentGoal();
+		}
+		
 		return latestState;
+	}
+	
+	/**
+	 * The getVerdict methods implements the online state oracles that
+	 * examine the SUT's current state and returns an oracle verdict.
+	 * @return oracle verdict, which determines whether the state is erroneous and why.
+	 */
+	@Override
+	protected Verdict getVerdict(State state) {
+		// Used to check if Agent gets stuck
+		if(triesGoalInExecution > 200) {
+			return new Verdict(Verdict.SEVERITY_WARNING, "Warning: Same Agent Goal executed 200 times");
+		}
+
+		/*try {
+			GoalLibListener.getFirstGoalActionFromList();
+		} catch(Exception e) {
+			return new Verdict(Verdict.SEVERITY_WARNING, "Warning: Problems with GoalLibListener: " + e.getMessage());
+		}*/
+		
+		// No verdicts implemented for now.
+		return Verdict.OK;
 	}
 
 	/**

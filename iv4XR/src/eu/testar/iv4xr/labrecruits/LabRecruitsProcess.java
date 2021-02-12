@@ -89,7 +89,7 @@ public class LabRecruitsProcess extends SUTBase {
 		
 		int time = 0;
 		
-		while(!win.isRunning() && time < 10) {
+		while(!win.isRunning() && time < 20) {
 			try {
 				this.wait(1000);
 				time += 1;

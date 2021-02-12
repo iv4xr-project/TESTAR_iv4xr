@@ -28,22 +28,44 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
+import static nl.uu.cs.aplib.AplibEDSL.SEQ;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
 import org.fruit.Util;
 import org.fruit.alayer.*;
+import org.fruit.alayer.actions.NOP;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
+import org.fruit.monkey.Main;
 import org.fruit.monkey.Settings;
+import org.testar.OutputStructure;
 import org.testar.protocols.LabRecruitsProtocol;
 
+import agents.LabRecruitsTestAgent;
+import agents.tactics.GoalLib;
 import environments.LabRecruitsEnvironment;
+import eu.iv4xr.framework.mainConcepts.TestDataCollector;
+import eu.iv4xr.framework.mainConcepts.WorldEntity;
+import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
 import nl.ou.testar.RandomActionSelector;
+import nl.uu.cs.aplib.mainConcepts.GoalStructure;
+import world.BeliefState;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
+ * 
+ * This protocol is used to test TESTAR by executing a gradle CI workflow.
+ * 
+ * ".github/workflows/gradle.yml"
  * 
  * In this protocol LabRecruits game will act as SUT.
  * labrecruits_commands_testar_agent_dummy_explorer / test.setting file contains the:
@@ -53,7 +75,7 @@ import nl.ou.testar.RandomActionSelector;
  * TESTAR is the Agent itself, derives is own knowledge about the observed entities,
  * and takes decisions about the command actions to execute (observe, moveTo, interactWith)
  * 
- * TESTAR is not using any Navigation map internally to explore this LabRecruits level.
+ * TESTAR uses the Navigation map internally to select a visible node and explore this LabRecruits level.
  * This level (test.settings -> buttons_doors_1) has block elements,
  * We need to explore different paths to surround the elements that block us.
  * 
@@ -61,7 +83,7 @@ import nl.ou.testar.RandomActionSelector;
  * State (Widget-Tree) -> Agent Observation (All Observed Entities)
  * Action              -> LabRecruits low level command
  */
-public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends LabRecruitsProtocol {
+public class Protocol_test_workflow_labrecruits_testar_explore extends LabRecruitsProtocol {
 
 	/**
 	 * Called once during the life time of TESTAR.
@@ -75,31 +97,7 @@ public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends L
 
 		super.initialize(settings);
 	}
-
-	/**
-	 * This method is called when the TESTAR requests the state of the SUT.
-	 * Here you can add additional information to the SUT's state or write your
-	 * own state fetching routine.
-	 *
-	 * super.getState(system) puts the state information also to the HTML sequence report
-	 *
-	 * @return  the current state of the SUT with attached oracle.
-	 */
-	@Override
-	protected State getState(SUT system) {
-		return super.getState(system);
-	}
-
-	/**
-	 * The getVerdict methods implements the online state oracles that
-	 * examine the SUT's current state and returns an oracle verdict.
-	 * @return oracle verdict, which determines whether the state is erroneous and why.
-	 */
-	@Override
-	protected Verdict getVerdict(State state) {
-		return super.getVerdict(state);
-	}
-
+	
 	/**
 	 * Derive all possible actions that TESTAR can execute in each specific LabRecruits state.
 	 */
@@ -107,14 +105,11 @@ public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends L
 	protected Set<Action> deriveActions(SUT system, State state) {
 		Set<Action> labActions = new HashSet<>();
 
-		// Get the Observation of the State form the Agent point of view
+		// Get the LabRecruitsEnvironment
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-
-		// Add Dummy Exploration Actions
-		labActions.add(new labActionExploreNorth(state, labRecruitsEnv, agentId, false, false));
-		labActions.add(new labActionExploreSouth(state, labRecruitsEnv, agentId, false, false));
-		labActions.add(new labActionExploreEast(state, labRecruitsEnv, agentId, false, false));
-		labActions.add(new labActionExploreWest(state, labRecruitsEnv, agentId, false, false));
+		
+		// NavMesh Exploration : Add one exploration movement for each visible node
+		labActions = exploreVisibleNodesActions(labActions, state, labRecruitsEnv, agentId);
 
 		// For every interactive entity agents have the possibility to move and interact with
 		for(Widget w : state) {
@@ -132,7 +127,7 @@ public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends L
 
 		return labActions;
 	}
-
+	
 	/**
 	 * Select one of the available actions using an action selection algorithm (for example random action selection)
 	 *
@@ -158,7 +153,7 @@ public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends L
 		}
 		return retAction;
 	}
-
+	
 	/**
 	 * Execute TESTAR as agent command Action
 	 */
@@ -182,26 +177,17 @@ public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends L
 			return false;
 		}
 	}
-
+	
 	/**
-	 * TESTAR uses this method to determine when to stop the generation of actions for the
-	 * current sequence. You can stop deriving more actions after:
-	 * - a specified amount of executed actions, which is specified through the SequenceLength setting, or
-	 * - after a specific time, that is set in the MaxTime setting
-	 * @return  if <code>true</code> continue generation, else stop
+	 * Create specific folder to create gradle workflow artifact
 	 */
 	@Override
-	protected boolean moreActions(State state) {
-		// Execute many actions as indicated in SequenceLength setting
-		return super.moreActions(state);
-	}
-
-	/**
-	 * Here you can put graceful shutdown sequence for your SUT
-	 * @param system
-	 */
-	@Override
-	protected void stopSystem(SUT system) {
-		super.stopSystem(system);
+	protected void closeTestSession() {
+		try {
+			File originalFolder = new File(OutputStructure.outerLoopOutputDir).getCanonicalFile();
+			File artifactFolder = new File(Main.testarDir + settings.get(ConfigTags.ApplicationName,""));
+			FileUtils.copyDirectory(originalFolder, artifactFolder);
+		} catch(Exception e) {System.out.println("ERROR: Creating Artifact Folder");}
+		super.closeTestSession();
 	}
 }

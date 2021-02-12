@@ -40,6 +40,7 @@ import org.testar.protocols.LabRecruitsProtocol;
 import environments.LabRecruitsEnvironment;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import nl.ou.testar.RandomActionSelector;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
@@ -96,8 +97,7 @@ public class Protocol_labrecruits_commands_testar_agent_navmesh_explorer extends
 	 */
 	@Override
 	protected Verdict getVerdict(State state) {
-		// No verdicts implemented for now.
-		return Verdict.OK;
+		return super.getVerdict(state);
 	}
 
 	/**
@@ -149,9 +149,9 @@ public class Protocol_labrecruits_commands_testar_agent_navmesh_explorer extends
 			retAction = stateModelManager.getAbstractActionToExecute(actions);
 		}
 		if(retAction==null) {
-			System.out.println("State model based action selection did not find an action. Using default action selection.");
-			// if state model fails, use default:
-			retAction = super.selectAction(state, actions);
+			System.out.println("State model based action selection did not find an action. Using random action selection.");
+			// if state model fails, use random (default would call preSelectAction() again, causing double actions HTML report):
+			retAction = RandomActionSelector.selectAction(actions);
 		}
 		return retAction;
 	}

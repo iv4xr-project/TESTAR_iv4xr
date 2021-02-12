@@ -50,6 +50,7 @@ import java.util.*;
 import org.fruit.alayer.windows.Windows10;
 
 import static org.fruit.monkey.ConfigTags.*;
+import static org.fruit.Util.compileProtocol;
 
 public class Main {
 
@@ -321,6 +322,11 @@ public class Main {
 	 * @param testSettings
 	 */
 	private static void startTestar(Settings settings, String testSettings) {
+
+		// Compile the Java protocols if AlwaysCompile setting is true
+		if (settings.get(ConfigTags.AlwaysCompile)) {
+			compileProtocol(Main.settingsDir, settings.get(ConfigTags.ProtocolClass));
+		}
 
 		URLClassLoader loader = null;
 

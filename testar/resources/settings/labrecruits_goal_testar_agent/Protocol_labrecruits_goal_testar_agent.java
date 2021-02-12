@@ -68,8 +68,6 @@ import world.BeliefState;
  */
 public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol {
 
-	LabRecruitsAgentTESTAR agentTESTAR;
-
 	/**
 	 * Called once during the life time of TESTAR.
 	 * This method can be used to perform initial setup work.
@@ -91,7 +89,7 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 		// Create an environment
 		LabRecruitsEnvironmentListener labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
 
-		agentTESTAR = new LabRecruitsAgentTESTAR(agentId)
+		testAgent = new LabRecruitsAgentTESTAR(agentId)
 				.attachState(new BeliefState())
 				.attachEnvironment(labRecruitsEnvironment);
 	}
@@ -118,8 +116,7 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	 */
 	@Override
 	protected Verdict getVerdict(State state) {
-		// No verdicts implemented for now.
-		return Verdict.OK;
+		return super.getVerdict(state);
 	}
 
 	/**
@@ -141,12 +138,12 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 				String entityId = w.get(IV4XRtags.entityId);
 				
 				GoalStructure goalNavigateEntity = GoalLib.entityInCloseRange(entityId);
-				Action actionNavigateEntity = new labActionGoalEntityInCloseRange(w, agentTESTAR, goalNavigateEntity, agentId);
+				Action actionNavigateEntity = new labActionGoalEntityInCloseRange(w, testAgent, goalNavigateEntity, agentId);
 				labActions.add(actionNavigateEntity);
 				
 				if(isAgentCloseToEntity(system, w, 1.0)) {
 					GoalStructure goalEntityInteracted = GoalLib.entityInteracted(entityId);
-					Action actionEntityInteracted = new labActionGoalEntityInteracted(w, agentTESTAR, goalEntityInteracted, agentId);
+					Action actionEntityInteracted = new labActionGoalEntityInteracted(w, testAgent, goalEntityInteracted, agentId);
 					labActions.add(actionEntityInteracted);
 				}
 			}
@@ -192,7 +189,7 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 			
 			// From selected action extract the Goal and set to the Agent
 			if(action instanceof labActionGoal) {
-				agentTESTAR.setGoal(((labActionGoal) action).getActionGoal());
+				testAgent.setGoal(((labActionGoal) action).getActionGoal());
 			} else {
 				//System.out.println("ERROR: Seems that selected Action is not an instance of labActionGoal");
 				//System.out.println("ERROR: We need LabRecruits Action Goals to interact at Goal level with the system");
@@ -213,7 +210,7 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 			 * We are going to execute the Action-Goal completely (solved or stopped)
 			 * At the end of this Action-Goal execution Agent may have moved long distances
 			 */
-			while(agentTESTAR.isGoalInProgress() && !hazardousEntityFound()) {
+			while(testAgent.isGoalInProgress() && !hazardousEntityFound()) {
 				// execute selected action in the current state
 				action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 			}

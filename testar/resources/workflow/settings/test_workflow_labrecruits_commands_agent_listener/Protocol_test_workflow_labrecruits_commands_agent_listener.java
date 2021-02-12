@@ -50,6 +50,7 @@ import agents.tactics.GoalLib;
 import environments.LabRecruitsEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
+import eu.testar.iv4xr.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.listener.LabRecruitsEnvironmentListener;
@@ -81,7 +82,6 @@ import world.BeliefState;
  */
 public class Protocol_test_workflow_labrecruits_commands_agent_listener extends LabRecruitsProtocol {
 
-	LabRecruitsTestAgent testAgent;
 	GoalStructure goal;
 
 	/**
@@ -114,7 +114,7 @@ public class Protocol_test_workflow_labrecruits_commands_agent_listener extends 
 		// Create an environment
 		LabRecruitsEnvironmentListener labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
 
-		testAgent = new LabRecruitsTestAgent(agentId) // matches the ID in the CSV file
+		testAgent = new LabRecruitsAgentTESTAR(agentId) // matches the ID in the CSV file
 				. attachState(new BeliefState())
 				. attachEnvironment(labRecruitsEnvironment);
 
@@ -181,8 +181,7 @@ public class Protocol_test_workflow_labrecruits_commands_agent_listener extends 
 	 */
 	@Override
 	protected Verdict getVerdict(State state) {
-		// No verdicts implemented for now.
-		return Verdict.OK;
+		return super.getVerdict(state);
 	}
 
 	/**
