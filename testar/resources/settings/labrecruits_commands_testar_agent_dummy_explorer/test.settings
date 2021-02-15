@@ -127,6 +127,11 @@ iv4XRAgentListener = false
 AbstractStateAttributes = iv4xrEntityId, iv4xrEntityIsActive
 
 #################################################################
+# Action identifier attributes
+#################################################################
+AbstractActionAttributes = iv4xrActionOriginWidgetId,iv4xrActionOriginPos,iv4xrActionTargetPos
+
+#################################################################
 # Other more advanced settings
 #################################################################
 

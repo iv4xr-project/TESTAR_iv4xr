@@ -30,15 +30,23 @@
 
 package eu.testar.iv4xr.actions.commands;
 
+import java.util.Map;
+import java.util.Set;
+
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
+import org.fruit.alayer.Tag;
 import org.fruit.alayer.TaggableBase;
+import org.fruit.alayer.Tags;
+import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import environments.LabRecruitsEnvironment;
 import eu.iv4xr.framework.spatial.Vec3;
+import eu.testar.iv4xr.enums.IV4XRMapping;
+import eu.testar.iv4xr.enums.IV4XRtags;
 
 public class labActionCommand extends TaggableBase implements Action {
 	private static final long serialVersionUID = 3825016139364224082L;
@@ -52,6 +60,32 @@ public class labActionCommand extends TaggableBase implements Action {
 	
 	protected Vec3 currentAgentPosition() {
 		return labRecruitsEnvironment.observe(agentId).position;
+	}
+	
+	protected void setActionCommandTags(Widget widget, State state, Vec3 targetPosition) {
+		// iv4xr Action Tags
+		this.set(IV4XRtags.iv4xrActionOriginWidgetId, widget.get(Tags.AbstractIDCustom));
+		this.set(IV4XRtags.iv4xrActionOriginWidgetPath, widget.get(Tags.Path));
+		this.set(IV4XRtags.iv4xrActionOriginStateId, state.get(Tags.AbstractIDCustom));
+		this.set(IV4XRtags.iv4xrActionEntityId, widget.get(IV4XRtags.entityId));
+		this.set(IV4XRtags.iv4xrActionOriginPos, currentAgentPosition());
+
+		// Some action like interact command has not target position
+		if(targetPosition == null) {
+			this.set(IV4XRtags.iv4xrActionTargetPos, new Vec3(0, 0, 0));
+		} else {
+			this.set(IV4XRtags.iv4xrActionTargetPos, targetPosition);
+		}
+		
+		setActionManagementTags(this);
+	}
+
+	@SuppressWarnings("unchecked")
+	private void setActionManagementTags(Action action) {
+		for(Map.Entry<Tag<?>, Tag<?>> entry : IV4XRMapping.getActionTagMap().entrySet()) {
+			Tag actionManagementTag = entry.getKey();
+			action.set(actionManagementTag, action.get(entry.getValue()));
+		}
 	}
 
 	@Override

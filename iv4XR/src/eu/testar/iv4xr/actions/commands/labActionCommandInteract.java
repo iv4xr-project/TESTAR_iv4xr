@@ -54,7 +54,7 @@ public class labActionCommandInteract extends labActionCommand {
 		this.set(IV4XRtags.agentAction, true);
 	}
 	
-	public labActionCommandInteract(Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent) {
+	public labActionCommandInteract(Widget w, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent) {
 		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
@@ -63,6 +63,8 @@ public class labActionCommandInteract extends labActionCommand {
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, agentAction);
 		this.set(IV4XRtags.newActionByAgent, newByAgent);
+
+		setActionCommandTags(w, state, null);
 	}
 
 	@Override

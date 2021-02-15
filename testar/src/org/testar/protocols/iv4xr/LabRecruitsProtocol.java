@@ -61,7 +61,6 @@ import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
-import eu.testar.iv4xr.labrecruits.listener.GoalLibListener;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
 import nl.ou.testar.HtmlReporting.HtmlSequenceReport;
@@ -389,7 +388,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	protected static Set<Action> exploreVisibleNodesActions(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
 		ArrayList<Vec3> visibleNavigationNodes = labRecruitsEnvironment.worldNavigableMesh.vertices;
 		for(Vec3 nodePosition : visibleNavigationNodes) {
-			actions.add(new labActionExplorePosition(state, labRecruitsEnvironment, agentId, nodePosition, false, false));
+			actions.add(new labActionExplorePosition(state, state, labRecruitsEnvironment, agentId, nodePosition, false, false));
 		}
 		
 		return actions;

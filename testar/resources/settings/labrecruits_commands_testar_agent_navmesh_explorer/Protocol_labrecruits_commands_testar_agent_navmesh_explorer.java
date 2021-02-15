@@ -118,11 +118,11 @@ public class Protocol_labrecruits_commands_testar_agent_navmesh_explorer extends
 			// If TESTAR sees an Interactive Entity
 			if(isInteractiveEntity(w)) {
 				// TESTAR can try to move towards it
-				labActions.add(new labActionCommandMove(w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
+				labActions.add(new labActionCommandMove(w, state, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
 				// If TESTAR is in a suitable distance
 				if(isAgentCloseToEntity(system, w, 1.0)) {
 					// TESTAR can try to interact
-					labActions.add(new labActionCommandInteract(w, labRecruitsEnv, agentId, false, false));
+					labActions.add(new labActionCommandInteract(w, state, labRecruitsEnv, agentId, false, false));
 				}
 			}
 		}

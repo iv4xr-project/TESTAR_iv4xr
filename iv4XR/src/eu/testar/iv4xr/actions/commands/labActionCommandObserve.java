@@ -55,6 +55,8 @@ public class labActionCommandObserve extends labActionCommand {
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, agentAction);
 		this.set(IV4XRtags.newActionByAgent, newByAgent);
+
+		setActionCommandTags(w, state, null);
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.fruit.alayer.Tag;
+import es.upv.staq.testar.ActionManagementTags;
 
 public class IV4XRMapping {
 
@@ -68,5 +69,22 @@ public class IV4XRMapping {
      */
     public static <T> Tag<T> getMappedStateTag(Tag<T> mappedTag) {
         return (Tag<T>) stateTagMappingIV4XR.getOrDefault(mappedTag, null);
+    }
+
+    // a mapping from the state management tags to iv4XR tags
+    private static Map<Tag<?>, Tag<?>> actionTagMappingIV4XR = new HashMap<Tag<?>, Tag<?>>()
+    {
+    	{
+    		put(ActionManagementTags.iv4xrActionOriginWidgetId, IV4XRtags.iv4xrActionOriginWidgetId);
+    		put(ActionManagementTags.iv4xrActionOriginWidgetPath, IV4XRtags.iv4xrActionOriginWidgetPath);
+    		put(ActionManagementTags.iv4xrActionOriginStateId, IV4XRtags.iv4xrActionOriginStateId);
+    		put(ActionManagementTags.iv4xrActionEntityId, IV4XRtags.iv4xrActionEntityId);
+    		put(ActionManagementTags.iv4xrActionOriginPos, IV4XRtags.iv4xrActionOriginPos);
+    		put(ActionManagementTags.iv4xrActionTargetPos, IV4XRtags.iv4xrActionTargetPos);
+    	}
+    };
+
+    public static Map<Tag<?>, Tag<?>> getActionTagMap() {
+    	return actionTagMappingIV4XR;
     }
 }

@@ -162,9 +162,6 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		else if (t.equals(Tags.Title)) {
 			ret = w.element.entityId;
 		}
-		else if (t.equals(Tags.Path)) {
-			ret = w.element.entityPosition.toString();
-		}
 		else if (t.equals(Tags.PID)) {
 			ret = w == this ? ((IV4XRRootElement) element).pid : null;
 		}
