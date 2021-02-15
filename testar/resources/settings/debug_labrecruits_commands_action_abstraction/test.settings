@@ -32,7 +32,7 @@ SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "bu
 #################################################################
 
 Sequences = 1
-SequenceLength = 100
+SequenceLength = 5
 
 #################################################################
 # Oracles based on suspicious titles
@@ -93,7 +93,7 @@ SUTProcesses =
 # Indicate the location of the protocol class for your specific SUT.
 #################################################################
 
-ProtocolClass = labrecruits_commands_testar_agent_dummy_explorer/Protocol_labrecruits_commands_testar_agent_dummy_explorer
+ProtocolClass = debug_labrecruits_commands_action_abstraction/Protocol_debug_labrecruits_commands_action_abstraction
 
 #################################################################
 # Graphdatabase settings (experimental)
@@ -129,7 +129,7 @@ AbstractStateAttributes = iv4xrEntityId, iv4xrEntityIsActive
 #################################################################
 # Action identifier attributes
 #################################################################
-AbstractActionAttributes = iv4xrActionOriginWidgetId,iv4xrActionOriginPos,iv4xrActionTargetAbsPos
+AbstractActionAttributes = iv4xrActionOriginPos,iv4xrActionTargetAbsPos
 
 #################################################################
 # Other more advanced settings

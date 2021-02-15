@@ -51,7 +51,8 @@ public class ActionManagementTags {
 	public static final Tag<String> iv4xrActionOriginStateId = Tag.from("iv4xr Action Origin StateId", String.class);
 	public static final Tag<String> iv4xrActionEntityId = Tag.from("iv4xr Action Entity Id", String.class);
 	public static final Tag<Vec3> iv4xrActionOriginPos = Tag.from("iv4xr Action Origin Pos", Vec3.class);
-	public static final Tag<Vec3> iv4xrActionTargetPos = Tag.from("iv4xr Action Target Pos", Vec3.class);
+	public static final Tag<Vec3> iv4xrActionTargetAbsPos = Tag.from("iv4xr Action Target Abs Pos", Vec3.class);
+	public static final Tag<Vec3> iv4xrActionTargetRelPos = Tag.from("iv4xr Action Target Rel Pos", Vec3.class);
 
 	// a set containing the tags that are available for action management
 	@SuppressWarnings("serial")
@@ -63,7 +64,8 @@ public class ActionManagementTags {
 			add(iv4xrActionOriginStateId);
 			add(iv4xrActionEntityId);
 			add(iv4xrActionOriginPos);
-			add(iv4xrActionTargetPos);
+			add(iv4xrActionTargetAbsPos);
+			add(iv4xrActionTargetRelPos);
 		}
 	};
 
@@ -85,7 +87,8 @@ public class ActionManagementTags {
 		settingsMap.put(iv4xrActionOriginStateId, "iv4xrActionOriginStateId");
 		settingsMap.put(iv4xrActionEntityId, "iv4xrActionEntityId");
 		settingsMap.put(iv4xrActionOriginPos, "iv4xrActionOriginPos");
-		settingsMap.put(iv4xrActionTargetPos, "iv4xrActionTargetPos");
+		settingsMap.put(iv4xrActionTargetAbsPos, "iv4xrActionTargetAbsPos");
+		settingsMap.put(iv4xrActionTargetRelPos, "iv4xrActionTargetRelPos");
 	}
 
 	// a mapping of a tag to its group
@@ -98,7 +101,8 @@ public class ActionManagementTags {
 			put(iv4xrActionOriginStateId, Group.iv4xrAction);
 			put(iv4xrActionEntityId, Group.iv4xrAction);
 			put(iv4xrActionOriginPos, Group.iv4xrAction);
-			put(iv4xrActionTargetPos, Group.iv4xrAction);
+			put(iv4xrActionTargetAbsPos, Group.iv4xrAction);
+			put(iv4xrActionTargetRelPos, Group.iv4xrAction);
 		}
 	};
 

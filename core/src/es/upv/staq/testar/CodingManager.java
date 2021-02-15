@@ -214,11 +214,15 @@ public class CodingManager {
 			System.out.println("DEBUG: ConcreteIDCustom");
 			a.set(Tags.ConcreteIDCustom, ID_PREFIX_ACTION + ID_PREFIX_CONCRETE_CUSTOM + 
 					CodingManager.codify(a, customTagsForActionConcreteId));
+			// TODO: remove debug
+			System.out.println("ConcreteIDCustom : " + a.get(Tags.ConcreteIDCustom, "Not created correctly"));
 			
 			// TODO: remove debug
 			System.out.println("DEBUG: AbstractIDCustom");
 			a.set(Tags.AbstractIDCustom, ID_PREFIX_ACTION + ID_PREFIX_ABSTRACT_CUSTOM + 
 					CodingManager.codify(a, customTagsForActionAbstractId));
+			// TODO: remove debug
+			System.out.println("AbstractIDCustom : " + a.get(Tags.AbstractIDCustom, "Not created correctly"));
 		}
 	}
 	

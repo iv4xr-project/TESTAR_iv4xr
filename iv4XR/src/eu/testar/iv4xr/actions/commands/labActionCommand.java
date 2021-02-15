@@ -70,11 +70,19 @@ public class labActionCommand extends TaggableBase implements Action {
 		this.set(IV4XRtags.iv4xrActionEntityId, widget.get(IV4XRtags.entityId));
 		this.set(IV4XRtags.iv4xrActionOriginPos, currentAgentPosition());
 
-		// Some action like interact command has not target position
+		/**
+		 * TargetPosition is the "intention" of the position movement. 
+		 * We will try to move to a specific position, but we don't know if will be possible. 
+		 * Add absolute and relative intent position to move 
+		 */
+		
+		// Some action like interact command has not agent movement
 		if(targetPosition == null) {
-			this.set(IV4XRtags.iv4xrActionTargetPos, new Vec3(0, 0, 0));
+			this.set(IV4XRtags.iv4xrActionTargetAbsPos, currentAgentPosition());
+			this.set(IV4XRtags.iv4xrActionTargetRelPos, new Vec3(0, 0, 0));
 		} else {
-			this.set(IV4XRtags.iv4xrActionTargetPos, targetPosition);
+			this.set(IV4XRtags.iv4xrActionTargetAbsPos, Vec3.add(currentAgentPosition(), targetPosition));
+			this.set(IV4XRtags.iv4xrActionTargetRelPos, targetPosition);
 		}
 		
 		setActionManagementTags(this);
