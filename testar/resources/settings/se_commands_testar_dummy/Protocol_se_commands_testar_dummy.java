@@ -96,7 +96,7 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 		SpaceEngEnvironment SeEnvironment = system.get(IV4XRtags.iv4xrSpaceEngEnvironment);
 
 		// Add Dummy Exploration Actions
-		labActions.add(new seActionCommandMove(state, SeEnvironment, agentId, new Vec3(0,0,-1)));
+		labActions.add(new seActionCommandMove(state, SeEnvironment, agentId, new Vec3(2f,0,0)));
 
 		return labActions;
 	}

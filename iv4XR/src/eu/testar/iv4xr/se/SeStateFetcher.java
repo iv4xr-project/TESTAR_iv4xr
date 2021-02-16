@@ -40,6 +40,10 @@ import eu.testar.iv4xr.IV4XRElement;
 import eu.testar.iv4xr.IV4XRRootElement;
 import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import spaceEngineers.SeEntity;
+import spaceEngineers.SeObservation;
+import spaceEngineers.SeRequest;
+import spaceEngineers.commands.SeAgentCommand;
 
 public class SeStateFetcher extends IV4XRStateFetcher {
 
@@ -57,9 +61,10 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 			// LegacyObservation
 			// TODO: SpaceEngineers plugin should extend from W3DWorldModel
 			//WorldModel observedLabWOM = system.get(IV4XRtags.iv4xrSpaceEngEnvironment).observe(agentId);
-			WorldModel observedWOM = (WorldModel) system.get(IV4XRtags.iv4xrSpaceEngEnvironment).sendCommand(agentId, null, "Observe", null, WorldModel.class);
 
-			if(rootElement.isForeground) {
+			/*WorldModel observedWOM = (WorldModel) system.get(IV4XRtags.iv4xrSpaceEngEnvironment).sendCommand(agentId, null, "Observe", null, WorldModel.class);
+
+			if(rootElement.isForeground && seObservation.entities != null) {
 				// Add manually the Agent as an Element (Observed Entities + 1)
 				rootElement.children = new ArrayList<IV4XRElement>((int) observedWOM.elements.size() + 1);
 
@@ -74,13 +79,79 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 						IV4XRdescend(rootElement, observedWOM.getElement(entity.id));
 					}
 				}
+			}*/
+
+			SeObservation seObservation = system.get(IV4XRtags.iv4xrSpaceEngEnvironment).getSeResponse(SeRequest.command(SeAgentCommand.observe(agentId)));
+
+			if(rootElement.isForeground && seObservation.entities != null) {
+				// Add manually the Agent as an Element (Observed Entities + 1)
+				rootElement.children = new ArrayList<IV4XRElement>((int) seObservation.entities.size() + 1);
+
+				rootElement.zindex = 0;
+				fillRect(rootElement);
+
+				SEagent(rootElement, seObservation);
+
+				// If Agent observes entities create the elements-entities
+				if(seObservation.entities.size() > 0) {
+					for(SeEntity entity : seObservation.entities) {
+						SEdescend(rootElement, entity);
+					}
+				}
+			} else if (rootElement.isForeground) {
+				System.out.println("INFO: No entities in the current Observation");
+				// Add manually the Agent as an Element (Observed Entities + 1)
+				rootElement.children = new ArrayList<IV4XRElement>(1);
+
+				rootElement.zindex = 0;
+				fillRect(rootElement);
+
+				SEagent(rootElement, seObservation);
+			} else {
+				System.out.println("ISSUE: Space Engineers is not in the foreground");
+				System.out.println("ISSUE: No entities in the current Observation");
 			}
 		}
 
 		return rootElement;
 	}
+	
+	private IV4XRElement SEagent(IV4XRElement parent, SeObservation seObservation) {
+		IV4XRElement childElement = new IV4XRElement(parent);
+		parent.children.add(childElement);
 
-	@Override
+		childElement.enabled = true; //TODO: check when should be enabled (careful with createWidgetTree)
+		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
+		childElement.zindex = parent.zindex +1;
+
+		childElement.entityPosition = seObservation.position;
+		childElement.entityVelocity = seObservation.velocity;
+		childElement.entityId = seObservation.agentID;
+		childElement.entityType = "AGENT"; //TODO: check proper entity for agent
+		childElement.entityTimestamp = -1;
+
+		fillRect(childElement);
+
+		return childElement;
+	}
+	
+	private IV4XRElement SEdescend(IV4XRElement parent, SeEntity seEntity) {
+		IV4XRElement childElement = new IV4XRElement(parent);
+		parent.children.add(childElement);
+
+		childElement.enabled = true; //TODO: check when should be enabled (careful with createWidgetTree)
+		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
+		childElement.zindex = parent.zindex +1;
+
+		childElement.entityPosition = seEntity.position;
+		childElement.entityId = seEntity.id;
+
+		fillRect(childElement);
+
+		return childElement;
+	}
+
+	/*@Override
 	protected IV4XRElement IV4XRagent(IV4XRElement parent, WorldModel labWOM) {
 		IV4XRElement childElement = new IV4XRElement(parent);
 		parent.children.add(childElement);
@@ -121,6 +192,6 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		fillRect(childElement);
 
 		return childElement;
-	}
+	}*/
 
 }
