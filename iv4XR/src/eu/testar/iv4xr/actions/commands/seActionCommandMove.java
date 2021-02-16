@@ -30,6 +30,7 @@
 
 package eu.testar.iv4xr.actions.commands;
 
+import org.fruit.Assert;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
@@ -41,6 +42,7 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
+import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.SeRequest;
 import spaceEngineers.SpaceEngEnvironment;
 import spaceEngineers.commands.SeAgentCommand;
@@ -59,11 +61,25 @@ public class seActionCommandMove extends TaggableBase implements Action {
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
 		this.targetPosition = targetPosition;
 		this.set(Tags.Desc, toShortString());
+		// TODO: Update with Goal Solving agents
+		this.set(IV4XRtags.agentAction, false);
+		this.set(IV4XRtags.newActionByAgent, false);
 	}
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		spaceEngEnvironment.getSeResponse(SeRequest.command(SeAgentCommand.moveTowardCommand(agentId, targetPosition, false)));
+		System.out.println("DEBUG: Running seActionCommandMove...");
+		
+		// TODO: Seems that 1 single move request does not work
+		// https://github.com/iv4xr-project/iv4xrDemo-space-engineers/blob/se-dev/src/test/java/spaceEngineers/MoveAgentTest.java
+		
+		var observation = spaceEngEnvironment.getSeResponse(SeRequest.command(SeAgentCommand.moveTowardCommand(agentId, targetPosition, false)));
+		observation = spaceEngEnvironment.getSeResponse(SeRequest.command(SeAgentCommand.moveTowardCommand(agentId, targetPosition, false)));
+		observation = spaceEngEnvironment.getSeResponse(SeRequest.command(SeAgentCommand.moveTowardCommand(agentId, targetPosition, false)));
+		observation = spaceEngEnvironment.getSeResponse(SeRequest.command(SeAgentCommand.moveTowardCommand(agentId, targetPosition, false)));
+		Assert.notNull(observation);
+
+		System.out.println("DEBUG: seActionCommandMove Position: " + observation.position);
 	}
 
 	@Override
