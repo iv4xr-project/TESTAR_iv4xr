@@ -108,7 +108,6 @@ dependencies {
     compile project(':native')
     compile project(':graphdb')
     compile files('./lib/jsyntaxpane-1.1.5.jar')
-    compile files('./lib/sikulixapi.jar')
     compile files('./lib/eye2.jar')
     compile files('./lib/gson-2.8.5.jar')
     compile files('./lib/aplib-1.2.0.jar')

@@ -97,6 +97,9 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 
 		// Add Dummy Exploration Actions
 		labActions.add(new seActionCommandMove(state, SeEnvironment, agentId, new Vec3(2f,0,0)));
+		
+		// Add a block like a monkey
+		labActions.add(new seActionCommandPlaceBlock(state, SeEnvironment, agentId));
 
 		return labActions;
 	}
