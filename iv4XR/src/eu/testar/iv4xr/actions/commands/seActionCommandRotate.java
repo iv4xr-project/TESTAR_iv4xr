@@ -46,21 +46,19 @@ import spaceEngineers.SeRequest;
 import spaceEngineers.SpaceEngEnvironment;
 import spaceEngineers.commands.SeAgentCommand;
 
-public class seActionCommandMove extends TaggableBase implements Action {
-	private static final long serialVersionUID = -6582285412839242075L;
+public class seActionCommandRotate extends TaggableBase implements Action {
+	private static final long serialVersionUID = -3205069256476009191L;
 
 	private SpaceEngEnvironment spaceEngEnvironment;
 	private String agentId;
-	private Vec3 targetPosition;
-	private int distance;
+	private Vec3 targetRotation;
 
-	public seActionCommandMove(Widget w, SpaceEngEnvironment spaceEngEnvironment, String agentId, Vec3 targetPosition, int distance){
+	public seActionCommandRotate(Widget w, SpaceEngEnvironment spaceEngEnvironment, String agentId, Vec3 targetRotation){
 		this.spaceEngEnvironment = spaceEngEnvironment;
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
-		this.targetPosition = targetPosition;
-		this.distance = distance;
+		this.targetRotation = targetRotation;
 		this.set(Tags.Desc, toShortString());
 		// TODO: Update with Goal Solving agents
 		this.set(IV4XRtags.agentAction, false);
@@ -69,16 +67,13 @@ public class seActionCommandMove extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		// TODO: Seems that 1 single move request does not work
-		// https://github.com/iv4xr-project/iv4xrDemo-space-engineers/blob/se-dev/src/test/java/spaceEngineers/MoveAgentTest.java
-		for(int i = 0; i < distance; i++) {
-			spaceEngEnvironment.getSeResponse(SeRequest.command(SeAgentCommand.moveTowardCommand(agentId, targetPosition, false)));
-		}
+		spaceEngEnvironment.getSeResponse(SeRequest.command(
+				SeAgentCommand.moveAndRotate("you", new Vec3(0,0,0), targetRotation, 0f)));
 	}
 
 	@Override
 	public String toShortString() {
-		return "Move agent: " + agentId + " to: " + targetPosition + " a distance of: " + distance;
+		return "Rotate agent: " + agentId + " to: " + targetRotation;
 	}
 
 	@Override

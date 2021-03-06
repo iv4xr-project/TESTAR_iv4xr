@@ -95,11 +95,23 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 		// Get the Observation of the State form the Agent point of view
 		SpaceEngEnvironment SeEnvironment = system.get(IV4XRtags.iv4xrSpaceEngEnvironment);
 
-		// Add Dummy Exploration Actions
-		labActions.add(new seActionCommandMove(state, SeEnvironment, agentId, new Vec3(2f,0,0)));
-		
+		// Add Dummy Exploration Actions (Coordinates + Steps Distance)
+		labActions.add(new seActionCommandMove(state, SeEnvironment, agentId, new Vec3(0,0,1f), 100)); //North
+		labActions.add(new seActionCommandMove(state, SeEnvironment, agentId, new Vec3(0,0,-1f), 100)); //South
+		labActions.add(new seActionCommandMove(state, SeEnvironment, agentId, new Vec3(1f,0,0), 100)); //East
+		labActions.add(new seActionCommandMove(state, SeEnvironment, agentId, new Vec3(-1f,0,0), 100)); //West
+
+		// Add Left Right Rotations
+		labActions.add(new seActionCommandRotate(state, SeEnvironment, agentId, new Vec3(0,-500f,0))); // Left
+		labActions.add(new seActionCommandRotate(state, SeEnvironment, agentId, new Vec3(0,500f,0))); // Right
+
+		// TODO: At the moment Place Command only works in survival mode (https://github.com/iv4xr-project/iv4xr-se-plugin/commit/42c1fc24e8582d5315f66542f0503e5561a31a5a)
+		// It is necessary to update the dll of the game
+
 		// Add a block like a monkey
 		labActions.add(new seActionCommandPlaceBlock(state, SeEnvironment, agentId));
+		// Try to farm components (like a monkey)
+		labActions.add(new seActionCommandTryToFarm(state, SeEnvironment, agentId));
 
 		return labActions;
 	}

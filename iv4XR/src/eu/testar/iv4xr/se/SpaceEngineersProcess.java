@@ -84,9 +84,6 @@ public class SpaceEngineersProcess extends SUTBase {
 			}
 		}
 		
-		// (SpaceEngineers) Wait a bit for initial printed information
-		Util.pause(10);
-		
 		if(!win.isRunning()) {
 			throw new SystemStartException(String.format("ERROR trying to connect with iv4xr SUT : %s", processName));
 		}

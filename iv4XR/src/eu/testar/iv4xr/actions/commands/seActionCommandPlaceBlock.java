@@ -30,6 +30,7 @@
 
 package eu.testar.iv4xr.actions.commands;
 
+import org.fruit.Util;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
@@ -66,11 +67,13 @@ public class seActionCommandPlaceBlock extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		System.out.println("DEBUG: Running seActionCommandPlaceBlock...");
-
 		spaceEngEnvironment.getSeResponse(SeRequest.command(
-				SeAgentCommand.interact(agentId, new InteractionArgs(InteractionType.EQUIP,3, 0))));
+				SeAgentCommand.interact(agentId, new InteractionArgs(InteractionType.EQUIP,3))));
 
+		Util.pause(1);
+
+		// TODO: At the moment Place Command only works in survival mode (https://github.com/iv4xr-project/iv4xr-se-plugin/commit/42c1fc24e8582d5315f66542f0503e5561a31a5a)
+		// It is necessary to update the dll of the game
 		spaceEngEnvironment.getSeResponse(SeRequest.command(
 				SeAgentCommand.interact(agentId, new InteractionArgs(InteractionType.PLACE))));
 	}
