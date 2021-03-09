@@ -41,10 +41,12 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
+import org.fruit.Util;
 import org.fruit.alayer.Rect;
 import org.fruit.alayer.Roles;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tags;
+import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.StateBuildException;
 import org.fruit.alayer.windows.Windows;
 
@@ -93,6 +95,9 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 	    IV4XRState root = createWidgetTree(rootElement);
 	    root.set(Tags.Role, Roles.Process);
 	    root.set(Tags.NotResponding, false);
+
+	    for (Widget w : root)
+	    	w.set(Tags.Path, Util.indexString(w));
 
 	    return root;
 	}

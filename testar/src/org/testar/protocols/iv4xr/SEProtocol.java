@@ -31,12 +31,20 @@
 
 package org.testar.protocols.iv4xr;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 
+import org.apache.commons.io.comparator.LastModifiedFileComparator;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
@@ -258,7 +266,68 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected void finishSequence() {
-		//
+		// SpaceEngineers Logs Verdict, check SE logs trying to find pattern messages (ConfigTags.ProcessLogs)
+		Verdict logVerdict = Verdict.OK;
+		File seLog = getLastSpaceEngineersLog();
+		if(seLog != null) {
+			System.out.println("INFO: SpaceEngineers Log detected: " + seLog);
+			LinkedList<String> logOracles = spaceEngineersLogVerdict(seLog);
+			if(!logOracles.isEmpty()) {
+				String verdictMessage = String.format("Suspicious Log messages on File %s", seLog);
+				String newLine = System.getProperty("line.separator");
+				for(String s : logOracles) {verdictMessage = verdictMessage.concat(newLine + s);}
+				logVerdict = new Verdict(Verdict.SEVERITY_SUSPICIOUS_TITLE, verdictMessage);
+				processVerdict = processVerdict.join(logVerdict);
+			}
+		}
+	}
+
+	/**
+	 * Reverse ordering of SpaceEngineers files to return the latest "SpaceEngineers" Log. 
+	 * C:\Users\<username>\AppData\Roaming\SpaceEngineers\
+	 * 
+	 * @return
+	 */
+	private File getLastSpaceEngineersLog() {
+		File dir = new File("C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\SpaceEngineers");
+		if (dir.isDirectory()) {
+			File[] dirFiles = dir.listFiles((FileFilter)FileFilterUtils.fileFileFilter());
+			if (dirFiles != null && dirFiles.length > 0) {
+				Arrays.sort(dirFiles, LastModifiedFileComparator.LASTMODIFIED_REVERSE);
+			}
+			for(int i = 0; i < dirFiles.length; i++) {
+				if(dirFiles[i].getName().contains("SpaceEngineers") && dirFiles[i].getName().contains(".log")) {
+					return dirFiles[i];
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Read one specific SpaceEngineers Log and use ConfigTags.ProcessLogs pattern to find error messages.
+	 * 
+	 * @param seLog
+	 * @return
+	 */
+	private LinkedList<String> spaceEngineersLogVerdict(File seLog){
+		LinkedList<String> logOracles = new LinkedList<>();
+		try{
+			FileInputStream fstream = new FileInputStream(seLog);
+			BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
+			String strLine;
+			while ((strLine = br.readLine()) != null)   {
+				if(Pattern.matches(settings.get(ConfigTags.ProcessLogs), strLine)) {
+					logOracles.add(strLine);
+				}
+			}
+			fstream.close();
+		} catch (Exception e) {
+			System.err.println("Error: " + e.getMessage());
+		}
+
+		return logOracles;
 	}
 
 	/**

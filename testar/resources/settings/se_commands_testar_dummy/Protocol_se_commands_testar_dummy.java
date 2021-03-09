@@ -81,8 +81,13 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 	 */
 	@Override
 	protected Verdict getVerdict(State state) {
-		// No verdicts implemented for now.
-		return Verdict.OK;
+		// Widget Title contains Suspicious title (test.setting -> SuspiciousTitles)
+		// SUT hangs
+		// SUT crashes
+		return super.getVerdict(state);
+		
+		// At the end of the execution SEProtocol is reading last SpaceEngineers log
+		// trying to find suspicious patterns using test.setting -> ProcessLogs (Exception by default)
 	}
 
 	/**

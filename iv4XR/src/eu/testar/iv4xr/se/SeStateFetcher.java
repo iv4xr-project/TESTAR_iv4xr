@@ -34,8 +34,6 @@ import java.util.ArrayList;
 
 import org.fruit.alayer.SUT;
 
-import eu.iv4xr.framework.mainConcepts.WorldEntity;
-import eu.iv4xr.framework.mainConcepts.WorldModel;
 import eu.testar.iv4xr.IV4XRElement;
 import eu.testar.iv4xr.IV4XRRootElement;
 import eu.testar.iv4xr.IV4XRStateFetcher;
@@ -43,6 +41,9 @@ import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.SeEntity;
 import spaceEngineers.SeObservation;
 import spaceEngineers.SeRequest;
+import spaceEngineers.SpaceEngEnvironment;
+import spaceEngineers.commands.ObservationArgs;
+import spaceEngineers.commands.ObservationMode;
 import spaceEngineers.commands.SeAgentCommand;
 
 public class SeStateFetcher extends IV4XRStateFetcher {
@@ -57,48 +58,36 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 	 */
 	@Override
 	protected IV4XRRootElement fetchIV4XRElements(IV4XRRootElement rootElement) {
+		
+		SpaceEngEnvironment seEnv = system.get(IV4XRtags.iv4xrSpaceEngEnvironment);
+		
 		for(String agentId : agentsIds) {
 			// LegacyObservation
 			// TODO: SpaceEngineers plugin should extend from W3DWorldModel
-			//WorldModel observedLabWOM = system.get(IV4XRtags.iv4xrSpaceEngEnvironment).observe(agentId);
+			SeObservation agentObservation = seEnv.getSeResponse(SeRequest.command(SeAgentCommand.observe(agentId)));
+			SeObservation entitesObservation = seEnv.getSeResponse(SeRequest.command(SeAgentCommand.observe(agentId, new ObservationArgs(ObservationMode.ENTITIES))));
+			
+			//TODO: After update dll use block entities
+			//SeObservation blocksObservation = seEnv.getSeResponse(SeRequest.command(SeAgentCommand.observe(agentId, new ObservationArgs(ObservationMode.BLOCKS))));
+			//SeObservation newBlocksObservation = seEnv.getSeResponse(SeRequest.command(SeAgentCommand.observe(agentId, new ObservationArgs(ObservationMode.NEW_BLOCKS))));
 
-			/*WorldModel observedWOM = (WorldModel) system.get(IV4XRtags.iv4xrSpaceEngEnvironment).sendCommand(agentId, null, "Observe", null, WorldModel.class);
-
-			if(rootElement.isForeground && seObservation.entities != null) {
+			if(agentObservation != null && entitesObservation.entities != null) {
 				// Add manually the Agent as an Element (Observed Entities + 1)
-				rootElement.children = new ArrayList<IV4XRElement>((int) observedWOM.elements.size() + 1);
+				rootElement.children = new ArrayList<IV4XRElement>((int) entitesObservation.entities.size() + 1);
 
 				rootElement.zindex = 0;
 				fillRect(rootElement);
 
-				IV4XRagent(rootElement, observedWOM);
+				// Agent always exists as an Entity
+				SEagent(rootElement, agentObservation);
 
 				// If Agent observes entities create the elements-entities
-				if(observedWOM.elements.size() > 0) {
-					for(WorldEntity entity : observedWOM.elements.values()) {
-						IV4XRdescend(rootElement, observedWOM.getElement(entity.id));
-					}
-				}
-			}*/
-
-			SeObservation seObservation = system.get(IV4XRtags.iv4xrSpaceEngEnvironment).getSeResponse(SeRequest.command(SeAgentCommand.observe(agentId)));
-
-			if(rootElement.isForeground && seObservation.entities != null) {
-				// Add manually the Agent as an Element (Observed Entities + 1)
-				rootElement.children = new ArrayList<IV4XRElement>((int) seObservation.entities.size() + 1);
-
-				rootElement.zindex = 0;
-				fillRect(rootElement);
-
-				SEagent(rootElement, seObservation);
-
-				// If Agent observes entities create the elements-entities
-				if(seObservation.entities.size() > 0) {
-					for(SeEntity entity : seObservation.entities) {
+				if(entitesObservation.entities.size() > 0) {
+					for(SeEntity entity : entitesObservation.entities) {
 						SEdescend(rootElement, entity);
 					}
 				}
-			} else if (rootElement.isForeground) {
+			} else if (agentObservation != null) {
 				System.out.println("INFO: No entities in the current Observation");
 				// Add manually the Agent as an Element (Observed Entities + 1)
 				rootElement.children = new ArrayList<IV4XRElement>(1);
@@ -106,10 +95,9 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 				rootElement.zindex = 0;
 				fillRect(rootElement);
 
-				SEagent(rootElement, seObservation);
+				SEagent(rootElement, agentObservation);
 			} else {
-				System.out.println("ISSUE: Space Engineers is not in the foreground");
-				System.out.println("ISSUE: No entities in the current Observation");
+				System.err.println("ERROR: No Agent and no Entities in the current Observation");
 			}
 		}
 
@@ -150,48 +138,4 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 
 		return childElement;
 	}
-
-	/*@Override
-	protected IV4XRElement IV4XRagent(IV4XRElement parent, WorldModel labWOM) {
-		IV4XRElement childElement = new IV4XRElement(parent);
-		parent.children.add(childElement);
-
-		childElement.enabled = true; //TODO: check when should be enabled (careful with createWidgetTree)
-		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
-		childElement.zindex = parent.zindex +1;
-
-		childElement.entityPosition = labWOM.position;
-		childElement.entityBounds = labWOM.extent; //TODO: Do the Agents have bounds ?
-		childElement.entityVelocity = labWOM.velocity;
-		childElement.entityId = labWOM.agentId;
-		childElement.entityType = "AGENT"; //TODO: check proper entity for agent
-		childElement.entityTimestamp = -1;
-
-		fillRect(childElement);
-
-		return childElement;
-	}
-
-	@Override
-	protected IV4XRElement IV4XRdescend(IV4XRElement parent, WorldEntity labEntity) {
-		IV4XRElement childElement = new IV4XRElement(parent);
-		parent.children.add(childElement);
-
-		childElement.enabled = true; //TODO: check when should be enabled (careful with createWidgetTree)
-		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
-		childElement.zindex = parent.zindex +1;
-
-		childElement.entityPosition = labEntity.position;
-		childElement.entityBounds = labEntity.extent;
-		childElement.entityVelocity = labEntity.velocity;
-		childElement.entityDynamic = labEntity.dynamic;
-		childElement.entityId = labEntity.id;
-		childElement.entityType = labEntity.type;
-		childElement.entityTimestamp = labEntity.timestamp;
-
-		fillRect(childElement);
-
-		return childElement;
-	}*/
-
 }
