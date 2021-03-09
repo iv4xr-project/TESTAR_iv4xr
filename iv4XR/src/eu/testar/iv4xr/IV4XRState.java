@@ -150,6 +150,9 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		if (t.equals(Tags.Desc)) {
 			ret = w.element.entityType + " - " + w.element.entityId;
 		}
+//		else if (t.equals(Tags.Role)) {
+//			ret = w.element.entityType;
+//		}
 		else if (t.equals(Tags.Shape)) {
 			ret = w.element.rect;
 		}

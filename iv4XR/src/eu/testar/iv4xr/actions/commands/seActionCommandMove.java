@@ -30,7 +30,6 @@
 
 package eu.testar.iv4xr.actions.commands;
 
-import org.fruit.Assert;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
@@ -49,17 +48,19 @@ import spaceEngineers.commands.SeAgentCommand;
 
 public class seActionCommandMove extends TaggableBase implements Action {
 	private static final long serialVersionUID = -6582285412839242075L;
-	
+
 	private SpaceEngEnvironment spaceEngEnvironment;
 	private String agentId;
 	private Vec3 targetPosition;
-	
-	public seActionCommandMove(Widget w, SpaceEngEnvironment spaceEngEnvironment, String agentId, Vec3 targetPosition){
+	private int distance;
+
+	public seActionCommandMove(Widget w, SpaceEngEnvironment spaceEngEnvironment, String agentId, Vec3 targetPosition, int distance){
 		this.spaceEngEnvironment = spaceEngEnvironment;
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
 		this.targetPosition = targetPosition;
+		this.distance = distance;
 		this.set(Tags.Desc, toShortString());
 		// TODO: Update with Goal Solving agents
 		this.set(IV4XRtags.agentAction, false);
@@ -68,23 +69,16 @@ public class seActionCommandMove extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		System.out.println("DEBUG: Running seActionCommandMove...");
-		
 		// TODO: Seems that 1 single move request does not work
 		// https://github.com/iv4xr-project/iv4xrDemo-space-engineers/blob/se-dev/src/test/java/spaceEngineers/MoveAgentTest.java
-		
-		var observation = spaceEngEnvironment.getSeResponse(SeRequest.command(SeAgentCommand.moveTowardCommand(agentId, targetPosition, false)));
-		observation = spaceEngEnvironment.getSeResponse(SeRequest.command(SeAgentCommand.moveTowardCommand(agentId, targetPosition, false)));
-		observation = spaceEngEnvironment.getSeResponse(SeRequest.command(SeAgentCommand.moveTowardCommand(agentId, targetPosition, false)));
-		observation = spaceEngEnvironment.getSeResponse(SeRequest.command(SeAgentCommand.moveTowardCommand(agentId, targetPosition, false)));
-		Assert.notNull(observation);
-
-		System.out.println("DEBUG: seActionCommandMove Position: " + observation.position);
+		for(int i = 0; i < distance; i++) {
+			spaceEngEnvironment.getSeResponse(SeRequest.command(SeAgentCommand.moveTowardCommand(agentId, targetPosition, false)));
+		}
 	}
 
 	@Override
 	public String toShortString() {
-		return "Move agent: " + agentId + " to: " + targetPosition;
+		return "Move agent: " + agentId + " to: " + targetPosition + " a distance of: " + distance;
 	}
 
 	@Override
