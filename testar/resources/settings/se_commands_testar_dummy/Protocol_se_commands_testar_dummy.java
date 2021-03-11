@@ -44,6 +44,21 @@ import spaceEngineers.SpaceEngEnvironment;
 
 /**
  * iv4xr EU H2020 project - SpaceEngineers Use Case
+ * 
+ * In this protocol SpaceEngineers game will act as SUT.
+ * 
+ * SpaceEngineers game must be running before launching TESTAR
+ * 
+ * se_commands_testar_dummy / test.setting file contains the:
+ * - COMMAND_LINE definition to connect with the SUT process
+ * - State model inference settings to connect and create the State Model inside OrientDB
+ * 
+ * TESTAR is the Agent itself, derives is own knowledge about the observed entities,
+ * and takes decisions about the command actions to execute (move, rotate, interact)
+ * 
+ * Widget              -> Virtual Entity (Blocks)
+ * State (Widget-Tree) -> Agent Observation (All Observed Entities)
+ * Action              -> SpaceEngineers low level command
  */
 public class Protocol_se_commands_testar_dummy extends SEProtocol {
 
