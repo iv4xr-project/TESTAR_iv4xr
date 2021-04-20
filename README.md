@@ -10,7 +10,7 @@ Release version 3.0: https://github.com/iv4xr-project/TESTAR_iv4xr/releases/tag/
 
 Requirements for distributed version:
 - Windows 10 OS
-- Java 11 or higher
+- Java 11 to Java 14 (With Java 15 it is not possible to modify the protocol at the moment)
 - OrientDB 3.0.34 to infer the State Model (more info about State Model below)
 
 TESTAR current execution and functional modes:
@@ -165,6 +165,8 @@ NOTE: This task also automatically downloads the labrecruits game
 ``gradle iv4xrDefaultDistribution`` task : uses the default ``windows.dll`` to prepare the distributed version.
 
 NOTE: Use this task to create a distributed TESTAR version without the need of Visual Studio.
+
+This task will also execute ``downloadAndUnzipLabRecruits`` task : to download LabRecruits game from [github LabRecruits](https://github.com/iv4xr-project/TESTAR_iv4xr/releases/download/v2.0/labrecruits_v2_11_Jan_2021.zip).
 
 Distributed files created inside:
 - ``testar\target\install\testar\bin``

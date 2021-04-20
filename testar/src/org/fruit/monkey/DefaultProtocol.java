@@ -1427,9 +1427,12 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 					// issue starting the SUT
 					if (tryToKillIfRunning){
 						System.out.println("Unable to start the SUT after <" + ENGAGE_TIME + "> ms");
+						System.err.println("WARNING: Check if the iv4xr AgentId exist in the iv4xr system");
 						return tryKillAndStartSystem(mustContain, sut, ENGAGE_TIME);
-					} else
+					} else {
+						System.err.println("WARNING: Check if the iv4xr AgentId exist in the iv4xr system");
 						throw new SystemStartException("SUT not running after <" + Math.round(ENGAGE_TIME * 2.0) + "> ms!");
+					}
 		}
 	}
 
