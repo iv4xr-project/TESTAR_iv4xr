@@ -127,5 +127,8 @@ public final class ConfigTags {
 
   // Note: Defined the tag as string on purpose so we can leave the default value empty in the pre defined settings.
   public static final Tag<String> OverrideWebDriverDisplayScale = Tag.from("OverrideWebDriverDisplayScale", String.class);
+  
+  // iv4xr LabRecruits SUT - Enable the Graphics mode or run as server mode
+  public static final Tag<Boolean> LabRecruitsGraphics = Tag.from("LabRecruitsGraphics", Boolean.class);
 
 }

@@ -60,6 +60,7 @@ import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
+import eu.testar.iv4xr.labrecruits.LabRecruitsProcess;
 import eu.iv4xr.framework.extensions.pathfinding.SimpleNavGraph;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
@@ -109,6 +110,9 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 		// Define existing agent to fetch his observation entities
 		IV4XRStateFetcher.agentsIds = new HashSet<>(Arrays.asList(agentId));
+		
+		// Set if LabRecruits system should be executed with the Graphics mode
+		LabRecruitsProcess.labRecruitsGraphics = settings.get(ConfigTags.LabRecruitsGraphics);
 	}
 
 	/**

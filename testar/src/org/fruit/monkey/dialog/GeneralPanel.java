@@ -56,7 +56,7 @@ public class GeneralPanel extends JPanel implements Observer {
   private JSpinner spnSequenceLength;
   //private JCheckBox checkStopOnFault;
   private JComboBox<String> comboBoxProtocol;
-  private JCheckBox compileCheckBox, checkActionVisualization;
+  private JCheckBox compileCheckBox, checkActionVisualization, labRecruitsGraphics;
   
   private JLabel labelAppName = new JLabel("Application name");
   private JLabel labelAppVersion = new JLabel("Application version");
@@ -136,6 +136,10 @@ public class GeneralPanel extends JPanel implements Observer {
     checkActionVisualization.setBounds(10, 240, 192, 21);
     //checkActionVisualization.setToolTipText(checkStopOnFaultTTT);
     add(checkActionVisualization);
+    
+    labRecruitsGraphics = new JCheckBox("Enable LabRecruits Graphics");
+    labRecruitsGraphics.setBounds(10, 270, 192, 21);
+    add(labRecruitsGraphics);
     
     labelAppName.setBounds(330, 242, 150, 27);
     labelAppName.setToolTipText(applicationNameTTT);
@@ -255,6 +259,7 @@ public class GeneralPanel extends JPanel implements Observer {
     cboxSUTconnector.setSelectedItem(settings.get(ConfigTags.SUTConnector));
     //checkStopOnFault.setSelected(settings.get(ConfigTags.StopGenerationOnFault));
     checkActionVisualization.setSelected(settings.get(ConfigTags.VisualizeActions));
+    labRecruitsGraphics.setSelected(settings.get(ConfigTags.LabRecruitsGraphics));
     txtSutPath.setText(settings.get(ConfigTags.SUTConnectorValue));
     comboBoxProtocol.setSelectedItem(settings.get(ConfigTags.ProtocolClass).split("/")[0]);
     spnNumSequences.setValue(settings.get(ConfigTags.Sequences));
@@ -275,6 +280,7 @@ public class GeneralPanel extends JPanel implements Observer {
     settings.set(ConfigTags.SUTConnectorValue, txtSutPath.getText());
     //settings.set(ConfigTags.StopGenerationOnFault, checkStopOnFault.isSelected());
     settings.set(ConfigTags.VisualizeActions, checkActionVisualization.isSelected());
+    settings.set(ConfigTags.LabRecruitsGraphics, labRecruitsGraphics.isSelected());
     settings.set(ConfigTags.SUTConnectorValue, txtSutPath.getText());
     settings.set(ConfigTags.Sequences, (Integer) spnNumSequences.getValue());
     settings.set(ConfigTags.SequenceLength, (Integer) spnSequenceLength.getValue());
