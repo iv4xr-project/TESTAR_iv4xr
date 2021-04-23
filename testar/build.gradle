@@ -206,21 +206,21 @@ startScripts.dependsOn {
 
 // Download LabRecruits SUT from the GitHub repository
 task downloadLabRecruits(type: Download) {
-    src 'https://github.com/iv4xr-project/TESTAR_iv4xr/releases/download/v2.0/labrecruits_v2_11_Jan_2021.zip'
+    src 'https://github.com/iv4xr-project/TESTAR_iv4xr/releases/download/v3.0/labrecruits_2.1.4_windows_30fps.zip'
     dest '../iv4XR/resources/gym/Windows/bin'
     overwrite false
 }
 // Verify that we downloaded the correct file
 task verifyLabRecruits(type: Verify, dependsOn: downloadLabRecruits) {
-    src new File(downloadLabRecruits.dest, 'labrecruits_v2_11_Jan_2021.zip')
+    src new File(downloadLabRecruits.dest, 'labrecruits_2.1.4_windows_30fps.zip')
     algorithm 'MD5'
-    checksum '3f5cab5ad2e5bb3b5d2eea87f0e887f1'
+    checksum '7e8c20f9b6ff740dadca06c640dfeed9'
 }
 // Extract LabRecruits binary files
 task downloadAndUnzipLabRecruits(type: Copy, dependsOn: verifyLabRecruits) {
     group = 'distribution_iv4XR'
     description ='downloadAndUnzipLabRecruits'
-    from zipTree(new File(downloadLabRecruits.dest, 'labrecruits_v2_11_Jan_2021.zip'))
+    from zipTree(new File(downloadLabRecruits.dest, 'labrecruits_2.1.4_windows_30fps.zip'))
     into downloadLabRecruits.dest
 }
 
