@@ -123,7 +123,7 @@ public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends L
 			// If TESTAR sees an Interactive Entity
 			if(isInteractiveEntity(w)) {
 				// try to move and interact with
-				labActions.add(new labActionCommandMoveInteract(w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
+				labActions.add(new labActionCommandMoveInteract(w, state, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
 				// If TESTAR is in a suitable distance
 				if(isAgentCloseToEntity(system, w, 1.0)) {
 					// TESTAR can try only to interact

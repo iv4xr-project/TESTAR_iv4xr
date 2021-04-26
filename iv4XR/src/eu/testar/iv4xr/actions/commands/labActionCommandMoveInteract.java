@@ -65,7 +65,7 @@ public class labActionCommandMoveInteract extends labActionCommand {
 		this.set(IV4XRtags.agentAction, true);
 	}
 
-	public labActionCommandMoveInteract(Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 targetPosition, boolean jump, boolean agentAction, boolean newByAgent){
+	public labActionCommandMoveInteract(Widget w, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 targetPosition, boolean jump, boolean agentAction, boolean newByAgent){
 		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
@@ -76,6 +76,8 @@ public class labActionCommandMoveInteract extends labActionCommand {
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, agentAction);
 		this.set(IV4XRtags.newActionByAgent, newByAgent);
+
+		setActionCommandTags(w, state, targetPosition);
 	}
 
 	@Override
