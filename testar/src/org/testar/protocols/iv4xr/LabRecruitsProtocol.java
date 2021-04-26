@@ -61,7 +61,7 @@ import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.labrecruits.LabRecruitsProcess;
-import eu.iv4xr.framework.extensions.pathfinding.SimpleNavGraph;
+import eu.iv4xr.framework.extensions.pathfinding.SurfaceNavGraph;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
 import nl.ou.testar.HtmlReporting.HtmlSequenceReport;
@@ -80,7 +80,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	private PrimitiveGoal previousGoal;
 	private int triesGoalInExecution = 0;
 
-	protected SimpleNavGraph navGraph;
+	protected SurfaceNavGraph navGraph;
 
 	/**
 	 * Called once during the life time of TESTAR
@@ -406,9 +406,10 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	 * @return explore navmesh actions
 	 */
 	protected Set<Action> exploreVisibleNodesActions(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
-		// TODO: Creating the SimpleNavGraph graph in the beginSequence method returns a null object
+		// TODO: Creating the SurfaceNavGraph graph in the beginSequence method returns a null object
+		// world.BeliefState.setEnvironment creates the pathfinder = new SurfaceNavGraph(e_.worldNavigableMesh,0.5f)
 		if(navGraph == null) {
-			navGraph = SimpleNavGraph.fromMeshFaceAverage(labRecruitsEnvironment.worldNavigableMesh);
+			navGraph = new SurfaceNavGraph(labRecruitsEnvironment.worldNavigableMesh, 0.5f);
 		}
 
 		if(navGraph != null) {

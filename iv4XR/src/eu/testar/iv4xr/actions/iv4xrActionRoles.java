@@ -45,6 +45,7 @@ public class iv4xrActionRoles {
 	iv4xrActionCommand = Role.from("iv4xrActionCommand", iv4xrAction),
 	iv4xrActionCommandInteract = Role.from("iv4xrActionCommandInteract", iv4xrActionCommand),
 	iv4xrActionCommandMove = Role.from("iv4xrActionCommandMove", iv4xrActionCommand),
+	iv4xrActionCommandMoveInteract = Role.from("iv4xrActionCommandMoveInteract", iv4xrActionCommand),
 	iv4xrActionCommandObserver = Role.from("iv4xrActionCommandObserver", iv4xrActionCommand),
 	iv4xrActionCommandExplore = Role.from("iv4xrActionCommandExplore", iv4xrActionCommandMove),
 

@@ -171,13 +171,12 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 			// adding the action that is going to be executed into HTML report:
 			htmlReport.addSelectedAction(state, action);
 
+			System.out.println(action.toShortString());
 			// execute selected action in the current state
 			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
-
-			System.out.println(action.toShortString());
 
 			return true;
 

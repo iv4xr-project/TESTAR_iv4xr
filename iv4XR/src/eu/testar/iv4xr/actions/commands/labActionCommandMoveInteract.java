@@ -30,6 +30,7 @@
 
 package eu.testar.iv4xr.actions.commands;
 
+import org.fruit.Util;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
@@ -37,40 +38,46 @@ import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import environments.LabRecruitsEnvironment;
+import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.iv4xr.framework.spatial.Vec3;
 
-public class labActionCommandMove extends labActionCommand {
-	private static final long serialVersionUID = 4431931844664688235L;
-	
+public class labActionCommandMoveInteract extends labActionCommand {
+	private static final long serialVersionUID = 4185324298727667277L;
+
 	private Vec3 targetPosition;
 	private boolean jump;
-	
+	private String entityId;
+
 	public Vec3 getTargetPosition() {
 		return targetPosition;
 	}
-	
+
 	public boolean getIfJump() {
 		return jump;
 	}
-	
+
+	public String getEntityId() {
+		return entityId;
+	}
+
 	public void selectedByAgent() {
 		this.set(IV4XRtags.agentAction, true);
 	}
-	
-	public labActionCommandMove(Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 targetPosition, boolean jump, boolean agentAction, boolean newByAgent){
+
+	public labActionCommandMoveInteract(Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 targetPosition, boolean jump, boolean agentAction, boolean newByAgent){
 		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
-		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
+		this.entityId = w.get(IV4XRtags.entityId);
+		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMoveInteract);
 		this.targetPosition = targetPosition;
 		this.jump = jump;
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, agentAction);
 		this.set(IV4XRtags.newActionByAgent, newByAgent);
 	}
-	
+
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		int maxTriesMovement = 10;
@@ -83,15 +90,21 @@ public class labActionCommandMove extends labActionCommand {
 			labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), targetPosition);
 			triesMove++;
 		}
+
+		Util.pause(2);
+
+		labRecruitsEnvironment.interact(agentId, entityId, "Interact");
 	}
 
 	@Override
 	public String toShortString() {
-		return "Move agent: " + agentId + " from: " + currentAgentPosition() + " to: " + targetPosition;
+		return "Move the agent: " + agentId + " to interact with the entity: " + entityId;
 	}
-	
-	public boolean actionEquals(labActionCommandMove action) {
-		return (this.agentId.equals(action.getAgentId())) && (this.currentAgentPosition().equals(action.currentAgentPosition())) 
-				&& (this.targetPosition.equals(action.getTargetPosition())); /* && (this.jump == jump)*/
+
+	public boolean actionEquals(labActionCommandMoveInteract action) {
+		return this.agentId.equals(action.getAgentId())
+				&& this.currentAgentPosition().equals(action.currentAgentPosition()) 
+				&& this.targetPosition.equals(action.getTargetPosition())
+				&& this.entityId.equals(action.getEntityId());
 	}
 }

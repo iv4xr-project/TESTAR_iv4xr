@@ -186,7 +186,8 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 		try {
 			// adding the action that is going to be executed into HTML report:
 			htmlReport.addSelectedAction(state, action);
-			
+
+			System.out.println(action.toShortString());
 			// From selected action extract the Goal and set to the Agent
 			if(action instanceof labActionGoal) {
 				testAgent.setGoal(((labActionGoal) action).getActionGoal());
@@ -194,14 +195,12 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 				//System.out.println("ERROR: Seems that selected Action is not an instance of labActionGoal");
 				//System.out.println("ERROR: We need LabRecruits Action Goals to interact at Goal level with the system");
 				//throw new ActionFailedException("Action is not an instanceof labActionGoal");
-				
+
 				// execute selected action in the current state
 				action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 
 				double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 				Util.pause(waitTime);
-
-				System.out.println(action.toShortString());
 
 				return true;
 			}
@@ -217,8 +216,6 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
-
-			System.out.println(action.toShortString());
 
 			return true;
 

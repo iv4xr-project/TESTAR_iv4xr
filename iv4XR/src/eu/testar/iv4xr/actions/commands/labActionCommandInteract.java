@@ -67,7 +67,7 @@ public class labActionCommandInteract extends labActionCommand {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		labRecruitsEnvironment.interact(agentId, entityId, "dance");
+		labRecruitsEnvironment.interact(agentId, entityId, "Interact");
 	}
 
 	@Override
