@@ -6,12 +6,19 @@ TESTARtool development repository: https://github.com/TESTARtool/TESTAR_dev
 
 ### TESTAR-iv4xr distributed binaries
 
-Release version 1.0: https://github.com/iv4xr-project/TESTAR_iv4xr/releases/tag/v1.0
+Release version 3.0: https://github.com/iv4xr-project/TESTAR_iv4xr/releases/tag/v3.0
 
 Requirements for distributed version:
 - Windows 10 OS
-- Java 11 or higher
+- Java 11 to Java 14 (With Java 15 it is not possible to modify the protocol at the moment)
 - OrientDB 3.0.34 to infer the State Model (more info about State Model below)
+
+TESTAR current execution and functional modes:
+- Generate to launch and test iv4xr SUTs
+- View to open the HTML report for visualization
+- Spy, Record and Replay works with desktop and web applications, but not yet with iv4xr systems (so TESTAR will throw an exception :D)
+
+### LabRecruits SUT
 
 LabRecruits SUT:
 - ``testar\bin\suts\gym\Windows\bin`` contains LabRecruits demo game
@@ -21,15 +28,24 @@ TESTAR SUT specific protocols allow users to define how the tool connects and in
 These protocols are a set of directories inside ``testar\bin\settings`` that contain a java protocol and test.setting file, 
 on which it is possible to add new directories (with java + test.setting) to create additional protocols.
 
-By default there are 5 protocols with 5 different implementations, 
+By default there are 7 protocols with 7 different implementations, 
 which can be modified or used to create additional protocols:
-- labrecruits_commands_agent_listener
-- labrecruits_commands_testar_agent_dummy_explorer
-- labrecruits_goal_agent_listener_complete
-- labrecruits_goal_agent_listener_tick
-- labrecruits_goal_testar_agent
+- ``labrecruits_commands_agent_listener``
+TESTAR is listening the Goal agents primitive commands to infer a StateModel
+- ``labrecruits_commands_testar_agent_dummy_explorer``
+TESTAR is an agent that randomly explores (without a navigational map) the environment using primitive commands.
+- ``labrecruits_commands_testar_agent_navmesh_explorer``
+TESTAR is an agent that randomly explores the environment using primitive commands and the intenral navigational map.
+- ``labrecruits_emotional_agent``
+Demo protocol to integrate the emotional agent properties inside the TESTAR State Model
+- ``labrecruits_goal_agent_listener_complete``
+TESTAR is listening the complete Goal agents tactics to infer a StateModel
+- ``labrecruits_goal_agent_listener_tick``
+TESTAR is listening the deliberation ticks Goal agents tactics to infer a StateModel
+- ``labrecruits_goal_testar_agent``
+TESTAR is an agent that randomly explores the environment using the LabRecruits Goals.
 
-With TESTAR GUI (SUTConnectorValue test.setting) we need indicate to the tool:
+With TESTAR GUI (SUTConnectorValue test.setting) we need to indicate to the tool:
 - Where the LabRecruits executable is located
 - Where the LabRecruits levels are located
 - Which level we want to test
@@ -42,10 +58,22 @@ and the LabRecruits agent goals (Example: labrecruits_goal_agent_listener_comple
 - Change the goal testing-task
 - Compile and close
 
-TESTAR current execution and functional modes:
-- Generate to launch and test LabRecruits
-- View to open the HTML report for visualization
-- Spy, Record and Replay works with desktop and web applications, but not yet with iv4xr systems (so TESTAR will throw an exception :D)
+### SpaceEngineers SUT
+
+Before execute TESTAR the user has to:
+- Install SpaceEngineers game from Steam
+- Follow the dll plugins instructions to enable the iv4xr game-framework communication
+https://github.com/iv4xr-project/iv4xr-se-plugin
+- Start the level on which we want to execute TESTAR tool
+
+At the moment we only have 1 protocol by default:
+- ``se_commands_testar_dummy``
+TESTAR is an agent that randomly explores (without a navigational map) the environment using primitive commands.
+
+With TESTAR GUI (SUTConnectorValue test.setting) we need to indicate to the tool:
+- The SpaceEngineers process name (SpaceEngineers.exe)
+
+The internal framework-game plugin communication is integrated by default.
 
 ## State Model / Graph database support
 TESTAR uses orientdb graph database https://www.orientdb.org/ , to create TESTAR GUI State Models.
@@ -130,13 +158,15 @@ we will need to compile a new windows.dll instead of use the copy of the current
 #### gradle build (Files Compilation)
 ``gradle build`` task : is configured to compile TESTAR project at Java level for error and warning checking.
 
-NOTE: that this task doesn't generate any executable distribution by default.
+NOTE: This task also automatically downloads the labrecruits game
 
 
 #### gradle iv4xrDefaultDistribution (copy default windows.dll)
 ``gradle iv4xrDefaultDistribution`` task : uses the default ``windows.dll`` to prepare the distributed version.
 
 NOTE: Use this task to create a distributed TESTAR version without the need of Visual Studio.
+
+This task will also execute ``downloadAndUnzipLabRecruits`` task : to download LabRecruits game from [github LabRecruits](https://github.com/iv4xr-project/TESTAR_iv4xr/releases/download/v3.0/labrecruits_2.1.4_windows_30fps.zip).
 
 Distributed files created inside:
 - ``testar\target\install\testar\bin``

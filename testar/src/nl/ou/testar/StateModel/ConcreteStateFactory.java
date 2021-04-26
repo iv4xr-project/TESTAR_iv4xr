@@ -3,6 +3,8 @@ package nl.ou.testar.StateModel;
 import es.upv.staq.testar.NativeLinker;
 import es.upv.staq.testar.OperatingSystems;
 import es.upv.staq.testar.ProtocolUtil;
+import eu.testar.iv4xr.labrecruits.LabRecruitsProcess;
+
 import org.fruit.alayer.AWTCanvas;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tag;
@@ -28,6 +30,12 @@ public abstract class ConcreteStateFactory {
         setAttributes(concreteState, newState);
         if (storeWidgets) {
             copyWidgetTreeStructure(newState, concreteState, concreteState);
+        }
+        
+        // Do not take state screenshot because LabRecruits is running in server mode
+        if(!LabRecruitsProcess.labRecruitsGraphics) {
+        	concreteState.setScreenshot(null);
+        	return concreteState;
         }
 
         // get a screenshot for this concrete state

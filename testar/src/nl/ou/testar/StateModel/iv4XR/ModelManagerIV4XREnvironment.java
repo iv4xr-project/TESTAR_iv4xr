@@ -75,7 +75,7 @@ public class ModelManagerIV4XREnvironment extends ModelManager implements StateM
         }
         concreteActionUnderExecution = ConcreteActionIV4XRFactory.createConcreteAction(action, actionUnderExecution);
         actionUnderExecution.addConcreteActionId(concreteActionUnderExecution.getActionId());
-        System.out.println("Executing action: " + action.get(Tags.Desc));
+        System.out.println("Executing iv4xr action: " + action.get(Tags.Desc));
         System.out.println("----------------------------------");
 
         // if we have error messages, we tell the sequence manager about it now, right before we move to a new state
@@ -104,7 +104,7 @@ public class ModelManagerIV4XREnvironment extends ModelManager implements StateM
         }
         concreteActionUnderExecution = ConcreteActionIV4XRFactory.createConcreteAction(action, actionUnderExecution);
         actionUnderExecution.addConcreteActionId(concreteActionUnderExecution.getActionId());
-        System.out.println("Executing action: " + action.get(Tags.Desc));
+        System.out.println("Executing iv4xr action: " + action.get(Tags.Desc));
         System.out.println("----------------------------------");
 
         // if we have error messages, we tell the sequence manager about it now, right before we move to a new state

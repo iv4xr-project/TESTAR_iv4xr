@@ -75,7 +75,16 @@ public class labActionCommandMove extends labActionCommand {
 	
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), targetPosition);
+		int maxTriesMovement = 10;
+		int triesMove = 0;
+
+		// One pure movement command is not enough to move to the final target position
+		// Try a max number of movements (if something blocking we will not reach the position)
+		// Or check the distance
+		while(triesMove < maxTriesMovement && Vec3.dist(currentAgentPosition(), targetPosition) > 1f) {
+			labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), targetPosition);
+			triesMove++;
+		}
 	}
 
 	@Override

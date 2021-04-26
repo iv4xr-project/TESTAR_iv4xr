@@ -35,6 +35,7 @@ import org.fruit.alayer.Tags;
 
 import es.upv.staq.testar.ProtocolUtil;
 import es.upv.staq.testar.serialisation.ScreenshotSerialiser;
+import eu.testar.iv4xr.labrecruits.LabRecruitsProcess;
 
 /**
  * Utility class with functionalities for IV4XR Environments
@@ -45,6 +46,10 @@ public class IV4XRProtocolUtil extends ProtocolUtil {
 
 	@Override
 	public String getStateshot(State state) {
-		return ScreenshotSerialiser.saveStateshot(state.get(Tags.ConcreteID, "NoConcreteIdAvailable"), getStateshotBinary(state));
+		if(!LabRecruitsProcess.labRecruitsGraphics) {
+			System.out.println("INFO: Not taking state screenshot because LabRecruits is running in server mode");
+			return "";
+		}
+		return ScreenshotSerialiser.saveStateshot(state.get(Tags.ConcreteIDCustom, "NoConcreteIdAvailable"), getStateshotBinary(state));
 	}
 }

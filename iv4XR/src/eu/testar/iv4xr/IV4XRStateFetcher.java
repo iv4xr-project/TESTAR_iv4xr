@@ -53,6 +53,7 @@ import org.fruit.alayer.windows.Windows;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.iv4xr.framework.mainConcepts.WorldModel;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.labrecruits.LabRecruitsProcess;
 
 /**
  * State Fetcher object extracts the information from the iv4XR Environment to create the Widget Tree
@@ -76,7 +77,13 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 		iv4XRroot.isRunning = system.isRunning();
 		iv4XRroot.timeStamp = System.currentTimeMillis();
 		iv4XRroot.pid = system.get(Tags.PID);
-		iv4XRroot.isForeground = (system.get(IV4XRtags.windowsProcess,null) != null) ? system.get(IV4XRtags.windowsProcess).isForeground() : false;
+
+		// Run LabRecruits in Server mode is only a process without GUI
+		if(!LabRecruitsProcess.labRecruitsGraphics) {
+			iv4XRroot.isForeground = true;
+		} else {
+			iv4XRroot.isForeground = (system.get(IV4XRtags.windowsProcess, null) != null) ? system.get(IV4XRtags.windowsProcess).isForeground() : false;
+		}
 
 		return iv4XRroot;
 	}
@@ -96,9 +103,8 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 	    root.set(Tags.Role, Roles.Process);
 	    root.set(Tags.NotResponding, false);
 
-	    for (Widget w : root) {
+	    for (Widget w : root)
 	    	w.set(Tags.Path, Util.indexString(w));
-	    }
 
 	    return root;
 	}

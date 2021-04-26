@@ -118,13 +118,15 @@ public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends L
 
 		// For every interactive entity agents have the possibility to move and interact with
 		for(Widget w : state) {
+			// TESTAR can try to move towards it
+			labActions.add(new labActionCommandMove(w, state, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
 			// If TESTAR sees an Interactive Entity
 			if(isInteractiveEntity(w)) {
-				// TESTAR can try to move towards it
-				labActions.add(new labActionCommandMove(w, state, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
+				// try to move and interact with
+				labActions.add(new labActionCommandMoveInteract(w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
 				// If TESTAR is in a suitable distance
 				if(isAgentCloseToEntity(system, w, 1.0)) {
-					// TESTAR can try to interact
+					// TESTAR can try only to interact
 					labActions.add(new labActionCommandInteract(w, state, labRecruitsEnv, agentId, false, false));
 				}
 			}
@@ -168,13 +170,12 @@ public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends L
 			// adding the action that is going to be executed into HTML report:
 			htmlReport.addSelectedAction(state, action);
 
+			System.out.println(action.toShortString());
 			// execute selected action in the current state
 			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
-
-			System.out.println(action.toShortString());
 
 			return true;
 

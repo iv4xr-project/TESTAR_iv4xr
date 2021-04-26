@@ -1386,14 +1386,13 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 
 			//Print info to the user to know that TESTAR is NOT READY for its use :-(
 			String printSutInfo = "Waiting for the SUT to be accessible ...";
-			double startupTime = settings().get(ConfigTags.StartupTime)*1000;
-			int timeFlash = (int)startupTime;
+			int startupTime = (int) (settings().get(ConfigTags.StartupTime)*1000);
 
-			//Refresh the flash information, to avoid that SUT hide the information
-			int countTimeFlash = 0;
-			while(countTimeFlash<timeFlash && !sut.isRunning()) {
-				FlashFeedback.flash(printSutInfo, 2000);
-				countTimeFlash += 2000;
+			int waitStartupTime = 0;
+			while(waitStartupTime < startupTime && !sut.isRunning()) {
+				System.out.println(printSutInfo);
+				Util.pause(2);
+				waitStartupTime += 2000;
 			}
 
 			final long now = System.currentTimeMillis(),
@@ -1403,7 +1402,8 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 						if (sut.isRunning()){
 							//Print info to the user to know that TESTAR is READY for its use :-)
 							printSutInfo = "SUT is READY";
-							FlashFeedback.flash(printSutInfo,2000);
+							System.out.println(printSutInfo);
+							Util.pause(2);
 							System.out.println("SUT is running after <" + (System.currentTimeMillis() - now) + "> ms ... waiting UI to be accessible");
 							state = builder.apply(sut);
 							if (state != null && state.childCount() > 0){
@@ -1414,7 +1414,8 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 						}else {
 							//Print info to the user to know that TESTAR is NOT READY for its use :-(
 							printSutInfo = "Waiting for the SUT to be accessible ...";
-							FlashFeedback.flash(printSutInfo, 500);
+							System.out.println(printSutInfo);
+							Util.pause(1);
 						}
 						Util.pauseMs(500);
 					} while (mode() != Modes.Quit && System.currentTimeMillis() - now < ENGAGE_TIME);
@@ -1427,9 +1428,12 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 					// issue starting the SUT
 					if (tryToKillIfRunning){
 						System.out.println("Unable to start the SUT after <" + ENGAGE_TIME + "> ms");
+						System.err.println("WARNING: Check if the iv4xr AgentId exist in the iv4xr system");
 						return tryKillAndStartSystem(mustContain, sut, ENGAGE_TIME);
-					} else
+					} else {
+						System.err.println("WARNING: Check if the iv4xr AgentId exist in the iv4xr system");
 						throw new SystemStartException("SUT not running after <" + Math.round(ENGAGE_TIME * 2.0) + "> ms!");
+					}
 		}
 	}
 

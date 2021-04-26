@@ -32,7 +32,6 @@
 package org.testar.protocols.iv4xr;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
@@ -61,10 +60,13 @@ import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
+import eu.testar.iv4xr.labrecruits.LabRecruitsProcess;
+import eu.iv4xr.framework.extensions.pathfinding.SurfaceNavGraph;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
 import nl.ou.testar.HtmlReporting.HtmlSequenceReport;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure.PrimitiveGoal;
+import world.LabWorldModel;
 
 public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
@@ -73,10 +75,12 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 	// Agent point of view that will Observe and extract Widgets information
 	protected String agentId = "agent1";
-	
+
 	protected LabRecruitsAgentTESTAR testAgent;
 	private PrimitiveGoal previousGoal;
 	private int triesGoalInExecution = 0;
+
+	protected SurfaceNavGraph navGraph;
 
 	/**
 	 * Called once during the life time of TESTAR
@@ -89,7 +93,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		NativeLinker.addiv4XRLab();
 
 		super.initialize(settings);
-		
+
 		if(this.mode == Modes.Spy || this.mode == Modes.Record || this.mode == Modes.Replay) {
 			System.out.println("*************************************************************");
 			System.out.println("Dear User,");
@@ -106,6 +110,9 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 		// Define existing agent to fetch his observation entities
 		IV4XRStateFetcher.agentsIds = new HashSet<>(Arrays.asList(agentId));
+		
+		// Set if LabRecruits system should be executed with the Graphics mode
+		LabRecruitsProcess.labRecruitsGraphics = settings.get(ConfigTags.LabRecruitsGraphics);
 	}
 
 	/**
@@ -149,14 +156,14 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		latestState = super.getState(system);
 		//adding state to the HTML sequence report:
 		htmlReport.addState(latestState);
-		
+
 		// Find the Widget that represents the Agent Entity and associated into the IV4XR SUT Tag
 		for(Widget w : latestState) {
 			if(w.get(IV4XRtags.entityType, "").equals("AGENT")) {
 				system.set(IV4XRtags.agentWidget, w);
 			}
 		}
-		
+
 		if(testAgent != null) {
 			if(previousGoal != null && previousGoal.equals(testAgent.getCurrentGoal())) {
 				triesGoalInExecution = triesGoalInExecution + 1;
@@ -165,10 +172,10 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 			}
 			previousGoal = testAgent.getCurrentGoal();
 		}
-		
+
 		return latestState;
 	}
-	
+
 	/**
 	 * The getVerdict methods implements the online state oracles that
 	 * examine the SUT's current state and returns an oracle verdict.
@@ -186,7 +193,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		} catch(Exception e) {
 			return new Verdict(Verdict.SEVERITY_WARNING, "Warning: Problems with GoalLibListener: " + e.getMessage());
 		}*/
-		
+
 		// No verdicts implemented for now.
 		return Verdict.OK;
 	}
@@ -377,20 +384,42 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 		return (Vec3.dist(system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition), widget.get(IV4XRtags.entityPosition)) < maxDistance);
 	}
-	
+
 	/**
 	 * Future implementation to determine if Agent found a hazardous Entity
 	 */
 	protected boolean hazardousEntityFound() {
 		return false;
 	}
-	
-	protected static Set<Action> exploreVisibleNodesActions(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
-		ArrayList<Vec3> visibleNavigationNodes = labRecruitsEnvironment.worldNavigableMesh.vertices;
-		for(Vec3 nodePosition : visibleNavigationNodes) {
-			actions.add(new labActionExplorePosition(state, state, labRecruitsEnvironment, agentId, nodePosition, false, false));
+
+	/**
+	 * Use the LabRecruits navigational mesh to obtain a navigational graph that contains 
+	 * information about all existing node id's + Vec3 positions in the LabRecruits system. 
+	 * 
+	 * Then use the LabWOM to get the visible navigational nodes for the current agent positions, 
+	 * and create one TESTAR exploration movement action for each visible node.
+	 * 
+	 * @param actions
+	 * @param state
+	 * @param labRecruitsEnvironment
+	 * @param agentId
+	 * @return explore navmesh actions
+	 */
+	protected Set<Action> exploreVisibleNodesActions(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
+		// TODO: Creating the SurfaceNavGraph graph in the beginSequence method returns a null object
+		// world.BeliefState.setEnvironment creates the pathfinder = new SurfaceNavGraph(e_.worldNavigableMesh,0.5f)
+		if(navGraph == null) {
+			navGraph = new SurfaceNavGraph(labRecruitsEnvironment.worldNavigableMesh, 0.5f);
 		}
-		
+
+		if(navGraph != null) {
+			LabWorldModel labwom = labRecruitsEnvironment.observe(agentId);
+			for(int nodeIndex : labwom.visibleNavigationNodes) {
+				Vec3 nodePosition = navGraph.position(nodeIndex);
+				actions.add(new labActionExplorePosition(state, state, labRecruitsEnvironment, agentId, nodePosition, false, false));
+			}
+		}
+
 		return actions;
 	}
 }

@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,42 +30,27 @@
 
 package eu.testar.iv4xr.labrecruits;
 
-import java.util.List;
-
 import org.fruit.Assert;
 import org.fruit.Util;
-import org.fruit.alayer.SUT;
-import org.fruit.alayer.SUTBase;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.exceptions.SystemStartException;
 import org.fruit.alayer.exceptions.SystemStopException;
-import org.fruit.alayer.windows.WinApiException;
 import org.fruit.alayer.windows.WinProcess;
 
 import environments.LabRecruitsConfig;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
+import game.LabRecruitsTestServer;
 
-/**
- * This class represents the IV4XR process, is creating the OS process and the IV4XR Environment
- * 
- * Because Lab Recruits is currently the only SUT example, we are using only Windows OS process functionality
- */
-public class LabRecruitsProcess extends SUTBase {
+public class LabRecruitsServer extends LabRecruitsProcess {
 
-	public static LabRecruitsProcess iv4XR = null;
+	private LabRecruitsTestServer labRecruitsTestServer = null;
 
-	public static WinProcess win;
-	
-	public static boolean labRecruitsGraphics = true;
-	
-	public LabRecruitsProcess() {}
-
-	private LabRecruitsProcess(String path) {
+	public LabRecruitsServer(String path) {
 		Assert.notNull(path);
-		
+
 		String[] parts = path.split(" ");
-		
+
 		if(parts.length != 3) {
 			String message = "ERROR: For LabRecruits iv4xr SUT we need to know:\n" 
 					+ "1.- LabRecruits executable path\n"
@@ -75,40 +60,20 @@ public class LabRecruitsProcess extends SUTBase {
 					+ "\"suts\\gym\\Windows\\bin\\LabRecruits.exe\" \"suts/levels\" \"buttons_doors_1\"";
 			throw new IllegalArgumentException(message);
 		}
-		
+
 		String labPath = parts[0].replace("\"", "");
 		String levelsPath = parts[1].replace("\"", "");
 		String levelName = parts[2].replace("\"", "");
 
-		/**
-		 * Start IV4XR SUT at Windows level
-		 */
-		try {
-			win = WinProcess.fromExecutable(labPath, false);
-		} catch (SystemStartException | WinApiException we) {
-			System.err.println(String.format("ERROR: Trying to execute %s using Windows API", path));
-			System.err.println(String.format("Please check if LabRecruits executable path exists %s", labPath));
-			throw new SystemStartException(we.getMessage());
-		}
-		
-		int time = 0;
-		
-		while(!win.isRunning() && time < 20) {
-			try {
-				this.wait(1000);
-				time += 1;
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		// (Lab Recruits) Also wait a bit for initial printed information
 		Util.pause(10);
-		
-		if(!win.isRunning()) {
-			throw new SystemStartException(String.format("ERROR trying to start iv4xr SUT : %s", path));
-		}
-		
+
+		labRecruitsTestServer = new LabRecruitsTestServer(false, labPath);
+		labRecruitsTestServer.waitForGameToLoad();
+
+		win = WinProcess.fromProcName("LabRecruits.exe");
+
+		System.out.println("**** Running LabRecruits in SERVER MODE ****");
+
 		/**
 		 * Start IV4XR SUT at JSON - WOM level
 		 * In this case start Lab Recruits Environment with the desired level
@@ -118,12 +83,7 @@ public class LabRecruitsProcess extends SUTBase {
 			// Define the desired level Environment and starts the Lab Recruits Game Environment
 			LabRecruitsConfig environment = new LabRecruitsConfig(levelName, levelsPath);
 			LabRecruitsEnvironmentListener labRecruitsEnvironment = new LabRecruitsEnvironmentListener(environment);
-			
-			Util.pause(5);
 
-			// presses "Play" in the game for you
-			labRecruitsEnvironment.startSimulation();
-			
 			Util.pause(5);
 
 			System.out.println("Welcome to the iv4XR test: " + levelName);
@@ -131,40 +91,27 @@ public class LabRecruitsProcess extends SUTBase {
 			this.set(IV4XRtags.windowsProcess, win);
 			this.set(Tags.PID, win.pid());
 			this.set(IV4XRtags.iv4xrLabRecruitsEnvironment, labRecruitsEnvironment);
-			
+
 		} catch(Exception e) {
 			System.err.println(String.format("EnvironmentConfig ERROR: Trying to loas LabRecruits level %s - %s ", levelsPath, levelName));
 			System.err.println(e.getMessage());
 			win.stop();
 			throw new SystemStartException(e);
 		}
-		
+
 		iv4XR = this;
 	}
 
-	public static LabRecruitsProcess fromExecutable(String path) throws SystemStartException {
-		if (iv4XR != null) {
-			win.stop();
-		}
-		if(!labRecruitsGraphics) {
-			return new LabRecruitsServer(path);
-		}
-		return new LabRecruitsProcess(path);
+	/*public boolean isForeground(){
+		return true;
 	}
 
-	public static List<SUT> fromAll(){
-		return WinProcess.fromAll();
-	}
-
-	public boolean isForeground(){
-		return win.isForeground();
-	}
 	public void toForeground(){
-		win.toForeground();
-	}
+	}*/
 
 	@Override
 	public void stop() throws SystemStopException {
+		labRecruitsTestServer.close();
 		win.stop();
 	}
 
@@ -176,11 +123,6 @@ public class LabRecruitsProcess extends SUTBase {
 	@Override
 	public String getStatus() {
 		return win.getStatus();
-	}
-
-	@Override
-	public void setNativeAutomationCache() {
-		win.setNativeAutomationCache();
 	}
 
 }

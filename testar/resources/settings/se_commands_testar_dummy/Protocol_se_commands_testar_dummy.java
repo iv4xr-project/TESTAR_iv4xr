@@ -44,6 +44,21 @@ import spaceEngineers.SpaceEngEnvironment;
 
 /**
  * iv4xr EU H2020 project - SpaceEngineers Use Case
+ * 
+ * In this protocol SpaceEngineers game will act as SUT.
+ * 
+ * SpaceEngineers game must be running before launching TESTAR
+ * 
+ * se_commands_testar_dummy / test.setting file contains the:
+ * - COMMAND_LINE definition to connect with the SUT process
+ * - State model inference settings to connect and create the State Model inside OrientDB
+ * 
+ * TESTAR is the Agent itself, derives is own knowledge about the observed entities,
+ * and takes decisions about the command actions to execute (move, rotate, interact)
+ * 
+ * Widget              -> Virtual Entity (Blocks)
+ * State (Widget-Tree) -> Agent Observation (All Observed Entities)
+ * Action              -> SpaceEngineers low level command
  */
 public class Protocol_se_commands_testar_dummy extends SEProtocol {
 
@@ -81,8 +96,13 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 	 */
 	@Override
 	protected Verdict getVerdict(State state) {
-		// No verdicts implemented for now.
-		return Verdict.OK;
+		// Widget Title contains Suspicious title (test.setting -> SuspiciousTitles)
+		// SUT hangs
+		// SUT crashes
+		return super.getVerdict(state);
+		
+		// At the end of the execution SEProtocol is reading last SpaceEngineers log
+		// trying to find suspicious patterns using test.setting -> ProcessLogs (Exception by default)
 	}
 
 	/**
@@ -151,13 +171,12 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 			// adding the action that is going to be executed into HTML report:
 			htmlReport.addSelectedAction(state, action);
 
+			System.out.println(action.toShortString());
 			// execute selected action in the current state
 			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
-
-			System.out.println(action.toShortString());
 
 			return true;
 

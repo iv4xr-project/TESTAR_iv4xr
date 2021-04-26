@@ -30,6 +30,7 @@
 
 package eu.testar.iv4xr.actions.commands;
 
+import org.fruit.Util;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
@@ -37,30 +38,44 @@ import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import environments.LabRecruitsEnvironment;
+import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.iv4xr.framework.spatial.Vec3;
 
-public class labActionExplorePosition extends labActionCommand {
-	private static final long serialVersionUID = 885421289057696013L;
+public class labActionCommandMoveInteract extends labActionCommand {
+	private static final long serialVersionUID = 4185324298727667277L;
 
-	private Vec3 explorePosition;
+	private Vec3 targetPosition;
+	private boolean jump;
+	private String entityId;
+
+	public Vec3 getTargetPosition() {
+		return targetPosition;
+	}
+
+	public boolean getIfJump() {
+		return jump;
+	}
+
+	public String getEntityId() {
+		return entityId;
+	}
 
 	public void selectedByAgent() {
 		this.set(IV4XRtags.agentAction, true);
 	}
 
-	public labActionExplorePosition(Widget w, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 explorePosition, boolean agentAction, boolean newByAgent) {
+	public labActionCommandMoveInteract(Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 targetPosition, boolean jump, boolean agentAction, boolean newByAgent){
 		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
-		this.explorePosition = explorePosition;
-		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandExplore);
+		this.entityId = w.get(IV4XRtags.entityId);
+		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMoveInteract);
+		this.targetPosition = targetPosition;
+		this.jump = jump;
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, agentAction);
 		this.set(IV4XRtags.newActionByAgent, newByAgent);
-		
-		setActionCommandTags(w, state, explorePosition);
 	}
 
 	@Override
@@ -71,24 +86,25 @@ public class labActionExplorePosition extends labActionCommand {
 		// One pure movement command is not enough to move to the final target position
 		// Try a max number of movements (if something blocking we will not reach the position)
 		// Or check the distance
-		while(triesMove < maxTriesMovement && Vec3.dist(currentAgentPosition(), explorePosition) > 1f) {
-			labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), explorePosition);
+		while(triesMove < maxTriesMovement && Vec3.dist(currentAgentPosition(), targetPosition) > 1f) {
+			labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), targetPosition);
 			triesMove++;
 		}
+
+		Util.pause(2);
+
+		labRecruitsEnvironment.interact(agentId, entityId, "Interact");
 	}
 
 	@Override
 	public String toShortString() {
-		return "Agent: " + agentId + " explore NavMesh  from: " + currentAgentPosition() + " to: " + explorePosition;
+		return "Move the agent: " + agentId + " to interact with the entity: " + entityId;
 	}
 
-	/**
-	 * Two labActionExploreNavMesh are equals if the same agent tries to move to the North
-	 * from the coordinates of a nearby position
-	 */
-	public boolean actionEquals(labActionExplorePosition action) {
-		return (this.agentId.equals(action.getAgentId()) 
-				&& Vec3.dist(this.currentAgentPosition(), action.currentAgentPosition()) < 0.2);
+	public boolean actionEquals(labActionCommandMoveInteract action) {
+		return this.agentId.equals(action.getAgentId())
+				&& this.currentAgentPosition().equals(action.currentAgentPosition()) 
+				&& this.targetPosition.equals(action.getTargetPosition())
+				&& this.entityId.equals(action.getEntityId());
 	}
-	
 }
