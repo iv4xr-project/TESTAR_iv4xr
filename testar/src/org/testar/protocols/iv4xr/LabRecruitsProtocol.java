@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019, 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019, 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2019 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2019 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,7 +28,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-
 package org.testar.protocols.iv4xr;
 
 import java.io.File;
@@ -37,7 +36,10 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.fruit.Util;
 import org.fruit.alayer.Action;
+import org.fruit.alayer.Canvas;
+import org.fruit.alayer.Pen;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
@@ -45,6 +47,7 @@ import org.fruit.alayer.Verdict;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionBuildException;
 import org.fruit.alayer.exceptions.StateBuildException;
+import org.fruit.alayer.windows.GDIScreenCanvas;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
@@ -94,7 +97,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 		super.initialize(settings);
 
-		if(this.mode == Modes.Spy || this.mode == Modes.Record || this.mode == Modes.Replay) {
+		if(this.mode == Modes.Record || this.mode == Modes.Replay) {
 			System.out.println("*************************************************************");
 			System.out.println("Dear User,");
 			System.out.println("Current TESTAR implementation does not allow the tool to use");
@@ -110,7 +113,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 		// Define existing agent to fetch his observation entities
 		IV4XRStateFetcher.agentsIds = new HashSet<>(Arrays.asList(agentId));
-		
+
 		// Set if LabRecruits system should be executed with the Graphics mode
 		LabRecruitsProcess.labRecruitsGraphics = settings.get(ConfigTags.LabRecruitsGraphics);
 	}
@@ -421,5 +424,61 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		}
 
 		return actions;
+	}
+
+	@Override
+	protected Canvas buildCanvas() {
+		// Force TESTAR to return the Windows Canvas implementation
+		return GDIScreenCanvas.fromPrimaryMonitor(Pen.PEN_DEFAULT);
+	}
+
+	/**
+	 * Method to run TESTAR on Spy Mode.
+	 */
+	@Override
+	protected void runSpyLoop() {
+		// Verify that user is executing LabRecruits with the Graphics mode
+		if(!settings.get(ConfigTags.LabRecruitsGraphics, false) || !System.getProperty("os.name").contains("Windows")) {
+			System.err.println("If you want to use TESTAR Spy mode, ");
+			System.err.println("you need to execute LabRecruits with the Graphics mode");
+			System.err.println("in a Windows (10, 2016, 2019) Environment");
+			return;
+		} else {
+			System.out.println("Running: TESTAR Spy Mode with LabRecruits SUT");
+		}
+
+		//Create or detect the SUT & build canvas representation
+		SUT system = startSystem();
+		this.cv = buildCanvas();
+
+		while(mode() == Modes.Spy && system.isRunning()) {
+			State state = getState(system);
+			cv.begin(); Util.clear(cv);
+
+			//Draw the state information in the canvas
+			Iv4xrVisualization.showStateObservation(cv, state);
+
+			cv.end();
+
+			int msRefresh = (int)(settings.get(ConfigTags.RefreshSpyCanvas, 0.5) * 1000);
+			synchronized (this) {
+				try {
+					this.wait(msRefresh);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		//If user closes the SUT while in Spy-mode, TESTAR will close (or go back to SettingsDialog):
+		if(!system.isRunning()){
+			this.mode = Modes.Quit;
+		}
+
+		Util.clear(cv);
+		cv.end();
+
+		//Stop and close the SUT 
+		stopSystem(system);
 	}
 }
