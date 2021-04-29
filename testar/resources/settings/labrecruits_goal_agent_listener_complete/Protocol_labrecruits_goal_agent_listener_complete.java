@@ -83,9 +83,6 @@ public class Protocol_labrecruits_goal_agent_listener_complete extends LabRecrui
 	 */
 	@Override
 	protected void initialize(Settings settings) {
-		// Agent point of view that will Observe and extract Widgets information
-		agentId = "agent1";
-
 		super.initialize(settings);
 
 		// Used internally (LabRecruitsProtocol) to change the State Model notification flow
@@ -222,15 +219,15 @@ public class Protocol_labrecruits_goal_agent_listener_complete extends LabRecrui
 	 */
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
-		
+
 		// Get the specific action goal that the agent is going to executed
 		Action agentGoalAction = GoalLibListener.getFirstGoalActionFromList();
 		GoalLibListener.addDerivedGoalAction(agentGoalAction);
-		
+
 		// Retrieve all possible action goals to execute in this State (TESTAR + iv4xr Agent)
 		// Merge is possible only if we previously derived the Actions (deriveActions)
 		Set<Action> mergedActions = GoalLibListener.getDerivedGoalActions();
-		
+
 		// Add the information about all actions goals inside HTML report
 		htmlReport.addActions(mergedActions);
 
@@ -258,7 +255,7 @@ public class Protocol_labrecruits_goal_agent_listener_complete extends LabRecrui
 				break;	
 			}
 		}
-		
+
 		// Clear Derived Actions List, will be updated next iteration
 		GoalLibListener.clearDerivedGoalAction();
 

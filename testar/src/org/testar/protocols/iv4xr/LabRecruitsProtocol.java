@@ -30,6 +30,9 @@
 
 package org.testar.protocols.iv4xr;
 
+import java.awt.AWTException;
+import java.awt.Robot;
+import java.awt.event.InputEvent;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -45,6 +48,8 @@ import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Verdict;
 import org.fruit.alayer.Widget;
+import org.fruit.alayer.devices.AWTMouse;
+import org.fruit.alayer.devices.Mouse;
 import org.fruit.alayer.exceptions.ActionBuildException;
 import org.fruit.alayer.exceptions.StateBuildException;
 import org.fruit.alayer.windows.GDIScreenCanvas;
@@ -112,6 +117,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		protocolUtil = new IV4XRProtocolUtil();
 
 		// Define existing agent to fetch his observation entities
+		agentId = settings.get(ConfigTags.AgentId);
 		IV4XRStateFetcher.agentsIds = new HashSet<>(Arrays.asList(agentId));
 
 		// Set if LabRecruits system should be executed with the Graphics mode
@@ -451,12 +457,20 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		SUT system = startSystem();
 		this.cv = buildCanvas();
 
+		moveLabRecruitsCamera(system);
+
 		while(mode() == Modes.Spy && system.isRunning()) {
 			State state = getState(system);
 			cv.begin(); Util.clear(cv);
 
 			//Draw the state information in the canvas
-			Iv4xrVisualization.showStateObservation(cv, state);
+			try {
+				Iv4xrVisualization.showStateObservation(cv, state);
+				Iv4xrVisualization.showStateElements(cv, state, settings.get(ConfigTags.SpyIncrement, 0));
+			} catch (Exception e) {
+				System.out.println("WARNING: Trying to launch Iv4xrVisualization");
+				e.printStackTrace();
+			}
 
 			cv.end();
 
@@ -480,5 +494,38 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 		//Stop and close the SUT 
 		stopSystem(system);
+	}
+
+	/**
+	 * Automatically click in the middle of the LabRecruits app 
+	 * to move the camera so that the level is seen from above
+	 * @param system
+	 */
+	private void moveLabRecruitsCamera(SUT system) {
+		State state = getState(system);
+		Mouse mouse = AWTMouse.build();
+
+		// Move the mouse to the center of the LabRecruits application
+		double centerX = state.get(Tags.Shape).x() + (state.get(Tags.Shape).width() / 2);
+		double centerY = state.get(Tags.Shape).y() + (state.get(Tags.Shape).height() / 2);
+		Util.moveCursor(mouse, centerX, centerY, Math.max(0.5, 0.5));
+
+		// Then press Right Mouse button and move the mouse to the bottom
+		//TODO: Debug why this is not working with LabRecruits but works with Paint (check admin privileges or Unity event detection?)
+		try {
+			Robot robot = new Robot();
+			Thread.sleep(500);
+			robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
+			Thread.sleep(500);
+			//mouse.press(MouseButtons.BUTTON2);
+			Util.moveCursor(mouse, mouse.cursor().x(), mouse.cursor().y() + 300, Math.max(0.5, 0.5));
+			//mouse.release(MouseButtons.BUTTON2);
+			Thread.sleep(500);
+			robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
+		} catch (AWTException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 }

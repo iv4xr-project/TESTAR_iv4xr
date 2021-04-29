@@ -30,15 +30,26 @@
 
 package org.testar.protocols.iv4xr;
 
+import org.fruit.alayer.AbsolutePosition;
 import org.fruit.alayer.Canvas;
+import org.fruit.alayer.Color;
+import org.fruit.alayer.FillPattern;
 import org.fruit.alayer.Pen;
 import org.fruit.alayer.Shape;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
+import org.fruit.alayer.visualizers.EllipseVisualizer;
+
 import eu.testar.iv4xr.enums.IV4XRtags;
 
 public class Iv4xrVisualization {
+
+	private static Pen GreenPen = Pen.newPen().setColor(Color.Green).setFillPattern(FillPattern.Solid).setStrokeWidth(3).build();
+	private static Pen YellowPen = Pen.newPen().setColor(Color.Yellow).setFillPattern(FillPattern.Solid).setStrokeWidth(3).build();
+	private static Pen BlackPen = Pen.newPen().setColor(Color.Black).setFillPattern(FillPattern.Solid).setStrokeWidth(3).build();
+	private static Pen BluePen = Pen.newPen().setColor(Color.Blue).setFillPattern(FillPattern.Solid).setStrokeWidth(3).build();
+	private static Pen vp = Pen.PEN_IGNORE;
 
 	/**
 	 * Create a panel in the top left corner of the windows screen, 
@@ -49,19 +60,72 @@ public class Iv4xrVisualization {
 	 * @param state
 	 */
 	public static synchronized void showStateObservation(Canvas canvas, State state){
-		// Prepare the visual rectangle in the top left corner of the screen
-		Shape visualShape = org.fruit.alayer.Rect.from(0, 0, 600, 300);
+		// Prepare the visual rectangle in the left side of the screen
+		Shape visualShape = org.fruit.alayer.Rect.from(0, 300, 300, 300);
 		visualShape.paint(canvas, Pen.PEN_MARK_ALPHA);
 		visualShape.paint(canvas, Pen.PEN_MARK_BORDER);
 
-		canvas.text(Pen.PEN_RED, 10, 10, 0, "State Abstract Custom Identifier");
-		canvas.text(Pen.PEN_BLUE, 10, 30, 0, state.get(Tags.AbstractIDCustom, "NoAbstractIDCustom"));
+		canvas.text(Pen.PEN_RED, 10, 310, 0, "State Abstract Custom Identifier");
+		canvas.text(Pen.PEN_BLUE, 10, 330, 0, state.get(Tags.AbstractIDCustom, "NoAbstractIDCustom"));
 
-		canvas.text(Pen.PEN_RED, 10, 50, 0, "OBSERVED widgets/entites");
-		int y = 70;
+		canvas.text(Pen.PEN_RED, 10, 350, 0, "OBSERVED widgets/entites");
+		int y = 370;
 		for(Widget w : state) {
-			canvas.text(Pen.PEN_BLUE, 10, y, 0, w.get(IV4XRtags.entityId, "noEntityId"));
+			if(w.get(IV4XRtags.entityType, "").toLowerCase().contains("door")) {
+				canvas.text(YellowPen, 10, y, 0, w.get(IV4XRtags.entityId, "noEntityId"));
+			} 
+			else if(w.get(IV4XRtags.entityType, "").toLowerCase().contains("fire")) {
+				canvas.text(BlackPen, 10, y, 0, w.get(IV4XRtags.entityId, "noEntityId"));
+			}
+			else if(w.get(IV4XRtags.entityType, "").toLowerCase().contains("button") || w.get(IV4XRtags.entityType, "").toLowerCase().contains("switch")) {
+				canvas.text(GreenPen, 10, y, 0, w.get(IV4XRtags.entityId, "noEntityId"));
+			}
+			else {
+				canvas.text(BluePen, 10, y, 0, w.get(IV4XRtags.entityId, "noEntityId"));
+			}
+
 			y += 20;
 		}
+	}
+
+	public static synchronized void showStateElements(Canvas canvas, State state, int spyIncrement){
+		Shape stateShape = state.get(Tags.Shape);
+		stateShape.paint(canvas, Pen.PEN_MARK_ALPHA);
+		stateShape.paint(canvas, Pen.PEN_MARK_BORDER);
+
+		Widget agentWidget = null;
+		for(Widget w : state) {
+			if(w.get(IV4XRtags.entityType, "").equals("AGENT")) {
+				agentWidget = w;
+				break;
+			}
+		}
+		if(agentWidget == null) {
+			System.out.println("WARNING: Spy mode does not detect the Agent view");
+		}
+
+		double centerX = state.get(Tags.Shape).x() + (state.get(Tags.Shape).width() / 2);
+		double centerY = state.get(Tags.Shape).y() + (state.get(Tags.Shape).height() / 2);
+		for(Widget w : state) {
+			// Ignore the Agent and State dot representation
+			if(w.equals(agentWidget) || w.equals(state)) continue;
+
+			double distanceX = w.get(IV4XRtags.entityPosition).x - agentWidget.get(IV4XRtags.entityPosition).x;
+			double distanceZ = w.get(IV4XRtags.entityPosition).z - agentWidget.get(IV4XRtags.entityPosition).z;
+
+			if(w.get(IV4XRtags.entityType, "").toLowerCase().contains("door")) {
+				new EllipseVisualizer(new AbsolutePosition(centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement), YellowPen, 10, 10).run(state, canvas, vp);
+			} 
+			else if(w.get(IV4XRtags.entityType, "").toLowerCase().contains("fire")) {
+				new EllipseVisualizer(new AbsolutePosition(centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement), BlackPen, 10, 10).run(state, canvas, vp);
+			}
+			else if(w.get(IV4XRtags.entityType, "").toLowerCase().contains("button") || w.get(IV4XRtags.entityType, "").toLowerCase().contains("switch")) {
+				new EllipseVisualizer(new AbsolutePosition(centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement), GreenPen, 10, 10).run(state, canvas, vp);
+			}
+			else {
+				new EllipseVisualizer(new AbsolutePosition(centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement), BluePen, 10, 10).run(state, canvas, vp);
+			}
+		}
+
 	}
 }
