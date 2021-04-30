@@ -193,6 +193,9 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		else if (t.equals(IV4XRtags.entityBlocked)) {
 			ret = w.element.blocked;
 		}
+		else if (t.equals(IV4XRtags.agentPosition)) {
+			ret = w.element.agentPosition;
+		}
 		else if (t.equals(IV4XRtags.entityPosition)) {
 			ret = w.element.entityPosition;
 		}

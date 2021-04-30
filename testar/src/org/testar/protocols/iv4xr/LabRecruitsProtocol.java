@@ -39,6 +39,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.fruit.Pair;
 import org.fruit.Util;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Canvas;
@@ -69,6 +70,7 @@ import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.labrecruits.LabRecruitsProcess;
+import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
 import eu.iv4xr.framework.extensions.pathfinding.SurfaceNavGraph;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
@@ -158,20 +160,27 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected State getState(SUT system) throws StateBuildException {
-		//Spy mode didn't use the html report
-		if(settings.get(ConfigTags.Mode) == Modes.Spy)
-			return super.getState(system);
-
-		latestState = super.getState(system);
-		//adding state to the HTML sequence report:
-		htmlReport.addState(latestState);
+		State state = super.getState(system);
+		latestState = state;
 
 		// Find the Widget that represents the Agent Entity and associated into the IV4XR SUT Tag
 		for(Widget w : latestState) {
 			if(w.get(IV4XRtags.entityType, "").equals("AGENT")) {
 				system.set(IV4XRtags.agentWidget, w);
+				break;
 			}
 		}
+
+		// Set the navMesh information in the State
+		setNavMeshPositions(system, state);
+
+		//Spy mode didn't use the html report
+		if(settings.get(ConfigTags.Mode) == Modes.Spy) {
+			return state;
+		}
+
+		//adding state to the HTML sequence report:
+		htmlReport.addState(latestState);
 
 		if(testAgent != null) {
 			if(previousGoal != null && previousGoal.equals(testAgent.getCurrentGoal())) {
@@ -183,6 +192,35 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		}
 
 		return latestState;
+	}
+
+	/**
+	 * Extract the visible nodes from the LabRecruits NavMesh information, 
+	 * and set the information as a State IV4XR Tag. 
+	 * 
+	 * @param system
+	 * @param state
+	 */
+	private void setNavMeshPositions(SUT system, State state) {
+		LabRecruitsEnvironment labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment, null);
+
+		// TODO: Creating the SurfaceNavGraph graph in the beginSequence method returns a null object
+		// world.BeliefState.setEnvironment creates the pathfinder = new SurfaceNavGraph(e_.worldNavigableMesh,0.5f)
+		if(navGraph == null && labRecruitsEnvironment != null) {
+			navGraph = new SurfaceNavGraph(system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).worldNavigableMesh, 0.5f);
+		}
+
+		Set<Pair<Integer, Vec3>> navMeshNodes = new HashSet<>();
+		// Set the NavMesh information to the state
+		if(navGraph != null && labRecruitsEnvironment != null) {
+			LabWorldModel labwom = labRecruitsEnvironment.observe(agentId);
+			for(int nodeIndex : labwom.visibleNavigationNodes) {
+				Vec3 nodePosition = navGraph.position(nodeIndex);
+				navMeshNodes.add(new Pair<Integer, Vec3>(nodeIndex, nodePosition));
+			}
+		}
+
+		state.set(IV4XRtags.labRecruitsNavMesh, navMeshNodes);
 	}
 
 	/**
@@ -385,13 +423,13 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		if (Objects.isNull(system.get(IV4XRtags.agentWidget, null)))
 			return false;
 		// Agent Widget has a position
-		if(Objects.isNull(system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition, null)))
+		if(Objects.isNull(system.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition, null)))
 			return false;
 		// Entity Widget has a position
 		if(Objects.isNull(widget.get(IV4XRtags.entityPosition, null)))
 			return false;
 
-		return (Vec3.dist(system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition), widget.get(IV4XRtags.entityPosition)) < maxDistance);
+		return (Vec3.dist(system.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition), widget.get(IV4XRtags.entityPosition)) < maxDistance);
 	}
 
 	/**
@@ -415,16 +453,9 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	 * @return explore navmesh actions
 	 */
 	protected Set<Action> exploreVisibleNodesActions(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
-		// TODO: Creating the SurfaceNavGraph graph in the beginSequence method returns a null object
-		// world.BeliefState.setEnvironment creates the pathfinder = new SurfaceNavGraph(e_.worldNavigableMesh,0.5f)
-		if(navGraph == null) {
-			navGraph = new SurfaceNavGraph(labRecruitsEnvironment.worldNavigableMesh, 0.5f);
-		}
-
-		if(navGraph != null) {
-			LabWorldModel labwom = labRecruitsEnvironment.observe(agentId);
-			for(int nodeIndex : labwom.visibleNavigationNodes) {
-				Vec3 nodePosition = navGraph.position(nodeIndex);
+		if(state.get(IV4XRtags.labRecruitsNavMesh, null) != null && !state.get(IV4XRtags.labRecruitsNavMesh).isEmpty() /*&& navGraph != null*/) {
+			for(Pair<Integer, Vec3> nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {
+				Vec3 nodePosition = nodeNavMesh.right();
 				actions.add(new labActionExplorePosition(state, labRecruitsEnvironment, agentId, nodePosition, false, false));
 			}
 		}
@@ -457,7 +488,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		SUT system = startSystem();
 		this.cv = buildCanvas();
 
-		moveLabRecruitsCamera(system);
+		//moveLabRecruitsCamera(system);
 
 		while(mode() == Modes.Spy && system.isRunning()) {
 			State state = getState(system);
@@ -466,7 +497,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 			//Draw the state information in the canvas
 			try {
 				Iv4xrVisualization.showStateObservation(cv, state);
-				Iv4xrVisualization.showStateElements(cv, state, settings.get(ConfigTags.SpyIncrement, 0));
+				Iv4xrVisualization.showStateElements(cv, state, system.get(IV4XRtags.agentWidget, null), settings.get(ConfigTags.SpyIncrement, 0));
 			} catch (Exception e) {
 				System.out.println("WARNING: Trying to launch Iv4xrVisualization");
 				e.printStackTrace();

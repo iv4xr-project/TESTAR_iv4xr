@@ -46,6 +46,7 @@ public class IV4XRMapping {
             put(iv4xrAgentId, IV4XRtags.agentId);
             put(iv4xrEntityEnabled, IV4XRtags.entityEnabled);
             put(iv4xrEntityBlocked, IV4XRtags.entityBlocked);
+            // Add the entity position to the State Model Concrete layer, but not the agentPosition
             put(iv4xrEntityPosition, IV4XRtags.entityPosition);
             put(iv4xrEntityBounds, IV4XRtags.entityBounds);
             put(iv4xrEntityVelocity, IV4XRtags.entityVelocity);

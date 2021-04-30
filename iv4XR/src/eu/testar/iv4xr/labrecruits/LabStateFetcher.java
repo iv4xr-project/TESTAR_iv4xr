@@ -88,7 +88,7 @@ public class LabStateFetcher extends IV4XRStateFetcher {
 		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
 		childElement.zindex = parent.zindex +1;
 
-		childElement.entityPosition = labWOM.position;
+		childElement.agentPosition = labWOM.position;
 		//childElement.entityBounds = labWOM.extent; //TODO: Do the Agents have bounds ?
 		childElement.entityVelocity = labWOM.velocity;
 		childElement.entityId = labWOM.agentId;

@@ -169,7 +169,7 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 		childElement.blocked = false;
 		childElement.zindex = parent.zindex +1;
 
-		childElement.entityPosition = wom.position;
+		childElement.agentPosition = wom.position;
 		childElement.entityBounds = wom.extent;
 		childElement.entityVelocity = wom.velocity;
 		childElement.entityId = wom.agentId;

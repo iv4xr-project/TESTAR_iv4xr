@@ -391,13 +391,13 @@ public class SEProtocol extends GenericUtilsProtocol {
 		if (Objects.isNull(system.get(IV4XRtags.agentWidget, null)))
 			return false;
 		// Agent Widget has a position
-		if(Objects.isNull(system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition, null)))
+		if(Objects.isNull(system.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition, null)))
 			return false;
 		// Entity Widget has a position
 		if(Objects.isNull(widget.get(IV4XRtags.entityPosition, null)))
 			return false;
 
-		return (Vec3.dist(system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition), widget.get(IV4XRtags.entityPosition)) < maxDistance);
+		return (Vec3.dist(system.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition), widget.get(IV4XRtags.entityPosition)) < maxDistance);
 	}
 
 	/**
