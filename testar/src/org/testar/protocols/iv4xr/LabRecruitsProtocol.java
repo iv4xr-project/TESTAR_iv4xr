@@ -39,7 +39,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import org.fruit.Pair;
 import org.fruit.Util;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Canvas;
@@ -68,9 +67,9 @@ import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.enums.SVec3;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.labrecruits.LabRecruitsProcess;
-import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
 import eu.iv4xr.framework.extensions.pathfinding.SurfaceNavGraph;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
@@ -210,13 +209,13 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 			navGraph = new SurfaceNavGraph(system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).worldNavigableMesh, 0.5f);
 		}
 
-		Set<Pair<Integer, Vec3>> navMeshNodes = new HashSet<>();
+		Set<SVec3> navMeshNodes = new HashSet<>();
 		// Set the NavMesh information to the state
 		if(navGraph != null && labRecruitsEnvironment != null) {
 			LabWorldModel labwom = labRecruitsEnvironment.observe(agentId);
 			for(int nodeIndex : labwom.visibleNavigationNodes) {
 				Vec3 nodePosition = navGraph.position(nodeIndex);
-				navMeshNodes.add(new Pair<Integer, Vec3>(nodeIndex, nodePosition));
+				navMeshNodes.add(new SVec3(nodePosition.x, nodePosition.y, nodePosition.z));
 			}
 		}
 
@@ -454,9 +453,8 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	 */
 	protected Set<Action> exploreVisibleNodesActions(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
 		if(state.get(IV4XRtags.labRecruitsNavMesh, null) != null && !state.get(IV4XRtags.labRecruitsNavMesh).isEmpty() /*&& navGraph != null*/) {
-			for(Pair<Integer, Vec3> nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {
-				Vec3 nodePosition = nodeNavMesh.right();
-				actions.add(new labActionExplorePosition(state, labRecruitsEnvironment, agentId, nodePosition, false, false));
+			for(SVec3 nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {
+				actions.add(new labActionExplorePosition(state, labRecruitsEnvironment, agentId, new Vec3(nodeNavMesh.x, nodeNavMesh.y, nodeNavMesh.z), false, false));
 			}
 		}
 

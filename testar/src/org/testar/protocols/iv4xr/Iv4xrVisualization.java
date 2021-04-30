@@ -30,7 +30,6 @@
 
 package org.testar.protocols.iv4xr;
 
-import org.fruit.Pair;
 import org.fruit.alayer.AbsolutePosition;
 import org.fruit.alayer.Canvas;
 import org.fruit.alayer.Color;
@@ -42,8 +41,8 @@ import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.visualizers.EllipseVisualizer;
 
-import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.enums.SVec3;
 
 public class Iv4xrVisualization {
 
@@ -146,9 +145,9 @@ public class Iv4xrVisualization {
 
 		// Iterate over all NavMesh node coordinates to draw the dot visualization in the GUI coordinates
 		if(state.get(IV4XRtags.labRecruitsNavMesh, null) != null && !state.get(IV4XRtags.labRecruitsNavMesh).isEmpty()) {
-			for(Pair<Integer, Vec3> nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {
-				double distanceX = nodeNavMesh.right().x - agentWidget.get(IV4XRtags.agentPosition).x;
-				double distanceZ = nodeNavMesh.right().z - agentWidget.get(IV4XRtags.agentPosition).z;
+			for(SVec3 nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {
+				double distanceX = nodeNavMesh.x - agentWidget.get(IV4XRtags.agentPosition).x;
+				double distanceZ = nodeNavMesh.z - agentWidget.get(IV4XRtags.agentPosition).z;
 				new EllipseVisualizer(new AbsolutePosition(centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement), WhitePen, 4, 4).run(state, canvas, vp);
 			}
 		}

@@ -33,7 +33,6 @@ package eu.testar.iv4xr.enums;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.fruit.Pair;
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.TagsBase;
 import org.fruit.alayer.Widget;
@@ -81,7 +80,7 @@ public class IV4XRtags extends TagsBase {
 	
 	// Tag that contains the LabRecruits NavMesh information (node and position)
 	@SuppressWarnings("unchecked")
-	public static final Tag<Set<Pair<Integer, Vec3>>> labRecruitsNavMesh = from("labRecruitsNavMesh", (Class<Set<Pair<Integer, Vec3>>>) (Class<?>) HashSet.class);
+	public static final Tag<Set<SVec3>> labRecruitsNavMesh = from("labRecruitsNavMesh", (Class<Set<SVec3>>) (Class<?>) HashSet.class);
 	
 	// Associate a dynamic State Tag with the System for Agent Listening purposes
 	//public static final Tag<State> labRecruitsState = from("labRecruitsState", State.class);
