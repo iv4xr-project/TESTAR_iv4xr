@@ -112,7 +112,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
 		childElement.zindex = parent.zindex +1;
 
-		childElement.entityPosition = seObservation.position;
+		childElement.agentPosition = seObservation.position;
 		childElement.entityVelocity = seObservation.velocity;
 		childElement.entityId = seObservation.agentID;
 		childElement.entityType = "AGENT"; //TODO: check proper entity for agent

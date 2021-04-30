@@ -466,7 +466,11 @@ public class Main {
 			defaults.add(Pair.from(SuspiciousProcessOutput, "(?!x)x"));
 			defaults.add(Pair.from(ProcessLogs, ".*.*"));
 			defaults.add(Pair.from(OverrideWebDriverDisplayScale, ""));
+			
+			//iv4xr settings
 			defaults.add(Pair.from(LabRecruitsGraphics, true));
+			defaults.add(Pair.from(AgentId, "agent1"));
+			defaults.add(Pair.from(SpyIncrement, 100));
 
 			defaults.add(Pair.from(AbstractStateAttributes, new ArrayList<String>() {
 				{

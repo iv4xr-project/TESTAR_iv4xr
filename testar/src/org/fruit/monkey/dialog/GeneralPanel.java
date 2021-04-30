@@ -66,7 +66,12 @@ public class GeneralPanel extends JPanel implements Observer {
 
   private JLabel labelOverrideWebDriverDisplayScale = new JLabel("Override display scale");
   private JTextField overrideWebDriverDisplayScaleField = new JTextField();
-
+  
+  // iv4xr settings
+  private JLabel agentIdLabel = new JLabel("AgentId");
+  private JTextField agentIdText = new JTextField();
+  private JLabel spyIncrementLabel = new JLabel("Spy Increment");
+  private JSpinner spyIncrementSpinner;
 
   public GeneralPanel(SettingsDialog settingsDialog) {
     setLayout(null);
@@ -140,7 +145,19 @@ public class GeneralPanel extends JPanel implements Observer {
     labRecruitsGraphics = new JCheckBox("Enable LabRecruits Graphics");
     labRecruitsGraphics.setBounds(10, 270, 192, 21);
     add(labRecruitsGraphics);
-    
+
+    agentIdLabel.setBounds(10, 300, 150, 27);
+    add(agentIdLabel);
+    agentIdText.setBounds(170, 300, 100, 27);
+    add(agentIdText);
+
+    spyIncrementLabel.setBounds(10, 330, 150, 27);
+    add(spyIncrementLabel);
+    spyIncrementSpinner = new JSpinner();
+    spyIncrementSpinner.setBounds(170, 330, 71, 27);
+    spyIncrementSpinner.setModel(new SpinnerNumberModel(100, 1, null, 1));;
+    add(spyIncrementSpinner);
+
     labelAppName.setBounds(330, 242, 150, 27);
     labelAppName.setToolTipText(applicationNameTTT);
     add(labelAppName);
@@ -260,6 +277,8 @@ public class GeneralPanel extends JPanel implements Observer {
     //checkStopOnFault.setSelected(settings.get(ConfigTags.StopGenerationOnFault));
     checkActionVisualization.setSelected(settings.get(ConfigTags.VisualizeActions));
     labRecruitsGraphics.setSelected(settings.get(ConfigTags.LabRecruitsGraphics));
+    agentIdText.setText(settings.get(ConfigTags.AgentId));
+    spyIncrementSpinner.setValue(settings.get(ConfigTags.SpyIncrement));
     txtSutPath.setText(settings.get(ConfigTags.SUTConnectorValue));
     comboBoxProtocol.setSelectedItem(settings.get(ConfigTags.ProtocolClass).split("/")[0]);
     spnNumSequences.setValue(settings.get(ConfigTags.Sequences));
@@ -281,6 +300,8 @@ public class GeneralPanel extends JPanel implements Observer {
     //settings.set(ConfigTags.StopGenerationOnFault, checkStopOnFault.isSelected());
     settings.set(ConfigTags.VisualizeActions, checkActionVisualization.isSelected());
     settings.set(ConfigTags.LabRecruitsGraphics, labRecruitsGraphics.isSelected());
+    settings.set(ConfigTags.AgentId, agentIdText.getText().trim());
+    settings.set(ConfigTags.SpyIncrement, (Integer) spyIncrementSpinner.getValue());
     settings.set(ConfigTags.SUTConnectorValue, txtSutPath.getText());
     settings.set(ConfigTags.Sequences, (Integer) spnNumSequences.getValue());
     settings.set(ConfigTags.SequenceLength, (Integer) spnSequenceLength.getValue());

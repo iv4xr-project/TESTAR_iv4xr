@@ -75,9 +75,6 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	 */
 	@Override
 	protected void initialize(Settings settings) {
-		// Agent point of view that will Observe and extract Widgets information
-		agentId = "agent1";
-
 		super.initialize(settings);
 	}
 
@@ -125,22 +122,22 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	@Override
 	protected Set<Action> deriveActions(SUT system, State state) {
 		Set<Action> labActions = new HashSet<>();
-		
+
 		// Get the LabRecruitsEnvironment
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-		
+
 		// NavMesh Exploration : Add one exploration movement for each visible node
 		labActions = exploreVisibleNodesActions(labActions, state, labRecruitsEnv, agentId);
-		
+
 		// For every interactive entity agents have the possibility to achieve Interact and Close Range goals
 		for(Widget w : state) {
 			if(isInteractiveEntity(w)) {
 				String entityId = w.get(IV4XRtags.entityId);
-				
+
 				GoalStructure goalNavigateEntity = GoalLib.entityInCloseRange(entityId);
 				Action actionNavigateEntity = new labActionGoalEntityInCloseRange(w, testAgent, goalNavigateEntity, agentId);
 				labActions.add(actionNavigateEntity);
-				
+
 				if(isAgentCloseToEntity(system, w, 1.0)) {
 					GoalStructure goalEntityInteracted = GoalLib.entityInteracted(entityId);
 					Action actionEntityInteracted = new labActionGoalEntityInteracted(w, testAgent, goalEntityInteracted, agentId);
@@ -245,5 +242,5 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	protected void stopSystem(SUT system) {
 		super.stopSystem(system);
 	}
-	
+
 }

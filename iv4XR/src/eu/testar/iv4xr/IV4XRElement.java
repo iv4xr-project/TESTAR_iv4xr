@@ -65,15 +65,16 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 	 */
 	public boolean enabled;
 	public boolean blocked;
-	
+
 	public double zindex;
-	
+
 	public Rect rect;
 
 	//TODO: Check these default values needed for State Model (State does not exist as widget with properties, should be Windows hwnd?)
 	/**
 	 * Generic iv4XR properties
 	 */
+	public Vec3 agentPosition = new Vec3(0, 0, 0);
 	public Vec3 entityPosition = new Vec3(0, 0, 0);
 	public Vec3 entityBounds = new Vec3(0, 0, 0);
 	public Vec3 entityVelocity = new Vec3(0, 0, 0);
@@ -81,7 +82,7 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 	public String entityId = "";
 	public String entityType = "";
 	public long entityTimestamp = -1;
-	
+
 	/**
 	 * Specific Lab Recruits iv4XR properties
 	 */

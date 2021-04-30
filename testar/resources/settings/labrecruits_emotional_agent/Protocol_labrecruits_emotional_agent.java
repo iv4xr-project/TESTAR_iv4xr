@@ -67,9 +67,6 @@ public class Protocol_labrecruits_emotional_agent extends LabRecruitsProtocol {
 	 */
 	@Override
 	protected void initialize(Settings settings) {
-		// Agent point of view that will Observe and extract Widgets information
-		agentId = "agent1";
-
 		super.initialize(settings);
 
 		// Used internally (LabRecruitsProtocol) to change the State Model notification flow

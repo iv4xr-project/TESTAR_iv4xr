@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019, 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019, 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2019 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2019 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,23 +28,32 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-
 package org.testar.protocols.iv4xr;
 
+import java.awt.AWTException;
+import java.awt.Robot;
+import java.awt.event.InputEvent;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.fruit.Pair;
+import org.fruit.Util;
 import org.fruit.alayer.Action;
+import org.fruit.alayer.Canvas;
+import org.fruit.alayer.Pen;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Verdict;
 import org.fruit.alayer.Widget;
+import org.fruit.alayer.devices.AWTMouse;
+import org.fruit.alayer.devices.Mouse;
 import org.fruit.alayer.exceptions.ActionBuildException;
 import org.fruit.alayer.exceptions.StateBuildException;
+import org.fruit.alayer.windows.GDIScreenCanvas;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
@@ -61,6 +70,7 @@ import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.labrecruits.LabRecruitsProcess;
+import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
 import eu.iv4xr.framework.extensions.pathfinding.SurfaceNavGraph;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
@@ -94,7 +104,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 		super.initialize(settings);
 
-		if(this.mode == Modes.Spy || this.mode == Modes.Record || this.mode == Modes.Replay) {
+		if(this.mode == Modes.Record || this.mode == Modes.Replay) {
 			System.out.println("*************************************************************");
 			System.out.println("Dear User,");
 			System.out.println("Current TESTAR implementation does not allow the tool to use");
@@ -109,8 +119,9 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		protocolUtil = new IV4XRProtocolUtil();
 
 		// Define existing agent to fetch his observation entities
+		agentId = settings.get(ConfigTags.AgentId);
 		IV4XRStateFetcher.agentsIds = new HashSet<>(Arrays.asList(agentId));
-		
+
 		// Set if LabRecruits system should be executed with the Graphics mode
 		LabRecruitsProcess.labRecruitsGraphics = settings.get(ConfigTags.LabRecruitsGraphics);
 	}
@@ -149,20 +160,27 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected State getState(SUT system) throws StateBuildException {
-		//Spy mode didn't use the html report
-		if(settings.get(ConfigTags.Mode) == Modes.Spy)
-			return super.getState(system);
-
-		latestState = super.getState(system);
-		//adding state to the HTML sequence report:
-		htmlReport.addState(latestState);
+		State state = super.getState(system);
+		latestState = state;
 
 		// Find the Widget that represents the Agent Entity and associated into the IV4XR SUT Tag
 		for(Widget w : latestState) {
 			if(w.get(IV4XRtags.entityType, "").equals("AGENT")) {
 				system.set(IV4XRtags.agentWidget, w);
+				break;
 			}
 		}
+
+		// Set the navMesh information in the State
+		setNavMeshPositions(system, state);
+
+		//Spy mode didn't use the html report
+		if(settings.get(ConfigTags.Mode) == Modes.Spy) {
+			return state;
+		}
+
+		//adding state to the HTML sequence report:
+		htmlReport.addState(latestState);
 
 		if(testAgent != null) {
 			if(previousGoal != null && previousGoal.equals(testAgent.getCurrentGoal())) {
@@ -174,6 +192,35 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		}
 
 		return latestState;
+	}
+
+	/**
+	 * Extract the visible nodes from the LabRecruits NavMesh information, 
+	 * and set the information as a State IV4XR Tag. 
+	 * 
+	 * @param system
+	 * @param state
+	 */
+	private void setNavMeshPositions(SUT system, State state) {
+		LabRecruitsEnvironment labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment, null);
+
+		// TODO: Creating the SurfaceNavGraph graph in the beginSequence method returns a null object
+		// world.BeliefState.setEnvironment creates the pathfinder = new SurfaceNavGraph(e_.worldNavigableMesh,0.5f)
+		if(navGraph == null && labRecruitsEnvironment != null) {
+			navGraph = new SurfaceNavGraph(system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).worldNavigableMesh, 0.5f);
+		}
+
+		Set<Pair<Integer, Vec3>> navMeshNodes = new HashSet<>();
+		// Set the NavMesh information to the state
+		if(navGraph != null && labRecruitsEnvironment != null) {
+			LabWorldModel labwom = labRecruitsEnvironment.observe(agentId);
+			for(int nodeIndex : labwom.visibleNavigationNodes) {
+				Vec3 nodePosition = navGraph.position(nodeIndex);
+				navMeshNodes.add(new Pair<Integer, Vec3>(nodeIndex, nodePosition));
+			}
+		}
+
+		state.set(IV4XRtags.labRecruitsNavMesh, navMeshNodes);
 	}
 
 	/**
@@ -376,13 +423,13 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		if (Objects.isNull(system.get(IV4XRtags.agentWidget, null)))
 			return false;
 		// Agent Widget has a position
-		if(Objects.isNull(system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition, null)))
+		if(Objects.isNull(system.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition, null)))
 			return false;
 		// Entity Widget has a position
 		if(Objects.isNull(widget.get(IV4XRtags.entityPosition, null)))
 			return false;
 
-		return (Vec3.dist(system.get(IV4XRtags.agentWidget).get(IV4XRtags.entityPosition), widget.get(IV4XRtags.entityPosition)) < maxDistance);
+		return (Vec3.dist(system.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition), widget.get(IV4XRtags.entityPosition)) < maxDistance);
 	}
 
 	/**
@@ -406,20 +453,110 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	 * @return explore navmesh actions
 	 */
 	protected Set<Action> exploreVisibleNodesActions(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
-		// TODO: Creating the SurfaceNavGraph graph in the beginSequence method returns a null object
-		// world.BeliefState.setEnvironment creates the pathfinder = new SurfaceNavGraph(e_.worldNavigableMesh,0.5f)
-		if(navGraph == null) {
-			navGraph = new SurfaceNavGraph(labRecruitsEnvironment.worldNavigableMesh, 0.5f);
-		}
-
-		if(navGraph != null) {
-			LabWorldModel labwom = labRecruitsEnvironment.observe(agentId);
-			for(int nodeIndex : labwom.visibleNavigationNodes) {
-				Vec3 nodePosition = navGraph.position(nodeIndex);
+		if(state.get(IV4XRtags.labRecruitsNavMesh, null) != null && !state.get(IV4XRtags.labRecruitsNavMesh).isEmpty() /*&& navGraph != null*/) {
+			for(Pair<Integer, Vec3> nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {
+				Vec3 nodePosition = nodeNavMesh.right();
 				actions.add(new labActionExplorePosition(state, state, labRecruitsEnvironment, agentId, nodePosition, false, false));
 			}
 		}
 
 		return actions;
+	}
+
+	@Override
+	protected Canvas buildCanvas() {
+		// Force TESTAR to return the Windows Canvas implementation
+		return GDIScreenCanvas.fromPrimaryMonitor(Pen.PEN_DEFAULT);
+	}
+
+	/**
+	 * Method to run TESTAR on Spy Mode.
+	 */
+	@Override
+	protected void runSpyLoop() {
+		// Verify that user is executing LabRecruits with the Graphics mode
+		if(!settings.get(ConfigTags.LabRecruitsGraphics, false) || !System.getProperty("os.name").contains("Windows")) {
+			System.err.println("If you want to use TESTAR Spy mode, ");
+			System.err.println("you need to execute LabRecruits with the Graphics mode");
+			System.err.println("in a Windows (10, 2016, 2019) Environment");
+			return;
+		} else {
+			System.out.println("Running: TESTAR Spy Mode with LabRecruits SUT");
+		}
+
+		//Create or detect the SUT & build canvas representation
+		SUT system = startSystem();
+		this.cv = buildCanvas();
+
+		//moveLabRecruitsCamera(system);
+
+		while(mode() == Modes.Spy && system.isRunning()) {
+			State state = getState(system);
+			cv.begin(); Util.clear(cv);
+
+			//Draw the state information in the canvas
+			try {
+				Iv4xrVisualization.showStateObservation(cv, state);
+				Iv4xrVisualization.showStateElements(cv, state, system.get(IV4XRtags.agentWidget, null), settings.get(ConfigTags.SpyIncrement, 0));
+			} catch (Exception e) {
+				System.out.println("WARNING: Trying to launch Iv4xrVisualization");
+				e.printStackTrace();
+			}
+
+			cv.end();
+
+			int msRefresh = (int)(settings.get(ConfigTags.RefreshSpyCanvas, 0.5) * 1000);
+			synchronized (this) {
+				try {
+					this.wait(msRefresh);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		//If user closes the SUT while in Spy-mode, TESTAR will close (or go back to SettingsDialog):
+		if(!system.isRunning()){
+			this.mode = Modes.Quit;
+		}
+
+		Util.clear(cv);
+		cv.end();
+
+		//Stop and close the SUT 
+		stopSystem(system);
+	}
+
+	/**
+	 * Automatically click in the middle of the LabRecruits app 
+	 * to move the camera so that the level is seen from above
+	 * @param system
+	 */
+	private void moveLabRecruitsCamera(SUT system) {
+		State state = getState(system);
+		Mouse mouse = AWTMouse.build();
+
+		// Move the mouse to the center of the LabRecruits application
+		double centerX = state.get(Tags.Shape).x() + (state.get(Tags.Shape).width() / 2);
+		double centerY = state.get(Tags.Shape).y() + (state.get(Tags.Shape).height() / 2);
+		Util.moveCursor(mouse, centerX, centerY, Math.max(0.5, 0.5));
+
+		// Then press Right Mouse button and move the mouse to the bottom
+		//TODO: Debug why this is not working with LabRecruits but works with Paint (check admin privileges or Unity event detection?)
+		try {
+			Robot robot = new Robot();
+			Thread.sleep(500);
+			robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
+			Thread.sleep(500);
+			//mouse.press(MouseButtons.BUTTON2);
+			Util.moveCursor(mouse, mouse.cursor().x(), mouse.cursor().y() + 300, Math.max(0.5, 0.5));
+			//mouse.release(MouseButtons.BUTTON2);
+			Thread.sleep(500);
+			robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
+		} catch (AWTException | InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 }

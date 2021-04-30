@@ -82,9 +82,6 @@ public class Protocol_labrecruits_commands_agent_listener extends LabRecruitsPro
 	 */
 	@Override
 	protected void initialize(Settings settings) {
-		// Agent point of view that will Observe and extract Widgets information
-		agentId = "agent1";
-
 		super.initialize(settings);
 
 		// Verify that setting iv4XRAgentListener is enabled

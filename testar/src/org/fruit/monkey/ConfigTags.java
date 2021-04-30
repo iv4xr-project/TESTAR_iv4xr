@@ -132,5 +132,8 @@ public final class ConfigTags {
   
   // iv4xr LabRecruits SUT - Enable the Graphics mode or run as server mode
   public static final Tag<Boolean> LabRecruitsGraphics = Tag.from("LabRecruitsGraphics", Boolean.class);
-
+  // iv4xr AgentId TESTAR observation
+  public static final Tag<String> AgentId = Tag.from("AgentId", String.class);
+  // iv4xr relative increment we need to set to map game coordinates with GUI size
+  public static final Tag<Integer> SpyIncrement = Tag.from("SpyIncrement", Integer.class);
 }

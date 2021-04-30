@@ -30,6 +30,10 @@
 
 package eu.testar.iv4xr.enums;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.fruit.Pair;
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.TagsBase;
 import org.fruit.alayer.Widget;
@@ -75,6 +79,10 @@ public class IV4XRtags extends TagsBase {
 	// Specific tag to check if Lab Recruits game is in the foreground (is generic because it works at Windows process level)
 	public static final Tag<Boolean> labRecruitsForeground = from("labRecruitsForeground", Boolean.class);
 	
+	// Tag that contains the LabRecruits NavMesh information (node and position)
+	@SuppressWarnings("unchecked")
+	public static final Tag<Set<Pair<Integer, Vec3>>> labRecruitsNavMesh = from("labRecruitsNavMesh", (Class<Set<Pair<Integer, Vec3>>>) (Class<?>) HashSet.class);
+	
 	// Associate a dynamic State Tag with the System for Agent Listening purposes
 	//public static final Tag<State> labRecruitsState = from("labRecruitsState", State.class);
 	
@@ -90,6 +98,9 @@ public class IV4XRtags extends TagsBase {
 
 	// Property used by TESTAR to determine which widget is the Agent Entity
 	public static final Tag<Widget> agentWidget = from("agentWidget", Widget.class);
+	
+	// The position of the WOM Agent
+	public static final Tag<Vec3> agentPosition = from("agentPosition", Vec3.class);
 	
 	// Property used by TESTAR to determine if some widget is enabled / disabled
 	public static final Tag<Boolean> entityEnabled = from("entityEnabled", Boolean.class);
