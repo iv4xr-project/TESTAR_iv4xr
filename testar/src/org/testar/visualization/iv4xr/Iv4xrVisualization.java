@@ -28,8 +28,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package org.testar.protocols.iv4xr;
+package org.testar.visualization.iv4xr;
 
+import java.awt.MouseInfo;
+import java.util.HashMap;
+import java.util.Map;
 import org.fruit.Util;
 import org.fruit.alayer.AbsolutePosition;
 import org.fruit.alayer.Action;
@@ -37,6 +40,7 @@ import org.fruit.alayer.Canvas;
 import org.fruit.alayer.Color;
 import org.fruit.alayer.FillPattern;
 import org.fruit.alayer.Pen;
+import org.fruit.alayer.Position;
 import org.fruit.alayer.Shape;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
@@ -56,6 +60,19 @@ public class Iv4xrVisualization {
 	private static Pen WhitePen = Pen.newPen().setColor(Color.White).setFillPattern(FillPattern.Solid).setStrokeWidth(3).build();
 	private static Pen RedPen = Pen.newPen().setColor(Color.Red).setFillPattern(FillPattern.Solid).setStrokeWidth(3).build();
 	private static Pen vp = Pen.PEN_IGNORE;
+
+	private static Map<String, Pen> entitiesColors;
+	static {
+		entitiesColors = new HashMap<String, Pen>();
+		entitiesColors.put("door", YellowPen);
+		entitiesColors.put("firehazard", BlackPen);
+		entitiesColors.put("button", GreenPen);
+		entitiesColors.put("switch", GreenPen);
+	}
+
+	public static Pen getEntityColor(String entityType) {
+		return entitiesColors.getOrDefault(entityType.toLowerCase(), BluePen);
+	}
 
 	/**
 	 * Create a panel in the top left corner of the windows screen, 
@@ -81,18 +98,8 @@ public class Iv4xrVisualization {
 			// Ignore the State
 			if(w.equals(state)) continue;
 
-			if(w.get(IV4XRtags.entityType, "").toLowerCase().contains("door")) {
-				canvas.text(YellowPen, 10, y, 0, w.get(IV4XRtags.entityId, "noEntityId"));
-			} 
-			else if(w.get(IV4XRtags.entityType, "").toLowerCase().contains("fire")) {
-				canvas.text(BlackPen, 10, y, 0, w.get(IV4XRtags.entityId, "noEntityId"));
-			}
-			else if(w.get(IV4XRtags.entityType, "").toLowerCase().contains("button") || w.get(IV4XRtags.entityType, "").toLowerCase().contains("switch")) {
-				canvas.text(GreenPen, 10, y, 0, w.get(IV4XRtags.entityId, "noEntityId"));
-			}
-			else {
-				canvas.text(BluePen, 10, y, 0, w.get(IV4XRtags.entityId, "noEntityId"));
-			}
+			// Draw a text that contains the entity identifier using the color defined on the entitiesColors map
+			canvas.text(getEntityColor(w.get(IV4XRtags.entityType, "")), 10, y, 0, w.get(IV4XRtags.entityId, "noEntityId"));
 
 			y += 20;
 		}
@@ -121,6 +128,8 @@ public class Iv4xrVisualization {
 			System.out.println("WARNING: Spy mode does not detect the Agent view");
 		}
 
+		VirtualEntitesPosition virtualEntitesPos = new VirtualEntitesPosition();
+
 		// The center coordinate of the SUT GUI
 		double centerX = state.get(Tags.Shape).x() + (state.get(Tags.Shape).width() / 2);
 		double centerY = state.get(Tags.Shape).y() + (state.get(Tags.Shape).height() / 2);
@@ -133,18 +142,11 @@ public class Iv4xrVisualization {
 			double distanceX = w.get(IV4XRtags.entityPosition).x - agentWidget.get(IV4XRtags.agentPosition).x;
 			double distanceZ = w.get(IV4XRtags.entityPosition).z - agentWidget.get(IV4XRtags.agentPosition).z;
 
-			if(w.get(IV4XRtags.entityType, "").toLowerCase().contains("door")) {
-				new EllipseVisualizer(new AbsolutePosition(centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement), YellowPen, 10, 10).run(state, canvas, vp);
-			} 
-			else if(w.get(IV4XRtags.entityType, "").toLowerCase().contains("fire")) {
-				new EllipseVisualizer(new AbsolutePosition(centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement), BlackPen, 10, 10).run(state, canvas, vp);
-			}
-			else if(w.get(IV4XRtags.entityType, "").toLowerCase().contains("button") || w.get(IV4XRtags.entityType, "").toLowerCase().contains("switch")) {
-				new EllipseVisualizer(new AbsolutePosition(centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement), GreenPen, 10, 10).run(state, canvas, vp);
-			}
-			else {
-				new EllipseVisualizer(new AbsolutePosition(centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement), BluePen, 10, 10).run(state, canvas, vp);
-			}
+			// Draw a colored dot that represents the position observed by the agent
+			Position entityPosition = new AbsolutePosition(centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement);
+			Pen entityColor = getEntityColor(w.get(IV4XRtags.entityType, ""));
+			new EllipseVisualizer(entityPosition, entityColor, 10, 10).run(state, canvas, vp);
+			virtualEntitesPos.addEntityPosition(w, centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement);
 		}
 
 		// Iterate over all NavMesh node coordinates to draw the dot visualization in the GUI coordinates
@@ -156,6 +158,32 @@ public class Iv4xrVisualization {
 			}
 		}
 
+		showElementFromMouse(canvas, virtualEntitesPos);
+	}
+
+	/**
+	 * If the system mouse is over an specific widget, draw specific properties information. 
+	 * 
+	 * @param canvas
+	 * @param virtualEntitesPos
+	 */
+	private static synchronized void showElementFromMouse(Canvas canvas, VirtualEntitesPosition virtualEntitesPos) {
+		java.awt.Point mousePoint = MouseInfo.getPointerInfo().getLocation();
+		Widget virtualEntity;
+		if((virtualEntity = virtualEntitesPos.getEntityFromPosition(mousePoint.getX(), mousePoint.getY())) != null) {
+			// Prepare the visual rectangle in the right side of the mouse/widget
+			double widgetX = mousePoint.getX() + 20;
+			double widgetY = mousePoint.getY();
+			Shape mouseShape = org.fruit.alayer.Rect.from(widgetX, widgetY, 300, 100);
+			mouseShape.paint(canvas, Pen.PEN_MARK_BORDER);
+
+			Pen entityColor = getEntityColor(virtualEntity.get(IV4XRtags.entityType, ""));
+
+			canvas.text(entityColor, widgetX, widgetY + 10, 0, "EntityType : " + virtualEntity.get(IV4XRtags.entityType, ""));
+			canvas.text(entityColor, widgetX, widgetY + 30, 0, "EntityId : " + virtualEntity.get(IV4XRtags.entityId, ""));
+			canvas.text(entityColor, widgetX, widgetY + 50, 0, "EntityIsActive ? " + virtualEntity.get(IV4XRtags.labRecruitsEntityIsActive, false));
+			canvas.text(entityColor, widgetX, widgetY + 70, 0, "EntityPosition : " + virtualEntity.get(IV4XRtags.entityPosition, new Vec3(0, 0, 0)));
+		}
 	}
 
 	/**
