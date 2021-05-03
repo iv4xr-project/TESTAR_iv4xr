@@ -50,6 +50,10 @@ public class labActionExplorePosition extends labActionCommand {
 		this.set(IV4XRtags.agentAction, true);
 	}
 
+	public Vec3 getExplorePosition() {
+		return explorePosition;
+	}
+
 	public labActionExplorePosition(Widget w, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 explorePosition, boolean agentAction, boolean newByAgent) {
 		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
@@ -90,5 +94,5 @@ public class labActionExplorePosition extends labActionCommand {
 		return (this.agentId.equals(action.getAgentId()) 
 				&& Vec3.dist(this.currentAgentPosition(), action.currentAgentPosition()) < 0.2);
 	}
-	
+
 }

@@ -160,12 +160,12 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	@Override
 	protected State getState(SUT system) throws StateBuildException {
 		State state = super.getState(system);
-		latestState = state;
 
 		// Find the Widget that represents the Agent Entity and associated into the IV4XR SUT Tag
-		for(Widget w : latestState) {
+		for(Widget w : state) {
 			if(w.get(IV4XRtags.entityType, "").equals("AGENT")) {
 				system.set(IV4XRtags.agentWidget, w);
+				state.set(IV4XRtags.agentWidget, w);
 				break;
 			}
 		}
@@ -177,6 +177,8 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		if(settings.get(ConfigTags.Mode) == Modes.Spy) {
 			return state;
 		}
+
+		latestState = state;
 
 		//adding state to the HTML sequence report:
 		htmlReport.addState(latestState);
@@ -465,6 +467,35 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	protected Canvas buildCanvas() {
 		// Force TESTAR to return the Windows Canvas implementation
 		return GDIScreenCanvas.fromPrimaryMonitor(Pen.PEN_DEFAULT);
+	}
+
+	/**
+	 * Visualize all observed LabRecruits entities or NavMesh position nodes, 
+	 * on which we have the possibility to move toward or try to interact with. 
+	 *
+	 * @param canvas
+	 * @param state
+	 * @param actions
+	 */
+	protected void visualizeActions(Canvas canvas, State state, Set<Action> actions){
+		if(settings.get(ConfigTags.VisualizeActions, false)) {
+			Iv4xrVisualization.showStateElements(cv, state, state.get(IV4XRtags.agentWidget, null), 
+					settings.get(ConfigTags.SpyIncrement, 0));
+		}
+	}
+
+	/**
+	 * Visualize selected movement or interaction LabRecruits action. 
+	 * 
+	 * @param canvas
+	 * @param state
+	 * @param action
+	 */
+	protected void visualizeSelectedAction(Canvas canvas, State state, Action action) {
+		if(settings.get(ConfigTags.VisualizeActions, false)) {
+			Iv4xrVisualization.showSelectedElement(cv, state, state.get(IV4XRtags.agentWidget, null), 
+					action, settings.get(ConfigTags.SpyIncrement, 0));
+		}
 	}
 
 	/**
