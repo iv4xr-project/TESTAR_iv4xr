@@ -30,7 +30,9 @@
 
 package org.testar.protocols.iv4xr;
 
+import org.fruit.Util;
 import org.fruit.alayer.AbsolutePosition;
+import org.fruit.alayer.Action;
 import org.fruit.alayer.Canvas;
 import org.fruit.alayer.Color;
 import org.fruit.alayer.FillPattern;
@@ -40,7 +42,8 @@ import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.visualizers.EllipseVisualizer;
-
+import eu.iv4xr.framework.spatial.Vec3;
+import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
 
@@ -51,6 +54,7 @@ public class Iv4xrVisualization {
 	private static Pen BlackPen = Pen.newPen().setColor(Color.Black).setFillPattern(FillPattern.Solid).setStrokeWidth(3).build();
 	private static Pen BluePen = Pen.newPen().setColor(Color.Blue).setFillPattern(FillPattern.Solid).setStrokeWidth(3).build();
 	private static Pen WhitePen = Pen.newPen().setColor(Color.White).setFillPattern(FillPattern.Solid).setStrokeWidth(3).build();
+	private static Pen RedPen = Pen.newPen().setColor(Color.Red).setFillPattern(FillPattern.Solid).setStrokeWidth(3).build();
 	private static Pen vp = Pen.PEN_IGNORE;
 
 	/**
@@ -152,5 +156,53 @@ public class Iv4xrVisualization {
 			}
 		}
 
+	}
+
+	/**
+	 * Draw a blink dot on the selected entity on which TESTAR is going to execute an action. 
+	 * 
+	 * @param canvas
+	 * @param state
+	 * @param agentWidget
+	 * @param spyIncrement
+	 */
+	public static synchronized void showSelectedElement(Canvas canvas, State state, Widget agentWidget, Action action, int spyIncrement) {
+		if(agentWidget == null) {
+			System.out.println("WARNING: Spy mode does not detect the Agent view");
+		}
+
+		// The center coordinate of the SUT GUI
+		double centerX = state.get(Tags.Shape).x() + (state.get(Tags.Shape).width() / 2);
+		double centerY = state.get(Tags.Shape).y() + (state.get(Tags.Shape).height() / 2);
+
+		Vec3 actionPosition;
+		// If the action is an exploratory one, get the position to explore
+		if(action instanceof labActionExplorePosition) {
+			actionPosition = ((labActionExplorePosition) action).getExplorePosition();
+		}
+		// If the action as an origin entity position, get the position of this entity
+		else if (action.get(Tags.OriginWidget).get(IV4XRtags.entityPosition, new Vec3(0, 0, 0)) != new Vec3(0, 0, 0)) {
+			actionPosition = action.get(Tags.OriginWidget).get(IV4XRtags.entityPosition);
+		}
+		// If nothing do not draw in the canvas
+		else {
+			return;
+		}
+
+		double distanceX = actionPosition.x - agentWidget.get(IV4XRtags.agentPosition).x;
+		double distanceZ = actionPosition.z - agentWidget.get(IV4XRtags.agentPosition).z;
+
+		final int BLINK_COUNT = 3;
+		final double BLINK_DELAY = 0.3;
+		for(int i = 0; i < BLINK_COUNT; i++){
+			Util.pause(BLINK_DELAY);
+			canvas.begin();
+			new EllipseVisualizer(new AbsolutePosition(centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement), RedPen, 4, 4).run(state, canvas, vp);
+			canvas.end();
+			Util.pause(BLINK_DELAY);
+			canvas.begin();
+			new EllipseVisualizer(new AbsolutePosition(centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement), RedPen, 4, 4).run(state, canvas, vp);
+			canvas.end();
+		}
 	}
 }
