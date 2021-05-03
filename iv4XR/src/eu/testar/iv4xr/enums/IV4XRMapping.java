@@ -52,7 +52,6 @@ public class IV4XRMapping {
             put(iv4xrEntityBounds, IV4XRtags.entityBounds);
             put(iv4xrEntityVelocity, IV4XRtags.entityVelocity);
             put(iv4xrEntityType, IV4XRtags.entityType);
-            put(iv4xrEntityTimestamp, IV4XRtags.entityTimestamp);
             put(iv4xrEntityIsActive, IV4XRtags.labRecruitsEntityIsActive);
             put(iv4xrEntityLastUpdated, IV4XRtags.labRecruitsEntityLastUpdated);
             

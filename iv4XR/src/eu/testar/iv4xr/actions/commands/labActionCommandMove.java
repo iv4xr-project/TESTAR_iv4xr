@@ -75,7 +75,7 @@ public class labActionCommandMove extends labActionCommand {
 	
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		int maxTriesMovement = 10;
+		int maxTriesMovement = 30;
 		int triesMove = 0;
 
 		// One pure movement command is not enough to move to the final target position

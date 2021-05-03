@@ -31,8 +31,6 @@
 package eu.testar.iv4xr.actions.commands;
 
 import java.util.Map;
-import java.util.Set;
-
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
@@ -50,18 +48,18 @@ import eu.testar.iv4xr.enums.IV4XRtags;
 
 public class labActionCommand extends TaggableBase implements Action {
 	private static final long serialVersionUID = 3825016139364224082L;
-	
+
 	protected LabRecruitsEnvironment labRecruitsEnvironment;
 	protected String agentId;
-	
+
 	public String getAgentId() {
 		return agentId;
 	}
-	
+
 	protected Vec3 currentAgentPosition() {
 		return labRecruitsEnvironment.observe(agentId).position;
 	}
-	
+
 	protected void setActionCommandTags(Widget widget, State state, Vec3 targetPosition) {
 		// iv4xr Action Tags
 		this.set(IV4XRtags.iv4xrActionOriginWidgetId, widget.get(Tags.AbstractIDCustom));
@@ -75,16 +73,16 @@ public class labActionCommand extends TaggableBase implements Action {
 		 * We will try to move to a specific position, but we don't know if will be possible. 
 		 * Add absolute and relative intent position to move 
 		 */
-		
+
 		// Some action like interact command has not agent movement
 		if(targetPosition == null) {
 			this.set(IV4XRtags.iv4xrActionTargetAbsPos, currentAgentPosition());
 			this.set(IV4XRtags.iv4xrActionTargetRelPos, new Vec3(0, 0, 0));
 		} else {
-			this.set(IV4XRtags.iv4xrActionTargetAbsPos, Vec3.add(currentAgentPosition(), targetPosition));
-			this.set(IV4XRtags.iv4xrActionTargetRelPos, targetPosition);
+			this.set(IV4XRtags.iv4xrActionTargetAbsPos, targetPosition);
+			this.set(IV4XRtags.iv4xrActionTargetRelPos, Vec3.sub(targetPosition, currentAgentPosition()));
 		}
-		
+
 		setActionManagementTags(this);
 	}
 
@@ -99,7 +97,7 @@ public class labActionCommand extends TaggableBase implements Action {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override

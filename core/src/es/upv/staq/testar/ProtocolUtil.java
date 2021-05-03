@@ -233,8 +233,10 @@ public class ProtocolUtil {
 	//  Screenshots helpers
 	// #####################
 	
-	public String getStateshot(State state){
-		return ScreenshotSerialiser.saveStateshot(state.get(Tags.ConcreteIDCustom, "NoConcreteIdAvailable"), getStateshotBinary(state));
+	public String getStateshot(State state, int actionCount){
+		return ScreenshotSerialiser.saveStateshot(
+				state.get(Tags.ConcreteIDCustom, "NoConcreteIdAvailable") + "_" + actionCount, 
+				getStateshotBinary(state));
 	}
 
 	/**

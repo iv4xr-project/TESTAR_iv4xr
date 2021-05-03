@@ -35,6 +35,7 @@ import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
+import org.testar.action.priorization.iv4xrExplorationPrioritization;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import environments.LabRecruitsEnvironment;
@@ -42,17 +43,26 @@ import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import nl.ou.testar.RandomActionSelector;
 
-public class Protocol_debug_labrecruits_commands_action_abstraction extends LabRecruitsProtocol {
-
-	/**
-	 * Called once during the life time of TESTAR.
-	 * This method can be used to perform initial setup work.
-	 * @param   settings  the current TESTAR test.settings as specified by the user.
-	 */
-	@Override
-	protected void initialize(Settings settings) {
-		super.initialize(settings);
-	}
+/**
+ * iv4xr EU H2020 project - LabRecruits Demo
+ * 
+ * In this protocol LabRecruits game will act as SUT.
+ * labrecruits_commands_testar_agent_dummy_explorer / test.setting file contains the:
+ * - COMMAND_LINE definition to start the SUT and load the desired level
+ * - State model inference settings to connect and create the State Model inside OrientDB
+ * 
+ * TESTAR is the Agent itself, derives is own knowledge about the observed entities,
+ * and takes decisions about the command actions to execute (observe, moveTo, interactWith)
+ * 
+ * TESTAR uses the Navigation map internally to select a visible node and explore this LabRecruits level.
+ * This level (test.settings -> buttons_doors_1) has block elements,
+ * We need to explore different paths to surround the elements that block us.
+ * 
+ * Widget              -> Virtual Entity
+ * State (Widget-Tree) -> Agent Observation (All Observed Entities)
+ * Action              -> LabRecruits low level command
+ */
+public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRecruitsProtocol {
 
 	/**
 	 * Derive all possible actions that TESTAR can execute in each specific LabRecruits state.
@@ -61,12 +71,19 @@ public class Protocol_debug_labrecruits_commands_action_abstraction extends LabR
 	protected Set<Action> deriveActions(SUT system, State state) {
 		Set<Action> labActions = new HashSet<>();
 
-		// Get the Observation of the State form the Agent point of view
+		// Get the LabRecruitsEnvironment
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
 
-		// Add Dummy Exploration Actions
-		labActions.add(new labActionExploreEast(state, state, labRecruitsEnv, agentId, false, false));
-		
+		// NavMesh Exploration : Add one exploration movement for each visible node
+		labActions = exploreVisibleNodesActions(labActions, state, labRecruitsEnv, agentId);
+
+		// For all entities have the possibility to move and interact with
+		for(Widget w : state) {
+			if(isInteractiveEntity(w)) {
+				labActions.add(new labActionCommandMoveInteract(w, state, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
+			}
+		}
+
 		return labActions;
 	}
 
@@ -78,21 +95,52 @@ public class Protocol_debug_labrecruits_commands_action_abstraction extends LabR
 	 * @return  the selected action (non-null!)
 	 */
 	@Override
-	protected Action selectAction(State state, Set<Action> actions){
+	protected Action selectAction(State state, Set<Action> originalActions){
 
 		//Call the preSelectAction method from the AbstractProtocol so that, if necessary,
 		//unwanted processes are killed and SUT is put into foreground.
-		Action retAction = preSelectAction(state, actions);
+		Action retAction = preSelectAction(state, originalActions);
 		if (retAction== null) {
 			//if no preSelected actions are needed, then implement your own action selection strategy
-			//using the action selector of the state model:
-			retAction = stateModelManager.getAbstractActionToExecute(actions);
+
+			System.out.println("----------- Available Actions -----------");
+			for(Action a : originalActions) {
+				System.out.println(a.get(Tags.AbstractIDCustom) + " : " + a.get(Tags.Desc, ""));
+			}
+
+			// Try to get the labActionExplorePosition actions to prioritize exploration
+			Set<Action> exploratoryActions = iv4xrExplorationPrioritization.getUnvisitedExploratoryActions(originalActions);
+
+			// If we have exploratory actions to execute, select one of them randomly
+			if(exploratoryActions != null) {
+				System.out.println("----------- getExploratoryActions Actions -----------");
+				for(Action a : exploratoryActions) {
+					System.out.println(a.get(Tags.AbstractIDCustom) + " : " + a.get(Tags.Desc, ""));
+				}
+				System.out.println("-----------------------------------------------------");
+
+				//randomly select one of the unvisited exploratory actions
+				retAction = RandomActionSelector.selectAction(exploratoryActions);
+				// update as executed for next iteration
+				iv4xrExplorationPrioritization.addExecutedExploratoryAction(retAction);
+			} 
+			// If we do not have exploratory actions to execute, 
+			// use the state model to select other type of action
+			else {
+				System.out.println("----------- getExploratoryActions Actions -----------");
+				System.out.println("----------- All ExploratoryActions EXECUTED ---------");
+				System.out.println("-----------------------------------------------------");
+
+				//using the action selector of the state model:
+				retAction = stateModelManager.getAbstractActionToExecute(originalActions);
+			}
 		}
 		if(retAction==null) {
-			System.out.println("State model based action selection did not find an action. Using random action selection.");
-			// if state model fails, use random (default would call preSelectAction() again, causing double actions HTML report):
-			retAction = RandomActionSelector.selectAction(actions);
+			System.out.println("Exploratory and State model based action selection did not find an action. Using random action selection.");
+			// use random
+			retAction = RandomActionSelector.selectAction(originalActions);
 		}
+
 		return retAction;
 	}
 
@@ -105,13 +153,12 @@ public class Protocol_debug_labrecruits_commands_action_abstraction extends LabR
 			// adding the action that is going to be executed into HTML report:
 			htmlReport.addSelectedAction(state, action);
 
+			System.out.println(action.toShortString());
 			// execute selected action in the current state
 			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
-
-			System.out.println(action.toShortString());
 
 			return true;
 

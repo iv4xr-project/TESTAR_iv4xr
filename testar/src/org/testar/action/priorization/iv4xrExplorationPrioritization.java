@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,30 +28,39 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package eu.testar.iv4xr;
+package org.testar.action.priorization;
 
-import org.fruit.alayer.State;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.fruit.alayer.Action;
 import org.fruit.alayer.Tags;
 
-import es.upv.staq.testar.ProtocolUtil;
-import es.upv.staq.testar.serialisation.ScreenshotSerialiser;
-import eu.testar.iv4xr.labrecruits.LabRecruitsProcess;
+import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 
-/**
- * Utility class with functionalities for IV4XR Environments
- */
-public class IV4XRProtocolUtil extends ProtocolUtil {
+public class iv4xrExplorationPrioritization {
 
-	public IV4XRProtocolUtil() {}
+	private static Set<String> executedActions = new HashSet<>();
 
-	@Override
-	public String getStateshot(State state, int actionCount) {
-		if(!LabRecruitsProcess.labRecruitsGraphics) {
-			System.out.println("INFO: Not taking state screenshot because LabRecruits is running in server mode");
-			return "";
+	/**
+	 * Based on a set of available actions, 
+	 * return all labActionExplorePosition existing actions. 
+	 * 
+	 * @param originalActions
+	 * @return exploratoryActions if exists
+	 */
+	public static Set<Action> getUnvisitedExploratoryActions(Set<Action> originalActions) {
+		Set<Action> exploratoryActions = new HashSet<>();
+		for(Action a : originalActions) {
+			if(a instanceof labActionExplorePosition && !executedActions.contains(a.get(Tags.AbstractIDCustom))) {
+				exploratoryActions.add(a);
+			}
 		}
-		return ScreenshotSerialiser.saveStateshot(
-				state.get(Tags.ConcreteIDCustom, "NoConcreteIdAvailable") + "_" + actionCount, 
-				getStateshotBinary(state));
+		return !exploratoryActions.isEmpty() ? exploratoryActions : null;
 	}
+
+	public static void addExecutedExploratoryAction(Action action) {
+		executedActions.add(action.get(Tags.AbstractIDCustom));
+	}
+
 }
