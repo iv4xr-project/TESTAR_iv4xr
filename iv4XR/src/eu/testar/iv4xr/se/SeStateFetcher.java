@@ -79,7 +79,6 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 				}
 			}
 		} else if (observation != null) {
-			System.out.println("INFO: No BLOCKS in the current Observation");
 			// Add manually the Agent as an Element (Observed Entities + 1)
 			rootElement.children = new ArrayList<IV4XRElement>(1);
 

@@ -57,7 +57,7 @@ import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
 import org.testar.protocols.GenericUtilsProtocol;
-import org.testar.visualization.iv4xr.Iv4xrVisualization;
+import org.testar.visualization.iv4xr.Iv4xrLabRecruitsVisualization;
 
 import com.google.common.collect.Sets;
 
@@ -480,7 +480,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	 */
 	protected void visualizeActions(Canvas canvas, State state, Set<Action> actions){
 		if(settings.get(ConfigTags.VisualizeActions, false)) {
-			Iv4xrVisualization.showStateElements(cv, state, state.get(IV4XRtags.agentWidget, null), 
+			Iv4xrLabRecruitsVisualization.showStateElements(cv, state, state.get(IV4XRtags.agentWidget, null), 
 					settings.get(ConfigTags.SpyIncrement, 0));
 		}
 	}
@@ -494,7 +494,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	 */
 	protected void visualizeSelectedAction(Canvas canvas, State state, Action action) {
 		if(settings.get(ConfigTags.VisualizeActions, false)) {
-			Iv4xrVisualization.showSelectedElement(cv, state, state.get(IV4XRtags.agentWidget, null), 
+			Iv4xrLabRecruitsVisualization.showSelectedElement(cv, state, state.get(IV4XRtags.agentWidget, null), 
 					action, settings.get(ConfigTags.SpyIncrement, 0));
 		}
 	}
@@ -526,8 +526,8 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 			//Draw the state information in the canvas
 			try {
-				Iv4xrVisualization.showStateObservation(cv, state);
-				Iv4xrVisualization.showStateElements(cv, state, system.get(IV4XRtags.agentWidget, null), settings.get(ConfigTags.SpyIncrement, 0));
+				Iv4xrLabRecruitsVisualization.showStateObservation(cv, state);
+				Iv4xrLabRecruitsVisualization.showStateElements(cv, state, system.get(IV4XRtags.agentWidget, null), settings.get(ConfigTags.SpyIncrement, 0));
 			} catch (Exception e) {
 				System.out.println("WARNING: Trying to launch Iv4xrVisualization");
 				e.printStackTrace();
