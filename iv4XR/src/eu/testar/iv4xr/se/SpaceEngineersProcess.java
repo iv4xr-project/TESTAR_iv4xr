@@ -30,6 +30,7 @@
 
 package eu.testar.iv4xr.se;
 
+import java.io.File;
 import java.util.List;
 
 import org.fruit.Assert;
@@ -52,16 +53,23 @@ public class SpaceEngineersProcess extends SUTBase {
 
 	private static WinProcess win;
 
-	private SpaceEngineersProcess(String processName) {
-		Assert.notNull(processName);
+	private SpaceEngineersProcess(String path) {
+		Assert.notNull(path);
 
-		String[] parts = processName.split(" ");
+		String[] parts = path.split(" ");
 
-		if(parts.length != 1) {
-			String message = "ERROR: For SpaceEngineers iv4xr SUT we only need to know:\n" 
+		if(parts.length < 1 || parts.length > 2 ) {
+			String message = "ERROR: For SpaceEngineers iv4xr SUT we need to know:\n" 
 					+ "1.- SpaceEngineers process name\n"
-					+ "Example: SpaceEngineers.exe";
+					+ "2.- (Optional) Path of the SpaceEngineers level to load\n"
+					+ "Example: SpaceEngineers.exe \"suts/se_levels/simple-place-grind-torch\"";
 			throw new IllegalArgumentException(message);
+		}
+
+		String processName = parts[0].trim();
+		String levelPath = "";
+		if(parts.length == 2) {
+			levelPath = parts[1].replace("\"", "");
 		}
 
 		/**
@@ -97,10 +105,15 @@ public class SpaceEngineersProcess extends SUTBase {
 		try {
 			// Prepare SpaceEngineers Controller
 			ProprietaryJsonTcpCharacterController controller = ProprietaryJsonTcpCharacterController.Companion.localhost(characterControllerId);
-
-			Util.pause(5);
-
+			Util.pause(2);
 			System.out.println("Welcome to the iv4XR test: " + processName);
+
+			// Load Space Engineers Level
+			if(!levelPath.isEmpty()) {
+				controller.loadScenario(new File(levelPath).getAbsolutePath());
+				Util.pause(10);
+				System.out.println("Loaded level: " + levelPath);
+			}
 
 			this.set(IV4XRtags.windowsProcess, win);
 			this.set(Tags.PID, win.pid());

@@ -23,7 +23,7 @@ Mode = Spy
 # The SUT must be manually started and closed.
 #################################################################
 SUTConnector = COMMAND_LINE
-SUTConnectorValue = SpaceEngineers.exe
+SUTConnectorValue = SpaceEngineers.exe "suts/se_levels/simple-place-grind-torch"
 
 #################################################################
 # Sequences
@@ -67,7 +67,7 @@ SuspiciousProcessOutput = .*[eE]rror.*|.*[eE]xcep[ct]i[o?]n.*
 # process.
 #################################################################
 
-ProcessLogs = .*[eE]xcep[ct]i[o?]n.*
+ProcessLogs = .*[eE]rror.*|.*[eE]xcep[ct]i[o?]n.*
 
 #################################################################
 # Actionfilter
