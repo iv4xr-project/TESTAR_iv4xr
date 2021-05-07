@@ -307,6 +307,16 @@ public class StateManagementTags {
     public static final Tag<Integer> iv4xrLabRecruitsAgentHealth = Tag.from("iv4xr LabRecruits Agent Health", Integer.class);
     public static final Tag<Integer> iv4xrLabRecruitsAgentScore= Tag.from("iv4xr LabRecruits Agent Score", Integer.class);
     public static final Tag<String> iv4xrLabRecruitsAgentMood = Tag.from("iv4xr LabRecruits Agent Mood", String.class);
+    
+    // iv4xr Space Engineers
+    public static final Tag<Float> iv4xrSeBuildIntegrity = Tag.from("iv4xr Se BuildIntegrity", Float.class);
+    public static final Tag<Float> iv4xrSeIntegrity = Tag.from("iv4xr Se Integrity", Float.class);
+    public static final Tag<Float> iv4xrSeMaxIntegrity = Tag.from("iv4xr Se MaxIntegrity", Float.class);
+    public static final Tag<spaceEngineers.model.Vec3> iv4xrSeMaxPosition = Tag.from("iv4xr Se MaxPosition", spaceEngineers.model.Vec3.class);
+    public static final Tag<spaceEngineers.model.Vec3> iv4xrSeMinPosition = Tag.from("iv4xr Se MinPosition", spaceEngineers.model.Vec3.class);
+    public static final Tag<spaceEngineers.model.Vec3> iv4xrSeOrientationForward = Tag.from("iv4xr Se OrientationForward", spaceEngineers.model.Vec3.class);
+    public static final Tag<spaceEngineers.model.Vec3> iv4xrSeOrientationUp = Tag.from("iv4xr Se OrientationUp", spaceEngineers.model.Vec3.class);
+    public static final Tag<spaceEngineers.model.Vec3> iv4xrSeSize = Tag.from("iv4xr Se Size", spaceEngineers.model.Vec3.class);
 	
     // a set containing the tags that are available for state management
     private static Set<Tag<?>> stateManagementTags = new HashSet<Tag<?>>() {
@@ -412,6 +422,16 @@ public class StateManagementTags {
         	add(iv4xrLabRecruitsAgentHealth);
         	add(iv4xrLabRecruitsAgentScore);
         	add(iv4xrLabRecruitsAgentMood);
+        	
+        	// iv4xr Space Engineers
+        	add(iv4xrSeBuildIntegrity);
+        	add(iv4xrSeIntegrity);
+        	add(iv4xrSeMaxIntegrity);
+        	add(iv4xrSeMaxPosition);
+        	add(iv4xrSeMinPosition);
+        	add(iv4xrSeOrientationForward);
+        	add(iv4xrSeOrientationUp);
+        	add(iv4xrSeSize);
         }
     };
 
@@ -524,6 +544,16 @@ public class StateManagementTags {
         settingsMap.put(iv4xrLabRecruitsAgentHealth, "iv4xrLabRecruitsAgentHealth");
         settingsMap.put(iv4xrLabRecruitsAgentScore, "iv4xrLabRecruitsAgentScore");
         settingsMap.put(iv4xrLabRecruitsAgentMood, "iv4xrLabRecruitsAgentMood");
+        
+        // iv4xr Space Engineers
+        settingsMap.put(iv4xrSeBuildIntegrity, "iv4xrSeBuildIntegrity");
+        settingsMap.put(iv4xrSeIntegrity, "iv4xrSeIntegrity");
+        settingsMap.put(iv4xrSeMaxIntegrity, "iv4xrSeMaxIntegrity");
+        settingsMap.put(iv4xrSeMaxPosition, "iv4xrSeMaxPosition");
+        settingsMap.put(iv4xrSeMinPosition, "iv4xrSeMinPosition");
+        settingsMap.put(iv4xrSeOrientationForward, "iv4xrSeOrientationForward");
+        settingsMap.put(iv4xrSeOrientationUp, "iv4xrSeOrientationUp");
+        settingsMap.put(iv4xrSeSize, "iv4xrSeSize");
     }
 
     // a mapping of a tag to its group
@@ -627,6 +657,16 @@ public class StateManagementTags {
             put(iv4xrLabRecruitsAgentHealth, Group.iv4xr);
             put(iv4xrLabRecruitsAgentScore, Group.iv4xr);
             put(iv4xrLabRecruitsAgentMood, Group.iv4xr);
+            
+            // iv4xr Space Engineers
+            put(iv4xrSeBuildIntegrity, Group.iv4xr);
+            put(iv4xrSeIntegrity, Group.iv4xr);
+            put(iv4xrSeMaxIntegrity, Group.iv4xr);
+            put(iv4xrSeMaxPosition, Group.iv4xr);
+            put(iv4xrSeMinPosition, Group.iv4xr);
+            put(iv4xrSeOrientationForward, Group.iv4xr);
+            put(iv4xrSeOrientationUp, Group.iv4xr);
+            put(iv4xrSeSize, Group.iv4xr);
         }
     };
 

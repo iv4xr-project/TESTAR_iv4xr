@@ -40,8 +40,6 @@ import java.util.List;
 import org.fruit.alayer.Rect;
 import org.fruit.alayer.TaggableBase;
 
-import eu.iv4xr.framework.spatial.Vec3;
-
 /**
  * The Object or Node element of an application that will represent a TESTAR Widget
  * 
@@ -74,10 +72,10 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 	/**
 	 * Generic iv4XR properties
 	 */
-	public Vec3 agentPosition = new Vec3(0, 0, 0);
-	public Vec3 entityPosition = new Vec3(0, 0, 0);
-	public Vec3 entityBounds = new Vec3(0, 0, 0);
-	public Vec3 entityVelocity = new Vec3(0, 0, 0);
+	public eu.iv4xr.framework.spatial.Vec3 agentPosition = new eu.iv4xr.framework.spatial.Vec3(0, 0, 0);
+	public eu.iv4xr.framework.spatial.Vec3 entityPosition = new eu.iv4xr.framework.spatial.Vec3(0, 0, 0);
+	public eu.iv4xr.framework.spatial.Vec3 entityBounds = new eu.iv4xr.framework.spatial.Vec3(0, 0, 0);
+	public eu.iv4xr.framework.spatial.Vec3 entityVelocity = new eu.iv4xr.framework.spatial.Vec3(0, 0, 0);
 	public boolean entityDynamic = false;
 	public String entityId = "";
 	public String entityType = "";
@@ -91,6 +89,18 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 	public int labRecruitsAgentHealth = -1;
 	public int labRecruitsAgentScore = -1;
 	public String labRecruitsAgentMood = "";
+
+	/**
+	 * Specific Space Engineers iv4xr properties
+	 */
+	public float seBuildIntegrity = 0f;
+	public float seIntegrity = 0f;
+	public float seMaxIntegrity = 0f;
+	public spaceEngineers.model.Vec3 seMaxPosition = new spaceEngineers.model.Vec3(0, 0, 0);
+	public spaceEngineers.model.Vec3 seMinPosition = new spaceEngineers.model.Vec3(0, 0, 0);
+	public spaceEngineers.model.Vec3 seOrientationForward = new spaceEngineers.model.Vec3(0, 0, 0);
+	public spaceEngineers.model.Vec3 seOrientationUp = new spaceEngineers.model.Vec3(0, 0, 0);
+	public spaceEngineers.model.Vec3 seSize = new spaceEngineers.model.Vec3(0, 0, 0);
 
 	public IV4XRElement(){ this(null); }
 

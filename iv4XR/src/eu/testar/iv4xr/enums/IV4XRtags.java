@@ -90,7 +90,6 @@ public class IV4XRtags extends TagsBase {
 
 	//public static final Tag<Action> labRecruitsSelectedAgentAction = from("labRecruitsSelectedAgentAction", Action.class);
 
-
 	/**
 	 * Entity - Agent - Widget Tags
 	 */
@@ -142,6 +141,16 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<Integer> labRecruitsAgentHealth = from("labRecruitsAgentHealth", Integer.class);
 	public static final Tag<Integer> labRecruitsAgentScore = from("labRecruitsAgentScore", Integer.class);
 	public static final Tag<String> labRecruitsAgentMood = from("labRecruitsAgentMood", String.class);
+
+	// Specific Space Engineers properties
+	public static final Tag<Float> seBuildIntegrity = Tag.from("seBuildIntegrity", Float.class);
+	public static final Tag<Float> seIntegrity = Tag.from("seIntegrity", Float.class);
+	public static final Tag<Float> seMaxIntegrity = Tag.from("seMaxIntegrity", Float.class);
+	public static final Tag<spaceEngineers.model.Vec3> seMaxPosition = Tag.from("seMaxPosition", spaceEngineers.model.Vec3.class);
+	public static final Tag<spaceEngineers.model.Vec3> seMinPosition = Tag.from("seMinPosition", spaceEngineers.model.Vec3.class);
+	public static final Tag<spaceEngineers.model.Vec3> seOrientationForward = Tag.from("seOrientationForward", spaceEngineers.model.Vec3.class);
+	public static final Tag<spaceEngineers.model.Vec3> seOrientationUp = Tag.from("seOrientationUp", spaceEngineers.model.Vec3.class);
+	public static final Tag<spaceEngineers.model.Vec3> seSize = Tag.from("seSize", spaceEngineers.model.Vec3.class);
 
 	/**
 	 * Agent - TESTAR comparison

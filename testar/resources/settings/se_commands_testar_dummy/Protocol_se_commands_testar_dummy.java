@@ -111,22 +111,22 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 		Set<Action> labActions = new HashSet<>();
 
 		// Get the Observation of the State form the Agent point of view
-		ProprietaryJsonTcpCharacterController SeController = system.get(IV4XRtags.iv4xrSpaceEngController);
+		ProprietaryJsonTcpCharacterController seController = system.get(IV4XRtags.iv4xrSpaceEngController);
 
 		// Add Dummy Exploration Actions (Coordinates + Steps Distance)
-		labActions.add(new seActionCommandMove(state, SeController, agentId, new Vec3(0,0,1f), 100)); //North
-		labActions.add(new seActionCommandMove(state, SeController, agentId, new Vec3(0,0,-1f), 100)); //South
-		labActions.add(new seActionCommandMove(state, SeController, agentId, new Vec3(1f,0,0), 100)); //East
-		labActions.add(new seActionCommandMove(state, SeController, agentId, new Vec3(-1f,0,0), 100)); //West
+		labActions.add(new seActionCommandMove(state, seController, agentId, new Vec3(0,0,1f), 100)); //North
+		labActions.add(new seActionCommandMove(state, seController, agentId, new Vec3(0,0,-1f), 100)); //South
+		labActions.add(new seActionCommandMove(state, seController, agentId, new Vec3(1f,0,0), 100)); //East
+		labActions.add(new seActionCommandMove(state, seController, agentId, new Vec3(-1f,0,0), 100)); //West
 
 		// Add Left Right Rotations
-		labActions.add(new seActionCommandRotate(state, SeController, agentId, new Vec2(0,-500f))); // Left
-		labActions.add(new seActionCommandRotate(state, SeController, agentId, new Vec2(0,500f))); // Right
+		labActions.add(new seActionCommandRotate(state, seController, agentId, new Vec2(0,-500f))); // Left
+		labActions.add(new seActionCommandRotate(state, seController, agentId, new Vec2(0,500f))); // Right
 
 		// Add a block like a monkey
-		labActions.add(new seActionCommandPlaceBlock(state, SeController, agentId));
+		labActions.add(new seActionCommandPlaceBlock(state, seController, agentId));
 		// Try to farm components (like a monkey)
-		labActions.add(new seActionCommandTryToFarm(state, SeController, agentId));
+		labActions.add(new seActionCommandTryToFarm(state, seController, agentId));
 
 		return labActions;
 	}

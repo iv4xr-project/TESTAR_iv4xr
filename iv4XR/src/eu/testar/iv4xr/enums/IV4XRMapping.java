@@ -59,6 +59,16 @@ public class IV4XRMapping {
             put(iv4xrLabRecruitsAgentHealth, IV4XRtags.labRecruitsAgentHealth);
             put(iv4xrLabRecruitsAgentScore, IV4XRtags.labRecruitsAgentScore);
             put(iv4xrLabRecruitsAgentMood, IV4XRtags.labRecruitsAgentMood);
+            
+            // Space Engineers
+            put(iv4xrSeBuildIntegrity, IV4XRtags.seBuildIntegrity);
+            put(iv4xrSeIntegrity, IV4XRtags.seIntegrity);
+            put(iv4xrSeMaxIntegrity, IV4XRtags.seMaxIntegrity);
+            put(iv4xrSeMaxPosition, IV4XRtags.seMaxPosition);
+            put(iv4xrSeMinPosition, IV4XRtags.seMinPosition);
+            put(iv4xrSeOrientationForward, IV4XRtags.seOrientationForward);
+            put(iv4xrSeOrientationUp, IV4XRtags.seOrientationUp);
+            put(iv4xrSeSize, IV4XRtags.seSize);
         }
     };
     

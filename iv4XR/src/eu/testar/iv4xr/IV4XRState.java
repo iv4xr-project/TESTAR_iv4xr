@@ -150,9 +150,9 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		if (t.equals(Tags.Desc)) {
 			ret = w.element.entityType + " - " + w.element.entityId;
 		}
-//		else if (t.equals(Tags.Role)) {
-//			ret = w.element.entityType;
-//		}
+		//else if (t.equals(Tags.Role)) {
+			//ret = w.element.entityType;
+		//}
 		else if (t.equals(Tags.Shape)) {
 			ret = w.element.rect;
 		}
@@ -221,7 +221,7 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 			ret = w.element.entityTimestamp;
 		}
 		/**
-		 *  Specific iv4xr System Tags (LabRecruits, SpaceEngineers)
+		 *  Specific iv4xr System Tags (LabRecruits)
 		 */
 		else if (t.equals(IV4XRtags.labRecruitsEntityIsActive)) {
 			ret = w.element.labRecruitsEntityIsActive;
@@ -237,6 +237,33 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		}
 		else if (t.equals(IV4XRtags.labRecruitsAgentMood)) {
 			ret = w.element.labRecruitsAgentMood;
+		}
+		/**
+		 * Specific iv4xr System Tags (SpaceEngineers)
+		 */
+		else if (t.equals(IV4XRtags.seBuildIntegrity)) {
+			ret = w.element.seBuildIntegrity;
+		}
+		else if (t.equals(IV4XRtags.seIntegrity)) {
+			ret = w.element.seIntegrity;
+		}
+		else if (t.equals(IV4XRtags.seMaxIntegrity)) {
+			ret = w.element.seMaxIntegrity;
+		}
+		else if (t.equals(IV4XRtags.seMaxPosition)) {
+			ret = w.element.seMaxPosition;
+		}
+		else if (t.equals(IV4XRtags.seMinPosition)) {
+			ret = w.element.seMinPosition;
+		}
+		else if (t.equals(IV4XRtags.seOrientationForward)) {
+			ret = w.element.seOrientationForward;
+		}
+		else if (t.equals(IV4XRtags.seOrientationUp)) {
+			ret = w.element.seOrientationUp;
+		}
+		else if (t.equals(IV4XRtags.seSize)) {
+			ret = w.element.seSize;
 		}
 
 		cacheTag(w, t, ret);

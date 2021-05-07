@@ -42,8 +42,9 @@ import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.commands.ObservationArgs;
 import spaceEngineers.commands.ObservationMode;
 import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
-import spaceEngineers.model.BaseEntity;
+import spaceEngineers.model.CubeGrid;
 import spaceEngineers.model.Observation;
+import spaceEngineers.model.SlimBlock;
 
 public class SeStateFetcher extends IV4XRStateFetcher {
 
@@ -59,11 +60,11 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 
 		ProprietaryJsonTcpCharacterController seController = system.get(IV4XRtags.iv4xrSpaceEngController);
 
-		Observation observation = seController.observe(new ObservationArgs(ObservationMode.ENTITIES));
+		Observation observation = seController.observe(new ObservationArgs(ObservationMode.BLOCKS));
 
-		if(observation != null && observation.getEntities().size() > 0) {
+		if(observation != null && observation.getGrids() != null && observation.getGrids().size() > 0) {
 			// Add manually the Agent as an Element (Observed Entities + 1)
-			rootElement.children = new ArrayList<IV4XRElement>((int) observation.getEntities().size() + 1);
+			rootElement.children = new ArrayList<IV4XRElement>((int) observation.getGrids().size() + 1);
 
 			rootElement.zindex = 0;
 			fillRect(rootElement);
@@ -72,13 +73,13 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 			SEagent(rootElement, observation);
 
 			// If Agent observes entities create the elements-entities
-			if(observation.getEntities().size() > 0) {
-				for(BaseEntity entity : observation.getEntities()) {
-					SEdescend(rootElement, entity);
+			if(observation.getGrids().size() > 0) {
+				for(CubeGrid seCubeGrid : observation.getGrids()) {
+					SEGridDescend(rootElement, seCubeGrid);
 				}
 			}
 		} else if (observation != null) {
-			System.out.println("INFO: No entities in the current Observation");
+			System.out.println("INFO: No BLOCKS in the current Observation");
 			// Add manually the Agent as an Element (Observed Entities + 1)
 			rootElement.children = new ArrayList<IV4XRElement>(1);
 
@@ -87,7 +88,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 
 			SEagent(rootElement, observation);
 		} else {
-			System.err.println("ERROR: No Agent and no Entities in the current Observation");
+			System.err.println("ERROR: No Agent and no BLOCKS in the current Observation");
 		}
 
 		return rootElement;
@@ -112,7 +113,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		return childElement;
 	}
 
-	private IV4XRElement SEdescend(IV4XRElement parent, BaseEntity seEntity) {
+	private IV4XRElement SEGridDescend(IV4XRElement parent, CubeGrid seCubeGrid) {
 		IV4XRElement childElement = new IV4XRElement(parent);
 		parent.children.add(childElement);
 
@@ -120,8 +121,38 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
 		childElement.zindex = parent.zindex +1;
 
-		childElement.entityPosition = new Vec3(seEntity.getPosition().getX(), seEntity.getPosition().getY(), seEntity.getPosition().getZ());
-		childElement.entityId = seEntity.getId();
+		childElement.entityPosition = new Vec3(seCubeGrid.getPosition().getX(), seCubeGrid.getPosition().getY(), seCubeGrid.getPosition().getZ());
+		childElement.entityId = seCubeGrid.getId();
+
+		fillRect(childElement);
+
+		for(SlimBlock seBlock : seCubeGrid.getBlocks()) {
+			SEBlockDescend(childElement, seBlock);
+		}
+
+		return childElement;
+	}
+
+	private IV4XRElement SEBlockDescend(IV4XRElement parent, SlimBlock seBlock) {
+		IV4XRElement childElement = new IV4XRElement(parent);
+		parent.children.add(childElement);
+
+		childElement.enabled = true; //TODO: check when should be enabled (careful with createWidgetTree)
+		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
+		childElement.zindex = parent.zindex +1;
+
+		childElement.entityPosition = new Vec3(seBlock.getPosition().getX(), seBlock.getPosition().getY(), seBlock.getPosition().getZ());
+		childElement.entityId = seBlock.getId();
+		childElement.entityType = seBlock.getBlockType();
+		
+		childElement.seBuildIntegrity = seBlock.getBuildIntegrity();
+		childElement.seIntegrity = seBlock.getIntegrity();
+		childElement.seMaxIntegrity = seBlock.getMaxIntegrity();
+		childElement.seMaxPosition = seBlock.getMaxPosition();
+		childElement.seMinPosition = seBlock.getMinPosition();
+		childElement.seOrientationForward = seBlock.getOrientationForward();
+		childElement.seOrientationUp = seBlock.getOrientationUp();
+		childElement.seSize = seBlock.getSize();
 
 		fillRect(childElement);
 
