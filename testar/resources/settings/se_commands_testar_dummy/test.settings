@@ -130,6 +130,7 @@ AbstractStateAttributes = iv4xrEntityId, iv4xrEntityIsActive
 # Other more advanced settings
 #################################################################
 
+AgentId = you
 ProcessesToKillDuringTest =
 OutputDir = ./output
 PathToReplaySequence = ./output/temp

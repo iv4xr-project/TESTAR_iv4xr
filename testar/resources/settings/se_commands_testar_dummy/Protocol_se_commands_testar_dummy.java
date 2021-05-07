@@ -37,10 +37,11 @@ import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.protocols.iv4xr.SEProtocol;
 
-import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.SpaceEngEnvironment;
+import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
+import spaceEngineers.model.Vec2;
+import spaceEngineers.model.Vec3;
 
 /**
  * iv4xr EU H2020 project - SpaceEngineers Use Case
@@ -69,9 +70,6 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 	 */
 	@Override
 	protected void initialize(Settings settings) {
-		// Agent point of view that will Observe and extract Widgets information
-		agentId = "you";
-
 		super.initialize(settings);
 	}
 
@@ -100,7 +98,7 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 		// SUT hangs
 		// SUT crashes
 		return super.getVerdict(state);
-		
+
 		// At the end of the execution SEProtocol is reading last SpaceEngineers log
 		// trying to find suspicious patterns using test.setting -> ProcessLogs (Exception by default)
 	}
@@ -113,25 +111,22 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 		Set<Action> labActions = new HashSet<>();
 
 		// Get the Observation of the State form the Agent point of view
-		SpaceEngEnvironment SeEnvironment = system.get(IV4XRtags.iv4xrSpaceEngEnvironment);
+		ProprietaryJsonTcpCharacterController SeController = system.get(IV4XRtags.iv4xrSpaceEngController);
 
 		// Add Dummy Exploration Actions (Coordinates + Steps Distance)
-		labActions.add(new seActionCommandMove(state, SeEnvironment, agentId, new Vec3(0,0,1f), 100)); //North
-		labActions.add(new seActionCommandMove(state, SeEnvironment, agentId, new Vec3(0,0,-1f), 100)); //South
-		labActions.add(new seActionCommandMove(state, SeEnvironment, agentId, new Vec3(1f,0,0), 100)); //East
-		labActions.add(new seActionCommandMove(state, SeEnvironment, agentId, new Vec3(-1f,0,0), 100)); //West
+		labActions.add(new seActionCommandMove(state, SeController, agentId, new Vec3(0,0,1f), 100)); //North
+		labActions.add(new seActionCommandMove(state, SeController, agentId, new Vec3(0,0,-1f), 100)); //South
+		labActions.add(new seActionCommandMove(state, SeController, agentId, new Vec3(1f,0,0), 100)); //East
+		labActions.add(new seActionCommandMove(state, SeController, agentId, new Vec3(-1f,0,0), 100)); //West
 
 		// Add Left Right Rotations
-		labActions.add(new seActionCommandRotate(state, SeEnvironment, agentId, new Vec3(0,-500f,0))); // Left
-		labActions.add(new seActionCommandRotate(state, SeEnvironment, agentId, new Vec3(0,500f,0))); // Right
-
-		// TODO: At the moment Place Command only works in survival mode (https://github.com/iv4xr-project/iv4xr-se-plugin/commit/42c1fc24e8582d5315f66542f0503e5561a31a5a)
-		// It is necessary to update the dll of the game
+		labActions.add(new seActionCommandRotate(state, SeController, agentId, new Vec2(0,-500f))); // Left
+		labActions.add(new seActionCommandRotate(state, SeController, agentId, new Vec2(0,500f))); // Right
 
 		// Add a block like a monkey
-		labActions.add(new seActionCommandPlaceBlock(state, SeEnvironment, agentId));
+		labActions.add(new seActionCommandPlaceBlock(state, SeController, agentId));
 		// Try to farm components (like a monkey)
-		labActions.add(new seActionCommandTryToFarm(state, SeEnvironment, agentId));
+		labActions.add(new seActionCommandTryToFarm(state, SeController, agentId));
 
 		return labActions;
 	}

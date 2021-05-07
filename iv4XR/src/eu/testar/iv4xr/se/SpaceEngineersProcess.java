@@ -43,19 +43,20 @@ import org.fruit.alayer.windows.WinApiException;
 import org.fruit.alayer.windows.WinProcess;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.SpaceEngEnvironment;
+import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
 
 public class SpaceEngineersProcess extends SUTBase {
 
 	public static SpaceEngineersProcess iv4XR = null;
+	public static String characterControllerId = "";
 
 	private static WinProcess win;
 
 	private SpaceEngineersProcess(String processName) {
 		Assert.notNull(processName);
-		
+
 		String[] parts = processName.split(" ");
-		
+
 		if(parts.length != 1) {
 			String message = "ERROR: For SpaceEngineers iv4xr SUT we only need to know:\n" 
 					+ "1.- SpaceEngineers process name\n"
@@ -72,9 +73,9 @@ public class SpaceEngineersProcess extends SUTBase {
 			System.err.println(String.format("ERROR: Trying to connect %s using Windows API", processName));
 			throw new SystemStartException(we.getMessage());
 		}
-		
+
 		int time = 0;
-		
+
 		while(!win.isRunning() && time < 10) {
 			try {
 				this.wait(1000);
@@ -83,35 +84,35 @@ public class SpaceEngineersProcess extends SUTBase {
 				e.printStackTrace();
 			}
 		}
-		
+
 		if(!win.isRunning()) {
 			throw new SystemStartException(String.format("ERROR trying to connect with iv4xr SUT : %s", processName));
 		}
-		
+
 		/**
 		 * Start IV4XR SUT at JSON - WOM level
 		 * In this case start Lab Recruits Environment with the desired level
 		 */
 
 		try {
-			// Prepare SpaceEngineers Environment
-			SpaceEngEnvironment seSocketEnvironment = SpaceEngEnvironment.localhost();
-			
+			// Prepare SpaceEngineers Controller
+			ProprietaryJsonTcpCharacterController controller = ProprietaryJsonTcpCharacterController.Companion.localhost(characterControllerId);
+
 			Util.pause(5);
 
 			System.out.println("Welcome to the iv4XR test: " + processName);
 
 			this.set(IV4XRtags.windowsProcess, win);
 			this.set(Tags.PID, win.pid());
-			this.set(IV4XRtags.iv4xrSpaceEngEnvironment, seSocketEnvironment);
-			
+			this.set(IV4XRtags.iv4xrSpaceEngController, controller);
+
 		} catch(Exception e) {
 			System.err.println(String.format("EnvironmentConfig ERROR: Trying to connect with %s", processName));
 			System.err.println(e.getMessage());
 			win.stop();
 			throw new SystemStartException(e);
 		}
-		
+
 		iv4XR = this;
 	}
 

@@ -39,22 +39,22 @@ import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.SeRequest;
-import spaceEngineers.SpaceEngEnvironment;
-import spaceEngineers.commands.SeAgentCommand;
+import spaceEngineers.commands.MovementArgs;
+import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
+import spaceEngineers.model.Vec2;
+import spaceEngineers.model.Vec3;
 
 public class seActionCommandRotate extends TaggableBase implements Action {
 	private static final long serialVersionUID = -3205069256476009191L;
 
-	private SpaceEngEnvironment spaceEngEnvironment;
+	private ProprietaryJsonTcpCharacterController spaceEngController;
 	private String agentId;
-	private Vec3 targetRotation;
+	private Vec2 targetRotation;
 
-	public seActionCommandRotate(Widget w, SpaceEngEnvironment spaceEngEnvironment, String agentId, Vec3 targetRotation){
-		this.spaceEngEnvironment = spaceEngEnvironment;
+	public seActionCommandRotate(Widget w, ProprietaryJsonTcpCharacterController spaceEngController, String agentId, Vec2 targetRotation){
+		this.spaceEngController = spaceEngController;
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
@@ -67,8 +67,7 @@ public class seActionCommandRotate extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		spaceEngEnvironment.getSeResponse(SeRequest.command(
-				SeAgentCommand.moveAndRotate("you", new Vec3(0,0,0), targetRotation, 0f)));
+		spaceEngController.moveAndRotate(new MovementArgs(new Vec3(0,0,0), targetRotation));
 	}
 
 	@Override

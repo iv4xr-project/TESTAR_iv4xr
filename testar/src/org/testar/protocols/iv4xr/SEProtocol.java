@@ -65,6 +65,7 @@ import es.upv.staq.testar.NativeLinker;
 import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.se.SpaceEngineersProcess;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
 import nl.ou.testar.HtmlReporting.HtmlSequenceReport;
@@ -104,7 +105,9 @@ public class SEProtocol extends GenericUtilsProtocol {
 		protocolUtil = new IV4XRProtocolUtil();
 
 		// Define existing agent to fetch his observation entities
+		agentId = settings.get(ConfigTags.AgentId);
 		IV4XRStateFetcher.agentsIds = new HashSet<>(Arrays.asList(agentId));
+		SpaceEngineersProcess.characterControllerId = agentId;
 	}
 
 	/**
@@ -336,7 +339,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected void stopSystem(SUT system) {
-		system.get(IV4XRtags.iv4xrSpaceEngEnvironment).close();
+		system.get(IV4XRtags.iv4xrSpaceEngController).close();
 		super.stopSystem(system);
 		NativeLinker.cleaniv4XRSe();
 	}

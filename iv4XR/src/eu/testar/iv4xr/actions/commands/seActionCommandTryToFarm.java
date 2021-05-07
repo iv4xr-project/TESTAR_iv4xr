@@ -42,20 +42,18 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.SeRequest;
-import spaceEngineers.SpaceEngEnvironment;
 import spaceEngineers.commands.InteractionArgs;
 import spaceEngineers.commands.InteractionType;
-import spaceEngineers.commands.SeAgentCommand;
+import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
 
 public class seActionCommandTryToFarm extends TaggableBase implements Action {
 	private static final long serialVersionUID = -9171892675722381064L;
 
-	private SpaceEngEnvironment spaceEngEnvironment;
+	private ProprietaryJsonTcpCharacterController spaceEngController;
 	private String agentId;
 
-	public seActionCommandTryToFarm(Widget w, SpaceEngEnvironment spaceEngEnvironment, String agentId){
-		this.spaceEngEnvironment = spaceEngEnvironment;
+	public seActionCommandTryToFarm(Widget w, ProprietaryJsonTcpCharacterController spaceEngController, String agentId){
+		this.spaceEngController = spaceEngController;
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandInteract);
@@ -67,15 +65,11 @@ public class seActionCommandTryToFarm extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		spaceEngEnvironment.getSeResponse(SeRequest.command(
-				SeAgentCommand.interact(agentId, new InteractionArgs(InteractionType.EQUIP,1))));
+		spaceEngController.interact(new InteractionArgs(InteractionType.EQUIP, 5, 0, false));
 
 		Util.pause(1);
 
-		// TODO: At the moment Place Command only works in survival mode (https://github.com/iv4xr-project/iv4xr-se-plugin/commit/42c1fc24e8582d5315f66542f0503e5561a31a5a)
-		// It is necessary to update the dll of the game
-		spaceEngEnvironment.getSeResponse(SeRequest.command(
-				SeAgentCommand.interact(agentId, new InteractionArgs(InteractionType.PLACE))));
+		spaceEngController.interact(new InteractionArgs(InteractionType.BEGIN_USE, 0, 0, false));
 	}
 
 	@Override

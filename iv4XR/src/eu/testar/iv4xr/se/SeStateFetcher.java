@@ -34,77 +34,66 @@ import java.util.ArrayList;
 
 import org.fruit.alayer.SUT;
 
+import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.IV4XRElement;
 import eu.testar.iv4xr.IV4XRRootElement;
 import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.SeEntity;
-import spaceEngineers.SeObservation;
-import spaceEngineers.SeRequest;
-import spaceEngineers.SpaceEngEnvironment;
 import spaceEngineers.commands.ObservationArgs;
 import spaceEngineers.commands.ObservationMode;
-import spaceEngineers.commands.SeAgentCommand;
+import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
+import spaceEngineers.model.BaseEntity;
+import spaceEngineers.model.Observation;
 
 public class SeStateFetcher extends IV4XRStateFetcher {
 
 	public SeStateFetcher(SUT system) {
 		super(system);
 	}
-	
+
 	/**
-	 * Legacy Observation = Objects Agent can observe - Dynamically appearing and disappearing WOM. 
-	 * WorldModel = All Objects from WOM - Static Object with dynamic properties. 
+	 * Observation = Objects Agent can observe - Dynamically appearing and disappearing WOM. 
 	 */
 	@Override
 	protected IV4XRRootElement fetchIV4XRElements(IV4XRRootElement rootElement) {
-		
-		SpaceEngEnvironment seEnv = system.get(IV4XRtags.iv4xrSpaceEngEnvironment);
-		
-		for(String agentId : agentsIds) {
-			// LegacyObservation
-			// TODO: SpaceEngineers plugin should extend from W3DWorldModel
-			SeObservation agentObservation = seEnv.getSeResponse(SeRequest.command(SeAgentCommand.observe(agentId)));
-			SeObservation entitesObservation = seEnv.getSeResponse(SeRequest.command(SeAgentCommand.observe(agentId, new ObservationArgs(ObservationMode.ENTITIES))));
-			
-			//TODO: After update dll use block entities
-			//SeObservation blocksObservation = seEnv.getSeResponse(SeRequest.command(SeAgentCommand.observe(agentId, new ObservationArgs(ObservationMode.BLOCKS))));
-			//SeObservation newBlocksObservation = seEnv.getSeResponse(SeRequest.command(SeAgentCommand.observe(agentId, new ObservationArgs(ObservationMode.NEW_BLOCKS))));
 
-			if(agentObservation != null && entitesObservation.entities != null) {
-				// Add manually the Agent as an Element (Observed Entities + 1)
-				rootElement.children = new ArrayList<IV4XRElement>((int) entitesObservation.entities.size() + 1);
+		ProprietaryJsonTcpCharacterController seController = system.get(IV4XRtags.iv4xrSpaceEngController);
 
-				rootElement.zindex = 0;
-				fillRect(rootElement);
+		Observation observation = seController.observe(new ObservationArgs(ObservationMode.ENTITIES));
 
-				// Agent always exists as an Entity
-				SEagent(rootElement, agentObservation);
+		if(observation != null && observation.getEntities().size() > 0) {
+			// Add manually the Agent as an Element (Observed Entities + 1)
+			rootElement.children = new ArrayList<IV4XRElement>((int) observation.getEntities().size() + 1);
 
-				// If Agent observes entities create the elements-entities
-				if(entitesObservation.entities.size() > 0) {
-					for(SeEntity entity : entitesObservation.entities) {
-						SEdescend(rootElement, entity);
-					}
+			rootElement.zindex = 0;
+			fillRect(rootElement);
+
+			// Agent always exists as an Entity
+			SEagent(rootElement, observation);
+
+			// If Agent observes entities create the elements-entities
+			if(observation.getEntities().size() > 0) {
+				for(BaseEntity entity : observation.getEntities()) {
+					SEdescend(rootElement, entity);
 				}
-			} else if (agentObservation != null) {
-				System.out.println("INFO: No entities in the current Observation");
-				// Add manually the Agent as an Element (Observed Entities + 1)
-				rootElement.children = new ArrayList<IV4XRElement>(1);
-
-				rootElement.zindex = 0;
-				fillRect(rootElement);
-
-				SEagent(rootElement, agentObservation);
-			} else {
-				System.err.println("ERROR: No Agent and no Entities in the current Observation");
 			}
+		} else if (observation != null) {
+			System.out.println("INFO: No entities in the current Observation");
+			// Add manually the Agent as an Element (Observed Entities + 1)
+			rootElement.children = new ArrayList<IV4XRElement>(1);
+
+			rootElement.zindex = 0;
+			fillRect(rootElement);
+
+			SEagent(rootElement, observation);
+		} else {
+			System.err.println("ERROR: No Agent and no Entities in the current Observation");
 		}
 
 		return rootElement;
 	}
-	
-	private IV4XRElement SEagent(IV4XRElement parent, SeObservation seObservation) {
+
+	private IV4XRElement SEagent(IV4XRElement parent, Observation seObservation) {
 		IV4XRElement childElement = new IV4XRElement(parent);
 		parent.children.add(childElement);
 
@@ -112,9 +101,9 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
 		childElement.zindex = parent.zindex +1;
 
-		childElement.agentPosition = seObservation.position;
-		childElement.entityVelocity = seObservation.velocity;
-		childElement.entityId = seObservation.agentID;
+		childElement.agentPosition = new Vec3(seObservation.getPosition().getX(), seObservation.getPosition().getY(), seObservation.getPosition().getZ());
+		childElement.entityVelocity = new Vec3(seObservation.getVelocity().getX(), seObservation.getVelocity().getY(), seObservation.getVelocity().getZ());
+		childElement.entityId = seObservation.getAgentID();
 		childElement.entityType = "AGENT"; //TODO: check proper entity for agent
 		childElement.entityTimestamp = -1;
 
@@ -122,8 +111,8 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 
 		return childElement;
 	}
-	
-	private IV4XRElement SEdescend(IV4XRElement parent, SeEntity seEntity) {
+
+	private IV4XRElement SEdescend(IV4XRElement parent, BaseEntity seEntity) {
 		IV4XRElement childElement = new IV4XRElement(parent);
 		parent.children.add(childElement);
 
@@ -131,8 +120,8 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
 		childElement.zindex = parent.zindex +1;
 
-		childElement.entityPosition = seEntity.position;
-		childElement.entityId = seEntity.id;
+		childElement.entityPosition = new Vec3(seEntity.getPosition().getX(), seEntity.getPosition().getY(), seEntity.getPosition().getZ());
+		childElement.entityId = seEntity.getId();
 
 		fillRect(childElement);
 
