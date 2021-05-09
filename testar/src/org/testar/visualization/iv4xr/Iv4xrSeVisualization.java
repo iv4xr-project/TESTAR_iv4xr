@@ -56,7 +56,8 @@ public class Iv4xrSeVisualization {
 	private static Map<String, Pen> entitiesColors;
 	static {
 		entitiesColors = new HashMap<String, Pen>();
-		entitiesColors.put("LargeBlockArmorBlock", GreenPen);
+		entitiesColors.put("largeblockarmorblock", GreenPen);
+		entitiesColors.put("largegrid", YellowPen);
 	}
 
 	public static Pen getEntityColor(String entityType) {

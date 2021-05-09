@@ -93,6 +93,10 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 	/**
 	 * Specific Space Engineers iv4xr properties
 	 */
+	public spaceEngineers.model.Vec3 seAgentPosition = new spaceEngineers.model.Vec3(0, 0, 0);
+	public spaceEngineers.model.Vec3 seAgentOrientationForward = new spaceEngineers.model.Vec3(0, 0, 0);
+	public spaceEngineers.model.Vec3 seAgentOrientationUp = new spaceEngineers.model.Vec3(0, 0, 0);
+
 	public float seBuildIntegrity = 0f;
 	public float seIntegrity = 0f;
 	public float seMaxIntegrity = 0f;

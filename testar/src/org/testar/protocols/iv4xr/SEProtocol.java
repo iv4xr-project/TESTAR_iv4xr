@@ -145,20 +145,26 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected State getState(SUT system) throws StateBuildException {
-		//Spy mode didn't use the html report
-		if(settings.get(ConfigTags.Mode) == Modes.Spy)
-			return super.getState(system);
-
-		latestState = super.getState(system);
-		//adding state to the HTML sequence report:
-		htmlReport.addState(latestState);
+		State state = super.getState(system);
 
 		// Find the Widget that represents the Agent Entity and associated into the IV4XR SUT Tag
-		for(Widget w : latestState) {
+		for(Widget w : state) {
 			if(w.get(IV4XRtags.entityType, "").equals("AGENT")) {
 				system.set(IV4XRtags.agentWidget, w);
+				state.set(IV4XRtags.agentWidget, w);
+				break;
 			}
 		}
+
+		//Spy mode didn't use the html report
+		if(settings.get(ConfigTags.Mode) == Modes.Spy) {
+			return state;
+		}
+
+		latestState = state;
+
+		//adding state to the HTML sequence report:
+		htmlReport.addState(latestState);
 
 		return latestState;
 	}

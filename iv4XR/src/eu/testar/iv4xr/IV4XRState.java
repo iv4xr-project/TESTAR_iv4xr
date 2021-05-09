@@ -241,6 +241,15 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		/**
 		 * Specific iv4xr System Tags (SpaceEngineers)
 		 */
+		else if (t.equals(IV4XRtags.seAgentPosition)) {
+			ret = w.element.seAgentPosition;
+		}
+		else if (t.equals(IV4XRtags.seAgentOrientationForward)) {
+			ret = w.element.seAgentOrientationForward;
+		}
+		else if (t.equals(IV4XRtags.seAgentOrientationUp)) {
+			ret = w.element.seAgentOrientationUp;
+		}
 		else if (t.equals(IV4XRtags.seBuildIntegrity)) {
 			ret = w.element.seBuildIntegrity;
 		}

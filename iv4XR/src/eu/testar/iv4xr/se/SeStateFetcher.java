@@ -102,6 +102,10 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.zindex = parent.zindex +1;
 
 		childElement.agentPosition = new Vec3(seObservation.getPosition().getX(), seObservation.getPosition().getY(), seObservation.getPosition().getZ());
+		childElement.seAgentPosition = seObservation.getPosition();
+		childElement.seAgentOrientationForward = seObservation.getOrientationForward();
+		childElement.seAgentOrientationUp = seObservation.getOrientationUp();
+		
 		childElement.entityVelocity = new Vec3(seObservation.getVelocity().getX(), seObservation.getVelocity().getY(), seObservation.getVelocity().getZ());
 		childElement.entityId = seObservation.getAgentID();
 		childElement.entityType = "AGENT"; //TODO: check proper entity for agent
@@ -122,6 +126,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 
 		childElement.entityPosition = new Vec3(seCubeGrid.getPosition().getX(), seCubeGrid.getPosition().getY(), seCubeGrid.getPosition().getZ());
 		childElement.entityId = seCubeGrid.getId();
+		childElement.entityType = seCubeGrid.getId().replaceAll("[0-9]","").replaceAll("\\s+","");
 
 		fillRect(childElement);
 
