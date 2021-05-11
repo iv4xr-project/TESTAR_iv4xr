@@ -456,7 +456,9 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	protected Set<Action> exploreVisibleNodesActions(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
 		if(state.get(IV4XRtags.labRecruitsNavMesh, null) != null && !state.get(IV4XRtags.labRecruitsNavMesh).isEmpty() /*&& navGraph != null*/) {
 			for(SVec3 nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {
-				actions.add(new labActionExplorePosition(state, state, labRecruitsEnvironment, agentId, new Vec3(nodeNavMesh.x, nodeNavMesh.y, nodeNavMesh.z), false, false));
+				actions.add(
+						new labActionExplorePosition(state.get(IV4XRtags.agentWidget), state, labRecruitsEnvironment, agentId, 
+								new Vec3(nodeNavMesh.x, nodeNavMesh.y, nodeNavMesh.z), false, false));
 			}
 		}
 

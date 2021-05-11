@@ -88,6 +88,15 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 	}
 
 	/**
+	 * Determine if the iv4xr Widget Entity is Interactive.
+	 */
+	@Override
+	protected boolean isInteractiveEntity(Widget widget) {
+		return (widget.get(IV4XRtags.entityType, null) != null &&
+				widget.get(IV4XRtags.entityType, null).toString().equals("Switch"));
+	}
+
+	/**
 	 * Select one of the available actions using an action selection algorithm (for example random action selection)
 	 *
 	 * @param state the SUT's current state
@@ -159,6 +168,10 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
+
+			if(action instanceof labActionCommandMoveInteract) {
+				iv4xrExplorationPrioritization.clearExecutedExploratoryActionsList();
+			}
 
 			return true;
 

@@ -63,4 +63,8 @@ public class iv4xrExplorationPrioritization {
 		executedActions.add(action.get(Tags.AbstractIDCustom));
 	}
 
+	public static void clearExecutedExploratoryActionsList() {
+		executedActions.clear();
+	}
+
 }
