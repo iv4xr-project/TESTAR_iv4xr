@@ -57,6 +57,7 @@ import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
 import org.testar.protocols.GenericUtilsProtocol;
+import org.testar.visualization.iv4xr.Iv4xrVisualization;
 
 import com.google.common.collect.Sets;
 
