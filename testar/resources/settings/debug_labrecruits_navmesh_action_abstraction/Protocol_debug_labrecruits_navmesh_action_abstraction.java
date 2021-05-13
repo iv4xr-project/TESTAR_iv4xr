@@ -28,19 +28,27 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
-import org.fruit.monkey.Settings;
+import org.testar.OutputStructure;
 import org.testar.action.priorization.iv4xrExplorationPrioritization;
+import org.testar.action.priorization.iv4xrNavigableState;
+import org.testar.action.priorization.iv4xrNavigableStateMap;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import environments.LabRecruitsEnvironment;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.enums.SVec3;
 import nl.ou.testar.RandomActionSelector;
 
 /**
@@ -63,6 +71,38 @@ import nl.ou.testar.RandomActionSelector;
  * Action              -> LabRecruits low level command
  */
 public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRecruitsProtocol {
+
+	// Navigable State that an agent can explore
+	private iv4xrNavigableState navigableState = new iv4xrNavigableState("Initial");
+	// A map to connect multiple navigableState
+	private iv4xrNavigableStateMap navigableStateMap = new iv4xrNavigableStateMap();
+
+	/**
+	 * This method is called when the TESTAR requests the state of the SUT.
+	 * Here you can add additional information to the SUT's state or write your
+	 * own state fetching routine.
+	 *
+	 * super.getState(system) puts the state information also to the HTML sequence report
+	 *
+	 * @return  the current state of the SUT with attached oracle.
+	 */
+	@Override
+	protected State getState(SUT system) {
+		State state = super.getState(system);
+
+		for(Widget w : state) {
+			// Ignore the agent itself and the state
+			if(w.equals(state.get(IV4XRtags.agentWidget)) || w.equals(state)) continue;
+
+			// Add the visible entity information
+			navigableState.addReachableEntity(w.get(IV4XRtags.entityId, ""), w.get(IV4XRtags.labRecruitsEntityIsActive, false));
+		}
+
+		// Add the visible and navigable navMesh nodes
+		navigableState.addNavigableNode(state.get(IV4XRtags.labRecruitsNavMesh, Collections.<SVec3>emptySet()));
+
+		return state;
+	}
 
 	/**
 	 * Derive all possible actions that TESTAR can execute in each specific LabRecruits state.
@@ -112,21 +152,21 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 		if (retAction== null) {
 			//if no preSelected actions are needed, then implement your own action selection strategy
 
-			System.out.println("----------- Available Actions -----------");
-			for(Action a : originalActions) {
-				System.out.println(a.get(Tags.AbstractIDCustom) + " : " + a.get(Tags.Desc, ""));
-			}
+			//System.out.println("----------- Available Actions -----------");
+			//for(Action a : originalActions) {
+			//	System.out.println(a.get(Tags.AbstractIDCustom) + " : " + a.get(Tags.Desc, ""));
+			//}
 
 			// Try to get the labActionExplorePosition actions to prioritize exploration
 			Set<Action> exploratoryActions = iv4xrExplorationPrioritization.getUnvisitedExploratoryActions(originalActions);
 
 			// If we have exploratory actions to execute, select one of them randomly
 			if(exploratoryActions != null) {
-				System.out.println("----------- getExploratoryActions Actions -----------");
-				for(Action a : exploratoryActions) {
-					System.out.println(a.get(Tags.AbstractIDCustom) + " : " + a.get(Tags.Desc, ""));
-				}
-				System.out.println("-----------------------------------------------------");
+				//System.out.println("----------- getExploratoryActions Actions -----------");
+				//for(Action a : exploratoryActions) {
+				//	System.out.println(a.get(Tags.AbstractIDCustom) + " : " + a.get(Tags.Desc, ""));
+				//}
+				//System.out.println("-----------------------------------------------------");
 
 				//randomly select one of the unvisited exploratory actions
 				retAction = RandomActionSelector.selectAction(exploratoryActions);
@@ -136,9 +176,9 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 			// If we do not have exploratory actions to execute, 
 			// use the state model to select other type of action
 			else {
-				System.out.println("----------- getExploratoryActions Actions -----------");
+				//System.out.println("----------- getExploratoryActions Actions -----------");
 				System.out.println("----------- All ExploratoryActions EXECUTED ---------");
-				System.out.println("-----------------------------------------------------");
+				//System.out.println("-----------------------------------------------------");
 
 				//using the action selector of the state model:
 				retAction = stateModelManager.getAbstractActionToExecute(originalActions);
@@ -171,6 +211,21 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 
 			if(action instanceof labActionCommandMoveInteract) {
 				iv4xrExplorationPrioritization.clearExecutedExploratoryActionsList();
+
+				// Add explored navigable state in our map
+				navigableStateMap.addNavigableState(navigableState);
+
+				// Then create a new navigable state object based in the current interacted entity
+				String interactedEntity = ((labActionCommandMoveInteract) action).getEntityId();
+				String beforeIsActive = action.get(Tags.OriginWidget).get(IV4XRtags.labRecruitsEntityIsActive).toString();
+				String afterIsActive = "Unknown";
+				Widget afterWidget = getEntityWidgetFromState(system, interactedEntity);
+				if(afterWidget != null) {
+					afterIsActive = afterWidget.get(IV4XRtags.labRecruitsEntityIsActive).toString();
+				}
+
+				String interactionInfo = "Entity:" + interactedEntity + ",From:" + beforeIsActive + ",To:" + afterIsActive;
+				navigableState = new iv4xrNavigableState(interactionInfo);
 			}
 
 			return true;
@@ -178,5 +233,42 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 		}catch(ActionFailedException afe){
 			return false;
 		}
+	}
+
+	private Widget getEntityWidgetFromState(SUT system, String entityId) {
+		Util.pause(2);
+		// User super getState to avoid navigableState conflicts
+		for(Widget w : super.getState(system)) {
+			if(w.get(IV4XRtags.entityId, "").equals(entityId)) {
+				return w;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * This method is invoked each time the TESTAR has reached the stop criteria for generating a sequence.
+	 * This can be used for example for graceful shutdown of the SUT, maybe pressing "Close" or "Exit" button
+	 */
+	@Override
+	protected void finishSequence() {
+		super.finishSequence();
+		// Add last explored navigable state in our map
+		navigableStateMap.addNavigableState(navigableState);
+		String navigableStateMapInfo = navigableStateMap.toString();
+		System.out.println(navigableStateMapInfo);
+		try {
+			File outputFolder = new File(OutputStructure.outerLoopOutputDir).getCanonicalFile();
+			String outputFile = outputFolder.getPath() + File.separator + "navigableStateMapInfo.txt";
+			BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile, true));
+			writer.append(navigableStateMapInfo);
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("ERROR: Writing navigableStateMapInfo results");
+		}
+
+		iv4xrExplorationPrioritization.clearExecutedExploratoryActionsList();
 	}
 }

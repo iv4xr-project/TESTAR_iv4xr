@@ -28,36 +28,65 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package eu.testar.iv4xr.enums;
+package org.testar.action.priorization;
 
-import java.util.Objects;
+import java.util.HashSet;
+import java.util.Set;
 
-public class SVec3 implements java.io.Serializable {
-	private static final long serialVersionUID = 639048627994203600L;
+import org.fruit.Pair;
 
-	public float x, y, z;
+import eu.testar.iv4xr.enums.SVec3;
 
-	public SVec3(float x, float y, float z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+public class iv4xrNavigableState {
+
+	private String executedAction;
+	private Set<SVec3> navigableNodes;
+	private Set<Pair<String, Boolean>> reachableEntities;
+
+	public iv4xrNavigableState(String executedAction) {
+		this.executedAction = executedAction;
+		this.navigableNodes = new HashSet<>();
+		this.reachableEntities = new HashSet<>();
+	}
+
+	public String getExecutedAction() {
+		return executedAction;
+	}
+
+	public Set<SVec3> getNavigableNodes() {
+		return navigableNodes;
+	}
+
+	public Set<Pair<String, Boolean>> getReachableEntities() {
+		return reachableEntities;
+	}
+
+	public void addNavigableNode(Set<SVec3> nodesPositions) {
+		for(SVec3 nodePosition : nodesPositions) {
+			this.navigableNodes.add(nodePosition);
+		}
+	}
+
+	public void addReachableEntity(String entityId, boolean entityIsActive) {
+		this.reachableEntities.add(new Pair<String, Boolean>(entityId, entityIsActive));
 	}
 
 	@Override
-	public String toString() {
-		return String.format("<%s,%s,%s>", x, y, z);
-	}
+	public boolean equals(Object o) {
+		if(!(o instanceof iv4xrNavigableState)) {
+			return false;
+		}
+		if(!((iv4xrNavigableState) o).getExecutedAction().equals(this.executedAction)) {
+			return false;
+		}
+		if(!((iv4xrNavigableState) o).getNavigableNodes().equals(this.navigableNodes)) {
+			return false;
+		}
+		if(!((iv4xrNavigableState) o).getReachableEntities().equals(this.reachableEntities)) {
+			return false;
+		}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof SVec3)) return false;
-		SVec3 v = (SVec3) obj;
-		return x == v.x && y == v.y && z == v.z;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(x, y, z);
+		return true;
 	}
 
 }

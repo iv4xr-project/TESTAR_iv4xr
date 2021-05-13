@@ -28,36 +28,36 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package eu.testar.iv4xr.enums;
+package org.testar.action.priorization;
 
-import java.util.Objects;
+import java.util.ArrayList;
 
-public class SVec3 implements java.io.Serializable {
-	private static final long serialVersionUID = 639048627994203600L;
+public class iv4xrNavigableStateMap {
 
-	public float x, y, z;
+	private ArrayList<iv4xrNavigableState> navigableStatesList;
 
-	public SVec3(float x, float y, float z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
+	public iv4xrNavigableStateMap () {
+		this.navigableStatesList = new ArrayList<>();
+	}
+
+	public ArrayList<iv4xrNavigableState> getNavigableStatesList() {
+		return navigableStatesList;
+	}
+
+	public void addNavigableState(iv4xrNavigableState navState) {
+		this.navigableStatesList.add(navState);
 	}
 
 	@Override
 	public String toString() {
-		return String.format("<%s,%s,%s>", x, y, z);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof SVec3)) return false;
-		SVec3 v = (SVec3) obj;
-		return x == v.x && y == v.y && z == v.z;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(x, y, z);
+		StringBuilder sb = new StringBuilder("");
+		for(iv4xrNavigableState navState : navigableStatesList) {
+			sb.append(navState.getExecutedAction());
+			sb.append(", " + navState.getReachableEntities());
+			sb.append(", " + navState.getNavigableNodes());
+			sb.append(System.getProperty("line.separator"));
+		}
+		return sb.toString();
 	}
 
 }
