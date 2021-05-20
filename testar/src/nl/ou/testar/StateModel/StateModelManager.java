@@ -1,7 +1,10 @@
 package nl.ou.testar.StateModel;
 
+import org.fruit.Pair;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.State;
+
+import eu.testar.iv4xr.enums.SVec3;
 
 import java.util.Set;
 
@@ -23,4 +26,6 @@ public interface StateModelManager {
     void notifyTestSequenceInterruptedByUser();
 
     void notifyTestSequenceInterruptedBySystem(String message);
+    
+    void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String inboundAction);
 }

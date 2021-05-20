@@ -23,6 +23,7 @@ import nl.ou.testar.StateModel.Sequence.SequenceNode;
 import nl.ou.testar.StateModel.Sequence.SequenceStep;
 import nl.ou.testar.StateModel.Util.EventHelper;
 import nl.ou.testar.StateModel.Util.HydrationHelper;
+import nl.ou.testar.StateModel.iv4XR.NavigableState;
 import nl.ou.testar.StateModel.Widget;
 
 import java.util.*;
@@ -66,7 +67,8 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
             EntityClassFactory.EntityClassName.SequenceNode,
             EntityClassFactory.EntityClassName.SequenceStep,
             EntityClassFactory.EntityClassName.Accessed,
-            EntityClassFactory.EntityClassName.FirstNode
+            EntityClassFactory.EntityClassName.FirstNode,
+            EntityClassFactory.EntityClassName.NavigableState
     ));
 
     /**
@@ -630,6 +632,26 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
         }
 
         entityManager.saveEntity(step);
+    }
+    
+    @Override
+    public void persistNavigableState(NavigableState navigableState) {
+    	// create an entity to persist to the database
+    	EntityClass entityClass = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.NavigableState);
+    	VertexEntity navigableStateEntity = new VertexEntity(entityClass);
+
+    	// hydrate the entity to a format the orient database can store
+    	try {
+    		EntityHydrator hydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_NAVIGABLE_STATE);
+    		hydrator.hydrate(navigableStateEntity, navigableState);
+    	} catch (HydrationException e) {
+    		e.printStackTrace();
+    		System.out.println("Encountered a problem while saving navigable state " + navigableState.getInboundActions() + " to the orient database");
+    		return;
+    	}
+
+    	// save the entity!
+    	entityManager.saveEntity(navigableStateEntity);
     }
 
     @Override

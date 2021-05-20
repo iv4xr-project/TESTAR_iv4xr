@@ -15,10 +15,11 @@ public class GraphServlet  extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        boolean abstractLayerRequired, concreteLayerRequired, sequenceLayerRequired, showCompoundGraph = false;
+        boolean abstractLayerRequired, concreteLayerRequired, sequenceLayerRequired, navigableLayerRequired, showCompoundGraph = false;
         abstractLayerRequired = request.getParameter("abstractoption") != null;
         concreteLayerRequired = request.getParameter("concreteoption") != null;
         sequenceLayerRequired = request.getParameter("sequenceoption") != null;
+        navigableLayerRequired = request.getParameter("navigableoption") != null;
         showCompoundGraph = request.getParameter("compoundoption") != null;
         String modelIdentifier = request.getParameter("modelIdentifier");
         String concreteStateIdentifier = request.getParameter("concrete_state_id");
@@ -32,12 +33,12 @@ public class GraphServlet  extends HttpServlet {
             // this is the controller logic for the overall model graph
 
             // check if there were any layers requested
-            if (!(abstractLayerRequired || concreteLayerRequired || sequenceLayerRequired)) {
+            if (!(abstractLayerRequired || concreteLayerRequired || sequenceLayerRequired || navigableLayerRequired)) {
                 response.sendRedirect("/models");
             }
 
             // fetch the model
-            String jsonFileName = analysisManager.fetchGraphForModel(modelIdentifier, abstractLayerRequired, concreteLayerRequired, sequenceLayerRequired, showCompoundGraph);
+            String jsonFileName = analysisManager.fetchGraphForModel(modelIdentifier, abstractLayerRequired, concreteLayerRequired, sequenceLayerRequired, navigableLayerRequired, showCompoundGraph);
 
             try {
                 request.setAttribute("graphContentFile", jsonFileName);

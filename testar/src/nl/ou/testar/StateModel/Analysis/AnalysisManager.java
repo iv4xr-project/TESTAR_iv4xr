@@ -310,10 +310,10 @@ public class AnalysisManager {
      * @param sequenceLayerRequired true if the sequence layer needs to be exported
      * @return
      */
-    public String fetchGraphForModel(String modelIdentifier, boolean abstractLayerRequired, boolean concreteLayerRequired, boolean sequenceLayerRequired, boolean showCompoundGraph) {
+    public String fetchGraphForModel(String modelIdentifier, boolean abstractLayerRequired, boolean concreteLayerRequired, boolean sequenceLayerRequired, boolean navigableLayerRequired, boolean showCompoundGraph) {
         startUp();
         ArrayList<Element> elements = new ArrayList<>();
-        if (abstractLayerRequired || concreteLayerRequired || sequenceLayerRequired) {
+        if (abstractLayerRequired || concreteLayerRequired || sequenceLayerRequired || navigableLayerRequired) {
             try (ODatabaseSession db = orientDB.open(dbConfig.getDatabase(), dbConfig.getUser(), dbConfig.getPassword())) {
                 if (abstractLayerRequired) {
                     elements.addAll(fetchAbstractLayer(modelIdentifier, db, showCompoundGraph));
@@ -325,6 +325,10 @@ public class AnalysisManager {
 
                 if (sequenceLayerRequired) {
                     elements.addAll(fetchSequenceLayer(modelIdentifier, db, showCompoundGraph));
+                }
+                
+                if (navigableLayerRequired) {
+                    elements.addAll(fetchNavigableLayer(modelIdentifier, db, showCompoundGraph));
                 }
 
                 if (abstractLayerRequired && concreteLayerRequired) {
@@ -342,6 +346,7 @@ public class AnalysisManager {
         if (abstractLayerRequired) builder.append("A");
         if (concreteLayerRequired) builder.append("C");
         if (sequenceLayerRequired) builder.append("S");
+        if (navigableLayerRequired) builder.append("N");
         builder.append("_");
         builder.append(Instant.now().toEpochMilli());
         builder.append("_elements.json");
@@ -469,6 +474,27 @@ public class AnalysisManager {
         resultSet.close();
 
         return elements;
+    }
+
+    /**
+     * This method fetches the elements in the navigable layer for a given abstract state model.
+     * @param modelIdentifier
+     * @param db
+     * @param showCompoundGraph
+     * @return
+     */
+    private List<Element> fetchNavigableLayer(String modelIdentifier, ODatabaseSession db, boolean showCompoundGraph) {
+    	ArrayList<Element> elements = new ArrayList<>();
+
+    	// navigable state nodes
+    	String stmt = "SELECT * FROM NavigableState WHERE modelIdentifier = :identifier";
+    	Map<String, Object> params = new HashMap<>();
+    	params.put("identifier", modelIdentifier);
+    	OResultSet resultSet = db.query(stmt, params);
+    	elements.addAll(fetchNodes(resultSet, "NavigableState", showCompoundGraph ? "NavigableLayer" : null, modelIdentifier));
+    	resultSet.close();
+
+    	return elements;
     }
 
     /**

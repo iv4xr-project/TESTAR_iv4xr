@@ -214,6 +214,10 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 
 				// Add explored navigable state in our map
 				navigableStateMap.addNavigableState(navigableState);
+				// Create a Navigable State in the State Model
+				stateModelManager.notifyNewNavigableState(navigableState.getNavigableNodes(), 
+						navigableState.getReachableEntities(), 
+						navigableState.getExecutedAction());
 
 				// Then create a new navigable state object based in the current interacted entity
 				String interactedEntity = ((labActionCommandMoveInteract) action).getEntityId();
@@ -256,6 +260,11 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 		super.finishSequence();
 		// Add last explored navigable state in our map
 		navigableStateMap.addNavigableState(navigableState);
+		// Create a Navigable State in the State Model
+		stateModelManager.notifyNewNavigableState(navigableState.getNavigableNodes(), 
+				navigableState.getReachableEntities(), 
+				navigableState.getExecutedAction());
+
 		String navigableStateMapInfo = navigableStateMap.toString();
 		System.out.println(navigableStateMapInfo);
 		try {

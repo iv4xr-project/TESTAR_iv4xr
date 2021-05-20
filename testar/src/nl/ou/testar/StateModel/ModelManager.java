@@ -7,10 +7,14 @@ import nl.ou.testar.StateModel.Persistence.PersistenceManager;
 import nl.ou.testar.StateModel.Sequence.SequenceError;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
 import nl.ou.testar.StateModel.Util.AbstractStateService;
+
+import org.fruit.Pair;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.Tags;
+
+import eu.testar.iv4xr.enums.SVec3;
 
 import java.util.*;
 
@@ -273,6 +277,11 @@ public class ModelManager implements StateModelManager {
     @Override
     public void notifyTestSequenceInterruptedBySystem(String message) {
         sequenceManager.notifyInterruptionBySystem(message);
+    }
+
+    @Override
+    public void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String inboundAction) {
+
     }
 
 }

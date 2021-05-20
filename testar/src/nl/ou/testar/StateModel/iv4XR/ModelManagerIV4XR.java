@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,13 +30,16 @@
 
 package nl.ou.testar.StateModel.iv4XR;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 
+import org.fruit.Pair;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.Tags;
 
+import eu.testar.iv4xr.enums.SVec3;
 import nl.ou.testar.StateModel.AbstractAction;
 import nl.ou.testar.StateModel.AbstractStateModel;
 import nl.ou.testar.StateModel.ModelManager;
@@ -46,14 +49,14 @@ import nl.ou.testar.StateModel.Exception.ActionNotFoundException;
 import nl.ou.testar.StateModel.Persistence.PersistenceManager;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
 
-public class ModelManagerIV4XREnvironment extends ModelManager implements StateModelManager {
+public class ModelManagerIV4XR extends ModelManager implements StateModelManager {
 
 	/**
 	 * Constructor
 	 * @param abstractStateModel
 	 * @param actionSelector
 	 */
-	public ModelManagerIV4XREnvironment(AbstractStateModel abstractStateModel, ActionSelector actionSelector, PersistenceManager persistenceManager,
+	public ModelManagerIV4XR(AbstractStateModel abstractStateModel, ActionSelector actionSelector, PersistenceManager persistenceManager,
 			Set<Tag<?>> concreteStateTags, SequenceManager sequenceManager, boolean storeWidgets) {
 		super(abstractStateModel, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
 	}
@@ -114,4 +117,15 @@ public class ModelManagerIV4XREnvironment extends ModelManager implements StateM
         }
     }
 	
+    /**
+     * This method should be called when TESTAR has been exploring the iv4xr environment 
+     * and has discovered a navigable state. 
+     */
+    @Override
+    public void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String inboundAction) {
+    	String hashId = String.valueOf(Objects.hash(navigableNodes));
+    	NavigableState navigableState = new NavigableState(hashId, navigableNodes, reachableEntities, inboundAction);
+    	navigableState.setModelIdentifier(abstractStateModel.getModelIdentifier());
+    	persistenceManager.persistNavigableState(navigableState);
+    }
 }

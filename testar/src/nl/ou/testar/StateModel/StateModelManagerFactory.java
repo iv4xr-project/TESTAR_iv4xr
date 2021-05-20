@@ -10,7 +10,7 @@ import nl.ou.testar.StateModel.Persistence.PersistenceManager;
 import nl.ou.testar.StateModel.Persistence.PersistenceManagerFactory;
 import nl.ou.testar.StateModel.Persistence.PersistenceManagerFactoryBuilder;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
-import nl.ou.testar.StateModel.iv4XR.ModelManagerIV4XREnvironment;
+import nl.ou.testar.StateModel.iv4XR.ModelManagerIV4XR;
 
 import org.fruit.alayer.Tag;
 import org.fruit.monkey.ConfigTags;
@@ -74,7 +74,7 @@ public class StateModelManagerFactory {
         	// should we store widgets?
         	boolean storeWidgets = settings.get(ConfigTags.StateModelStoreWidgets);
 
-        	return new ModelManagerIV4XREnvironment(abstractStateModelListener, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
+        	return new ModelManagerIV4XR(abstractStateModelListener, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
         }
         
         // create the abstract state model and then the state model manager

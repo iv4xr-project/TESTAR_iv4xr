@@ -9,6 +9,7 @@ import nl.ou.testar.StateModel.Sequence.SequenceManager;
 import nl.ou.testar.StateModel.Sequence.SequenceNode;
 import nl.ou.testar.StateModel.Sequence.SequenceStep;
 import nl.ou.testar.StateModel.Util.EventHelper;
+import nl.ou.testar.StateModel.iv4XR.NavigableState;
 
 import java.util.ArrayDeque;
 
@@ -134,6 +135,11 @@ public class QueueManager implements PersistenceManager, StateModelEventListener
     @Override
     public int getNrOfNondeterministicActions(AbstractStateModel abstractStateModel) {
         return delegateManager.getNrOfNondeterministicActions(abstractStateModel);
+    }
+    
+    @Override
+    public void persistNavigableState(NavigableState navigableState) {
+    	processRequest(() -> delegateManager.persistNavigableState(navigableState), navigableState);
     }
 
     @Override

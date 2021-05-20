@@ -9,8 +9,25 @@ import java.util.Map;
 
 public class EntityClassFactory {
 
-    public enum EntityClassName {AbstractState, AbstractAction, AbstractStateModel, Widget, ConcreteState, ConcreteAction, isParentOf, isChildOf, isAbstractedBy,
-        BlackHole, UnvisitedAbstractAction, TestSequence, SequenceNode, SequenceStep, Accessed, FirstNode}
+	public enum EntityClassName {
+		AbstractState, 
+		AbstractAction, 
+		AbstractStateModel, 
+		Widget, 
+		ConcreteState, 
+		ConcreteAction, 
+		isParentOf, 
+		isChildOf, 
+		isAbstractedBy, 
+		BlackHole, 
+		UnvisitedAbstractAction, 
+		TestSequence, 
+		SequenceNode, 
+		SequenceStep, 
+		Accessed, 
+		FirstNode, 
+		NavigableState
+	}
 
     // a repo for generated classes, so we don't execute the same generation code over and over if not needed
     private static Map<EntityClassName, EntityClass> entityClasses = new HashMap<>();
@@ -38,6 +55,7 @@ public class EntityClassFactory {
         classNameMap.put("SequenceStep", EntityClassName.SequenceStep);
         classNameMap.put("Accessed", EntityClassName.Accessed);
         classNameMap.put("FirstNode", EntityClassName.FirstNode);
+        classNameMap.put("NavigableState", EntityClassName.NavigableState);
     }
 
     /**
@@ -107,6 +125,9 @@ public class EntityClassFactory {
 
             case FirstNode:
                 return createFirstNodeClass();
+
+            case NavigableState:
+            	return createNavigableStateClass();
 
             default:
                 return null;
@@ -534,6 +555,41 @@ public class EntityClassFactory {
         entityClass.addProperty(counter);
         entityClasses.put(EntityClassName.FirstNode, entityClass);
         return entityClass;
+    }
+
+    private static EntityClass createNavigableStateClass() {
+    	EntityClass navigableStateClass = new EntityClass("NavigableState", EntityClass.EntityType.Vertex);
+
+    	Property stateId = new Property("stateId", OType.STRING);
+    	stateId.setMandatory(true);
+    	stateId.setNullable(false);
+    	stateId.setIdentifier(true);
+    	stateId.setIndexAble(true);
+    	navigableStateClass.addProperty(stateId);
+
+    	Property modelIdentifier = new Property("modelIdentifier", OType.STRING);
+    	modelIdentifier.setMandatory(true);
+    	modelIdentifier.setNullable(false);
+    	modelIdentifier.setIndexAble(true);
+    	navigableStateClass.addProperty(modelIdentifier);
+
+    	Property navigableNodes = new Property("navigableNodes", OType.EMBEDDEDSET, OType.STRING);
+    	navigableNodes.setMandatory(true);
+    	navigableNodes.setNullable(false);
+    	navigableStateClass.addProperty(navigableNodes);
+
+    	Property reachableEntities = new Property("reachableEntities", OType.EMBEDDEDSET, OType.STRING);
+    	reachableEntities.setMandatory(true);
+    	reachableEntities.setNullable(false);
+    	navigableStateClass.addProperty(reachableEntities);
+
+    	Property inboundActions = new Property("inboundActions", OType.EMBEDDEDSET, OType.STRING);
+    	inboundActions.setMandatory(true);
+    	inboundActions.setNullable(false);
+    	navigableStateClass.addProperty(inboundActions);
+
+    	entityClasses.put(EntityClassName.NavigableState, navigableStateClass);
+    	return navigableStateClass;
     }
 
 }
