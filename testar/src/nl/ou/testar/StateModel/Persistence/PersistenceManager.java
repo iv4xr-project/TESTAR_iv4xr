@@ -5,6 +5,7 @@ import nl.ou.testar.StateModel.Sequence.Sequence;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
 import nl.ou.testar.StateModel.Sequence.SequenceNode;
 import nl.ou.testar.StateModel.Sequence.SequenceStep;
+import nl.ou.testar.StateModel.iv4XR.NavigableAction;
 import nl.ou.testar.StateModel.iv4XR.NavigableState;
 
 public interface PersistenceManager {
@@ -103,8 +104,11 @@ public interface PersistenceManager {
 
     /**
      * This method persists a navigable state.
-     * @param abstractState
+     * 
+     * @param previousNavigableState
+     * @param previousNavigableAction
+     * @param navigableState
      */
-    void persistNavigableState(NavigableState navigableState);
+    void persistNavigableState(NavigableState previousNavigableState, NavigableAction previousNavigableAction, NavigableState navigableState);
 
 }

@@ -8,6 +8,7 @@ import nl.ou.testar.StateModel.Sequence.Sequence;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
 import nl.ou.testar.StateModel.Sequence.SequenceNode;
 import nl.ou.testar.StateModel.Sequence.SequenceStep;
+import nl.ou.testar.StateModel.iv4XR.NavigableAction;
 import nl.ou.testar.StateModel.iv4XR.NavigableState;
 
 /**
@@ -91,7 +92,7 @@ public class DummyManager implements PersistenceManager, StateModelEventListener
     }
 
     @Override
-    public void persistNavigableState(NavigableState navigableState) {
+    public void persistNavigableState(NavigableState previousNavigableState, NavigableAction previousNavigableAction, NavigableState navigableState) {
 
     }
 }

@@ -320,6 +320,14 @@
             },
 
             {
+                selector: '.NavigableAction',
+                style: {
+                    'line-color': '#0dfbff',
+                    'target-arrow-color': '#0dfbff'
+                }
+            },
+
+            {
                 selector: '.no-label',
                 style: {
                     'label': ''
@@ -796,7 +804,7 @@
     });
 
     // when edges get selected, we also open the side panel, but show just the close button and the data
-    cy.on('tap', 'edge.ConcreteAction,edge.AbstractAction,edge.SequenceStep', function(evt) {
+    cy.on('tap', 'edge.ConcreteAction,edge.AbstractAction,edge.SequenceStep,edge.NavigableAction', function(evt) {
         let targetEdge = evt.target;
         let sidePanel = document.getElementsByClassName("cd-panel")[0];
         let contentPanel = document.getElementById("cd-content-panel");
@@ -960,6 +968,7 @@
         appStatus.nrOfConcreteStates = cy.$('node.ConcreteState').size();
         appStatus.nrOfSequenceNodes = cy.$('node.SequenceNode').size();
         appStatus.nrOfNavigableStates = cy.$('node.NavigableState').size();
+        appStatus.nrOfNavigableActions  = cy.$('edge.NavigableAction').size();
         appStatus.nrOfAbstractActions = cy.$('edge.AbstractAction').size();
         appStatus.nrOfConcreteActions = cy.$('edge.ConcreteAction').size();
         appStatus.nrOfUnvisitedAbstractActions = cy.$('edge.UnvisitedAbstractAction').size();

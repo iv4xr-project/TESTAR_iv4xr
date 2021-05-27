@@ -56,7 +56,7 @@ public class DummyModelManager implements StateModelManager{
     }
 
     @Override
-    public void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String inboundAction) {
+    public void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String actionDescription, String abstractAction) {
 
     }
 }

@@ -23,6 +23,7 @@ import nl.ou.testar.StateModel.Sequence.SequenceNode;
 import nl.ou.testar.StateModel.Sequence.SequenceStep;
 import nl.ou.testar.StateModel.Util.EventHelper;
 import nl.ou.testar.StateModel.Util.HydrationHelper;
+import nl.ou.testar.StateModel.iv4XR.NavigableAction;
 import nl.ou.testar.StateModel.iv4XR.NavigableState;
 import nl.ou.testar.StateModel.Widget;
 
@@ -68,7 +69,8 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
             EntityClassFactory.EntityClassName.SequenceStep,
             EntityClassFactory.EntityClassName.Accessed,
             EntityClassFactory.EntityClassName.FirstNode,
-            EntityClassFactory.EntityClassName.NavigableState
+            EntityClassFactory.EntityClassName.NavigableState,
+            EntityClassFactory.EntityClassName.NavigableAction
     ));
 
     /**
@@ -635,23 +637,43 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
     }
     
     @Override
-    public void persistNavigableState(NavigableState navigableState) {
-    	// create an entity to persist to the database
-    	EntityClass entityClass = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.NavigableState);
-    	VertexEntity navigableStateEntity = new VertexEntity(entityClass);
+    public void persistNavigableState(NavigableState previousNavigableState, NavigableAction previousNavigableAction, NavigableState currentNavigableState) {
+    	// create the previousNavigableState entity to persist to the database
+    	EntityClass entityClassState = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.NavigableState);
+    	VertexEntity previousStateEntity = new VertexEntity(entityClassState);
+    	VertexEntity currentStateEntity = new VertexEntity(EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.NavigableState));
 
     	// hydrate the entity to a format the orient database can store
     	try {
     		EntityHydrator hydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_NAVIGABLE_STATE);
-    		hydrator.hydrate(navigableStateEntity, navigableState);
+    		hydrator.hydrate(previousStateEntity, previousNavigableState);
+    		hydrator.hydrate(currentStateEntity, currentNavigableState);
     	} catch (HydrationException e) {
     		e.printStackTrace();
-    		System.out.println("Encountered a problem while saving navigable state " + navigableState.getInboundActions() + " to the orient database");
+    		System.out.println("Encountered a problem while saving navigable state " + previousNavigableState.getNavigableActions() + " to the orient database");
     		return;
     	}
 
     	// save the entity!
-    	entityManager.saveEntity(navigableStateEntity);
+    	entityManager.saveEntity(previousStateEntity);
+    	entityManager.saveEntity(currentStateEntity);
+    	
+    	// create an entity to persist to the database
+    	EntityClass entityClassAction = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.NavigableAction);
+    	EdgeEntity navigableActionEntity = new EdgeEntity(entityClassAction, previousStateEntity, currentStateEntity);
+
+    	// hydrate the entity to a format the orient database can store
+    	try {
+    		EntityHydrator hydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_NAVIGABLE_ACTION);
+    		hydrator.hydrate(navigableActionEntity, previousNavigableAction);
+    	} catch (HydrationException e) {
+    		e.printStackTrace();
+    		System.out.println("Encountered a problem while saving navigable action " + previousNavigableAction.getDescription() + " to the orient database");
+    		return;
+    	}
+
+    	// save the entity!	
+    	entityManager.saveEntity(navigableActionEntity);
     }
 
     @Override

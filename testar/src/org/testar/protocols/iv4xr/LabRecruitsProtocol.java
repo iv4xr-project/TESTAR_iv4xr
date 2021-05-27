@@ -82,6 +82,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 	protected HtmlSequenceReport htmlReport;
 	protected State latestState;
+	protected String lastInteractActionAbstractIDCustom;
 
 	// Agent point of view that will Observe and extract Widgets information
 	protected String agentId = "agent1";
@@ -133,6 +134,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	protected void preSequencePreparations() {
 		//initializing the HTML sequence report:
 		htmlReport = new HtmlSequenceReport();
+		lastInteractActionAbstractIDCustom = "Initial";
 	}
 
 	/**

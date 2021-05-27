@@ -26,7 +26,8 @@ public class EntityClassFactory {
 		SequenceStep, 
 		Accessed, 
 		FirstNode, 
-		NavigableState
+		NavigableState,
+		NavigableAction
 	}
 
     // a repo for generated classes, so we don't execute the same generation code over and over if not needed
@@ -56,6 +57,7 @@ public class EntityClassFactory {
         classNameMap.put("Accessed", EntityClassName.Accessed);
         classNameMap.put("FirstNode", EntityClassName.FirstNode);
         classNameMap.put("NavigableState", EntityClassName.NavigableState);
+        classNameMap.put("NavigableAction", EntityClassName.NavigableAction);
     }
 
     /**
@@ -128,6 +130,9 @@ public class EntityClassFactory {
 
             case NavigableState:
             	return createNavigableStateClass();
+
+            case NavigableAction:
+            	return createNavigableActionClass();
 
             default:
                 return null;
@@ -583,13 +588,38 @@ public class EntityClassFactory {
     	reachableEntities.setNullable(false);
     	navigableStateClass.addProperty(reachableEntities);
 
-    	Property inboundActions = new Property("inboundActions", OType.EMBEDDEDSET, OType.STRING);
-    	inboundActions.setMandatory(true);
-    	inboundActions.setNullable(false);
-    	navigableStateClass.addProperty(inboundActions);
+    	Property navigableActions = new Property("navigableActions", OType.EMBEDDEDSET, OType.STRING);
+    	navigableActions.setMandatory(true);
+    	navigableActions.setNullable(false);
+    	navigableStateClass.addProperty(navigableActions);
 
     	entityClasses.put(EntityClassName.NavigableState, navigableStateClass);
     	return navigableStateClass;
+    }
+
+    private static EntityClass createNavigableActionClass() {
+    	EntityClass navigableActionClass = new EntityClass("NavigableAction", EntityClass.EntityType.Edge);
+
+    	Property abstractActionId = new Property("abstractActionId", OType.STRING);
+    	abstractActionId.setMandatory(true);
+    	abstractActionId.setNullable(false);
+    	abstractActionId.setIdentifier(true);
+    	abstractActionId.setIndexAble(true);
+    	navigableActionClass.addProperty(abstractActionId);
+
+    	Property modelIdentifier = new Property("modelIdentifier", OType.STRING);
+    	modelIdentifier.setMandatory(true);
+    	modelIdentifier.setNullable(false);
+    	modelIdentifier.setIndexAble(true);
+    	navigableActionClass.addProperty(modelIdentifier);
+
+    	Property description = new Property("description", OType.STRING);
+    	description.setMandatory(true);
+    	description.setNullable(false);
+    	navigableActionClass.addProperty(description);
+
+    	entityClasses.put(EntityClassName.NavigableAction, navigableActionClass);
+    	return navigableActionClass;
     }
 
 }

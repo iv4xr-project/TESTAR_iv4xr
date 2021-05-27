@@ -217,7 +217,8 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 				// Create a Navigable State in the State Model
 				stateModelManager.notifyNewNavigableState(navigableState.getNavigableNodes(), 
 						navigableState.getReachableEntities(), 
-						navigableState.getExecutedAction());
+						navigableState.getExecutedAction(),
+						action.get(Tags.AbstractIDCustom));
 
 				// Then create a new navigable state object based in the current interacted entity
 				String interactedEntity = ((labActionCommandMoveInteract) action).getEntityId();
@@ -230,6 +231,9 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 
 				String interactionInfo = "Entity:" + interactedEntity + ",From:" + beforeIsActive + ",To:" + afterIsActive;
 				navigableState = new iv4xrNavigableState(interactionInfo);
+				
+				// Update lastInteractAction for the finishSequence case
+				lastInteractActionAbstractIDCustom = action.get(Tags.AbstractIDCustom);
 			}
 
 			return true;
@@ -263,7 +267,8 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 		// Create a Navigable State in the State Model
 		stateModelManager.notifyNewNavigableState(navigableState.getNavigableNodes(), 
 				navigableState.getReachableEntities(), 
-				navigableState.getExecutedAction());
+				navigableState.getExecutedAction(),
+				lastInteractActionAbstractIDCustom);
 
 		String navigableStateMapInfo = navigableStateMap.toString();
 		System.out.println(navigableStateMapInfo);

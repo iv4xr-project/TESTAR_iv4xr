@@ -33,58 +33,34 @@ package nl.ou.testar.StateModel.Persistence.OrientDB.Hydrator;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 
 import nl.ou.testar.StateModel.Exception.HydrationException;
+import nl.ou.testar.StateModel.Persistence.OrientDB.Entity.EdgeEntity;
 import nl.ou.testar.StateModel.Persistence.OrientDB.Entity.Property;
 import nl.ou.testar.StateModel.Persistence.OrientDB.Entity.PropertyValue;
-import nl.ou.testar.StateModel.Persistence.OrientDB.Entity.VertexEntity;
-import nl.ou.testar.StateModel.Util.HydrationHelper;
-import nl.ou.testar.StateModel.iv4XR.NavigableState;
+import nl.ou.testar.StateModel.iv4XR.NavigableAction;
 
-public class NavigableStateHydrator implements EntityHydrator<VertexEntity> {
+public class NavigableActionHydrator implements EntityHydrator<EdgeEntity> {
 
 	@Override
-	public void hydrate(VertexEntity target, Object source) throws HydrationException {
-		if (!(source instanceof NavigableState)) {
+	public void hydrate(EdgeEntity edgeEntity, Object source) throws HydrationException {
+		if (!(source instanceof NavigableAction)) {
 			throw new HydrationException();
 		}
 
 		// first make sure the identity property is set
-		Property identifier = target.getEntityClass().getIdentifier();
+		Property identifier = edgeEntity.getEntityClass().getIdentifier();
 		if (identifier == null) {
-			throw new HydrationException("No identifying properties were provided for entity class " + target.getEntityClass().getClassName());
+			throw new HydrationException();
 		}
+
+		// add the abstractActionId
+		edgeEntity.addPropertyValue("abstractActionId", new PropertyValue(OType.STRING, ((NavigableAction) source).getId()));
 
 		// add the modelIdentifier
-		target.addPropertyValue("modelIdentifier", new PropertyValue(OType.STRING, ((NavigableState) source).getModelIdentifier()));
+		edgeEntity.addPropertyValue("modelIdentifier", new PropertyValue(OType.STRING, ((NavigableAction) source).getModelIdentifier()));
 
-		// add the hashId
-		target.addPropertyValue("stateId", new PropertyValue(OType.STRING, ((NavigableState) source).getId()));
+		// add the description
+		edgeEntity.addPropertyValue("description", new PropertyValue(OType.STRING, ((NavigableAction) source).getDescription()));
 
-		// add navigableNodes
-		Property navigableNodes = HydrationHelper.getProperty(target.getEntityClass().getProperties(), "navigableNodes");
-		if (navigableNodes == null) {
-			throw new HydrationException();
-		}
-		if (!((NavigableState) source).getNavigableNodes().isEmpty()) {
-			target.addPropertyValue(navigableNodes.getPropertyName(), new PropertyValue(navigableNodes.getPropertyType(), ((NavigableState) source).getNavigableNodes()));
-		}
-
-		// add reachableEntities
-		Property reachableEntities = HydrationHelper.getProperty(target.getEntityClass().getProperties(), "reachableEntities");
-		if (reachableEntities == null) {
-			throw new HydrationException();
-		}
-		if (!((NavigableState) source).getReachableEntities().isEmpty()) {
-			target.addPropertyValue(reachableEntities.getPropertyName(), new PropertyValue(reachableEntities.getPropertyType(), ((NavigableState) source).getReachableEntities()));
-		}
-
-		// add navigableActions
-		Property navigableActions = HydrationHelper.getProperty(target.getEntityClass().getProperties(), "navigableActions");
-		if (navigableActions == null) {
-			throw new HydrationException();
-		}
-		if (!((NavigableState) source).getNavigableActions().isEmpty()) {
-			target.addPropertyValue(navigableActions.getPropertyName(), new PropertyValue(navigableActions.getPropertyType(), ((NavigableState) source).getNavigableActions()));
-		}
 	}
 
 }

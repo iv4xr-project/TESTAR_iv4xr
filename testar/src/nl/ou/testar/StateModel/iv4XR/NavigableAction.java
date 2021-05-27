@@ -30,44 +30,27 @@
 
 package nl.ou.testar.StateModel.iv4XR;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import org.fruit.Pair;
-
-import eu.testar.iv4xr.enums.SVec3;
+import nl.ou.testar.StateModel.AbstractAction;
 import nl.ou.testar.StateModel.AbstractEntity;
 import nl.ou.testar.StateModel.Persistence.Persistable;
 
-public class NavigableState extends AbstractEntity implements Persistable {
+public class NavigableAction extends AbstractEntity implements Persistable {
 
-	private Set<SVec3> navigableNodes;
-	private Set<Pair<String, Boolean>> reachableEntities;
-	private Map<String, NavigableAction> navigableActions;
+	private String description;
+	//private AbstractAction abstractAction;
 
-	public NavigableState(String hashId, Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities) {
-		super(hashId);
-		this.navigableNodes = new HashSet<>(navigableNodes);
-		this.reachableEntities = new HashSet<>(reachableEntities);
-		this.navigableActions = new HashMap<>();
+	public NavigableAction(String abstractActionId, /*AbstractAction abstractAction,*/ String description) {
+		super(abstractActionId);
+		//this.abstractAction = abstractAction;
+		this.description = description;
 	}
 
-	public Set<SVec3> getNavigableNodes() {
-		return navigableNodes;
-	}
+	/*public AbstractAction getAbstractAction() {
+		return abstractAction;
+	}*/
 
-	public Set<Pair<String, Boolean>> getReachableEntities() {
-		return reachableEntities;
-	}
-
-	public Map<String, NavigableAction> getNavigableActions() {
-		return navigableActions;
-	}
-
-	public void addNavigableAction(String navigableActionId, NavigableAction navigableAction) {
-		this.navigableActions.put(navigableActionId, navigableAction);
+	public String getDescription() {
+		return description;
 	}
 
 	@Override

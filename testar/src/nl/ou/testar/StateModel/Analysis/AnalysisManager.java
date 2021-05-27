@@ -493,6 +493,12 @@ public class AnalysisManager {
     	OResultSet resultSet = db.query(stmt, params);
     	elements.addAll(fetchNodes(resultSet, "NavigableState", showCompoundGraph ? "NavigableLayer" : null, modelIdentifier));
     	resultSet.close();
+    	
+        // navigable actions
+        stmt = "SELECT FROM NavigableAction WHERE modelIdentifier = :identifier";
+        resultSet = db.query(stmt, params);
+        elements.addAll(fetchEdges(resultSet, "NavigableAction"));
+        resultSet.close();
 
     	return elements;
     }

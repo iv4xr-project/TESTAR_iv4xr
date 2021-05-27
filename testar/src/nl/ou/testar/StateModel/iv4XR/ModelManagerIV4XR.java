@@ -50,6 +50,9 @@ import nl.ou.testar.StateModel.Persistence.PersistenceManager;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
 
 public class ModelManagerIV4XR extends ModelManager implements StateModelManager {
+	
+	private NavigableState previousNavigableState;
+	//private NavigableAction previousNavigableAction;
 
 	/**
 	 * Constructor
@@ -116,16 +119,37 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
             errorMessages = new StringJoiner(", ");
         }
     }
-	
+
     /**
      * This method should be called when TESTAR has been exploring the iv4xr environment 
      * and has discovered a navigable state. 
      */
     @Override
-    public void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String inboundAction) {
+    public void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String actionDescription, String abstractAction) {
+    	/*
+    	AbstractAction abstractActionToExecute = null;
+    	try {
+    		abstractActionToExecute = currentAbstractState.getAction(abstractAction);
+    	} catch (ActionNotFoundException e) {
+    		// TODO Auto-generated catch block
+    		e.printStackTrace();
+    	}
+    	NavigableAction navigableAction = new NavigableAction(abstractAction, abstractActionToExecute, actionDescription);
+    	 */
+    	NavigableAction navigableAction = new NavigableAction(abstractAction, actionDescription);
+    	navigableAction.setModelIdentifier(abstractStateModel.getModelIdentifier());
+
     	String hashId = String.valueOf(Objects.hash(navigableNodes));
-    	NavigableState navigableState = new NavigableState(hashId, navigableNodes, reachableEntities, inboundAction);
+    	NavigableState navigableState = new NavigableState(hashId, navigableNodes, reachableEntities);
+    	navigableState.addNavigableAction(navigableAction.getId(), navigableAction);
+
     	navigableState.setModelIdentifier(abstractStateModel.getModelIdentifier());
-    	persistenceManager.persistNavigableState(navigableState);
+
+    	if(previousNavigableState != null /*&& previousNavigableAction != null*/) {
+    		persistenceManager.persistNavigableState(previousNavigableState, navigableAction, navigableState);
+    	}
+
+    	previousNavigableState = navigableState;
+    	//previousNavigableAction = navigableAction;
     }
 }

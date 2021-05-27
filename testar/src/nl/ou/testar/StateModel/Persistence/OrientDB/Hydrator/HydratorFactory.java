@@ -36,6 +36,8 @@ public abstract class HydratorFactory {
     public static final int HYDRATOR_FIRST_NODE = 14;
     
     public static final int HYDRATOR_NAVIGABLE_STATE = 15;
+    
+    public static final int HYDRATOR_NAVIGABLE_ACTION = 16;
 
     // a repo for generated classes, so we don't execute the same generation code over and over if not needed
     private static Map<Integer, EntityHydrator> hydrators = new HashMap<>();
@@ -90,6 +92,9 @@ public abstract class HydratorFactory {
 
             case HYDRATOR_NAVIGABLE_STATE:
             	return createNavigableStateHydrator();
+
+            case HYDRATOR_NAVIGABLE_ACTION:
+            	return createNavigableActionHydrator();
 
             default:
                 throw new HydrationException("Invalid hydrator type provided to the hydrator factory");
@@ -184,6 +189,12 @@ public abstract class HydratorFactory {
     	NavigableStateHydrator navigableStateHydrator = new NavigableStateHydrator();
     	hydrators.put(HYDRATOR_NAVIGABLE_STATE, navigableStateHydrator);
     	return navigableStateHydrator;
+    }
+
+    private static NavigableActionHydrator createNavigableActionHydrator() {
+    	NavigableActionHydrator navigableActionHydrator = new NavigableActionHydrator();
+    	hydrators.put(HYDRATOR_NAVIGABLE_ACTION, navigableActionHydrator);
+    	return navigableActionHydrator;
     }
 
 }
