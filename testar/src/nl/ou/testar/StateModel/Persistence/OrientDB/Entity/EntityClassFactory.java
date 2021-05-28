@@ -600,18 +600,24 @@ public class EntityClassFactory {
     private static EntityClass createNavigableActionClass() {
     	EntityClass navigableActionClass = new EntityClass("NavigableAction", EntityClass.EntityType.Edge);
 
-    	Property abstractActionId = new Property("abstractActionId", OType.STRING);
-    	abstractActionId.setMandatory(true);
-    	abstractActionId.setNullable(false);
-    	abstractActionId.setIdentifier(true);
-    	abstractActionId.setIndexAble(true);
-    	navigableActionClass.addProperty(abstractActionId);
+    	Property navigableActionId = new Property("navigableActionId", OType.STRING);
+    	navigableActionId.setMandatory(true);
+    	navigableActionId.setNullable(false);
+    	navigableActionId.setIdentifier(true);
+    	navigableActionId.setIndexAble(true);
+    	navigableActionClass.addProperty(navigableActionId);
 
     	Property modelIdentifier = new Property("modelIdentifier", OType.STRING);
     	modelIdentifier.setMandatory(true);
     	modelIdentifier.setNullable(false);
     	modelIdentifier.setIndexAble(true);
     	navigableActionClass.addProperty(modelIdentifier);
+
+    	Property abstractActionId = new Property("abstractActionId", OType.STRING);
+    	abstractActionId.setMandatory(true);
+    	abstractActionId.setNullable(false);
+    	abstractActionId.setIndexAble(true);
+    	navigableActionClass.addProperty(abstractActionId);
 
     	Property description = new Property("description", OType.STRING);
     	description.setMandatory(true);

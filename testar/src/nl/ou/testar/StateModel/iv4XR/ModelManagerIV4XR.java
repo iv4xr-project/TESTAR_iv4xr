@@ -30,7 +30,6 @@
 
 package nl.ou.testar.StateModel.iv4XR;
 
-import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -136,11 +135,15 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
     	}
     	NavigableAction navigableAction = new NavigableAction(abstractAction, abstractActionToExecute, actionDescription);
     	 */
-    	NavigableAction navigableAction = new NavigableAction(abstractAction, actionDescription);
+
+    	// Create the navigableState, the id will be based on the nodes or entities (or both?)
+    	NavigableState navigableState = new NavigableState(navigableNodes, reachableEntities);
+
+    	// Create the navigableAction, the id will be based on the description and the navigableState identifier
+    	NavigableAction navigableAction = new NavigableAction(abstractAction, actionDescription, navigableState.getId());
     	navigableAction.setModelIdentifier(abstractStateModel.getModelIdentifier());
 
-    	String hashId = String.valueOf(Objects.hash(navigableNodes));
-    	NavigableState navigableState = new NavigableState(hashId, navigableNodes, reachableEntities);
+    	// Associate the navigableAction to the navigableState
     	navigableState.addNavigableAction(navigableAction.getId(), navigableAction);
 
     	navigableState.setModelIdentifier(abstractStateModel.getModelIdentifier());

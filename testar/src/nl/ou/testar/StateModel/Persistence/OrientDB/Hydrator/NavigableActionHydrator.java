@@ -52,11 +52,14 @@ public class NavigableActionHydrator implements EntityHydrator<EdgeEntity> {
 			throw new HydrationException();
 		}
 
-		// add the abstractActionId
-		edgeEntity.addPropertyValue("abstractActionId", new PropertyValue(OType.STRING, ((NavigableAction) source).getId()));
+		// add the navigableActionId
+		edgeEntity.addPropertyValue("navigableActionId", new PropertyValue(OType.STRING, ((NavigableAction) source).getId()));
 
 		// add the modelIdentifier
 		edgeEntity.addPropertyValue("modelIdentifier", new PropertyValue(OType.STRING, ((NavigableAction) source).getModelIdentifier()));
+
+		// add the abstractActionId
+		edgeEntity.addPropertyValue("abstractActionId", new PropertyValue(OType.STRING, ((NavigableAction) source).getAbstractActionId()));
 
 		// add the description
 		edgeEntity.addPropertyValue("description", new PropertyValue(OType.STRING, ((NavigableAction) source).getDescription()));

@@ -33,6 +33,7 @@ package nl.ou.testar.StateModel.iv4XR;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.fruit.Pair;
@@ -47,8 +48,26 @@ public class NavigableState extends AbstractEntity implements Persistable {
 	private Set<Pair<String, Boolean>> reachableEntities;
 	private Map<String, NavigableAction> navigableActions;
 
-	public NavigableState(String hashId, Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities) {
-		super(hashId);
+	public NavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities) {
+		/**
+		 * Not sure if the hash identifier should depends on the navigable nodes,
+		 * or on the reachable Entities. (Or other identifier) 
+		 * 
+		 * Is it possible to have two different NavigableStates with the same ?
+		 * - reachable entities and their isActive boolean properties
+		 * but with different ?
+		 * - navigable nodes (a new empty room? but then a door had been opened)
+		 * 
+		 * But if we have an entity (button) on which an interaction
+		 * - Changes the isActive property of the button, the reachableEntities will create a new hash id
+		 * - But we really did not change the navigable nodes, so navigableNodes will be the same hash id
+		 * 
+		 */
+
+		// The hash identifier of this NavigableState depends on all reachable entities
+		super(String.valueOf(Objects.hash(reachableEntities)));
+		// The hash identifier of this NavigableState depends on all navigable nodes
+		//super(String.valueOf(Objects.hash(navigableNodes)));
 		this.navigableNodes = new HashSet<>(navigableNodes);
 		this.reachableEntities = new HashSet<>(reachableEntities);
 		this.navigableActions = new HashMap<>();

@@ -1,0 +1,11 @@
+button0,door0,,,
+|w,w,w,w,w
+w,f:b^button1,w,f,w
+w,f:a^agent1,w,f,w
+w,f:b^button0,f:d>w^door0,f,w
+w,w,w,w,w
+|w,w,w,w,w
+w,,w,,w
+w,,w,,w
+w,,,,w
+w,w,w,w,w

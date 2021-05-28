@@ -30,27 +30,42 @@
 
 package nl.ou.testar.StateModel.iv4XR;
 
+import java.util.Objects;
+
 import nl.ou.testar.StateModel.AbstractAction;
 import nl.ou.testar.StateModel.AbstractEntity;
 import nl.ou.testar.StateModel.Persistence.Persistable;
 
 public class NavigableAction extends AbstractEntity implements Persistable {
 
+	private String abstractActionId;
 	private String description;
+	private String navigableState;
 	//private AbstractAction abstractAction;
 
-	public NavigableAction(String abstractActionId, /*AbstractAction abstractAction,*/ String description) {
-		super(abstractActionId);
+	public NavigableAction(String abstractActionId, /*AbstractAction abstractAction,*/ String description, String navigableStateId) {
+		// The hash identifier of this NavigableAction depends on the interaction with the entity
+		super(String.valueOf(Objects.hash(description)) + "-" + navigableStateId);
 		//this.abstractAction = abstractAction;
+		this.abstractActionId = abstractActionId;
 		this.description = description;
+		this.navigableState = navigableStateId;
 	}
 
 	/*public AbstractAction getAbstractAction() {
 		return abstractAction;
 	}*/
 
+	public String getAbstractActionId() {
+		return abstractActionId;
+	}
+
 	public String getDescription() {
 		return description;
+	}
+
+	public String getNavigableState() {
+		return navigableState;
 	}
 
 	@Override
