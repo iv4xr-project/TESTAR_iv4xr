@@ -179,7 +179,7 @@ public class NativeLinker {
 			return LabRecruitsProcess.fromExecutable(executableCommand);
 		}
 		if(PLATFORM_OS.contains(OperatingSystems.IV4XR_SE)) {
-			return SpaceEngineersProcess.fromExecutable(executableCommand);
+			return SpaceEngineersProcess.fromExecutable(executableCommand, ProcessListenerEnabled);
 		}
 		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS)) {
 			if (PLATFORM_OS.contains(OperatingSystems.WINDOWS_7))
@@ -214,9 +214,12 @@ public class NativeLinker {
 	}
 
 	public static SUT getNativeProcess(String processName){
-		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS) 
-				|| PLATFORM_OS.contains(OperatingSystems.IV4XR_LAB) || PLATFORM_OS.contains(OperatingSystems.IV4XR_SE))
+		if(PLATFORM_OS.contains(OperatingSystems.IV4XR_SE)) {
+			return SpaceEngineersProcess.fromProcessName(processName);
+		}
+		if (PLATFORM_OS.contains(OperatingSystems.WINDOWS) || PLATFORM_OS.contains(OperatingSystems.IV4XR_LAB)) {
 			return WinProcess.fromProcName(processName);
+		}
 		//else if (PLATFORM_OS.contains(OperatingSystems.UNIX))
 		// TODO
 		throw new UnsupportedPlatformException();

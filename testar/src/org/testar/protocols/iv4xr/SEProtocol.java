@@ -45,6 +45,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.fruit.Assert;
 import org.fruit.Util;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Canvas;
@@ -122,6 +123,15 @@ public class SEProtocol extends GenericUtilsProtocol {
 	protected void preSequencePreparations() {
 		//initializing the HTML sequence report:
 		htmlReport = new HtmlSequenceReport();
+	}
+
+	/**
+	 * Connect with a running SUT using the processName. 
+	 */
+	@Override
+	protected SUT getSUTByProcessName(String processName){
+		Assert.hasText(processName);
+		return NativeLinker.getNativeProcess(processName);
 	}
 
 	/**
@@ -280,6 +290,10 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected void finishSequence() {
+		// If we use SUTConnector command line, we want to kill the process and start a new one next sequence
+		if(settings.get(ConfigTags.SUTConnector).equals(Settings.SUT_CONNECTOR_CMDLINE)) {
+			super.finishSequence();
+		}
 		// SpaceEngineers Logs Verdict, check SE logs trying to find pattern messages (ConfigTags.ProcessLogs)
 		Verdict logVerdict = Verdict.OK;
 		File seLog = getLastSpaceEngineersLog();
@@ -352,6 +366,13 @@ public class SEProtocol extends GenericUtilsProtocol {
 	protected void stopSystem(SUT system) {
 		system.get(IV4XRtags.iv4xrSpaceEngController).close();
 		super.stopSystem(system);
+	}
+
+	/**
+	 * This method is called after the last sequence, to allow for example handling the reporting of the session
+	 */
+	@Override
+	protected void closeTestSession() {
 		NativeLinker.cleaniv4XRSe();
 	}
 

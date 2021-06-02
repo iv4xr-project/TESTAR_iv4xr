@@ -31,6 +31,7 @@
 package eu.testar.iv4xr.se;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.List;
 
 import org.fruit.Assert;
@@ -48,53 +49,73 @@ import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
 
 public class SpaceEngineersProcess extends SUTBase {
 
+	enum Launchment {
+		EXECUTABLE_PATH,
+		PROCESS_NAME
+	}
+	private static Launchment launchment;
+
 	public static SpaceEngineersProcess iv4XR = null;
 	public static String characterControllerId = "";
 
 	private static WinProcess win;
 
-	private SpaceEngineersProcess(String path) {
+	/**
+	 * Prepare an execution using the SpaceEngineers using the executable path. 
+	 * 
+	 * @param executablePath
+	 * @param processListenerEnabled
+	 * @return
+	 * @throws SystemStartException
+	 */
+	public static SpaceEngineersProcess fromExecutable(String executablePath, boolean processListenerEnabled) throws SystemStartException {
+		if (iv4XR != null) {
+			win.stop();
+		}
+		launchment = Launchment.EXECUTABLE_PATH;
+		return new SpaceEngineersProcess(executablePath, processListenerEnabled);
+	}
+
+	/**
+	 * Prepare a connection with SpaceEngineers using the process name. 
+	 * 
+	 * @param processName
+	 * @return
+	 * @throws SystemStartException
+	 */
+	public static SpaceEngineersProcess fromProcessName(String processName) throws SystemStartException {
+		if (iv4XR != null) {
+			win.stop();
+		}
+		launchment = Launchment.PROCESS_NAME;
+		return new SpaceEngineersProcess(processName, false);
+	}
+
+	private SpaceEngineersProcess(String path, boolean processListenerEnabled) {
 		Assert.notNull(path);
 
-		String[] parts = path.split(" ");
+		// regex to split checking last space
+		String[] parts = path.split(" (?!.* )");
 
+		// If SUTConnectorValue is not correct throw an informative error
 		if(parts.length < 1 || parts.length > 2 ) {
-			String message = "ERROR: For SpaceEngineers iv4xr SUT we need to know:\n" 
-					+ "1.- SpaceEngineers process name\n"
-					+ "2.- (Optional) Path of the SpaceEngineers level to load\n"
-					+ "Example: SpaceEngineers.exe \"suts/se_levels/simple-place-grind-torch\"";
-			throw new IllegalArgumentException(message);
+			settingsConnectorError();
 		}
 
-		String processName = parts[0].trim();
+		// Prepare SUTConnectorValue parts to launch SpaceEngineers and launch the desired level
+		String launchPart = parts[0].trim();
 		String levelPath = "";
 		if(parts.length == 2) {
 			levelPath = parts[1].replace("\"", "");
 		}
 
-		/**
-		 * Start IV4XR SUT at Windows level
-		 */
-		try {
-			win = WinProcess.fromProcName(processName);
-		} catch (SystemStartException | WinApiException we) {
-			System.err.println(String.format("ERROR: Trying to connect %s using Windows API", processName));
-			throw new SystemStartException(we.getMessage());
-		}
+		// Launch and connect with SpaceEngineers
+		launchSpaceEngineers(launchPart, processListenerEnabled);
 
-		int time = 0;
-
-		while(!win.isRunning() && time < 10) {
-			try {
-				this.wait(1000);
-				time += 1;
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
+		Util.pause(5);
 
 		if(!win.isRunning()) {
-			throw new SystemStartException(String.format("ERROR trying to connect with iv4xr SUT : %s", processName));
+			throw new SystemStartException(String.format("ERROR trying to connect with SE iv4xr SUT : %s", launchPart));
 		}
 
 		/**
@@ -106,7 +127,7 @@ public class SpaceEngineersProcess extends SUTBase {
 			// Prepare SpaceEngineers Controller
 			ProprietaryJsonTcpCharacterController controller = ProprietaryJsonTcpCharacterController.Companion.localhost(characterControllerId);
 			Util.pause(2);
-			System.out.println("Welcome to the iv4XR test: " + processName);
+			System.out.println("Welcome to the SE iv4XR test: " + launchPart);
 
 			// Load Space Engineers Level
 			if(!levelPath.isEmpty()) {
@@ -120,7 +141,7 @@ public class SpaceEngineersProcess extends SUTBase {
 			this.set(IV4XRtags.iv4xrSpaceEngController, controller);
 
 		} catch(Exception e) {
-			System.err.println(String.format("EnvironmentConfig ERROR: Trying to connect with %s", processName));
+			System.err.println(String.format("EnvironmentConfig ERROR: Trying to connect with %s", launchPart));
 			System.err.println(e.getMessage());
 			win.stop();
 			throw new SystemStartException(e);
@@ -129,11 +150,52 @@ public class SpaceEngineersProcess extends SUTBase {
 		iv4XR = this;
 	}
 
-	public static SpaceEngineersProcess fromExecutable(String processName) throws SystemStartException {
-		if (iv4XR != null) {
-			win.stop();
+	/**
+	 * Throw a message error to the user with information about how to configure the SUTConnectorValue
+	 */
+	private void settingsConnectorError() {
+		String message = "ERROR: Launching SpaceEngineers using COMMAND_LINE connection \n"
+				+ "To launch SpaceEngineers using COMMAND_LINE we need to know:\n" 
+				+ "1.- SpaceEngineers executable path\n"
+				+ "2.- (Optional) Path of the SpaceEngineers level to load\n"
+				+ "Example: \"C:\\\\Program Files (x86)\\\\Steam\\\\steamapps\\\\common\\\\SpaceEngineers\\\\Bin64\\\\SpaceEngineers.exe\" \"suts/se_levels/simple-place-grind-torch\"";
+		if(launchment.equals(Launchment.PROCESS_NAME)) {
+			message = "ERROR: Trying to connect with Space Engineers using SUT_PROCESS_NAME connection \n"
+					+ "To connect with SpaceEngineers process we need to know:\n" 
+					+ "1.- SpaceEngineers.exe process name\n"
+					+ "2.- (Optional) Path of the SpaceEngineers level to load\n"
+					+ "Example: SpaceEngineers.exe \"suts/se_levels/simple-place-grind-torch\"";
 		}
-		return new SpaceEngineersProcess(processName);
+		throw new IllegalArgumentException(message);
+	}
+
+	/**
+	 * Launch and connect with SpaceEngineers at Windows level. 
+	 * 
+	 * @param launchPart
+	 */
+	private void launchSpaceEngineers(String launchPart, boolean processListenerEnabled) {
+		if(launchment.equals(Launchment.EXECUTABLE_PATH)) {
+			try {
+				// Seems that the initial launched process is not the SpaceEngineers running app process
+				WinProcess.fromExecutable(launchPart, processListenerEnabled);
+				// Wait for initial music (coded time maybe is not the best way)
+				Util.pause(60);
+				// Hook the process by name
+				win = WinProcess.fromProcName(Paths.get(launchPart.replace("\"", "")).getFileName().toString());
+			} catch (SystemStartException | WinApiException we) {
+				System.err.println(String.format("ERROR: Trying to execute %s using Windows API", launchPart));
+				throw new SystemStartException(we.getMessage());
+			}
+		}
+		else {
+			try {
+				win = WinProcess.fromProcName(launchPart);
+			} catch (SystemStartException | WinApiException we) {
+				System.err.println(String.format("ERROR: Trying to connect %s using Windows API", launchPart));
+				throw new SystemStartException(we.getMessage());
+			}
+		}
 	}
 
 	public static List<SUT> fromAll(){

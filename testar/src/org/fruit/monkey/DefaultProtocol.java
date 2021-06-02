@@ -1448,7 +1448,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 			throw new SystemStartException("Unable to kill SUT <" + sut.get(Tags.Desc, "No SUT Desc available") + "> while trying to rerun it after <" + pendingEngageTime + "> ms!");
 	}
 
-	private SUT getSUTByProcessName(String processName) throws SystemStartException{
+	protected SUT getSUTByProcessName(String processName) throws SystemStartException{
 		Assert.hasText(processName);
 		List<SUT> suts = null;
 		long now = System.currentTimeMillis();
