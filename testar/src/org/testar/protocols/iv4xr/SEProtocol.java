@@ -36,7 +36,10 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -80,6 +83,10 @@ public class SEProtocol extends GenericUtilsProtocol {
 
 	protected HtmlSequenceReport htmlReport;
 	protected State latestState;
+
+	// Helper dynamic time stamp variable used to read only last SE log messages (2021-06-02 17:59:05.334)
+	private final String SE_LOG_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+	private String lastTimeStampLogSE = new SimpleDateFormat(SE_LOG_DATE_FORMAT).format(new Date());
 
 	// Agent point of view that will Observe and extract Widgets information
 	protected String agentId = "you";
@@ -177,6 +184,58 @@ public class SEProtocol extends GenericUtilsProtocol {
 		htmlReport.addState(latestState);
 
 		return latestState;
+	}
+
+	/**
+	 * The getVerdict methods implements the online state oracles that
+	 * examine the SUT's current state and returns an oracle verdict.
+	 * @return oracle verdict, which determines whether the state is erroneous and why.
+	 */
+	@Override
+	protected Verdict getVerdict(State state){
+		// The super methods implements the implicit online state oracles for: (system crashes, non-responsiveness, suspicious titles)
+		Verdict verdict = super.getVerdict(state);
+
+		// Check SE logs trying to find pattern messages (ConfigTags.ProcessLogs)
+		File seLog = getLastSpaceEngineersLog();
+		if(seLog != null) {
+			// Get all errors from the SE log
+			LinkedList<String> logErrors = spaceEngineersLogVerdict(seLog);
+			// And updated them to only use the new ones compared with the last verdict iteration
+			logErrors = getErrorMessagesBasedOnTimeStamp(logErrors);
+			if(!logErrors.isEmpty()) {
+				logErrors.addFirst(String.format("Warning Log messages on File %s", seLog));
+				htmlReport.addWarningMessage(logErrors);
+			}
+		}
+
+		// Update current time stamp to avoid repeating warnings
+		lastTimeStampLogSE = new SimpleDateFormat(SE_LOG_DATE_FORMAT).format(new Date());
+
+		return verdict;
+	}
+
+	/**
+	 * Use the lastTimeStampLogSE helper variable to get only new error messages. 
+	 * 
+	 * @param logsErrors
+	 * @return
+	 */
+	private LinkedList<String> getErrorMessagesBasedOnTimeStamp(LinkedList<String> logsErrors){
+		// If empty do nothing
+		if(logsErrors.isEmpty()) return logsErrors;
+		LinkedList<String> newLogsErrors = new LinkedList<>();
+		try {
+			for(String logMessage : logsErrors) {
+				// Check that the date of the log error message is new compared with the previous time stamp
+				if(new SimpleDateFormat(SE_LOG_DATE_FORMAT).parse(logMessage.substring(0, 23)).after(new SimpleDateFormat(SE_LOG_DATE_FORMAT).parse(lastTimeStampLogSE))) {
+					newLogsErrors.add(logMessage);
+				}
+			}
+		} catch(ParseException p) {
+			System.err.println("ERROR: Parsing SpaceEngineers Logs Dates: " + p.getMessage());
+		}
+		return newLogsErrors;
 	}
 
 	/**
@@ -304,7 +363,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 				String verdictMessage = String.format("Suspicious Log messages on File %s", seLog);
 				String newLine = System.getProperty("line.separator");
 				for(String s : logOracles) {verdictMessage = verdictMessage.concat(newLine + s);}
-				logVerdict = new Verdict(Verdict.SEVERITY_SUSPICIOUS_TITLE, verdictMessage);
+				logVerdict = new Verdict(Verdict.SEVERITY_WARNING, verdictMessage);
 				processVerdict = processVerdict.join(logVerdict);
 			}
 		}

@@ -39,6 +39,7 @@ import org.testar.protocols.iv4xr.SEProtocol;
 
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import nl.ou.testar.RandomActionSelector;
 import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
 import spaceEngineers.model.Vec2;
 import spaceEngineers.model.Vec3;
@@ -97,10 +98,8 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 		// Widget Title contains Suspicious title (test.setting -> SuspiciousTitles)
 		// SUT hangs
 		// SUT crashes
+		// SEProtocol is reading SpaceEngineers log to create Warning Verdicts (test.setting -> ProcessLogs)
 		return super.getVerdict(state);
-
-		// At the end of the execution SEProtocol is reading last SpaceEngineers log
-		// trying to find suspicious patterns using test.setting -> ProcessLogs (Exception by default)
 	}
 
 	/**
@@ -152,7 +151,7 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 		if(retAction==null) {
 			System.out.println("State model based action selection did not find an action. Using default action selection.");
 			// if state model fails, use default:
-			retAction = super.selectAction(state, actions);
+			retAction = RandomActionSelector.selectAction(actions);
 		}
 		return retAction;
 	}

@@ -41,6 +41,7 @@ import org.testar.OutputStructure;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Set;
 
 public class HtmlSequenceReport {
@@ -269,7 +270,13 @@ public class HtmlSequenceReport {
         write("<h4>Severity: "+verdict.severity()+"</h4>");
     }
 
-    
+    public void addWarningMessage(List<String> messages) {
+    	write("<h2> State Warning ! </h2>");
+    	for(String m : messages) {
+    		write("<h4>" + m +  "</h4>");
+    	}
+    }
+
     public void close() {
         for(String s:HTMLReporter.FOOTER){
             write(s);
