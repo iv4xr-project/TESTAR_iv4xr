@@ -423,7 +423,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected void stopSystem(SUT system) {
-		system.get(IV4XRtags.iv4xrSpaceEngController).close();
+		system.get(IV4XRtags.iv4xrSpaceEngProprietaryTcpController).close();
 		super.stopSystem(system);
 	}
 
@@ -533,6 +533,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 			//Draw the state information in the canvas
 			try {
 				Iv4xrSeVisualization.showStateObservation(cv, state);
+				//Iv4xrSeVisualization.showStateElements(cv, state, system.get(IV4XRtags.agentWidget, null), settings.get(ConfigTags.SpyIncrement, 0));
 			} catch (Exception e) {
 				System.out.println("WARNING: Trying to launch Iv4xrSeVisualization");
 				e.printStackTrace();

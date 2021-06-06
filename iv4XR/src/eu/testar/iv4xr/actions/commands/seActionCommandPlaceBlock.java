@@ -67,7 +67,7 @@ public class seActionCommandPlaceBlock extends TaggableBase implements Action {
 	public void run(SUT system, State state, double duration) throws ActionFailedException {		
 		spaceEngController.interact(new InteractionArgs(InteractionType.EQUIP, 1, 0, false));
 
-		Util.pause(1);
+		Util.pause(0.5);
 
 		spaceEngController.interact(new InteractionArgs(InteractionType.PLACE, 0, 0, false));
 	}

@@ -62,4 +62,20 @@ public class SVec3 implements java.io.Serializable {
 		return Objects.hash(x, y, z);
 	}
 
+	public static SVec3 labToSVec3(eu.iv4xr.framework.spatial.Vec3 vec3) {
+		return new SVec3(vec3.x, vec3.y, vec3.z);
+	}
+
+	public static spaceEngineers.model.Vec3 labToSE(eu.iv4xr.framework.spatial.Vec3 vec3) {
+		return new spaceEngineers.model.Vec3(vec3.x, vec3.y, vec3.z);
+	}
+
+	public static SVec3 seToSVec3(spaceEngineers.model.Vec3 vec3) {
+		return new SVec3(vec3.getX(), vec3.getY(), vec3.getZ());
+	}
+
+	public static eu.iv4xr.framework.spatial.Vec3 seToLab(spaceEngineers.model.Vec3 vec3) {
+		return new eu.iv4xr.framework.spatial.Vec3(vec3.getX(), vec3.getY(), vec3.getZ());
+	}
+
 }

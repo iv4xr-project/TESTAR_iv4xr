@@ -44,7 +44,7 @@ import spaceEngineers.commands.ObservationMode;
 import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
 import spaceEngineers.model.CubeGrid;
 import spaceEngineers.model.Observation;
-import spaceEngineers.model.SlimBlock;
+import spaceEngineers.model.Block;
 
 public class SeStateFetcher extends IV4XRStateFetcher {
 
@@ -58,7 +58,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 	@Override
 	protected IV4XRRootElement fetchIV4XRElements(IV4XRRootElement rootElement) {
 
-		ProprietaryJsonTcpCharacterController seController = system.get(IV4XRtags.iv4xrSpaceEngController);
+		ProprietaryJsonTcpCharacterController seController = system.get(IV4XRtags.iv4xrSpaceEngProprietaryTcpController);
 
 		Observation observation = seController.observe(new ObservationArgs(ObservationMode.BLOCKS));
 
@@ -107,7 +107,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.seAgentOrientationUp = seObservation.getOrientationUp();
 		
 		childElement.entityVelocity = new Vec3(seObservation.getVelocity().getX(), seObservation.getVelocity().getY(), seObservation.getVelocity().getZ());
-		childElement.entityId = seObservation.getAgentID();
+		childElement.entityId = system.get(IV4XRtags.iv4xrSpaceEngProprietaryTcpController).getAgentId();
 		childElement.entityType = "AGENT"; //TODO: check proper entity for agent
 		childElement.entityTimestamp = -1;
 
@@ -130,14 +130,14 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 
 		fillRect(childElement);
 
-		for(SlimBlock seBlock : seCubeGrid.getBlocks()) {
+		for(Block seBlock : seCubeGrid.getBlocks()) {
 			SEBlockDescend(childElement, seBlock);
 		}
 
 		return childElement;
 	}
 
-	private IV4XRElement SEBlockDescend(IV4XRElement parent, SlimBlock seBlock) {
+	private IV4XRElement SEBlockDescend(IV4XRElement parent, Block seBlock) {
 		IV4XRElement childElement = new IV4XRElement(parent);
 		parent.children.add(childElement);
 
