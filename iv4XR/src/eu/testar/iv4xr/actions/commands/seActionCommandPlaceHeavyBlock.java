@@ -46,13 +46,13 @@ import spaceEngineers.commands.InteractionArgs;
 import spaceEngineers.commands.InteractionType;
 import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
 
-public class seActionCommandPlaceBlock extends TaggableBase implements Action {
-	private static final long serialVersionUID = -4298823667934069223L;
+public class seActionCommandPlaceHeavyBlock extends TaggableBase implements Action {
+	private static final long serialVersionUID = 8300614919405612738L;
 
 	private ProprietaryJsonTcpCharacterController spaceEngController;
 	private String agentId;
 
-	public seActionCommandPlaceBlock(Widget w, ProprietaryJsonTcpCharacterController spaceEngController, String agentId){
+	public seActionCommandPlaceHeavyBlock(Widget w, ProprietaryJsonTcpCharacterController spaceEngController, String agentId){
 		this.spaceEngController = spaceEngController;
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
@@ -65,11 +65,11 @@ public class seActionCommandPlaceBlock extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {		
-		spaceEngController.interact(new InteractionArgs(InteractionType.TOOLBAR_SET, 1, 0, "LargeBlockArmorBlock"));
+		spaceEngController.interact(new InteractionArgs(InteractionType.TOOLBAR_SET, 2, 0, "LargeHeavyBlockArmorBlock"));
 
 		Util.pause(0.5);
 
-		spaceEngController.interact(new InteractionArgs(InteractionType.EQUIP, 1, 0, false));
+		spaceEngController.interact(new InteractionArgs(InteractionType.EQUIP, 2, 0, false));
 
 		Util.pause(0.5);
 
@@ -78,7 +78,7 @@ public class seActionCommandPlaceBlock extends TaggableBase implements Action {
 
 	@Override
 	public String toShortString() {
-		return "PlaceBlock by agent: " + agentId;
+		return "PlaceHeavyBlock by agent: " + agentId;
 	}
 
 	@Override

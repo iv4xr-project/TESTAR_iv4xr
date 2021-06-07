@@ -123,6 +123,7 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 
 		// Add a block like a dummy
 		labActions.add(new seActionCommandPlaceBlock(state, proprietaryTcpController, agentId));
+		labActions.add(new seActionCommandPlaceHeavyBlock(state, proprietaryTcpController, agentId));
 		// Use Grinder or Welder tool (like a dummy)
 		labActions.add(new seActionCommandGrinder(state, proprietaryTcpController, agentId));
 		labActions.add(new seActionCommandWelder(state, proprietaryTcpController, agentId));

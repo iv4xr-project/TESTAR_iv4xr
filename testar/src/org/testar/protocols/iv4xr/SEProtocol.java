@@ -424,6 +424,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 	@Override
 	protected void stopSystem(SUT system) {
 		system.get(IV4XRtags.iv4xrSpaceEngProprietaryTcpController).close();
+		system.get(IV4XRtags.iv4xrSpaceEngRcpController).close();
 		super.stopSystem(system);
 	}
 

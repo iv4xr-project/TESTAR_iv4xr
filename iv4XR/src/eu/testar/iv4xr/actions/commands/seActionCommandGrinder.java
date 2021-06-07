@@ -65,16 +65,20 @@ public class seActionCommandGrinder extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		
+
 		spaceEngController.interact(new InteractionArgs(InteractionType.TOOLBAR_SET, 5, 0, "AngleGrinder2Item"));
-		
+
 		Util.pause(0.5);
-		
+
 		spaceEngController.interact(new InteractionArgs(InteractionType.EQUIP, 5, 0, false));
 
 		Util.pause(0.5);
 
 		spaceEngController.interact(new InteractionArgs(InteractionType.BEGIN_USE, 0, 0, false));
+
+		Util.pause(2);
+
+		spaceEngController.interact(new InteractionArgs(InteractionType.END_USE, 0, 0, false));
 	}
 
 	@Override
