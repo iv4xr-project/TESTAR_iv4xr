@@ -47,7 +47,7 @@ public class WdProtocolUtil extends ProtocolUtil {
   }
 
   @Override
-  public String getStateshot(State state) {
+  public String getStateshot(State state, int actionCount) {
     double width = CanvasDimensions.getCanvasWidth() + (
         state.get(WdTags.WebVerticallyScrollable) ? scrollThick : 0);
     double height = CanvasDimensions.getCanvasHeight() + (

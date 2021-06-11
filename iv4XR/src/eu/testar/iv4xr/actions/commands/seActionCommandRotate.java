@@ -41,20 +41,16 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.commands.MovementArgs;
-import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
 import spaceEngineers.model.Vec2;
 import spaceEngineers.model.Vec3;
 
 public class seActionCommandRotate extends TaggableBase implements Action {
 	private static final long serialVersionUID = -3205069256476009191L;
 
-	private ProprietaryJsonTcpCharacterController spaceEngController;
 	private String agentId;
 	private Vec2 targetRotation;
 
-	public seActionCommandRotate(Widget w, ProprietaryJsonTcpCharacterController spaceEngController, String agentId, Vec2 targetRotation){
-		this.spaceEngController = spaceEngController;
+	public seActionCommandRotate(Widget w, String agentId, Vec2 targetRotation){
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
@@ -67,7 +63,8 @@ public class seActionCommandRotate extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		spaceEngController.moveAndRotate(new MovementArgs(new Vec3(0,0,0), targetRotation));
+		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
+		seCharacter.moveAndRotate(new Vec3(0,0,0), targetRotation, 0f);
 	}
 
 	@Override

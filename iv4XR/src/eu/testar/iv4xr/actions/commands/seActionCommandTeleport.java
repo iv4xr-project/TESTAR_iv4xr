@@ -42,20 +42,17 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
-import spaceEngineers.controller.JsonRpcCharacterController;
 import spaceEngineers.model.Vec3;
 
 public class seActionCommandTeleport extends TaggableBase implements Action {
 	private static final long serialVersionUID = -2497688383539448782L;
 
-	private JsonRpcCharacterController rcpController;
 	private String agentId;
 	private Vec3 targetPosition;
 	private Vec3 orientationForward;
 	private Vec3 orientationUp;
 
-	public seActionCommandTeleport(Widget w, JsonRpcCharacterController rcpController, String agentId){
-		this.rcpController = rcpController;
+	public seActionCommandTeleport(Widget w, String agentId){
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
@@ -70,7 +67,8 @@ public class seActionCommandTeleport extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		rcpController.getCharacter().teleport(targetPosition, orientationForward, orientationUp);
+		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
+		seCharacter.teleport(targetPosition, orientationForward, orientationUp);
 	}
 
 	@Override

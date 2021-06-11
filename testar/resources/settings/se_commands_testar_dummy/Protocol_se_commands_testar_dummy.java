@@ -38,9 +38,7 @@ import org.fruit.monkey.Settings;
 import org.testar.protocols.iv4xr.SEProtocol;
 
 import eu.testar.iv4xr.actions.commands.*;
-import eu.testar.iv4xr.enums.IV4XRtags;
 import nl.ou.testar.RandomActionSelector;
-import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
 import spaceEngineers.model.Vec2;
 import spaceEngineers.model.Vec3;
 
@@ -108,25 +106,22 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 	protected Set<Action> deriveActions(SUT system, State state) {
 		Set<Action> labActions = new HashSet<>();
 
-		// Get the Observation of the State form the Agent point of view
-		ProprietaryJsonTcpCharacterController proprietaryTcpController = system.get(IV4XRtags.iv4xrSpaceEngProprietaryTcpController);
-
 		// Add Dummy Exploration Actions (Direction based on current agent orientation + Steps Distance)
-		labActions.add(new seActionCommandMove(state, proprietaryTcpController, agentId, new Vec3(0, 0, 1f), 100)); // Move to back
-		labActions.add(new seActionCommandMove(state, proprietaryTcpController, agentId, new Vec3(0, 0, -1f), 100)); // Move to front
-		labActions.add(new seActionCommandMove(state, proprietaryTcpController, agentId, new Vec3(1f, 0, 0), 100)); // Move to Right
-		labActions.add(new seActionCommandMove(state, proprietaryTcpController, agentId, new Vec3(-1f, 0, 0), 100)); // Move to Left
+		labActions.add(new seActionCommandMove(state, agentId, new Vec3(0, 0, 1f), 100)); // Move to back
+		labActions.add(new seActionCommandMove(state, agentId, new Vec3(0, 0, -1f), 100)); // Move to front
+		labActions.add(new seActionCommandMove(state, agentId, new Vec3(1f, 0, 0), 100)); // Move to Right
+		labActions.add(new seActionCommandMove(state, agentId, new Vec3(-1f, 0, 0), 100)); // Move to Left
 
 		// Add Left Right Rotations
-		labActions.add(new seActionCommandRotate(state, proprietaryTcpController, agentId, new Vec2(0, -500f))); // Left
-		labActions.add(new seActionCommandRotate(state, proprietaryTcpController, agentId, new Vec2(0, 500f))); // Right
+		labActions.add(new seActionCommandRotate(state, agentId, new Vec2(0, -500f))); // Left
+		labActions.add(new seActionCommandRotate(state, agentId, new Vec2(0, 500f))); // Right
 
 		// Add a block like a dummy
-		labActions.add(new seActionCommandPlaceBlock(state, proprietaryTcpController, agentId));
-		labActions.add(new seActionCommandPlaceHeavyBlock(state, proprietaryTcpController, agentId));
+		labActions.add(new seActionCommandPlaceBlock(state, agentId));
+		labActions.add(new seActionCommandPlaceHeavyBlock(state, agentId));
 		// Use Grinder or Welder tool (like a dummy)
-		labActions.add(new seActionCommandGrinder(state, proprietaryTcpController, agentId));
-		labActions.add(new seActionCommandWelder(state, proprietaryTcpController, agentId));
+		labActions.add(new seActionCommandGrinder(state, agentId));
+		labActions.add(new seActionCommandWelder(state, agentId));
 
 		return labActions;
 	}

@@ -49,11 +49,9 @@ import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
 public class seActionCommandPlaceBlock extends TaggableBase implements Action {
 	private static final long serialVersionUID = -4298823667934069223L;
 
-	private ProprietaryJsonTcpCharacterController spaceEngController;
 	private String agentId;
 
-	public seActionCommandPlaceBlock(Widget w, ProprietaryJsonTcpCharacterController spaceEngController, String agentId){
-		this.spaceEngController = spaceEngController;
+	public seActionCommandPlaceBlock(Widget w, String agentId){
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandInteract);
@@ -64,7 +62,9 @@ public class seActionCommandPlaceBlock extends TaggableBase implements Action {
 	}
 
 	@Override
-	public void run(SUT system, State state, double duration) throws ActionFailedException {		
+	public void run(SUT system, State state, double duration) throws ActionFailedException {
+		ProprietaryJsonTcpCharacterController spaceEngController = system.get(IV4XRtags.iv4xrSpaceEngProprietaryTcpController);
+
 		spaceEngController.interact(new InteractionArgs(InteractionType.TOOLBAR_SET, 1, 0, "LargeBlockArmorBlock"));
 
 		Util.pause(0.5);

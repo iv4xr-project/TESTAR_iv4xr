@@ -45,11 +45,11 @@ public class IV4XRProtocolUtil extends ProtocolUtil {
 	public IV4XRProtocolUtil() {}
 
 	@Override
-	public String getStateshot(State state) {
+	public String getStateshot(State state, int actionCount) {
 		if(!LabRecruitsProcess.labRecruitsGraphics) {
 			System.out.println("INFO: Not taking state screenshot because LabRecruits is running in server mode");
 			return "";
 		}
-		return ScreenshotSerialiser.saveStateshot(state.get(Tags.ConcreteIDCustom, "NoConcreteIdAvailable"), getStateshotBinary(state));
+		return ScreenshotSerialiser.saveStateshot(state.get(Tags.ConcreteIDCustom, "NoConcreteIdAvailable") + "_" + actionCount, getStateshotBinary(state));
 	}
 }

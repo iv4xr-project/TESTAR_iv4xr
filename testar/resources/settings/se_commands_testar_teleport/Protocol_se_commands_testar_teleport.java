@@ -39,8 +39,6 @@ import org.testar.protocols.iv4xr.SEProtocol;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import nl.ou.testar.RandomActionSelector;
-import spaceEngineers.controller.JsonRpcCharacterController;
-import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
 
 /**
  * iv4xr EU H2020 project - SpaceEngineers Use Case
@@ -75,13 +73,9 @@ public class Protocol_se_commands_testar_teleport extends SEProtocol {
 	protected Set<Action> deriveActions(SUT system, State state) {
 		Set<Action> labActions = new HashSet<>();
 
-		// Get the Observation of the State form the Agent point of view
-		ProprietaryJsonTcpCharacterController proprietaryTcpController = system.get(IV4XRtags.iv4xrSpaceEngProprietaryTcpController);
-		JsonRpcCharacterController rcpController = system.get(IV4XRtags.iv4xrSpaceEngRcpController);
-
 		for(Widget w : state) {
 			if(teleportableEntities.contains(w.get(IV4XRtags.entityType))) {
-				labActions.add(new seActionCommandTeleport(w, rcpController, agentId));
+				labActions.add(new seActionCommandTeleport(w, agentId));
 			}
 		}
 

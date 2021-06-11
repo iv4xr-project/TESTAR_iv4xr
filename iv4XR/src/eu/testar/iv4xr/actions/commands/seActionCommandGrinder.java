@@ -49,11 +49,9 @@ import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
 public class seActionCommandGrinder extends TaggableBase implements Action {
 	private static final long serialVersionUID = -9171892675722381064L;
 
-	private ProprietaryJsonTcpCharacterController spaceEngController;
 	private String agentId;
 
-	public seActionCommandGrinder(Widget w, ProprietaryJsonTcpCharacterController spaceEngController, String agentId){
-		this.spaceEngController = spaceEngController;
+	public seActionCommandGrinder(Widget w, String agentId){
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandInteract);
@@ -65,6 +63,7 @@ public class seActionCommandGrinder extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
+		ProprietaryJsonTcpCharacterController spaceEngController = system.get(IV4XRtags.iv4xrSpaceEngProprietaryTcpController);
 
 		spaceEngController.interact(new InteractionArgs(InteractionType.TOOLBAR_SET, 5, 0, "AngleGrinder2Item"));
 
