@@ -67,6 +67,7 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<ProprietaryJsonTcpCharacterController> iv4xrSpaceEngProprietaryTcpController = from("iv4xrSpaceEngProprietaryTcpController", ProprietaryJsonTcpCharacterController.class);
 	public static final Tag<JsonRpcCharacterController> iv4xrSpaceEngRcpController = from("iv4xrSpaceEngRcpController", JsonRpcCharacterController.class);
 	public static final Tag<spaceEngineers.controller.Character> iv4xrSpaceEngCharacter = from("iv4xrSpaceEngCharacter", spaceEngineers.controller.Character.class);
+	public static final Tag<spaceEngineers.controller.Items> iv4xrSpaceEngItems = from("iv4xrSpaceEngItems", spaceEngineers.controller.Items.class);
 
 	/**
 	 * World Object Model Tags

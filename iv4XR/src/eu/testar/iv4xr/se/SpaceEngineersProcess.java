@@ -143,6 +143,7 @@ public class SpaceEngineersProcess extends SUTBase {
 			this.set(IV4XRtags.iv4xrSpaceEngProprietaryTcpController, proprietaryTcpController);
 			this.set(IV4XRtags.iv4xrSpaceEngRcpController, rcpController);
 			this.set(IV4XRtags.iv4xrSpaceEngCharacter, rcpController.getCharacter());
+			this.set(IV4XRtags.iv4xrSpaceEngItems, rcpController.getItems());
 
 		} catch(Exception e) {
 			System.err.println(String.format("EnvironmentConfig ERROR: Trying to connect with %s", launchPart));

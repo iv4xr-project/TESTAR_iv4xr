@@ -42,9 +42,7 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.commands.InteractionArgs;
-import spaceEngineers.commands.InteractionType;
-import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
+import spaceEngineers.model.ToolbarLocation;
 
 public class seActionCommandPlaceHeavyBlock extends TaggableBase implements Action {
 	private static final long serialVersionUID = 8300614919405612738L;
@@ -63,17 +61,17 @@ public class seActionCommandPlaceHeavyBlock extends TaggableBase implements Acti
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		ProprietaryJsonTcpCharacterController spaceEngController = system.get(IV4XRtags.iv4xrSpaceEngProprietaryTcpController);
+		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
 
-		spaceEngController.interact(new InteractionArgs(InteractionType.TOOLBAR_SET, 2, 0, "LargeHeavyBlockArmorBlock"));
-
-		Util.pause(0.5);
-
-		spaceEngController.interact(new InteractionArgs(InteractionType.EQUIP, 2, 0, false));
+		seItems.setToolbarItem("LargeHeavyBlockArmorBlock", ToolbarLocation.Companion.fromIndex(2, 3));
 
 		Util.pause(0.5);
 
-		spaceEngController.interact(new InteractionArgs(InteractionType.PLACE, 0, 0, false));
+		seItems.equip(ToolbarLocation.Companion.fromIndex(2, 3));
+
+		Util.pause(0.5);
+
+		seItems.place();
 	}
 
 	@Override

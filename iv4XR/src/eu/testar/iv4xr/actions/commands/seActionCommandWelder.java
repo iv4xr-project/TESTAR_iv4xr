@@ -42,9 +42,7 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.commands.InteractionArgs;
-import spaceEngineers.commands.InteractionType;
-import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
+import spaceEngineers.model.ToolbarLocation;
 
 public class seActionCommandWelder extends TaggableBase implements Action {
 	private static final long serialVersionUID = -9171892675722381064L;
@@ -63,21 +61,21 @@ public class seActionCommandWelder extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		ProprietaryJsonTcpCharacterController spaceEngController = system.get(IV4XRtags.iv4xrSpaceEngProprietaryTcpController);
+		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
 
-		spaceEngController.interact(new InteractionArgs(InteractionType.TOOLBAR_SET, 4, 0, "Welder2Item"));
-
-		Util.pause(0.5);
-
-		spaceEngController.interact(new InteractionArgs(InteractionType.EQUIP, 4, 0, false));
+		seItems.setToolbarItem("Welder2Item", ToolbarLocation.Companion.fromIndex(4, 5));
 
 		Util.pause(0.5);
 
-		spaceEngController.interact(new InteractionArgs(InteractionType.BEGIN_USE, 0, 0, false));
+		seItems.equip(ToolbarLocation.Companion.fromIndex(4, 5));
+
+		Util.pause(0.5);
+
+		seItems.beginUsingTool();
 
 		Util.pause(2);
 
-		spaceEngController.interact(new InteractionArgs(InteractionType.END_USE, 0, 0, false));
+		seItems.endUsingTool();
 	}
 
 	@Override
