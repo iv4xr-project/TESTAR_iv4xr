@@ -47,6 +47,8 @@ public class NavigableState extends AbstractEntity implements Persistable {
 	private Set<SVec3> navigableNodes;
 	private Set<Pair<String, Boolean>> reachableEntities;
 	private Map<String, NavigableAction> navigableActions;
+	private Set<String> navigableActionsDescription;
+	private Map<String, SVec3> unexecutedExploratoryActions;
 
 	public NavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities) {
 		/**
@@ -71,6 +73,8 @@ public class NavigableState extends AbstractEntity implements Persistable {
 		this.navigableNodes = new HashSet<>(navigableNodes);
 		this.reachableEntities = new HashSet<>(reachableEntities);
 		this.navigableActions = new HashMap<>();
+		this.navigableActionsDescription = new HashSet<>();
+		this.unexecutedExploratoryActions = new HashMap<>();
 	}
 
 	public Set<SVec3> getNavigableNodes() {
@@ -85,8 +89,29 @@ public class NavigableState extends AbstractEntity implements Persistable {
 		return navigableActions;
 	}
 
+	public Set<String> getNavigableActionsDescriptions(){
+		return navigableActionsDescription;
+	}
+
 	public void addNavigableAction(String navigableActionId, NavigableAction navigableAction) {
 		this.navigableActions.put(navigableActionId, navigableAction);
+		this.navigableActionsDescription.add(navigableAction.getDescription());
+	}
+
+	public Map<String, SVec3> getUnexecutedExploratoryActions() {
+		return unexecutedExploratoryActions;
+	}
+
+	public void addUnexecutedExploratoryAction(String unexecutedExploratoryAction, SVec3 actionNode) {
+		if(!this.unexecutedExploratoryActions.containsKey(unexecutedExploratoryAction)) {
+			this.unexecutedExploratoryActions.put(unexecutedExploratoryAction, actionNode);
+		}
+	}
+
+	public void removeExploratoryActionFromUnexecuted(String executedExploratoryAction) {
+		if(this.unexecutedExploratoryActions.containsKey(executedExploratoryAction)) {
+			this.unexecutedExploratoryActions.remove(executedExploratoryAction);
+		}
 	}
 
 	@Override

@@ -33,7 +33,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.fruit.Util;
 import org.fruit.alayer.*;
@@ -46,6 +48,7 @@ import org.testar.action.priorization.iv4xrNavigableStateMap;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import environments.LabRecruitsEnvironment;
+import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
@@ -172,6 +175,7 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 				retAction = RandomActionSelector.selectAction(exploratoryActions);
 				// update as executed for next iteration
 				iv4xrExplorationPrioritization.addExecutedExploratoryAction(retAction);
+				saveExploratoryActionStateModel(exploratoryActions);
 			} 
 			// If we do not have exploratory actions to execute, 
 			// use the state model to select other type of action
@@ -191,6 +195,18 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 		}
 
 		return retAction;
+	}
+
+	private void saveExploratoryActionStateModel(Set<Action> exploratoryActions) {
+		Map<String, SVec3> unexecutedExploratoryActions = new HashMap<>();
+		for(Action action : exploratoryActions) {
+			if(action instanceof labActionExplorePosition) {
+				Vec3 nodePosition = ((labActionExplorePosition) action).getExplorePosition();
+				SVec3 unexploredNode = new SVec3(nodePosition.x, nodePosition.y, nodePosition.z);
+				unexecutedExploratoryActions.put(action.get(Tags.AbstractIDCustom), unexploredNode);
+			}
+		}
+		stateModelManager.notifyUnexecutedExploratoryActions(unexecutedExploratoryActions);
 	}
 
 	/**
@@ -231,7 +247,7 @@ public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRe
 
 				String interactionInfo = "Entity:" + interactedEntity + ",From:" + beforeIsActive + ",To:" + afterIsActive;
 				navigableState = new iv4xrNavigableState(interactionInfo);
-				
+
 				// Update lastInteractAction for the finishSequence case
 				lastInteractActionAbstractIDCustom = action.get(Tags.AbstractIDCustom);
 			}

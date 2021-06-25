@@ -557,6 +557,9 @@ public class EntityManager {
         else if (propertyValue instanceof Set) {
             element.setProperty(propertyName, propertyValue);
         }
+        else if (propertyValue instanceof Map) {
+            element.setProperty(propertyName, ((Map)propertyValue).entrySet());
+        }
         else if (propertyValue instanceof Date) {
             element.setProperty(propertyName, propertyValue);
         }

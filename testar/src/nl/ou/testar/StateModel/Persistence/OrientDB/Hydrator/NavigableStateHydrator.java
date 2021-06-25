@@ -85,6 +85,24 @@ public class NavigableStateHydrator implements EntityHydrator<VertexEntity> {
 		if (!((NavigableState) source).getNavigableActions().isEmpty()) {
 			target.addPropertyValue(navigableActions.getPropertyName(), new PropertyValue(navigableActions.getPropertyType(), ((NavigableState) source).getNavigableActions()));
 		}
+		
+		// add navigableActionsDescriptions
+		Property navigableActionsDescriptions = HydrationHelper.getProperty(target.getEntityClass().getProperties(), "navigableActionsDescriptions");
+		if (navigableActionsDescriptions == null) {
+			throw new HydrationException();
+		}
+		if (!((NavigableState) source).getNavigableActionsDescriptions().isEmpty()) {
+			target.addPropertyValue(navigableActionsDescriptions.getPropertyName(), new PropertyValue(navigableActionsDescriptions.getPropertyType(), ((NavigableState) source).getNavigableActionsDescriptions()));
+		}
+		
+		// add unexecutedExploratoryActions
+		Property unexecutedExploratoryActions = HydrationHelper.getProperty(target.getEntityClass().getProperties(), "unexecutedExploratoryActions");
+		if (unexecutedExploratoryActions == null) {
+			throw new HydrationException();
+		}
+		if (!((NavigableState) source).getUnexecutedExploratoryActions().isEmpty()) {
+			target.addPropertyValue(unexecutedExploratoryActions.getPropertyName(), new PropertyValue(unexecutedExploratoryActions.getPropertyType(), ((NavigableState) source).getUnexecutedExploratoryActions()));
+		}
 	}
 
 }

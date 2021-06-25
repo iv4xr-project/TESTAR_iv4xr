@@ -284,4 +284,9 @@ public class ModelManager implements StateModelManager {
 
     }
 
+    @Override
+    public void notifyUnexecutedExploratoryActions(Map<String, SVec3> unexecutedExploratoryActions) {
+
+    }
+
 }

@@ -638,6 +638,13 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
     
     @Override
     public void persistNavigableState(NavigableState previousNavigableState, NavigableAction navigableAction, NavigableState navigableState) {
+    	// If we don not have the navigable transition save only the current navigable state
+    	// TODO: Prepare a better implementation
+    	if(previousNavigableState == null || navigableAction == null) {
+    		persistNavigableState(navigableState);
+    		return;
+    	}
+    	
     	// create the NavigableState entity to persist to the database
     	EntityClass entityClassState = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.NavigableState);
     	VertexEntity previousStateEntity = new VertexEntity(entityClassState);
@@ -674,6 +681,25 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
 
     	// save the entity!	
     	entityManager.saveEntity(actionEntity);
+    }
+    
+    public void persistNavigableState(NavigableState navigableState) {
+    	// create the NavigableState entity to persist to the database
+    	EntityClass entityClassState = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.NavigableState);
+    	VertexEntity stateEntity = new VertexEntity(entityClassState);
+
+    	// hydrate the entity to a format the orient database can store
+    	try {
+    		EntityHydrator hydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_NAVIGABLE_STATE);
+    		hydrator.hydrate(stateEntity, navigableState);
+    	} catch (HydrationException e) {
+    		e.printStackTrace();
+    		System.out.println("Encountered a problem while saving navigable state " + navigableState.getNavigableActions() + " to the orient database");
+    		return;
+    	}
+
+    	// save the entity!
+    	entityManager.saveEntity(stateEntity);
     }
 
     @Override

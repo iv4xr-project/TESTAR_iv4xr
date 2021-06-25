@@ -593,6 +593,16 @@ public class EntityClassFactory {
     	navigableActions.setNullable(false);
     	navigableStateClass.addProperty(navigableActions);
 
+    	Property navigableActionsDescriptions = new Property("navigableActionsDescriptions", OType.EMBEDDEDSET, OType.STRING);
+    	navigableActionsDescriptions.setMandatory(true);
+    	navigableActionsDescriptions.setNullable(false);
+    	navigableStateClass.addProperty(navigableActionsDescriptions);
+
+    	Property unexecutedExploratoryActions = new Property("unexecutedExploratoryActions", OType.EMBEDDEDSET, OType.STRING);
+    	unexecutedExploratoryActions.setMandatory(true);
+    	unexecutedExploratoryActions.setNullable(false);
+    	navigableStateClass.addProperty(unexecutedExploratoryActions);
+
     	entityClasses.put(EntityClassName.NavigableState, navigableStateClass);
     	return navigableStateClass;
     }
