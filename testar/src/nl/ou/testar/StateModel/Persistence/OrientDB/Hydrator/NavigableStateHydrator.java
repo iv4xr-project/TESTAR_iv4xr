@@ -54,10 +54,16 @@ public class NavigableStateHydrator implements EntityHydrator<VertexEntity> {
 		}
 
 		// add the modelIdentifier
-		target.addPropertyValue("modelIdentifier", new PropertyValue(OType.STRING, ((NavigableState) source).getModelIdentifier()));
+		String modelIdentifier = ((NavigableState) source).getModelIdentifier();
+		target.addPropertyValue("modelIdentifier", new PropertyValue(OType.STRING, modelIdentifier));
 
 		// add the hashId
-		target.addPropertyValue("stateId", new PropertyValue(OType.STRING, ((NavigableState) source).getId()));
+		String stateId = ((NavigableState) source).getId();
+		target.addPropertyValue("stateId", new PropertyValue(OType.STRING, stateId));
+
+		// combine the modelIdentifier and the stateId to create a unique id
+		String uniqueId = HydrationHelper.lowCollisionID(modelIdentifier + "--" + stateId);
+		target.addPropertyValue(identifier.getPropertyName(), new PropertyValue(identifier.getPropertyType(), uniqueId));
 
 		// add navigableNodes
 		Property navigableNodes = HydrationHelper.getProperty(target.getEntityClass().getProperties(), "navigableNodes");
@@ -85,7 +91,7 @@ public class NavigableStateHydrator implements EntityHydrator<VertexEntity> {
 		if (!((NavigableState) source).getNavigableActions().isEmpty()) {
 			target.addPropertyValue(navigableActions.getPropertyName(), new PropertyValue(navigableActions.getPropertyType(), ((NavigableState) source).getNavigableActions()));
 		}
-		
+
 		// add navigableActionsDescriptions
 		Property navigableActionsDescriptions = HydrationHelper.getProperty(target.getEntityClass().getProperties(), "navigableActionsDescriptions");
 		if (navigableActionsDescriptions == null) {
@@ -94,7 +100,7 @@ public class NavigableStateHydrator implements EntityHydrator<VertexEntity> {
 		if (!((NavigableState) source).getNavigableActionsDescriptions().isEmpty()) {
 			target.addPropertyValue(navigableActionsDescriptions.getPropertyName(), new PropertyValue(navigableActionsDescriptions.getPropertyType(), ((NavigableState) source).getNavigableActionsDescriptions()));
 		}
-		
+
 		// add unexecutedExploratoryActions
 		Property unexecutedExploratoryActions = HydrationHelper.getProperty(target.getEntityClass().getProperties(), "unexecutedExploratoryActions");
 		if (unexecutedExploratoryActions == null) {

@@ -36,6 +36,8 @@ import nl.ou.testar.StateModel.Exception.HydrationException;
 import nl.ou.testar.StateModel.Persistence.OrientDB.Entity.EdgeEntity;
 import nl.ou.testar.StateModel.Persistence.OrientDB.Entity.Property;
 import nl.ou.testar.StateModel.Persistence.OrientDB.Entity.PropertyValue;
+import nl.ou.testar.StateModel.Persistence.OrientDB.Entity.TypeConvertor;
+import nl.ou.testar.StateModel.Util.HydrationHelper;
 import nl.ou.testar.StateModel.iv4XR.NavigableAction;
 
 public class NavigableActionHydrator implements EntityHydrator<EdgeEntity> {
@@ -52,11 +54,26 @@ public class NavigableActionHydrator implements EntityHydrator<EdgeEntity> {
 			throw new HydrationException();
 		}
 
+		// add the modelIdentifier
+		String modelIdentifier = ((NavigableAction) source).getModelIdentifier();
+		edgeEntity.addPropertyValue("modelIdentifier", new PropertyValue(OType.STRING, modelIdentifier));
+
+		// use the transition of the navigable action with the navigable states to create a unique identifier in the model
+		Property sourceIdentifier = edgeEntity.getSourceEntity().getEntityClass().getIdentifier();
+		String sourceId = (String)edgeEntity.getSourceEntity().getPropertyValue(sourceIdentifier.getPropertyName()).getValue();
+		Property targetIdentifier = edgeEntity.getTargetEntity().getEntityClass().getIdentifier();
+		String targetId = (String)edgeEntity.getTargetEntity().getPropertyValue(targetIdentifier.getPropertyName()).getValue();
+
+		String edgeId = HydrationHelper.createOrientDbActionId(sourceId, targetId, ((NavigableAction) source).getId(), modelIdentifier);
+		// make sure the java and orientdb property types are compatible
+		OType identifierType = TypeConvertor.getInstance().getOrientDBType(edgeId.getClass());
+		if (identifierType != identifier.getPropertyType()) {
+			throw new HydrationException("Wrong type specified for navigable action identifier");
+		}
+		edgeEntity.addPropertyValue(identifier.getPropertyName(), new PropertyValue(identifier.getPropertyType(), edgeId));
+
 		// add the navigableActionId
 		edgeEntity.addPropertyValue("navigableActionId", new PropertyValue(OType.STRING, ((NavigableAction) source).getId()));
-
-		// add the modelIdentifier
-		edgeEntity.addPropertyValue("modelIdentifier", new PropertyValue(OType.STRING, ((NavigableAction) source).getModelIdentifier()));
 
 		// add the abstractActionId
 		edgeEntity.addPropertyValue("abstractActionId", new PropertyValue(OType.STRING, ((NavigableAction) source).getAbstractActionId()));

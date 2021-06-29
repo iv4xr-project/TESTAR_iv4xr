@@ -565,11 +565,16 @@ public class EntityClassFactory {
     private static EntityClass createNavigableStateClass() {
     	EntityClass navigableStateClass = new EntityClass("NavigableState", EntityClass.EntityType.Vertex);
 
+    	Property uniqueId = new Property("uid", OType.STRING);
+    	uniqueId.setMandatory(true);
+    	uniqueId.setNullable(false);
+    	uniqueId.setIdentifier(true);
+    	uniqueId.setIndexAble(true);
+    	navigableStateClass.addProperty(uniqueId);
+
     	Property stateId = new Property("stateId", OType.STRING);
     	stateId.setMandatory(true);
     	stateId.setNullable(false);
-    	stateId.setIdentifier(true);
-    	stateId.setIndexAble(true);
     	navigableStateClass.addProperty(stateId);
 
     	Property modelIdentifier = new Property("modelIdentifier", OType.STRING);
@@ -610,11 +615,17 @@ public class EntityClassFactory {
     private static EntityClass createNavigableActionClass() {
     	EntityClass navigableActionClass = new EntityClass("NavigableAction", EntityClass.EntityType.Edge);
 
+    	Property uniqueId = new Property("uid", OType.STRING);
+    	uniqueId.setMandatory(true);
+    	uniqueId.setNullable(false);
+    	uniqueId.setIdentifier(true);
+    	uniqueId.setIndexAble(true);
+    	navigableActionClass.addProperty(uniqueId);
+    	
     	Property navigableActionId = new Property("navigableActionId", OType.STRING);
     	navigableActionId.setMandatory(true);
     	navigableActionId.setNullable(false);
-    	navigableActionId.setIdentifier(true);
-    	navigableActionId.setIndexAble(true);
+    	navigableActionId.setIdentifier(false);
     	navigableActionClass.addProperty(navigableActionId);
 
     	Property modelIdentifier = new Property("modelIdentifier", OType.STRING);

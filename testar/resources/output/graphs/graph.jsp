@@ -90,6 +90,7 @@
                 <div class="stats-text" id="stats-abstract-actions"></div>
                 <div class="stats-text" id="stats-concrete-states"></div>
                 <div class="stats-text" id="stats-concrete-actions"></div>
+                <div class="stats-text" id="stats-navigable-states"></div>
                 <div class="stats-text" id="stats-navigable-actions"></div>
             </div>
         </div>
@@ -1074,7 +1075,11 @@
         div.append(text);
 		
         div = document.getElementById('stats-navigable-states');
-        text = document.createTextNode("Nr of navigable states: " + appStatus.nrOfNavigableStates);
+        text = document.createTextNode('Nr of navigable states: ' + appStatus.nrOfNavigableStates);
+        div.append(text);
+		
+        div = document.getElementById('stats-navigable-actions');
+        text = document.createTextNode('Nr of navigable actions: ' + appStatus.nrOfNavigableActions);
         div.append(text);
     }
 

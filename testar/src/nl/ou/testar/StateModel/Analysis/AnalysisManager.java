@@ -486,6 +486,12 @@ public class AnalysisManager {
     private List<Element> fetchNavigableLayer(String modelIdentifier, ODatabaseSession db, boolean showCompoundGraph) {
     	ArrayList<Element> elements = new ArrayList<>();
 
+    	// optionally add a parent node for the navigable layer
+    	if (showCompoundGraph) {
+    		Vertex navigableStateParent = new Vertex("NavigableLayer");
+    		elements.add(new Element(Element.GROUP_NODES, navigableStateParent, "Parent"));
+    	}
+
     	// navigable state nodes
     	String stmt = "SELECT * FROM NavigableState WHERE modelIdentifier = :identifier";
     	Map<String, Object> params = new HashMap<>();
@@ -493,12 +499,12 @@ public class AnalysisManager {
     	OResultSet resultSet = db.query(stmt, params);
     	elements.addAll(fetchNodes(resultSet, "NavigableState", showCompoundGraph ? "NavigableLayer" : null, modelIdentifier));
     	resultSet.close();
-    	
-        // navigable actions
-        stmt = "SELECT FROM NavigableAction WHERE modelIdentifier = :identifier";
-        resultSet = db.query(stmt, params);
-        elements.addAll(fetchEdges(resultSet, "NavigableAction"));
-        resultSet.close();
+
+    	// navigable actions
+    	stmt = "SELECT FROM NavigableAction WHERE modelIdentifier = :identifier";
+    	resultSet = db.query(stmt, params);
+    	elements.addAll(fetchEdges(resultSet, "NavigableAction"));
+    	resultSet.close();
 
     	return elements;
     }
