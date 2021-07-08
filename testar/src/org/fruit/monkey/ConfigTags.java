@@ -1,7 +1,7 @@
 /***************************************************************************************************
 *
-* Copyright (c) 2013 - 2020 Universitat Politecnica de Valencia - www.upv.es
-* Copyright (c) 2018 - 2020 Open Universiteit - www.ou.nl
+* Copyright (c) 2013 - 2021 Universitat Politecnica de Valencia - www.upv.es
+* Copyright (c) 2018 - 2021 Open Universiteit - www.ou.nl
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -94,14 +94,9 @@ public final class ConfigTags {
   public static final Tag<Boolean> AccessBridgeEnabled = Tag.from("AccessBridgeEnabled", Boolean.class);
   public static final Tag<String> SUTProcesses = Tag.from("SUTProcesses", String.class); // Shift+0 shortcut to debug (STDOUT) windows' process names
 
-  // graph db config tags
-  public static final Tag<Boolean> GraphDBEnabled = Tag.from("GraphDBEnabled", Boolean.class);
-  public static final Tag<String> GraphDBUrl = Tag.from("GraphDBUrl", String.class);
-  public static final Tag<String> GraphDBUser = Tag.from("GraphDBUser", String.class);
-  public static final Tag<String> GraphDBPassword = Tag.from("GraphDBPassword", String.class);
-
   // state model config tags
   public static final Tag<Boolean> StateModelEnabled = Tag.from("StateModelEnabled", Boolean.class);
+  public static final Tag<Boolean> StateModelReinforcementLearningEnabled = Tag.from("StateModelReinforcementLearningEnabled", Boolean.class);
   public static final Tag<String> DataStore = Tag.from("DataStore", String.class);
   public static final Tag<String> DataStoreType = Tag.from("DataStoreType", String.class);
   public static final Tag<String> DataStoreServer = Tag.from("DataStoreServer", String.class);
@@ -116,6 +111,21 @@ public final class ConfigTags {
   public static final Tag<String> ActionSelectionAlgorithm = Tag.from("ActionSelectionAlgorithm", String.class);
   public static final Tag<Boolean> StateModelStoreWidgets = Tag.from("StateModelStoreWidgets", Boolean.class);
   public static final Tag<Boolean> iv4XRAgentListener = Tag.from("iv4XRAgentListener", Boolean.class);
+
+  // Reinforcement learning specific
+  public static final Tag<Float> Alpha = Tag.from("Alpha", Float.class);
+  public static final Tag<Float> Gamma = Tag.from("Gamma", Float.class);
+  public static final Tag<Float> DefaultValue = Tag.from("DefaultValue", Float.class);
+  public static final Tag<Float> Epsilon = Tag.from("Epsilon", Float.class);
+  public static final Tag<Float> DefaultReward = Tag.from("DefaultReward", Float.class);
+  public static final Tag<String> RewardFunction = Tag.from("RewardFunction", String.class);
+  public static final Tag<String> Policy = Tag.from("Policy", String.class);
+  public static final Tag<Float> DecayRate = Tag.from("DecayRate", Float.class);
+  public static final Tag<Float> Temperature = Tag.from("Temperature", Float.class);
+  public static final Tag<Float> MaxQValue = Tag.from("MaxQValue", Float.class);
+  public static final Tag<String> TagName = Tag.from("TagName", String.class);
+  public static final Tag<String> QFunction = Tag.from("QFunction", String.class);
+
   @SuppressWarnings("unchecked")
   public static final Tag<List<String>> AbstractStateAttributes = Tag.from("AbstractStateAttributes", (Class<List<String>>) (Class<?>) List.class);
 
@@ -134,4 +144,39 @@ public final class ConfigTags {
   public static final Tag<String> AgentId = Tag.from("AgentId", String.class);
   // iv4xr relative increment we need to set to map game coordinates with GUI size
   public static final Tag<Integer> SpyIncrement = Tag.from("SpyIncrement", Integer.class);
+
+  public static final Tag<String> ExtendedSettingsFile = Tag.from("ExtendedSettingsFile", String.class);
+
+  // 5 settings that can be used in user specified TESTAR protocols for anything:
+  public static final Tag<String> ProtocolSpecificSetting_1 = Tag.from("ProtocolSpecificSetting_1", String.class);
+  public static final Tag<String> ProtocolSpecificSetting_2 = Tag.from("ProtocolSpecificSetting_2", String.class);
+  public static final Tag<String> ProtocolSpecificSetting_3 = Tag.from("ProtocolSpecificSetting_3", String.class);
+  public static final Tag<String> ProtocolSpecificSetting_4 = Tag.from("ProtocolSpecificSetting_4", String.class);
+  public static final Tag<String> ProtocolSpecificSetting_5 = Tag.from("ProtocolSpecificSetting_5", String.class);
+
+  // WebDriver specific settings:
+  @SuppressWarnings("unchecked")
+  public static final Tag<List<String>> ClickableClasses = Tag.from("ClickableClasses", (Class<List<String>>) (Class<?>) List.class);
+  @SuppressWarnings("unchecked")
+  public static final Tag<List<String>> DeniedExtensions = Tag.from("DeniedExtensions", (Class<List<String>>) (Class<?>) List.class);
+  @SuppressWarnings("unchecked")
+  public static final Tag<List<String>> DomainsAllowed = Tag.from("DomainsAllowed", (Class<List<String>>) (Class<?>) List.class);
+  @SuppressWarnings("unchecked")
+  public static final Tag<List<String>> TagsToFilter = Tag.from("TagsToFilter", (Class<List<String>>) (Class<?>) List.class);
+  @SuppressWarnings("unchecked")
+  public static final Tag<List<String>> TagsForSuspiciousOracle = Tag.from("TagsForSuspiciousOracle", (Class<List<String>>) (Class<?>) List.class);
+  public static final Tag<Boolean> FollowLinks = Tag.from("FollowLinks", Boolean.class);
+  public static final Tag<Boolean> BrowserFullScreen = Tag.from("BrowserFullScreen", Boolean.class);
+  public static final Tag<Boolean> SwitchNewTabs = Tag.from("SwitchNewTabs", Boolean.class);
+  public static final Tag<Boolean> FlashFeedback = Tag.from("FlashFeedback", Boolean.class);
+  public static final Tag<String> ProtocolCompileDirectory = Tag.from("ProtocolCompileDirectory", String.class);
+  public static final Tag<String> ReportingClass = Tag.from("ReportingClass", String.class);
+
+  /*
+  //TODO web driver settings for login feature
+  public static final Tag<Pair<String, String>> Login = Tag.from("Login", (Class<Pair<String, String>>) (Class<?>) Pair.class);
+  // Pair.from("https://login.awo.ou.nl/SSO/login", "OUinloggen");
+  public static final Tag<Pair<String, String>> Username = Tag.from("Username", (Class<Pair<String, String>>) (Class<?>) Pair.class);
+  public static final Tag<Pair<String, String>> Password = Tag.from("Password", (Class<Pair<String, String>>) (Class<?>) Pair.class);
+  */
 }

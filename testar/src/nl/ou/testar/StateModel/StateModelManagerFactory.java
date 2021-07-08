@@ -1,8 +1,18 @@
 package nl.ou.testar.StateModel;
 
 import es.upv.staq.testar.CodingManager;
+
 import es.upv.staq.testar.NativeLinker;
 import es.upv.staq.testar.OperatingSystems;
+
+import nl.ou.testar.ReinforcementLearning.ActionSelectors.ReinforcementLearningActionSelector;
+import nl.ou.testar.ReinforcementLearning.Policies.PolicyFactory;
+import nl.ou.testar.ReinforcementLearning.QFunctions.QFunction;
+import nl.ou.testar.ReinforcementLearning.QFunctions.QFunctionFactory;
+import nl.ou.testar.ReinforcementLearning.RewardFunctions.RewardFunction;
+import nl.ou.testar.ReinforcementLearning.RewardFunctions.RewardFunctionFactory;
+import nl.ou.testar.ReinforcementLearning.Utils.ReinforcementLearningUtil;
+
 import nl.ou.testar.StateModel.ActionSelection.ActionSelector;
 import nl.ou.testar.StateModel.ActionSelection.CompoundFactory;
 import nl.ou.testar.StateModel.Event.StateModelEventListener;
@@ -10,7 +20,11 @@ import nl.ou.testar.StateModel.Persistence.PersistenceManager;
 import nl.ou.testar.StateModel.Persistence.PersistenceManagerFactory;
 import nl.ou.testar.StateModel.Persistence.PersistenceManagerFactoryBuilder;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
+
 import nl.ou.testar.StateModel.iv4XR.ModelManagerIV4XREnvironment;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.fruit.alayer.Tag;
 import org.fruit.monkey.ConfigTags;
@@ -22,6 +36,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class StateModelManagerFactory {
+
+    private static final Logger logger = LogManager.getLogger(StateModelManagerFactory.class);
 
     public static StateModelManager getStateModelManager(Settings settings) {
         // first check if the state model module is enabled
@@ -58,6 +74,9 @@ public class StateModelManagerFactory {
         Set<StateModelEventListener> eventListeners = new HashSet<>();
         eventListeners.add((StateModelEventListener) persistenceManager);
         SequenceManager sequenceManager = new SequenceManager(eventListeners, modelIdentifier);
+        
+        // should we store widgets?
+        boolean storeWidgets = settings.get(ConfigTags.StateModelStoreWidgets);
 
         //if(settings.get(ConfigTags.iv4XRAgentListener, false)) {
         if(NativeLinker.getPLATFORM_OS().contains(OperatingSystems.IV4XR_LAB)
@@ -71,24 +90,42 @@ public class StateModelManagerFactory {
         			persistenceManager instanceof StateModelEventListener ? (StateModelEventListener) persistenceManager : null);
         	ActionSelector actionSelector = CompoundFactory.getCompoundActionSelector(settings);
 
-        	// should we store widgets?
-        	boolean storeWidgets = settings.get(ConfigTags.StateModelStoreWidgets);
-
         	return new ModelManagerIV4XREnvironment(abstractStateModelListener, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
         }
-        
+
         // create the abstract state model and then the state model manager
-        AbstractStateModel abstractStateModel = new AbstractStateModel(modelIdentifier,
+        AbstractStateModelReinforcementLearning abstractStateModel = new AbstractStateModelReinforcementLearning(modelIdentifier,
                 settings.get(ConfigTags.ApplicationName),
                 settings.get(ConfigTags.ApplicationVersion),
                 abstractTags,
-                persistenceManager instanceof StateModelEventListener ? (StateModelEventListener) persistenceManager : null);
+                persistenceManager != null ? (StateModelEventListener) persistenceManager : null);
+
+        if (settings.get(ConfigTags.StateModelReinforcementLearningEnabled, false)) {
+            Tag<?> tag = ReinforcementLearningUtil.getTag(settings);
+            final ActionSelector actionSelector = new ReinforcementLearningActionSelector(PolicyFactory.getPolicy(settings)) ;
+
+            final RewardFunction rewardFunction = RewardFunctionFactory.getRewardFunction(settings);
+            final QFunction qFunction = QFunctionFactory.getQFunction(settings);
+            logger.info("State model with RLModelManager selected");
+            return new RLModelManager(abstractStateModel,
+                    actionSelector,
+                    persistenceManager,
+                    concreteStateTags,
+                    sequenceManager,
+                    storeWidgets,
+                    rewardFunction,
+                    qFunction,
+                    tag);
+        }
+
         ActionSelector actionSelector = CompoundFactory.getCompoundActionSelector(settings);
 
-        // should we store widgets?
-        boolean storeWidgets = settings.get(ConfigTags.StateModelStoreWidgets);
-
-        return new ModelManager(abstractStateModel, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
+        logger.info("State model with modelManager selected");
+        return new ModelManager(abstractStateModel,
+                actionSelector,
+                persistenceManager,
+                concreteStateTags,
+                sequenceManager,
+                storeWidgets);
     }
-
 }

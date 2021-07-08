@@ -62,7 +62,6 @@ import com.google.common.collect.Sets;
 
 import es.upv.staq.testar.CodingManager;
 import es.upv.staq.testar.NativeLinker;
-import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.iv4xr.framework.spatial.Vec3;
@@ -99,9 +98,6 @@ public class SEProtocol extends GenericUtilsProtocol {
 			System.out.println("*************************************************************");
 			Runtime.getRuntime().exit(0);
 		}
-
-		// Currently an utility protocol to take SUT screenshots
-		protocolUtil = new IV4XRProtocolUtil();
 
 		// Define existing agent to fetch his observation entities
 		IV4XRStateFetcher.agentsIds = new HashSet<>(Arrays.asList(agentId));
