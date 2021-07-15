@@ -52,11 +52,6 @@ public abstract class RuntimeControlsProtocol extends AbstractProtocol implement
     protected boolean markParentWidget = false;
     protected boolean visualizationOn = false;
 
-    @Override
-    protected Action selectAction(State state, Set<Action> actions) {
-        return null;
-    }
-
     public enum Modes{
         Spy,
         Record,

@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package nl.ou.testar.StateModel.iv4XR;
+package nl.ou.testar.StateModel;
 
 import java.util.Set;
 import java.util.StringJoiner;
@@ -37,23 +37,19 @@ import org.fruit.alayer.Action;
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.Tags;
 
-import nl.ou.testar.StateModel.AbstractAction;
-import nl.ou.testar.StateModel.AbstractStateModel;
-import nl.ou.testar.StateModel.ModelManager;
-import nl.ou.testar.StateModel.StateModelManager;
 import nl.ou.testar.StateModel.ActionSelection.ActionSelector;
 import nl.ou.testar.StateModel.Exception.ActionNotFoundException;
 import nl.ou.testar.StateModel.Persistence.PersistenceManager;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
 
-public class ModelManagerIV4XREnvironment extends ModelManager implements StateModelManager {
+public class iv4xrModelManager extends ModelManager implements StateModelManager {
 
 	/**
 	 * Constructor
 	 * @param abstractStateModel
 	 * @param actionSelector
 	 */
-	public ModelManagerIV4XREnvironment(AbstractStateModel abstractStateModel, ActionSelector actionSelector, PersistenceManager persistenceManager,
+	public iv4xrModelManager(AbstractStateModel abstractStateModel, ActionSelector actionSelector, PersistenceManager persistenceManager,
 			Set<Tag<?>> concreteStateTags, SequenceManager sequenceManager, boolean storeWidgets) {
 		super(abstractStateModel, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
 	}

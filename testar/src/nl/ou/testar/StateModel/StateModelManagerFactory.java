@@ -1,3 +1,33 @@
+/***************************************************************************************************
+ *
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *******************************************************************************************************/
+
 package nl.ou.testar.StateModel;
 
 import es.upv.staq.testar.CodingManager;
@@ -20,8 +50,6 @@ import nl.ou.testar.StateModel.Persistence.PersistenceManager;
 import nl.ou.testar.StateModel.Persistence.PersistenceManagerFactory;
 import nl.ou.testar.StateModel.Persistence.PersistenceManagerFactoryBuilder;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
-
-import nl.ou.testar.StateModel.iv4XR.ModelManagerIV4XREnvironment;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -78,54 +106,68 @@ public class StateModelManagerFactory {
         // should we store widgets?
         boolean storeWidgets = settings.get(ConfigTags.StateModelStoreWidgets);
 
-        //if(settings.get(ConfigTags.iv4XRAgentListener, false)) {
+        // We want to use one of the iv4xr Model Manager
         if(NativeLinker.getPLATFORM_OS().contains(OperatingSystems.IV4XR_LAB)
         		|| NativeLinker.getPLATFORM_OS().contains(OperatingSystems.IV4XR_SE)) {
 
-        	// create the abstract state model and then the state model manager
-        	AbstractStateModel abstractStateModelListener = new AbstractStateModel(modelIdentifier,
+        	// create the abstract state model for the iv4xr model manager
+        	AbstractStateModelReinforcementLearning abstractStateModelRL = new AbstractStateModelReinforcementLearning(modelIdentifier,
         			settings.get(ConfigTags.ApplicationName),
         			settings.get(ConfigTags.ApplicationVersion),
         			abstractTags,
-        			persistenceManager instanceof StateModelEventListener ? (StateModelEventListener) persistenceManager : null);
+        			persistenceManager != null ? (StateModelEventListener) persistenceManager : null);
+
+        	// Check if we want to use iv4xr model manager with RL framework
+        	if (settings.get(ConfigTags.StateModelReinforcementLearningEnabled, false)) {
+        		System.out.println("State Model iv4xr Reinforcement Learning Model Manager");
+        		logger.info("State Model iv4xr Reinforcement Learning Model Manager");
+
+        		final ActionSelector actionSelector = new ReinforcementLearningActionSelector(PolicyFactory.getPolicy(settings)) ;
+        		final RewardFunction rewardFunction = RewardFunctionFactory.getRewardFunction(settings);
+        		final QFunction qFunction = QFunctionFactory.getQFunction(settings);
+        		Tag<?> tag = ReinforcementLearningUtil.getTag(settings);
+
+        		return new iv4xrRLModelManager(abstractStateModelRL, 
+        				actionSelector, 
+        				persistenceManager, 
+        				concreteStateTags, 
+        				sequenceManager, 
+        				storeWidgets,
+        				rewardFunction,
+        				qFunction,
+        				tag);
+        	}
+
+        	// If not return the iv4xr Model Manager without RL
+        	System.out.println("State Model Manager for iv4XR selected");
+        	logger.info("State Model Manager for iv4XR selected");
+
+        	// Prepare an action selector not related with RL framework
         	ActionSelector actionSelector = CompoundFactory.getCompoundActionSelector(settings);
 
-        	return new ModelManagerIV4XREnvironment(abstractStateModelListener, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
+        	return new iv4xrModelManager(abstractStateModelRL, 
+        			actionSelector, 
+        			persistenceManager, 
+        			concreteStateTags, 
+        			sequenceManager, 
+        			storeWidgets);
         }
 
+        // Default AbstractStateModel and ModelManager (no iv4xr no RL)
         // create the abstract state model and then the state model manager
-        AbstractStateModelReinforcementLearning abstractStateModel = new AbstractStateModelReinforcementLearning(modelIdentifier,
-                settings.get(ConfigTags.ApplicationName),
-                settings.get(ConfigTags.ApplicationVersion),
-                abstractTags,
-                persistenceManager != null ? (StateModelEventListener) persistenceManager : null);
-
-        if (settings.get(ConfigTags.StateModelReinforcementLearningEnabled, false)) {
-            Tag<?> tag = ReinforcementLearningUtil.getTag(settings);
-            final ActionSelector actionSelector = new ReinforcementLearningActionSelector(PolicyFactory.getPolicy(settings)) ;
-
-            final RewardFunction rewardFunction = RewardFunctionFactory.getRewardFunction(settings);
-            final QFunction qFunction = QFunctionFactory.getQFunction(settings);
-            logger.info("State model with RLModelManager selected");
-            return new RLModelManager(abstractStateModel,
-                    actionSelector,
-                    persistenceManager,
-                    concreteStateTags,
-                    sequenceManager,
-                    storeWidgets,
-                    rewardFunction,
-                    qFunction,
-                    tag);
-        }
-
+        AbstractStateModel abstractStateModel = new AbstractStateModel(modelIdentifier,
+        		settings.get(ConfigTags.ApplicationName),
+        		settings.get(ConfigTags.ApplicationVersion),
+        		abstractTags,
+        		persistenceManager != null ? (StateModelEventListener) persistenceManager : null);
         ActionSelector actionSelector = CompoundFactory.getCompoundActionSelector(settings);
 
         logger.info("State model with modelManager selected");
         return new ModelManager(abstractStateModel,
-                actionSelector,
-                persistenceManager,
-                concreteStateTags,
-                sequenceManager,
-                storeWidgets);
+        		actionSelector,
+        		persistenceManager,
+        		concreteStateTags,
+        		sequenceManager,
+        		storeWidgets);
     }
 }

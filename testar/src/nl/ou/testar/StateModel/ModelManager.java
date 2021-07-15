@@ -1,6 +1,5 @@
 package nl.ou.testar.StateModel;
 
-import nl.ou.testar.ReinforcementLearning.RewardFunctions.TreeDistHelper;
 import nl.ou.testar.StateModel.ActionSelection.ActionSelector;
 import nl.ou.testar.StateModel.Exception.ActionNotFoundException;
 import nl.ou.testar.StateModel.Exception.StateModelException;
@@ -197,13 +196,16 @@ public class ModelManager implements StateModelManager {
             logger.info("NotifyActionExecution action:'{}'", action.toShortString());
             actionUnderExecution = currentAbstractState.getAction(action.get(Tags.AbstractIDCustom));
         } catch (final NullPointerException | ActionNotFoundException ex) {
-            logger.info("Action not found in state model");
+        	System.out.println("Action not found in state model");
+        	logger.info("Action not found in state model");
             errorMessages.add("Action with id: " + action.get(Tags.AbstractIDCustom) + " was not found in the model.");
             actionUnderExecution = new AbstractAction(action.get(Tags.AbstractIDCustom));
             currentAbstractState.addNewAction(actionUnderExecution);
         }
         concreteActionUnderExecution = ConcreteActionFactory.createConcreteAction(action, actionUnderExecution);
         actionUnderExecution.addConcreteActionId(concreteActionUnderExecution.getActionId());
+        System.out.println("Executing action: " + action.get(Tags.Desc));
+        System.out.println("----------------------------------");
         logger.info("Executing action: " + action.get(Tags.Desc));
         logger.info("----------------------------------");
 

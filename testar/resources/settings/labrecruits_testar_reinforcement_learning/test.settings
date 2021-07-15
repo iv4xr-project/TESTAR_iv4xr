@@ -4,7 +4,7 @@
 # Set the mode you want TESTAR to start in: Spy, Generate, Replay
 #################################################################
 
-Mode = Spy
+Mode = Generate
 
 #################################################################
 # Connect to the System Under Test (SUT)
@@ -23,7 +23,7 @@ Mode = Spy
 # The SUT must be manually started and closed.
 #################################################################
 SUTConnector = COMMAND_LINE
-SUTConnectorValue = SpaceEngineers.exe
+SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "buttons_doors_1"
 
 #################################################################
 # Sequences
@@ -32,7 +32,7 @@ SUTConnectorValue = SpaceEngineers.exe
 #################################################################
 
 Sequences = 1
-SequenceLength = 100
+SequenceLength = 10
 
 #################################################################
 # Oracles based on suspicious titles
@@ -68,7 +68,7 @@ SuspiciousProcessOutput = .*[eE]rror.*|.*[eE]xcep[ct]i[o?]n.*
 # process.
 #################################################################
 
-ProcessLogs = .*[eE]xcep[ct]i[o?]n.*
+ProcessLogs = .*.*
 
 #################################################################
 # Actionfilter
@@ -95,7 +95,7 @@ SUTProcesses =
 # Indicate the location of the protocol class for your specific SUT.
 #################################################################
 
-ProtocolClass = se_commands_testar_dummy/Protocol_se_commands_testar_dummy
+ProtocolClass = labrecruits_testar_reinforcement_learning/Protocol_labrecruits_testar_reinforcement_learning
 
 #################################################################
 # State model inference settings
@@ -108,7 +108,8 @@ DataStoreDB = testar
 DataStoreUser = testar
 DataStorePassword = testar
 DataStoreMode = instant
-ActionSelectionAlgorithm = unvisited
+ApplicationName = lab_rl
+ApplicationVersion = 1
 StateModelStoreWidgets = false
 iv4XRAgentListener = false
 
@@ -119,6 +120,23 @@ iv4XRAgentListener = false
 # the widget and state hash strings. Use a comma separated list.
 #################################################################
 AbstractStateAttributes = iv4xrEntityId, iv4xrEntityIsActive
+
+#################################################################
+# Reinforcement learning settings
+#################################################################
+StateModelReinforcementLearningEnabled = true
+Alpha = 1.0
+Gamma = 0.99
+DefaultValue = 0.0
+DefaultReward = 0.0
+Epsilon = 0.7
+MaxQValue = 1.0
+DecayRate = 0.0001
+Temperature = 1.0
+RewardFunction = CounterBasedRewardFunction
+Policy = EpsilonGreedyPolicy
+TagName = sarsaValue
+QFunction = SarsaQFunction
 
 #################################################################
 # Other more advanced settings

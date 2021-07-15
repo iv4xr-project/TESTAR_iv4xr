@@ -493,6 +493,9 @@ public class Main {
 			defaults.add(Pair.from(AgentId, "agent1"));
 			defaults.add(Pair.from(SpyIncrement, 100));
 
+			//RL settings
+			defaults.add(Pair.from(StateModelReinforcementLearningEnabled, false));
+
 			defaults.add(Pair.from(ProtocolSpecificSetting_1, ""));
 			defaults.add(Pair.from(ProtocolSpecificSetting_2, ""));
 			defaults.add(Pair.from(ProtocolSpecificSetting_3, ""));

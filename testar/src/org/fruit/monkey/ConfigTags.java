@@ -96,7 +96,6 @@ public final class ConfigTags {
 
   // state model config tags
   public static final Tag<Boolean> StateModelEnabled = Tag.from("StateModelEnabled", Boolean.class);
-  public static final Tag<Boolean> StateModelReinforcementLearningEnabled = Tag.from("StateModelReinforcementLearningEnabled", Boolean.class);
   public static final Tag<String> DataStore = Tag.from("DataStore", String.class);
   public static final Tag<String> DataStoreType = Tag.from("DataStoreType", String.class);
   public static final Tag<String> DataStoreServer = Tag.from("DataStoreServer", String.class);
@@ -113,6 +112,7 @@ public final class ConfigTags {
   public static final Tag<Boolean> iv4XRAgentListener = Tag.from("iv4XRAgentListener", Boolean.class);
 
   // Reinforcement learning specific
+  public static final Tag<Boolean> StateModelReinforcementLearningEnabled = Tag.from("StateModelReinforcementLearningEnabled", Boolean.class);
   public static final Tag<Float> Alpha = Tag.from("Alpha", Float.class);
   public static final Tag<Float> Gamma = Tag.from("Gamma", Float.class);
   public static final Tag<Float> DefaultValue = Tag.from("DefaultValue", Float.class);

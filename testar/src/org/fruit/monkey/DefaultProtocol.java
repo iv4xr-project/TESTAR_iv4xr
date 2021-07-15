@@ -745,9 +745,6 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 				//update state after begin sequence SUT modification
 				state = getState(system);
 
-				// notify the statemodelmanager
-				//stateModelManager.notifyTestSequencedStarted();
-
 				/*
 				 ***** starting the INNER LOOP:
 				 */

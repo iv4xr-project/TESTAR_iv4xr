@@ -472,19 +472,4 @@ public class GenericUtilsProtocol extends ClickFilterLayerProtocol {
         }
         return false;
     }
-
-    /**
-     * This methods prepares for deriving actions, but does not really derive them yet. This is left for lower
-     * level protocols. Here the parameters are set in case unwanted processes need to be killed or the SUT needs to be brought back
-     * to foreground. The latter is then done by selectActions in the AbstractProtocol.
-     *
-     * @param system
-     * @param state
-     * @return
-     * @throws ActionBuildException
-     */
-    @Override
-    protected Set<Action> deriveActions(SUT system, State state) throws ActionBuildException {
-        return super.deriveActions(system, state);
-    }
 }
