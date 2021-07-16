@@ -33,18 +33,19 @@ package eu.testar.iv4xr.se;
 import java.util.ArrayList;
 
 import org.fruit.alayer.SUT;
+import org.fruit.alayer.exceptions.StateBuildException;
 
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.IV4XRElement;
 import eu.testar.iv4xr.IV4XRRootElement;
 import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.commands.ObservationArgs;
-import spaceEngineers.commands.ObservationMode;
-import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
+import spaceEngineers.controller.JsonRpcSpaceEngineers;
+import spaceEngineers.controller.Observer;
 import spaceEngineers.model.CubeGrid;
 import spaceEngineers.model.Observation;
 import spaceEngineers.model.Block;
+import spaceEngineers.model.CharacterObservation;
 
 public class SeStateFetcher extends IV4XRStateFetcher {
 
@@ -53,39 +54,50 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 	}
 
 	/**
-	 * Observation = Objects Agent can observe - Dynamically appearing and disappearing WOM. 
+	 * Create an Array tree of elements that later becomes the Widget-tree.
+	 * Use the Space Engineers Rpc Controller to extract the Agent and Blocks information from the WOM. 
+	 * Every instant of time the Agent will observe himself and the Blocks if these are in close range. 
 	 */
 	@Override
 	protected IV4XRRootElement fetchIV4XRElements(IV4XRRootElement rootElement) {
+		// Get the controller attached to the SE system (SpaceEngineersProcess)
+		JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
 
-		ProprietaryJsonTcpCharacterController seController = system.get(IV4XRtags.iv4xrSpaceEngProprietaryTcpController);
+		// Check that TESTAR it can observe the SE system
+		Observer seObserver = seRpcController.getObserver();
+		if(seObserver == null) throw new StateBuildException("SE Agent Oberver is null! Exception trying to fetch the State of iv4XR SpaceEngineers");
 
-		Observation observation = seController.observe(new ObservationArgs(ObservationMode.BLOCKS));
+		// Get the Character and Blocks observation that we use to create the element tree
+		CharacterObservation seObsCharacter = seRpcController.getObserver().observe();
+		Observation seObsBlocks = seRpcController.getObserver().observeBlocks();
 
-		if(observation != null && observation.getGrids() != null && observation.getGrids().size() > 0) {
-			// Add manually the Agent as an Element (Observed Entities + 1)
-			rootElement.children = new ArrayList<IV4XRElement>((int) observation.getGrids().size() + 1);
+		// If the agent observes himself and in this instant of time also has observation of blocks
+		if(seObsCharacter != null && seObsBlocks != null && seObsBlocks.getGrids() != null && seObsBlocks.getGrids().size() > 0) {
+			// Add manually the Agent as an Element (Observed Blocks + 1)
+			rootElement.children = new ArrayList<IV4XRElement>((int) seObserver.observeBlocks().getGrids().size() + 1);
 
 			rootElement.zindex = 0;
 			fillRect(rootElement);
 
-			// Agent always exists as an Entity
-			SEagent(rootElement, observation);
+			// Create the Agent as element of the tree, because always exists as a Widget
+			SEagent(rootElement, seObsCharacter);
 
-			// If Agent observes entities create the elements-entities
-			if(observation.getGrids().size() > 0) {
-				for(CubeGrid seCubeGrid : observation.getGrids()) {
+			// If the Agent observes blocks create the elements blocks tree
+			if(seObsBlocks.getGrids().size() > 0) {
+				for(CubeGrid seCubeGrid : seObsBlocks.getGrids()) {
 					SEGridDescend(rootElement, seCubeGrid);
 				}
 			}
-		} else if (observation != null) {
+		} 
+		// If agent observes himself but in this instant has NO observation of blocks 
+		else if (seObsCharacter != null) {
 			// Add manually the Agent as an Element (Observed Entities + 1)
 			rootElement.children = new ArrayList<IV4XRElement>(1);
 
 			rootElement.zindex = 0;
 			fillRect(rootElement);
 
-			SEagent(rootElement, observation);
+			SEagent(rootElement, seObsCharacter);
 		} else {
 			System.err.println("ERROR: No Agent and no BLOCKS in the current Observation");
 		}
@@ -93,7 +105,15 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		return rootElement;
 	}
 
-	private IV4XRElement SEagent(IV4XRElement parent, Observation seObservation) {
+	/**
+	 * Based on the Space Engineers CharacterObservation, extract the agent properties to 
+	 * create an element inside the fetched tree. 
+	 * 
+	 * @param parent
+	 * @param seObsCharacter
+	 * @return agent Element
+	 */
+	private IV4XRElement SEagent(IV4XRElement parent, CharacterObservation seObsCharacter) {
 		IV4XRElement childElement = new IV4XRElement(parent);
 		parent.children.add(childElement);
 
@@ -101,13 +121,13 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
 		childElement.zindex = parent.zindex +1;
 
-		childElement.agentPosition = new Vec3(seObservation.getPosition().getX(), seObservation.getPosition().getY(), seObservation.getPosition().getZ());
-		childElement.seAgentPosition = seObservation.getPosition();
-		childElement.seAgentOrientationForward = seObservation.getOrientationForward();
-		childElement.seAgentOrientationUp = seObservation.getOrientationUp();
-		
-		childElement.entityVelocity = new Vec3(seObservation.getVelocity().getX(), seObservation.getVelocity().getY(), seObservation.getVelocity().getZ());
-		childElement.entityId = system.get(IV4XRtags.iv4xrSpaceEngProprietaryTcpController).getAgentId();
+		childElement.agentPosition = new Vec3(seObsCharacter.getPosition().getX(), seObsCharacter.getPosition().getY(), seObsCharacter.getPosition().getZ());
+		childElement.seAgentPosition = seObsCharacter.getPosition();
+		childElement.seAgentOrientationForward = seObsCharacter.getOrientationForward();
+		childElement.seAgentOrientationUp = seObsCharacter.getOrientationUp();
+
+		childElement.entityVelocity = new Vec3(seObsCharacter.getVelocity().getX(), seObsCharacter.getVelocity().getY(), seObsCharacter.getVelocity().getZ());
+		childElement.entityId = system.get(IV4XRtags.iv4xrSpaceEngRpcController).getAgentId();
 		childElement.entityType = "AGENT"; //TODO: check proper entity for agent
 		childElement.entityTimestamp = -1;
 
@@ -116,6 +136,15 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		return childElement;
 	}
 
+	/**
+	 * Based on the Space Engineers blocks Observation, extract the CubeGrid properties to 
+	 * create an grid element inside the fetched tree. 
+	 * Then extract the Block that are children of these CubeGrid. 
+	 * 
+	 * @param parent
+	 * @param seCubeGrid
+	 * @return CubeGrid element with Block children
+	 */
 	private IV4XRElement SEGridDescend(IV4XRElement parent, CubeGrid seCubeGrid) {
 		IV4XRElement childElement = new IV4XRElement(parent);
 		parent.children.add(childElement);
@@ -137,6 +166,13 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		return childElement;
 	}
 
+	/**
+	 * Extract the Block properties to create an block element inside the fetched tree. 
+	 * 
+	 * @param parent
+	 * @param seBlock
+	 * @return Block element
+	 */
 	private IV4XRElement SEBlockDescend(IV4XRElement parent, Block seBlock) {
 		IV4XRElement childElement = new IV4XRElement(parent);
 		parent.children.add(childElement);
@@ -148,7 +184,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.entityPosition = new Vec3(seBlock.getPosition().getX(), seBlock.getPosition().getY(), seBlock.getPosition().getZ());
 		childElement.entityId = seBlock.getId();
 		childElement.entityType = seBlock.getBlockType();
-		
+
 		childElement.seBuildIntegrity = seBlock.getBuildIntegrity();
 		childElement.seIntegrity = seBlock.getIntegrity();
 		childElement.seMaxIntegrity = seBlock.getMaxIntegrity();

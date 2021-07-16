@@ -67,13 +67,13 @@ public class seActionCommandTeleport extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
-		seCharacter.teleport(targetPosition, orientationForward, orientationUp);
+		spaceEngineers.controller.JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
+		seRpcController.getAdmin().getCharacter().teleport(targetPosition, orientationForward, orientationUp);
 	}
 
 	@Override
 	public String toShortString() {
-		return "Telepor the agent: " + agentId + " to the position" + targetPosition;
+		return "Teleport the agent: " + agentId + " to the position" + targetPosition;
 	}
 
 	@Override

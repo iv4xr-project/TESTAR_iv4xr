@@ -62,6 +62,7 @@ public class seActionCommandPlaceBlock extends TaggableBase implements Action {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
+		spaceEngineers.controller.JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
 
 		seItems.setToolbarItem("LargeBlockArmorBlock", ToolbarLocation.Companion.fromIndex(1, 2));
 
@@ -71,7 +72,7 @@ public class seActionCommandPlaceBlock extends TaggableBase implements Action {
 
 		Util.pause(0.5);
 
-		seItems.place();
+		seRpcController.getBlocks().place();
 	}
 
 	@Override

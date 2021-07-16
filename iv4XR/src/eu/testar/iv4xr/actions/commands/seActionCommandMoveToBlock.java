@@ -42,9 +42,6 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
-import spaceEngineers.commands.ObservationArgs;
-import spaceEngineers.commands.ObservationMode;
-import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
 import spaceEngineers.model.Vec2;
 import spaceEngineers.model.Vec3;
 
@@ -70,12 +67,13 @@ public class seActionCommandMoveToBlock extends TaggableBase implements Action {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
-		ProprietaryJsonTcpCharacterController spaceEngController = system.get(IV4XRtags.iv4xrSpaceEngProprietaryTcpController);
+		spaceEngineers.controller.JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
+		spaceEngineers.controller.Observer seObserver = seRpcController.getObserver();
 
 		// 360 rotation = new Vec2(0, 2416f)
 
 		// Rotate tick by tick until the agent has the same orientation forward that the block
-		while(!targetOrientationForward.similar(spaceEngController.observe(new ObservationArgs(ObservationMode.BASIC)).getOrientationForward(), 0.01f)) {
+		while(!targetOrientationForward.similar(seObserver.observe().getOrientationForward(), 0.1f)) {
 			seCharacter.moveAndRotate(new Vec3(0,0,0), Vec2.Companion.getROTATE_RIGHT(), 0f);
 		}
 
@@ -89,14 +87,14 @@ public class seActionCommandMoveToBlock extends TaggableBase implements Action {
 		int zDir = 1;
 
 		// Calculate the distance and move until the agent is close to the block
-		while(!targetPosition.similar(spaceEngController.observe(new ObservationArgs(ObservationMode.BASIC)).getPosition(), 1.7f)) {
-			Vec3 currentPosition = spaceEngController.observe(new ObservationArgs(ObservationMode.BASIC)).getPosition();
+		while(!targetPosition.similar(seObserver.observe().getPosition(), 1.7f)) {
+			Vec3 currentPosition = seObserver.observe().getPosition();
 			Vec3 movement = seDistance(targetPosition, currentPosition);
 			movement = new Vec3(movement.getX() * xDir, movement.getY(), movement.getZ() * zDir);
 			seCharacter.moveAndRotate(movement, new Vec2(0,0), 0f);
 
 			// Check if agent is moving away or getting closer
-			Vec3 currentDistance = seDistance(targetPosition, spaceEngController.observe(new ObservationArgs(ObservationMode.BASIC)).getPosition());
+			Vec3 currentDistance = seDistance(targetPosition, seObserver.observe().getPosition());
 			if((Math.abs(previousDistance.getX()) - Math.abs(currentDistance.getX())) < 0) {
 				xDir = xDir * -1;
 			}

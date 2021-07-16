@@ -45,8 +45,7 @@ import org.fruit.alayer.windows.WinApiException;
 import org.fruit.alayer.windows.WinProcess;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.controller.JsonRpcCharacterController;
-import spaceEngineers.controller.ProprietaryJsonTcpCharacterController;
+import spaceEngineers.controller.JsonRpcSpaceEngineers;
 
 public class SpaceEngineersProcess extends SUTBase {
 
@@ -126,24 +125,22 @@ public class SpaceEngineersProcess extends SUTBase {
 
 		try {
 			// Prepare SpaceEngineers Controller
-			ProprietaryJsonTcpCharacterController proprietaryTcpController = ProprietaryJsonTcpCharacterController.Companion.localhost(characterControllerId);
-			JsonRpcCharacterController rcpController = JsonRpcCharacterController.Companion.localhost(characterControllerId);
+			JsonRpcSpaceEngineers seRpcController = JsonRpcSpaceEngineers.Companion.localhost(characterControllerId);
 			Util.pause(2);
 			System.out.println("Welcome to the SE iv4XR test: " + launchPart);
 
 			// Load Space Engineers Level
 			if(!levelPath.isEmpty()) {
-				proprietaryTcpController.loadScenario(new File(levelPath).getAbsolutePath());
+				seRpcController.getSession().loadScenario(new File(levelPath).getAbsolutePath());
 				Util.pause(10);
 				System.out.println("Loaded level: " + levelPath);
 			}
 
 			this.set(IV4XRtags.windowsProcess, win);
 			this.set(Tags.PID, win.pid());
-			this.set(IV4XRtags.iv4xrSpaceEngProprietaryTcpController, proprietaryTcpController);
-			this.set(IV4XRtags.iv4xrSpaceEngRcpController, rcpController);
-			this.set(IV4XRtags.iv4xrSpaceEngCharacter, rcpController.getCharacter());
-			this.set(IV4XRtags.iv4xrSpaceEngItems, rcpController.getItems());
+			this.set(IV4XRtags.iv4xrSpaceEngRpcController, seRpcController);
+			this.set(IV4XRtags.iv4xrSpaceEngCharacter, seRpcController.getCharacter());
+			this.set(IV4XRtags.iv4xrSpaceEngItems, seRpcController.getItems());
 
 		} catch(Exception e) {
 			System.err.println(String.format("EnvironmentConfig ERROR: Trying to connect with %s", launchPart));

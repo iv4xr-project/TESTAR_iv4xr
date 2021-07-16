@@ -62,6 +62,7 @@ public class seActionCommandPlaceHeavyBlock extends TaggableBase implements Acti
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
+		spaceEngineers.controller.JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
 
 		seItems.setToolbarItem("LargeHeavyBlockArmorBlock", ToolbarLocation.Companion.fromIndex(2, 3));
 
@@ -71,7 +72,7 @@ public class seActionCommandPlaceHeavyBlock extends TaggableBase implements Acti
 
 		Util.pause(0.5);
 
-		seItems.place();
+		seRpcController.getBlocks().place();
 	}
 
 	@Override
