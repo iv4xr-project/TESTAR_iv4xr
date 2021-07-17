@@ -47,10 +47,29 @@ import spaceEngineers.model.ToolbarLocation;
 public class seActionCommandWelder extends TaggableBase implements Action {
 	private static final long serialVersionUID = -9171892675722381064L;
 
+	// TODO: Research the impact of the welderType and toolUsage in the inference of the state model
 	private String agentId;
+	private String welderType;
+	private double toolUsageTime;
+
+	/**
+	 * Types: WelderItem, Welder2Item, Welder3Item, Welder4Item
+	 * 
+	 * @param welderType
+	 */
+	private void setWelderType(int welderType) {
+		String type = (welderType >= 2 && welderType <= 4) ? String.valueOf(welderType) : "" ; 
+		this.welderType = "Welder".concat(type).concat("Item");
+	}
 
 	public seActionCommandWelder(Widget w, String agentId){
+		this(w, agentId, 1, 1);
+	}
+
+	public seActionCommandWelder(Widget w, String agentId, int welderType, double toolUsageTime){
 		this.agentId = agentId;
+		setWelderType(welderType);
+		this.toolUsageTime = toolUsageTime;
 		this.set(Tags.OriginWidget, w);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandInteract);
 		this.set(Tags.Desc, toShortString());
@@ -63,7 +82,8 @@ public class seActionCommandWelder extends TaggableBase implements Action {
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
 
-		seItems.setToolbarItem("Welder2Item", ToolbarLocation.Companion.fromIndex(4, 5));
+		// Prepare the desired tool in the SE tool bar
+		seItems.setToolbarItem(welderType, ToolbarLocation.Companion.fromIndex(4, 5));
 
 		Util.pause(0.5);
 
@@ -71,16 +91,17 @@ public class seActionCommandWelder extends TaggableBase implements Action {
 
 		Util.pause(0.5);
 
+		// Use the tool the desired amount of time
 		seItems.beginUsingTool();
 
-		Util.pause(2);
+		Util.pause(toolUsageTime);
 
 		seItems.endUsingTool();
 	}
 
 	@Override
 	public String toShortString() {
-		return "Use Welder by agent: " + agentId;
+		return "Use " + welderType + " seconds " + toolUsageTime + " by agent: " + agentId;
 	}
 
 	@Override

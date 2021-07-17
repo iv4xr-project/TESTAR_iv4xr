@@ -30,7 +30,6 @@
 
 package eu.testar.iv4xr.actions.commands;
 
-import org.fruit.Util;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
@@ -42,36 +41,16 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.model.ToolbarLocation;
 
-public class seActionCommandGrinder extends TaggableBase implements Action {
-	private static final long serialVersionUID = -9171892675722381064L;
+public class seActionCommandJetpackOn extends TaggableBase implements Action {
+	private static final long serialVersionUID = -7491346912931944317L;
 
-	// TODO: Research the impact of the grinderType and toolUsage in the inference of the state model
 	private String agentId;
-	private String grinderType;
-	private double toolUsageTime;
 
-	/**
-	 * Types: AngleGrinderItem, AngleGrinder2Item, AngleGrinder3Item, AngleGrinder4Item
-	 * 
-	 * @param grinderType
-	 */
-	private void setGrinderType(int grinderType) {
-		String type = (grinderType >= 2 && grinderType <= 4) ? String.valueOf(grinderType) : "" ; 
-		this.grinderType = "AngleGrinder".concat(type).concat("Item");
-	}
-
-	public seActionCommandGrinder(Widget w, String agentId){
-		this(w, agentId, 1, 1);
-	}
-
-	public seActionCommandGrinder(Widget w, String agentId, int grinderType, double toolUsageTime){
+	public seActionCommandJetpackOn(Widget w, String agentId){
 		this.agentId = agentId;
-		setGrinderType(grinderType);
-		this.toolUsageTime = toolUsageTime;
 		this.set(Tags.OriginWidget, w);
-		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandInteract);
+		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
 		this.set(Tags.Desc, toShortString());
 		// TODO: Update with Goal Solving agents
 		this.set(IV4XRtags.agentAction, false);
@@ -80,28 +59,13 @@ public class seActionCommandGrinder extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
-
-		// Prepare the desired tool in the SE tool bar
-		seItems.setToolbarItem(grinderType, ToolbarLocation.Companion.fromIndex(5, 6));
-
-		Util.pause(0.5);
-
-		seItems.equip(ToolbarLocation.Companion.fromIndex(5, 6));
-
-		Util.pause(0.5);
-
-		// Use the tool the desired amount of time
-		seItems.beginUsingTool();
-
-		Util.pause(toolUsageTime);
-
-		seItems.endUsingTool();
+		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
+		seCharacter.turnOnJetpack();
 	}
 
 	@Override
 	public String toShortString() {
-		return "Use " + grinderType + " seconds " + toolUsageTime + " by agent: " + agentId;
+		return "Start Jetpack by agent " + agentId;
 	}
 
 	@Override
@@ -115,4 +79,5 @@ public class seActionCommandGrinder extends TaggableBase implements Action {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

@@ -48,6 +48,7 @@ import org.fruit.alayer.visualizers.EllipseVisualizer;
 
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.enums.SVec3;
 
 public class Iv4xrSeVisualization {
 
@@ -63,11 +64,13 @@ public class Iv4xrSeVisualization {
 	static {
 		entitiesColors = new HashMap<String, Pen>();
 		entitiesColors.put("largeblockarmorblock", GreenPen);
+		entitiesColors.put("largeheavyblockarmorblock", BlackPen);
 		entitiesColors.put("largegrid", YellowPen);
+		entitiesColors.put("staticgrid", YellowPen);
 	}
 
 	public static Pen getEntityColor(String entityType) {
-		return entitiesColors.getOrDefault(entityType.toLowerCase(), BluePen);
+		return entitiesColors.getOrDefault(entityType.toLowerCase().trim(), BluePen);
 	}
 
 	/**
@@ -80,15 +83,15 @@ public class Iv4xrSeVisualization {
 	 */
 	public static synchronized void showStateObservation(Canvas canvas, State state){
 		// Prepare the visual rectangle in the left side of the screen
-		Shape visualShape = org.fruit.alayer.Rect.from(0, 300, 300, 300);
+		Shape visualShape = org.fruit.alayer.Rect.from(0, 200, 600, 600);
 		visualShape.paint(canvas, Pen.PEN_MARK_ALPHA);
 		visualShape.paint(canvas, Pen.PEN_MARK_BORDER);
 
-		canvas.text(Pen.PEN_RED, 10, 310, 0, "State Abstract Custom Identifier");
-		canvas.text(Pen.PEN_BLUE, 10, 330, 0, state.get(Tags.AbstractIDCustom, "NoAbstractIDCustom"));
+		canvas.text(Pen.PEN_RED, 10, 210, 0, "State Abstract Custom Identifier");
+		canvas.text(Pen.PEN_BLUE, 10, 230, 0, state.get(Tags.AbstractIDCustom, "NoAbstractIDCustom"));
 
 		// Iterate over all the observed widgets/entities to draw the Identifier in the left panel
-		canvas.text(Pen.PEN_RED, 10, 350, 0, "OBSERVED widgets/blocks");
+		canvas.text(Pen.PEN_RED, 10, 250, 0, "OBSERVED widgets/blocks");
 
 		int countGrids = 0;
 		int countBlock = 0;
@@ -97,10 +100,37 @@ public class Iv4xrSeVisualization {
 			if(w.get(IV4XRtags.entityType, "").contains("Block")) {countBlock ++;}
 		}
 
-		canvas.text(YellowPen, 10, 390, 0, "Number of Grids: " + countGrids);
-		canvas.text(GreenPen, 10, 370, 0, "Number of Blocks: " + countBlock);
+		canvas.text(YellowPen, 10, 270, 0, "Number of Grids: " + countGrids);
+		canvas.text(GreenPen, 10, 290, 0, "Number of Blocks: " + countBlock);
+
+		int y = 310;
+		for(Widget w : state) {
+			// Ignore the Agent and State
+			if(w.equals(state.get(IV4XRtags.agentWidget, null)) || w.equals(state)) continue;
+			// Only close position entities
+			spaceEngineers.model.Vec3 widgetPosition = SVec3.labToSE(w.get(IV4XRtags.entityPosition));
+			spaceEngineers.model.Vec3 agentPosition = SVec3.labToSE(state.get(IV4XRtags.agentWidget, null).get(IV4XRtags.agentPosition));
+			if(widgetPosition.similar(agentPosition, 20f)) {
+				// Draw a text that contains the entity identifier using the color defined on the entitiesColors map
+				float distance = seDistance(widgetPosition, agentPosition);
+				String info = "Type: " + w.get(IV4XRtags.entityType, "") + ", Integrity: " + w.get(IV4XRtags.seIntegrity, -1f) + ", Distance: " + distance;
+				canvas.text(getEntityColor(w.get(IV4XRtags.entityType, "")), 10, y, 0, info);
+				y += 20;
+			}
+		}
 	}
-	
+
+	/**
+	 * Numeric distance between the widget block and the agent. 
+	 * 
+	 * @param targetPosition
+	 * @param currentPosition
+	 * @return
+	 */
+	private static float seDistance(spaceEngineers.model.Vec3 targetPosition, spaceEngineers.model.Vec3 currentPosition) {
+		return 	(Math.abs(targetPosition.getX() - currentPosition.getX())/2) + (Math.abs(targetPosition.getZ() - currentPosition.getZ())/2);
+	}
+
 	/**
 	 * Create a panel on the SUT GUI, to draw multiple dots that represents 
 	 * observed entities/widgets and NavMesh nodes of the current state. 
@@ -118,7 +148,7 @@ public class Iv4xrSeVisualization {
 		if(agentWidget == null) {
 			System.out.println("WARNING: Spy mode does not detect the Agent view");
 		}
-		
+
 		VirtualEntitesPosition virtualEntitesPos = new VirtualEntitesPosition();
 
 		// The center coordinate of the SUT GUI
@@ -137,19 +167,11 @@ public class Iv4xrSeVisualization {
 			Position entityPosition = new AbsolutePosition(centerX + distanceX * spyIncrement, centerY - distanceZ * spyIncrement);
 			Pen entityColor = getEntityColor(w.get(IV4XRtags.entityType, ""));
 			new EllipseVisualizer(entityPosition, entityColor, 10, 10).run(state, canvas, vp);
-			
-			System.out.println("Widget position : " + w.get(IV4XRtags.entityPosition) +
-					", Widget seOrientationForward" + w.get(IV4XRtags.seOrientationForward) + 
-					", Widget seOrientationUp" + w.get(IV4XRtags.seOrientationUp));
 		}
-		
-		System.out.println("Agent position : " + state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition) +
-				", Agent seOrientationForward" + state.get(IV4XRtags.agentWidget).get(IV4XRtags.seOrientationForward) + 
-				", Agent seOrientationUp" + state.get(IV4XRtags.agentWidget).get(IV4XRtags.seOrientationUp));
-		
+
 		showElementFromMouse(canvas, virtualEntitesPos);
 	}
-	
+
 	/**
 	 * If the system mouse is over an specific widget, draw specific properties information. 
 	 * 

@@ -38,40 +38,25 @@ import org.fruit.alayer.State;
 import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
+import org.fruit.alayer.devices.AWTKeyboard;
+import org.fruit.alayer.devices.KBKeys;
+import org.fruit.alayer.devices.Keyboard;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.model.ToolbarLocation;
 
-public class seActionCommandGrinder extends TaggableBase implements Action {
-	private static final long serialVersionUID = -9171892675722381064L;
+public class seActionCommandJetpackFlyUp extends TaggableBase implements Action {
+	private static final long serialVersionUID = -3451277417215613501L;
 
-	// TODO: Research the impact of the grinderType and toolUsage in the inference of the state model
 	private String agentId;
-	private String grinderType;
-	private double toolUsageTime;
+	private double flyUpTime;
 
-	/**
-	 * Types: AngleGrinderItem, AngleGrinder2Item, AngleGrinder3Item, AngleGrinder4Item
-	 * 
-	 * @param grinderType
-	 */
-	private void setGrinderType(int grinderType) {
-		String type = (grinderType >= 2 && grinderType <= 4) ? String.valueOf(grinderType) : "" ; 
-		this.grinderType = "AngleGrinder".concat(type).concat("Item");
-	}
-
-	public seActionCommandGrinder(Widget w, String agentId){
-		this(w, agentId, 1, 1);
-	}
-
-	public seActionCommandGrinder(Widget w, String agentId, int grinderType, double toolUsageTime){
+	public seActionCommandJetpackFlyUp(Widget w, String agentId, double flyUpTime){
 		this.agentId = agentId;
-		setGrinderType(grinderType);
-		this.toolUsageTime = toolUsageTime;
+		this.flyUpTime = flyUpTime;
 		this.set(Tags.OriginWidget, w);
-		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandInteract);
+		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
 		this.set(Tags.Desc, toShortString());
 		// TODO: Update with Goal Solving agents
 		this.set(IV4XRtags.agentAction, false);
@@ -80,28 +65,19 @@ public class seActionCommandGrinder extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
+		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
+		seCharacter.turnOnJetpack();
 
-		// Prepare the desired tool in the SE tool bar
-		seItems.setToolbarItem(grinderType, ToolbarLocation.Companion.fromIndex(5, 6));
-
-		Util.pause(0.5);
-
-		seItems.equip(ToolbarLocation.Companion.fromIndex(5, 6));
-
-		Util.pause(0.5);
-
-		// Use the tool the desired amount of time
-		seItems.beginUsingTool();
-
-		Util.pause(toolUsageTime);
-
-		seItems.endUsingTool();
+		// SE API has not fly up command, we use the space keyboard
+		Keyboard kb = AWTKeyboard.build();
+		kb.press(KBKeys.VK_SPACE);
+		Util.pause(flyUpTime);
+		kb.release(KBKeys.VK_SPACE);
 	}
 
 	@Override
 	public String toShortString() {
-		return "Use " + grinderType + " seconds " + toolUsageTime + " by agent: " + agentId;
+		return "Fly up " + flyUpTime + " seconds with Jetpack by agent " + agentId;
 	}
 
 	@Override
@@ -115,4 +91,5 @@ public class seActionCommandGrinder extends TaggableBase implements Action {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }
