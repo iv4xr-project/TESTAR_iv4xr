@@ -36,7 +36,7 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.testar.protocols.iv4xr.SEProtocol;
 
-import eu.testar.iv4xr.actions.commands.*;
+import eu.testar.iv4xr.actions.se.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import nl.ou.testar.RandomActionSelector;
 
@@ -76,7 +76,8 @@ public class Protocol_se_commands_testar_movement extends SEProtocol {
 		// For each block widget (see movementEntities types), rotate and move until the agent is close to the position of the block
 		for(Widget w : state) {
 			if(movementEntities.contains(w.get(IV4XRtags.entityType))) {
-				labActions.add(new seActionCommandMoveToBlock(w, agentId));
+				labActions.add(new seActionMoveGrinderBlock(w, agentId));
+				labActions.add(new seActionMoveWelderBlock(w, agentId));
 			}
 		}
 
