@@ -46,6 +46,7 @@ import org.fruit.alayer.windows.WinProcess;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.controller.JsonRpcSpaceEngineers;
+import spaceEngineers.controller.JsonRpcSpaceEngineersBuilder;
 
 public class SpaceEngineersProcess extends SUTBase {
 
@@ -125,7 +126,7 @@ public class SpaceEngineersProcess extends SUTBase {
 
 		try {
 			// Prepare SpaceEngineers Controller
-			JsonRpcSpaceEngineers seRpcController = JsonRpcSpaceEngineers.Companion.localhost(characterControllerId);
+			JsonRpcSpaceEngineers seRpcController = JsonRpcSpaceEngineersBuilder.Companion.localhost(characterControllerId);
 			Util.pause(2);
 			System.out.println("Welcome to the SE iv4XR test: " + launchPart);
 

@@ -78,6 +78,7 @@ import eu.testar.iv4xr.se.SpaceEngineersProcess;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
 import nl.ou.testar.HtmlReporting.HtmlSequenceReport;
+import spaceEngineers.transport.SocketReaderWriterKt;
 
 public class SEProtocol extends GenericUtilsProtocol {
 
@@ -423,7 +424,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected void stopSystem(SUT system) {
-		system.get(IV4XRtags.iv4xrSpaceEngRpcController).close();
+		SocketReaderWriterKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngRpcController));
 		super.stopSystem(system);
 	}
 

@@ -81,6 +81,7 @@ public class seActionCommandGrinder extends TaggableBase implements Action {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
+		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
 
 		// Prepare the desired tool in the SE tool bar
 		seItems.setToolbarItem(grinderType, ToolbarLocation.Companion.fromIndex(5, 6));
@@ -92,11 +93,11 @@ public class seActionCommandGrinder extends TaggableBase implements Action {
 		Util.pause(0.5);
 
 		// Use the tool the desired amount of time
-		seItems.beginUsingTool();
+		seCharacter.beginUsingTool();
 
 		Util.pause(toolUsageTime);
 
-		seItems.endUsingTool();
+		seCharacter.endUsingTool();
 	}
 
 	@Override

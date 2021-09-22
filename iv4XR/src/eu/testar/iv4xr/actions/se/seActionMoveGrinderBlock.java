@@ -100,11 +100,11 @@ public class seActionMoveGrinderBlock extends seActionMoveToBlock {
 	 * @param seItems
 	 */
 	private void useGrinder(SUT system) {
-		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
+		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
 
-		seItems.beginUsingTool();
+		seCharacter.beginUsingTool();
 		Util.pause(toolUsageTime);
-		seItems.endUsingTool();
+		seCharacter.endUsingTool();
 	}
 
 	@Override
