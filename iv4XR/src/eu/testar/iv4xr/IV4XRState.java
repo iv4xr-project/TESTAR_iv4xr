@@ -151,7 +151,7 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 			ret = w.element.entityType + " - " + w.element.entityId;
 		}
 		//else if (t.equals(Tags.Role)) {
-			//ret = w.element.entityType;
+		//ret = w.element.entityType;
 		//}
 		else if (t.equals(Tags.Shape)) {
 			ret = w.element.rect;
@@ -249,6 +249,9 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		}
 		else if (t.equals(IV4XRtags.seAgentOrientationUp)) {
 			ret = w.element.seAgentOrientationUp;
+		}
+		else if (t.equals(IV4XRtags.seAgentHealth)) {
+			ret = w.element.seAgentHealth;
 		}
 		else if (t.equals(IV4XRtags.seBuildIntegrity)) {
 			ret = w.element.seBuildIntegrity;

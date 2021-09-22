@@ -121,6 +121,31 @@ public class Iv4xrSeVisualization {
 	}
 
 	/**
+	 * Create a panel in the top left corner of the windows screen, 
+	 * to show the information of the observed/existing entities/widgets 
+	 * in the current state. 
+	 * 
+	 * @param canvas
+	 * @param state
+	 */
+	public static synchronized void showSpaceEngineersAimingElement(Canvas canvas, spaceEngineers.model.Block block){
+		// Prepare the visual rectangle in the left side of the screen
+		Shape visualShape = org.fruit.alayer.Rect.from(0, 200, 600, 600);
+		visualShape.paint(canvas, Pen.PEN_MARK_ALPHA);
+		visualShape.paint(canvas, Pen.PEN_MARK_BORDER);
+
+		canvas.text(YellowPen, 10, 210, 0, "Block Type: " + block.getBlockType());
+		canvas.text(YellowPen, 10, 230, 0, "Block Id: " + block.getId());
+
+		canvas.text(BluePen, 10, 270, 0, "Block Integrity: " + String.valueOf(block.getIntegrity()));
+		canvas.text(BluePen, 10, 290, 0, "Block Max Integrity: " + String.valueOf(block.getMaxIntegrity()));
+
+		canvas.text(BlackPen, 10, 330, 0, "Block Position: " + block.getPosition());
+		canvas.text(BlackPen, 10, 350, 0, "Block Orientation Forward: " + block.getOrientationForward());
+		canvas.text(BlackPen, 10, 370, 0, "Block Size: " + block.getSize());
+	}
+
+	/**
 	 * Numeric distance between the widget block and the agent. 
 	 * 
 	 * @param targetPosition

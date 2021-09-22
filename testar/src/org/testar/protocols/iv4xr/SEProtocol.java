@@ -533,7 +533,12 @@ public class SEProtocol extends GenericUtilsProtocol {
 
 			//Draw the state information in the canvas
 			try {
-				Iv4xrSeVisualization.showStateObservation(cv, state);
+				spaceEngineers.controller.JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
+				spaceEngineers.controller.Observer seObserver = seRpcController.getObserver();
+				
+				spaceEngineers.model.Block targetBlock;
+				if((targetBlock = seObserver.observe().getTargetBlock()) != null) { Iv4xrSeVisualization.showSpaceEngineersAimingElement(cv, targetBlock); }
+				else{ Iv4xrSeVisualization.showStateObservation(cv, state); }
 				//Iv4xrSeVisualization.showStateElements(cv, state, system.get(IV4XRtags.agentWidget, null), settings.get(ConfigTags.SpyIncrement, 0));
 			} catch (Exception e) {
 				System.out.println("WARNING: Trying to launch Iv4xrSeVisualization");

@@ -119,9 +119,17 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 		// Add a block like a dummy
 		labActions.add(new seActionCommandPlaceBlock(state, agentId));
 		labActions.add(new seActionCommandPlaceHeavyBlock(state, agentId));
+
 		// Use Grinder or Welder tool (like a dummy)
 		labActions.add(new seActionCommandGrinder(state, agentId));
 		labActions.add(new seActionCommandWelder(state, agentId));
+
+		// Open or close Helmet like a dummy
+		labActions.add(new seActionCommandHelmetOpen(state, agentId));
+		labActions.add(new seActionCommandHelmetClose(state, agentId));
+
+		// Use object (door, console, etc...) like a dummy (this make no sense if agent is not aiming the correct entity)
+		labActions.add(new seActionCommandUseObject(state, agentId));
 
 		return labActions;
 	}

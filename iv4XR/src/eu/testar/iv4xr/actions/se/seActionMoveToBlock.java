@@ -60,7 +60,7 @@ public class seActionMoveToBlock extends TaggableBase implements Action {
 	// 360 rotation = new Vec2(0, 2416f)
 	protected final float DEGREES = 2416f;
 	protected final int MOVEMENTTRIES = 1000;
-	protected final int AIMTRIES = 20;
+	protected final int AIMTRIES = 151;
 	protected final int JETPACKTRIES = 50;
 	protected final Vec3 RIGHT = new Vec3(1, 0, 0);
 	protected final Vec3 LEFT = new Vec3(-1, 0, 0);
@@ -128,7 +128,7 @@ public class seActionMoveToBlock extends TaggableBase implements Action {
 		Vec3 previousDistance = new Vec3(0,0,0);
 		int xDir = 1, zDir = 1, tries = 1;
 
-		while(!targetPosition.similar(seObserver.observe().getPosition(), 1.7f) && tries < MOVEMENTTRIES) {
+		while(!targetPosition.similar(seObserver.observe().getPosition(), 3.2f) && tries < MOVEMENTTRIES) {
 			// If something is blocking our walk movement, fly and use the jet pack to move in the air
 			if(blockedByBlock(seObserver)) {
 				jetpackToBlock(system);
@@ -158,8 +158,12 @@ public class seActionMoveToBlock extends TaggableBase implements Action {
 	}
 
 	private boolean blockedByBlock(spaceEngineers.controller.Observer seObserver) {
-		if(seObserver.observe().getTargetBlock() == null) return false;
-		return !seObserver.observe().getTargetBlock().getId().equals(targetBlock.get(IV4XRtags.entityId));
+		try {
+			if(seObserver.observe().getTargetBlock() == null) return false;
+			return !seObserver.observe().getTargetBlock().getId().equals(targetBlock.get(IV4XRtags.entityId));
+		} catch(Exception e) {
+			return false;
+		}
 	}
 
 	/**
@@ -174,6 +178,11 @@ public class seActionMoveToBlock extends TaggableBase implements Action {
 
 		while(blockedByBlock(seObserver)) {
 			jetpackFlyUp(system);
+		}
+
+		// First move forward some distance
+		for(int i = 0; i < 20; i++) {
+			seCharacter.moveAndRotate(Vec3.Companion.getFORWARD(), new Vec2(0,0), 0f);
 		}
 
 		Vec3 previousDistance = new Vec3(0,0,0);
@@ -236,14 +245,18 @@ public class seActionMoveToBlock extends TaggableBase implements Action {
 
 		int tries = 1;
 		while(!targetBlockFound(seObserver) && tries < AIMTRIES) {		
-			seCharacter.moveAndRotate(new Vec3(0, 0, 0), new Vec2(0, DEGREES*0.05f), 0f);
+			seCharacter.moveAndRotate(new Vec3(0, 0, 0), new Vec2(0, DEGREES*0.007f), 0f);
 			tries ++;
 		}
 	}
 
 	private boolean targetBlockFound(spaceEngineers.controller.Observer seObserver) {
-		if(seObserver.observe().getTargetBlock() == null) return false;
-		return seObserver.observe().getTargetBlock().getId().equals(targetBlock.get(IV4XRtags.entityId));
+		try {
+			if(seObserver.observe().getTargetBlock() == null) return false;
+			return seObserver.observe().getTargetBlock().getId().equals(targetBlock.get(IV4XRtags.entityId));
+		} catch(Exception e) {
+			return false;
+		}
 	}
 
 	@Override

@@ -148,6 +148,7 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<spaceEngineers.model.Vec3> seAgentPosition = from("seAgentPosition", spaceEngineers.model.Vec3.class);
 	public static final Tag<spaceEngineers.model.Vec3> seAgentOrientationForward = from("seAgentOrientationForward", spaceEngineers.model.Vec3.class);
 	public static final Tag<spaceEngineers.model.Vec3> seAgentOrientationUp = from("seAgentOrientationUp", spaceEngineers.model.Vec3.class);
+	public static final Tag<Float> seAgentHealth = from("seAgentHealth", Float.class);
 
 	public static final Tag<Float> seBuildIntegrity = from("seBuildIntegrity", Float.class);
 	public static final Tag<Float> seIntegrity = from("seIntegrity", Float.class);

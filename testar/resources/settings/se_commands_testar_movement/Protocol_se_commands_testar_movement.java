@@ -64,6 +64,7 @@ public class Protocol_se_commands_testar_movement extends SEProtocol {
 		movementEntities = new HashSet<String>();
 		movementEntities.add("LargeHeavyBlockArmorBlock");
 		movementEntities.add("LargeBlockArmorBlock");
+		movementEntities.add("LargeBlockSmallGenerator");
 	}
 
 	/**
@@ -76,8 +77,8 @@ public class Protocol_se_commands_testar_movement extends SEProtocol {
 		// For each block widget (see movementEntities types), rotate and move until the agent is close to the position of the block
 		for(Widget w : state) {
 			if(movementEntities.contains(w.get(IV4XRtags.entityType))) {
-				labActions.add(new seActionMoveGrinderBlock(w, agentId));
-				labActions.add(new seActionMoveWelderBlock(w, agentId));
+				labActions.add(new seActionMoveGrinderBlock(w, agentId, 4, 1.0));
+				labActions.add(new seActionMoveWelderBlock(w, agentId, 4, 1.0));
 			}
 		}
 
