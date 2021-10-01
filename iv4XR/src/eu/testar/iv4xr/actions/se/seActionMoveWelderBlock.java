@@ -74,8 +74,7 @@ public class seActionMoveWelderBlock extends seActionMoveToBlock {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		equipWelder(system);
-		//rotateToBlockOrientation(system);
-		rotateToBlockOrientationWithTeleport(system);
+		rotateToBlockDestination(system);
 		moveToBlock(system);
 		aimToBlock(system);
 		useWelder(system);

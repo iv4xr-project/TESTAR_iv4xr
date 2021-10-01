@@ -82,37 +82,52 @@ public class seActionMoveToBlock extends TaggableBase implements Action {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		//rotateToBlockOrientation(system);
-		rotateToBlockOrientationWithTeleport(system);
+		rotateToBlockDestination(system);
 		moveToBlock(system);
 	}
 
 	/**
-	 * Rotate tick by tick until the agent has the same orientation forward that the block. 
+	 * Rotate tick by tick until the agent aims the block destination. 
+	 * Based on: https://github.com/iv4xr-project/iv4xr-se-plugin/blob/uubranch3D/JvmClient/src/jvmMain/java/uuspaceagent/UUTacticLib.java#L160
 	 * 
 	 * @param system
 	 */
-	protected void rotateToBlockOrientation(SUT system) {
+	protected void rotateToBlockDestination(SUT system) {
 		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
 		spaceEngineers.controller.JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
 		spaceEngineers.controller.Observer seObserver = seRpcController.getObserver();
 
-		while(!targetOrientationForward.similar(seObserver.observe().getOrientationForward(), 0.05f)) {
-			seCharacter.moveAndRotate(new Vec3(0,0,0), Vec2.Companion.getROTATE_RIGHT(), 0f);
+		eu.iv4xr.framework.spatial.Vec3 agentPosition = SVec3.seToLab(seObserver.observe().getPosition());
+		eu.iv4xr.framework.spatial.Vec3 entityPosition = SVec3.seToLab(targetPosition);
+		eu.iv4xr.framework.spatial.Vec3 directionToGo = eu.iv4xr.framework.spatial.Vec3.sub(agentPosition, entityPosition);
+		eu.iv4xr.framework.spatial.Vec3 agentOrientation = SVec3.seToLab(seObserver.observe().getOrientationForward());
+
+		directionToGo.y = 0;
+		agentOrientation.y = 0;
+
+		directionToGo = directionToGo.normalized();
+		agentOrientation = agentOrientation.normalized();
+
+		float cos_alpha = eu.iv4xr.framework.spatial.Vec3.dot(agentOrientation, directionToGo);
+
+		while(cos_alpha > -0.99f) {
+			// rotate faster until the aiming is close
+			if(cos_alpha > -0.95f) {seCharacter.moveAndRotate(new Vec3(0,0,0),  new Vec2(0, DEGREES*0.007f), 0f);}
+			else {seCharacter.moveAndRotate(new Vec3(0,0,0), Vec2.Companion.getROTATE_RIGHT(), 0f);}
+
+			agentPosition = SVec3.seToLab(seObserver.observe().getPosition());
+			entityPosition = SVec3.seToLab(targetPosition);
+			directionToGo = eu.iv4xr.framework.spatial.Vec3.sub(agentPosition, entityPosition);
+			agentOrientation = SVec3.seToLab(seObserver.observe().getOrientationForward());
+
+			directionToGo.y = 0;
+			agentOrientation.y = 0;
+
+			directionToGo = directionToGo.normalized();
+			agentOrientation = agentOrientation.normalized();
+
+			cos_alpha = eu.iv4xr.framework.spatial.Vec3.dot(agentOrientation, directionToGo);
 		}
-	}
-
-	/**
-	 * Use teleport feature to rotate the agent so that it has the same orientation forward that the target block. 
-	 * 
-	 * @param system
-	 */
-	protected void rotateToBlockOrientationWithTeleport(SUT system) {
-		spaceEngineers.controller.JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
-		spaceEngineers.controller.Observer seObserver = seRpcController.getObserver();
-
-		// Agent position, target block orientation forward, agent orientation up
-		seRpcController.getAdmin().getCharacter().teleport(seObserver.observe().getPosition(), targetOrientationForward, seObserver.observe().getOrientationUp());
 	}
 
 	/**

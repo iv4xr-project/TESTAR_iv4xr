@@ -74,8 +74,7 @@ public class seActionMoveGrinderBlock extends seActionMoveToBlock {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		equipGrinder(system);
-		//rotateToBlockOrientation(system);
-		rotateToBlockOrientationWithTeleport(system);
+		rotateToBlockDestination(system);
 		moveToBlock(system);
 		aimToBlock(system);
 		useGrinder(system);
