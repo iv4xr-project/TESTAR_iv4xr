@@ -365,7 +365,6 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	protected void stopSystem(SUT system) {
 		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).close();
 		super.stopSystem(system);
-		NativeLinker.cleaniv4XRLab();
 	}
 
 	/**
@@ -392,6 +391,15 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 				+ " " + status + " \"" + statusInfo + "\"" );
 
 		htmlReport.close();
+	}
+
+	/**
+	 * This method is called after the last sequence, to allow for example handling the reporting of the session
+	 */
+	@Override
+	protected void closeTestSession() {
+		super.closeTestSession();
+		NativeLinker.cleaniv4XRLab();
 	}
 
 	/**
