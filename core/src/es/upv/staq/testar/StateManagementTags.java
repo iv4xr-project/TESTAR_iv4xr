@@ -312,11 +312,11 @@ public class StateManagementTags {
     public static final Tag<Float> iv4xrSeBuildIntegrity = Tag.from("iv4xr Se BuildIntegrity", Float.class);
     public static final Tag<Float> iv4xrSeIntegrity = Tag.from("iv4xr Se Integrity", Float.class);
     public static final Tag<Float> iv4xrSeMaxIntegrity = Tag.from("iv4xr Se MaxIntegrity", Float.class);
-    public static final Tag<spaceEngineers.model.Vec3> iv4xrSeMaxPosition = Tag.from("iv4xr Se MaxPosition", spaceEngineers.model.Vec3.class);
-    public static final Tag<spaceEngineers.model.Vec3> iv4xrSeMinPosition = Tag.from("iv4xr Se MinPosition", spaceEngineers.model.Vec3.class);
-    public static final Tag<spaceEngineers.model.Vec3> iv4xrSeOrientationForward = Tag.from("iv4xr Se OrientationForward", spaceEngineers.model.Vec3.class);
-    public static final Tag<spaceEngineers.model.Vec3> iv4xrSeOrientationUp = Tag.from("iv4xr Se OrientationUp", spaceEngineers.model.Vec3.class);
-    public static final Tag<spaceEngineers.model.Vec3> iv4xrSeSize = Tag.from("iv4xr Se Size", spaceEngineers.model.Vec3.class);
+    public static final Tag<spaceEngineers.model.Vec3F> iv4xrSeMaxPosition = Tag.from("iv4xr Se MaxPosition", spaceEngineers.model.Vec3F.class);
+    public static final Tag<spaceEngineers.model.Vec3F> iv4xrSeMinPosition = Tag.from("iv4xr Se MinPosition", spaceEngineers.model.Vec3F.class);
+    public static final Tag<spaceEngineers.model.Vec3F> iv4xrSeOrientationForward = Tag.from("iv4xr Se OrientationForward", spaceEngineers.model.Vec3F.class);
+    public static final Tag<spaceEngineers.model.Vec3F> iv4xrSeOrientationUp = Tag.from("iv4xr Se OrientationUp", spaceEngineers.model.Vec3F.class);
+    public static final Tag<spaceEngineers.model.Vec3F> iv4xrSeSize = Tag.from("iv4xr Se Size", spaceEngineers.model.Vec3F.class);
 	
     // a set containing the tags that are available for state management
     private static Set<Tag<?>> stateManagementTags = new HashSet<Tag<?>>() {

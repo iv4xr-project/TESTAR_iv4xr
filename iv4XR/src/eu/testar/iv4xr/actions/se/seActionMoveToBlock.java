@@ -46,26 +46,26 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
-import spaceEngineers.model.Vec2;
-import spaceEngineers.model.Vec3;
+import spaceEngineers.model.Vec2F;
+import spaceEngineers.model.Vec3F;
 
 public class seActionMoveToBlock extends TaggableBase implements Action {
 	private static final long serialVersionUID = -6720504661292573988L;
 
 	protected String agentId;
 	protected Widget targetBlock;
-	protected Vec3 targetOrientationForward;
-	protected Vec3 targetPosition;
+	protected Vec3F targetOrientationForward;
+	protected Vec3F targetPosition;
 
 	// 360 rotation = new Vec2(0, 2416f)
 	protected final float DEGREES = 2416f;
 	protected final int MOVEMENTTRIES = 1000;
 	protected final int AIMTRIES = 151;
 	protected final int JETPACKTRIES = 50;
-	protected final Vec3 RIGHT = new Vec3(1, 0, 0);
-	protected final Vec3 LEFT = new Vec3(-1, 0, 0);
-	protected final Vec3 FORWARD = new Vec3(0, 0, -1);
-	protected final Vec3 BACKWARD = new Vec3(0, 0, 1);
+	protected final Vec3F RIGHT = new Vec3F(1, 0, 0);
+	protected final Vec3F LEFT = new Vec3F(-1, 0, 0);
+	protected final Vec3F FORWARD = new Vec3F(0, 0, -1);
+	protected final Vec3F BACKWARD = new Vec3F(0, 0, 1);
 
 	public seActionMoveToBlock(Widget w, String agentId){
 		this.agentId = agentId;
@@ -112,8 +112,8 @@ public class seActionMoveToBlock extends TaggableBase implements Action {
 
 		while(cos_alpha > -0.99f) {
 			// rotate faster until the aiming is close
-			if(cos_alpha > -0.95f) {seCharacter.moveAndRotate(new Vec3(0,0,0),  new Vec2(0, DEGREES*0.007f), 0f);}
-			else {seCharacter.moveAndRotate(new Vec3(0,0,0), Vec2.Companion.getROTATE_RIGHT(), 0f);}
+			if(cos_alpha > -0.95f) {seCharacter.moveAndRotate(new Vec3F(0,0,0),  new Vec2F(0, DEGREES*0.007f), 0f, 1);}
+			else {seCharacter.moveAndRotate(new Vec3F(0,0,0), Vec2F.Companion.getROTATE_RIGHT(), 0f, 1);}
 
 			agentPosition = SVec3.seToLab(seObserver.observe().getPosition());
 			entityPosition = SVec3.seToLab(targetPosition);
@@ -140,7 +140,7 @@ public class seActionMoveToBlock extends TaggableBase implements Action {
 		spaceEngineers.controller.JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
 		spaceEngineers.controller.Observer seObserver = seRpcController.getObserver();
 
-		Vec3 previousDistance = new Vec3(0,0,0);
+		Vec3F previousDistance = new Vec3F(0,0,0);
 		int xDir = 1, zDir = 1, tries = 1;
 
 		while(!targetPosition.similar(seObserver.observe().getPosition(), 3.2f) && tries < MOVEMENTTRIES) {
@@ -150,13 +150,13 @@ public class seActionMoveToBlock extends TaggableBase implements Action {
 				continue;
 			}
 
-			Vec3 currentPosition = seObserver.observe().getPosition();
-			Vec3 movement = seDistance(targetPosition, currentPosition);
-			movement = new Vec3(movement.getX() * xDir, movement.getY(), movement.getZ() * zDir);
-			seCharacter.moveAndRotate(movement, new Vec2(0,0), 0f);
+			Vec3F currentPosition = seObserver.observe().getPosition();
+			Vec3F movement = seDistance(targetPosition, currentPosition);
+			movement = new Vec3F(movement.getX() * xDir, movement.getY(), movement.getZ() * zDir);
+			seCharacter.moveAndRotate(movement, new Vec2F(0,0), 0f, 1);
 
 			// Check if agent is moving away or getting closer
-			Vec3 currentDistance = seDistance(targetPosition, seObserver.observe().getPosition());
+			Vec3F currentDistance = seDistance(targetPosition, seObserver.observe().getPosition());
 			if((Math.abs(previousDistance.getX()) - Math.abs(currentDistance.getX())) < 0) {
 				xDir = xDir * -1;
 			}
@@ -168,8 +168,8 @@ public class seActionMoveToBlock extends TaggableBase implements Action {
 		}
 	}
 
-	private Vec3 seDistance(Vec3 targetPosition, Vec3 currentPosition) {
-		return new Vec3(targetPosition.getX() - currentPosition.getX(), 0, targetPosition.getZ() - currentPosition.getZ());
+	private Vec3F seDistance(Vec3F targetPosition, Vec3F currentPosition) {
+		return new Vec3F(targetPosition.getX() - currentPosition.getX(), 0, targetPosition.getZ() - currentPosition.getZ());
 	}
 
 	private boolean blockedByBlock(spaceEngineers.controller.Observer seObserver) {
@@ -197,22 +197,22 @@ public class seActionMoveToBlock extends TaggableBase implements Action {
 
 		// First move forward some distance
 		for(int i = 0; i < 20; i++) {
-			seCharacter.moveAndRotate(Vec3.Companion.getFORWARD(), new Vec2(0,0), 0f);
+			seCharacter.moveAndRotate(Vec3F.Companion.getFORWARD(), new Vec2F(0,0), 0f, 1);
 		}
 
-		Vec3 previousDistance = new Vec3(0,0,0);
+		Vec3F previousDistance = new Vec3F(0,0,0);
 		int xDir = 1, zDir = 1, tries = 1;
 
 		// TODO: Jet pack movement seems that does not work as walking, 
 		// For now limit the movement to small number of JETPACKTRIES
 		while(!targetPosition.similar(seObserver.observe().getPosition(), 5f) && tries < JETPACKTRIES) {
-			Vec3 currentPosition = seObserver.observe().getPosition();
-			Vec3 movement = seDistance(targetPosition, currentPosition);
-			movement = new Vec3(movement.getX() * xDir, movement.getY(), movement.getZ() * zDir);
-			seCharacter.moveAndRotate(movement, new Vec2(0,0), 0f);
+			Vec3F currentPosition = seObserver.observe().getPosition();
+			Vec3F movement = seDistance(targetPosition, currentPosition);
+			movement = new Vec3F(movement.getX() * xDir, movement.getY(), movement.getZ() * zDir);
+			seCharacter.moveAndRotate(movement, new Vec2F(0,0), 0f, 1);
 
 			// Check if agent is moving away or getting closer
-			Vec3 currentDistance = seDistance(targetPosition, seObserver.observe().getPosition());
+			Vec3F currentDistance = seDistance(targetPosition, seObserver.observe().getPosition());
 			if((Math.abs(previousDistance.getX()) - Math.abs(currentDistance.getX())) < 0) {
 				xDir = xDir * -1;
 			}
@@ -245,7 +245,7 @@ public class seActionMoveToBlock extends TaggableBase implements Action {
 	private void jetpackStop(SUT system) {
 		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
 		seCharacter.turnOffJetpack();
-		seCharacter.moveAndRotate(new Vec3(0, 0, 0), new Vec2(200f, 0), 0f);
+		seCharacter.moveAndRotate(new Vec3F(0, 0, 0), new Vec2F(200f, 0), 0f, 1);
 	}
 
 	/**
@@ -260,7 +260,7 @@ public class seActionMoveToBlock extends TaggableBase implements Action {
 
 		int tries = 1;
 		while(!targetBlockFound(seObserver) && tries < AIMTRIES) {		
-			seCharacter.moveAndRotate(new Vec3(0, 0, 0), new Vec2(0, DEGREES*0.007f), 0f);
+			seCharacter.moveAndRotate(new Vec3F(0, 0, 0), new Vec2F(0, DEGREES*0.007f), 0f, 1);
 			tries ++;
 		}
 	}

@@ -42,15 +42,15 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
-import spaceEngineers.model.Vec3;
+import spaceEngineers.model.Vec3F;
 
 public class seActionCommandTeleport extends TaggableBase implements Action {
 	private static final long serialVersionUID = -2497688383539448782L;
 
 	private String agentId;
-	private Vec3 targetPosition;
-	private Vec3 orientationForward;
-	private Vec3 orientationUp;
+	private Vec3F targetPosition;
+	private Vec3F orientationForward;
+	private Vec3F orientationUp;
 
 	public seActionCommandTeleport(Widget w, String agentId){
 		this.agentId = agentId;

@@ -125,7 +125,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.seAgentPosition = seObsCharacter.getPosition();
 		childElement.seAgentOrientationForward = seObsCharacter.getOrientationForward();
 		childElement.seAgentOrientationUp = seObsCharacter.getOrientationUp();
-		childElement.seAgentHealth = seObsCharacter.getHealthRatio();
+		childElement.seAgentHealth = seObsCharacter.getHealth();
 
 		childElement.entityVelocity = new Vec3(seObsCharacter.getVelocity().getX(), seObsCharacter.getVelocity().getY(), seObsCharacter.getVelocity().getZ());
 		childElement.entityId = system.get(IV4XRtags.iv4xrSpaceEngRpcController).getAgentId();
@@ -184,7 +184,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 
 		childElement.entityPosition = new Vec3(seBlock.getPosition().getX(), seBlock.getPosition().getY(), seBlock.getPosition().getZ());
 		childElement.entityId = seBlock.getId();
-		childElement.entityType = seBlock.getBlockType();
+		childElement.entityType = seBlock.getDefinitionId().toString();
 
 		childElement.seBuildIntegrity = seBlock.getBuildIntegrity();
 		childElement.seIntegrity = seBlock.getIntegrity();

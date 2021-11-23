@@ -40,7 +40,7 @@ import org.testar.protocols.iv4xr.SEProtocol;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import nl.ou.testar.RandomActionSelector;
-import spaceEngineers.model.Vec2;
+import spaceEngineers.model.Vec2F;
 
 /**
  * iv4xr EU H2020 project - SpaceEngineers Use Case
@@ -87,7 +87,7 @@ public class Protocol_se_commands_testar_teleport extends SEProtocol {
 				// Add the possibility to teleport and grinder
 				CompoundAction.Builder teleportAndGrinder = new CompoundAction.Builder();
 				teleportAndGrinder.add(new seActionCommandTeleport(w, agentId), 0.5);
-				teleportAndGrinder.add(new seActionCommandRotate(w, agentId, new Vec2(600f, 0)), 0.5);
+				teleportAndGrinder.add(new seActionCommandRotate(w, agentId, new Vec2F(600f, 0)), 0.5);
 				teleportAndGrinder.add(new seActionCommandGrinder(state, agentId), 0.5);
 				Action widgetGrinder = teleportAndGrinder.build();
 				widgetGrinder.set(Tags.OriginWidget, w);
@@ -99,7 +99,7 @@ public class Protocol_se_commands_testar_teleport extends SEProtocol {
 				// Add the possibility to teleport and welder
 				CompoundAction.Builder teleportAndWelder = new CompoundAction.Builder();
 				teleportAndWelder.add(new seActionCommandTeleport(w, agentId), 0.5);
-				teleportAndWelder.add(new seActionCommandRotate(w, agentId, new Vec2(600f, 0)), 0.5);
+				teleportAndWelder.add(new seActionCommandRotate(w, agentId, new Vec2F(600f, 0)), 0.5);
 				teleportAndWelder.add(new seActionCommandWelder(state, agentId), 0.5);
 				Action widgetWelder = teleportAndWelder.build();
 				widgetWelder.set(Tags.OriginWidget, w);

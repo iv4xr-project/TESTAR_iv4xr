@@ -108,8 +108,8 @@ public class Iv4xrSeVisualization {
 			// Ignore the Agent and State
 			if(w.equals(state.get(IV4XRtags.agentWidget, null)) || w.equals(state)) continue;
 			// Only close position entities
-			spaceEngineers.model.Vec3 widgetPosition = SVec3.labToSE(w.get(IV4XRtags.entityPosition));
-			spaceEngineers.model.Vec3 agentPosition = SVec3.labToSE(state.get(IV4XRtags.agentWidget, null).get(IV4XRtags.agentPosition));
+			spaceEngineers.model.Vec3F widgetPosition = SVec3.labToSE(w.get(IV4XRtags.entityPosition));
+			spaceEngineers.model.Vec3F agentPosition = SVec3.labToSE(state.get(IV4XRtags.agentWidget, null).get(IV4XRtags.agentPosition));
 			if(widgetPosition.similar(agentPosition, 20f)) {
 				// Draw a text that contains the entity identifier using the color defined on the entitiesColors map
 				float distance = seDistance(widgetPosition, agentPosition);
@@ -134,7 +134,7 @@ public class Iv4xrSeVisualization {
 		visualShape.paint(canvas, Pen.PEN_MARK_ALPHA);
 		visualShape.paint(canvas, Pen.PEN_MARK_BORDER);
 
-		canvas.text(YellowPen, 10, 210, 0, "Block Type: " + block.getBlockType());
+		canvas.text(YellowPen, 10, 210, 0, "Block Type: " + block.getDefinitionId().toString());
 		canvas.text(YellowPen, 10, 230, 0, "Block Id: " + block.getId());
 
 		canvas.text(BluePen, 10, 270, 0, "Block Integrity: " + String.valueOf(block.getIntegrity()));
@@ -152,7 +152,7 @@ public class Iv4xrSeVisualization {
 	 * @param currentPosition
 	 * @return
 	 */
-	private static float seDistance(spaceEngineers.model.Vec3 targetPosition, spaceEngineers.model.Vec3 currentPosition) {
+	private static float seDistance(spaceEngineers.model.Vec3F targetPosition, spaceEngineers.model.Vec3F currentPosition) {
 		return 	(Math.abs(targetPosition.getX() - currentPosition.getX())/2) + (Math.abs(targetPosition.getZ() - currentPosition.getZ())/2);
 	}
 

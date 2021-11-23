@@ -41,17 +41,17 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.model.Vec2;
-import spaceEngineers.model.Vec3;
+import spaceEngineers.model.Vec2F;
+import spaceEngineers.model.Vec3F;
 
 public class seActionCommandMove extends TaggableBase implements Action {
 	private static final long serialVersionUID = -6582285412839242075L;
 
 	private String agentId;
-	private Vec3 targetPosition;
+	private Vec3F targetPosition;
 	private int distance;
 
-	public seActionCommandMove(Widget w, String agentId, Vec3 targetPosition, int distance){
+	public seActionCommandMove(Widget w, String agentId, Vec3F targetPosition, int distance){
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
@@ -70,7 +70,7 @@ public class seActionCommandMove extends TaggableBase implements Action {
 		// TODO: Seems that 1 single move request does not work
 		// https://github.com/iv4xr-project/iv4xrDemo-space-engineers/blob/se-dev/src/test/java/spaceEngineers/MoveAgentTest.java
 		for(int i = 0; i < distance; i++) {
-			seCharacter.moveAndRotate(targetPosition, new Vec2(0,0), 0f);
+			seCharacter.moveAndRotate(targetPosition, new Vec2F(0,0), 0f, 1);
 		}
 	}
 

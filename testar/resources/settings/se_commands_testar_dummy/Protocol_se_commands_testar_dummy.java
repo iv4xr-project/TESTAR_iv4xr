@@ -39,8 +39,8 @@ import org.testar.protocols.iv4xr.SEProtocol;
 
 import eu.testar.iv4xr.actions.commands.*;
 import nl.ou.testar.RandomActionSelector;
-import spaceEngineers.model.Vec2;
-import spaceEngineers.model.Vec3;
+import spaceEngineers.model.Vec2F;
+import spaceEngineers.model.Vec3F;
 
 /**
  * iv4xr EU H2020 project - SpaceEngineers Use Case
@@ -107,14 +107,14 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 		Set<Action> labActions = new HashSet<>();
 
 		// Add Dummy Exploration Actions (Direction based on current agent orientation + Steps Distance)
-		labActions.add(new seActionCommandMove(state, agentId, new Vec3(0, 0, 1f), 100)); // Move to back
-		labActions.add(new seActionCommandMove(state, agentId, new Vec3(0, 0, -1f), 100)); // Move to front
-		labActions.add(new seActionCommandMove(state, agentId, new Vec3(1f, 0, 0), 100)); // Move to Right
-		labActions.add(new seActionCommandMove(state, agentId, new Vec3(-1f, 0, 0), 100)); // Move to Left
+		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, 1f), 100)); // Move to back
+		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, -1f), 100)); // Move to front
+		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(1f, 0, 0), 100)); // Move to Right
+		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(-1f, 0, 0), 100)); // Move to Left
 
 		// Add Left Right Rotations
-		labActions.add(new seActionCommandRotate(state, agentId, new Vec2(0, -500f))); // Left
-		labActions.add(new seActionCommandRotate(state, agentId, new Vec2(0, 500f))); // Right
+		labActions.add(new seActionCommandRotate(state, agentId, new Vec2F(0, -500f))); // Left
+		labActions.add(new seActionCommandRotate(state, agentId, new Vec2F(0, 500f))); // Right
 
 		// Add a block like a dummy
 		labActions.add(new seActionCommandPlaceBlock(state, agentId));
