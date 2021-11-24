@@ -184,7 +184,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 
 		childElement.entityPosition = new Vec3(seBlock.getPosition().getX(), seBlock.getPosition().getY(), seBlock.getPosition().getZ());
 		childElement.entityId = seBlock.getId();
-		childElement.entityType = seBlock.getDefinitionId().toString();
+		childElement.entityType = seBlock.getDefinitionId().getType();
 
 		childElement.seBuildIntegrity = seBlock.getBuildIntegrity();
 		childElement.seIntegrity = seBlock.getIntegrity();

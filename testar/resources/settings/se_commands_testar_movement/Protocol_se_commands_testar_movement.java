@@ -65,6 +65,8 @@ public class Protocol_se_commands_testar_movement extends SEProtocol {
 		movementEntities.add("LargeHeavyBlockArmorBlock");
 		movementEntities.add("LargeBlockArmorBlock");
 		movementEntities.add("LargeBlockSmallGenerator");
+		movementEntities.add("LargeBlockBatteryBlock");
+		movementEntities.add("ButtonPanelLarge");
 	}
 
 	/**
@@ -79,6 +81,10 @@ public class Protocol_se_commands_testar_movement extends SEProtocol {
 			if(movementEntities.contains(w.get(IV4XRtags.entityType))) {
 				labActions.add(new seActionMoveGrinderBlock(w, agentId, 4, 1.0));
 				labActions.add(new seActionMoveWelderBlock(w, agentId, 4, 1.0));
+				labActions.add(new seActionMoveToBlock(w, agentId));
+				labActions.add(new seActionNavigateGrinderBlock(w, agentId, 4, 1.0));
+				labActions.add(new seActionNavigateWelderBlock(w, agentId, 4, 1.0));
+				labActions.add(new seActionNavigateToBlock(w, agentId));
 			}
 		}
 
