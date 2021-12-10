@@ -155,6 +155,13 @@ we will need to compile a new windows.dll instead of use the copy of the current
 
 ### Gradle tasks
 
+`gradlew` is the instruction to use the gradle wrapper. 
+
+This basically means that TESTAR will download in the system, and will use to compile, 
+the gradle version indicated inside `TESTAR_dev\gradle\wrapper\gradle-wrapper.properties`
+
+`gradle` uses the environment variables to use the gradle version of the system.
+
 #### gradle build (Files Compilation)
 ``gradle build`` task : is configured to compile TESTAR project at Java level for error and warning checking.
 
@@ -201,7 +208,7 @@ NOTE: TESTAR requires Visual Redistributable which can be downloaded from the fo
 `gradle installDist` task : creates a runnable TESTAR distribution in the `\testar\target\install\testar\bin\` directory.
 By default, `windows.dll` should be copied from `\testar\resources\windows10\` directory and overwritten by the new dll file if the `gradle windowsDistribution` task was executed.
 
-1. Run `.\gradlew installDist` in the root of the project, or `TESTAR_dev -> distribution -> installDist` with the IDE
+1. Run `.\gradle installDist` in the root of the project, or `TESTAR_dev -> distribution -> installDist` with the IDE
 2. Change directory to `\testar\target\install\testar\bin\`
 3. Run testar.bat
 
@@ -211,7 +218,7 @@ that has a 64-bit Windows operating system and Visual Studio redistributable ins
 TESTAR is to run the tool in a virtual-machine.
 To build the zip execute the following command.
 
-1. Run `.\gradlew distZip` in the root of the project. 
+1. Run `.\gradle distZip` in the root of the project. 
 2. Extract the zip on the machine where TESTAR is used.
 
 NOTE: TESTAR requires Visual Redistributable which can be downloaded from the following
@@ -230,7 +237,7 @@ code.
 `gradle runTestar` task : creates a TESTAR distribution with `gradle installDist` task, and executes TESTAR from the runnable file `\testar\target\install\testar\bin\testar.bat`
 
 TESTAR can be started using a gradle command from the root of the project.
-1. .\gradlew runTestar
+1. .\gradle runTestar
 
 ##### In Eclipse
 Within Eclipse, TESTAR can be executed by running the task runTestar which is available in the map custom_testar.
@@ -238,9 +245,9 @@ To debug the application with the runTestar task, provide your onw run configura
 
 #### Debug TESTAR from Gradle
 In order to debug the TESTAR code, you must run;
-1. .\gradlew -DDEBUG=true runTestar.  
+1. .\gradle -DDEBUG=true runTestar.  
 
-Optionally you can build TESTAR (.\gradlew -DDBEBUG=true distZip ), copy the result to 
+Optionally you can build TESTAR (.\gradle -DDBEBUG=true distZip ), copy the result to 
 the machine where you want to run TESTAR and run TESTAR on the target machine. This allows
 the user to debug TESTAR from a different machine. 
 
@@ -271,11 +278,8 @@ Some of the most interesting parameters that can help to integrate TESTAR as an 
 		SuspiciousTitles -> The errors that TESTAR will search in the execution
 
 Example: 
-testar sse=desktop_generic ShowVisualSettingsDialogOnStartup=false Sequences=5 SequenceLength=100 Mode=Generate SUTConnectorValue=" ""C:\\Program Files\\VideoLAN\\VLC\\vlc.exe"" " SuspiciousTitles=".*[eE]rror.*|.*[eE]xcep[ct]ion.*"
 
-
-## Known issues
-https://github.com/TESTARtool/TESTAR_dev/issues
+``testar sse=desktop_generic ShowVisualSettingsDialogOnStartup=false Sequences=5 SequenceLength=100 Mode=Generate SUTConnectorValue=" ""C:\\Program Files\\VideoLAN\\VLC\\vlc.exe"" " SuspiciousTitles=".*[eE]rror.*|.*[eE]xcep[ct]ion.*"``
 
 https://github.com/iv4xr-project/TESTAR_iv4xr/issues
 

@@ -1,6 +1,7 @@
 /***************************************************************************************************
 *
-* Copyright (c) 2016, 2017 Universitat Politecnica de Valencia - www.upv.es
+* Copyright (c) 2016 - 2020 Universitat Politecnica de Valencia - www.upv.es
+* Copyright (c) 2018 - 2020 Open Universiteit - www.ou.nl
 *
 * Redistribution and use in source and binary forms, with or without
 * modification, are permitted provided that the following conditions are met:
@@ -39,9 +40,6 @@ import org.fruit.alayer.exceptions.NoSuchTagException;
 
 /**
  * Core coding manager.
- * 
- * @author Urko Rueda Molina (alias: urueda)
- *
  */
 public class CodingManager {
 
@@ -187,8 +185,14 @@ public class CodingManager {
 	 * @param actions The actions.
 	 */
 	public static synchronized void buildIDs(State state, Set<Action> actions){
-		for (Action a : actions)
-			CodingManager.buildIDs(state,a);
+	    for (Action a : actions) {
+	        a.set(Tags.ConcreteID, ID_PREFIX_ACTION + ID_PREFIX_CONCRETE +
+	                CodingManager.codify(state.get(Tags.ConcreteID), a));
+	        a.set(Tags.ConcreteIDCustom, ID_PREFIX_ACTION + ID_PREFIX_CONCRETE_CUSTOM +
+	                CodingManager.codify(state.get(Tags.ConcreteIDCustom), a));
+	        a.set(Tags.AbstractID, ID_PREFIX_ACTION + ID_PREFIX_ABSTRACT +
+	                CodingManager.codify(state.get(Tags.ConcreteID), a, ROLES_ABSTRACT_ACTION));
+	    }
 
 		// for the custom abstract action identifier, we first sort the actions by their path in the widget tree
 		// and then set their ids using incremental counters
@@ -215,22 +219,7 @@ public class CodingManager {
 				}
 		);
 	}
-	
-	/**
-	 * Builds IDs (abstract, concrete, precise) for an action.
-	 * @param action An action.
-	 */
-	public static synchronized void buildIDs(State state, Action action){		
-		action.set(Tags.ConcreteID, ID_PREFIX_ACTION + ID_PREFIX_CONCRETE +
-				   CodingManager.codify(state.get(Tags.ConcreteID), action));
-		action.set(Tags.ConcreteIDCustom, ID_PREFIX_ACTION + ID_PREFIX_CONCRETE_CUSTOM +
-					CodingManager.codify(state.get(Tags.ConcreteIDCustom), action));
-		action.set(Tags.AbstractID, ID_PREFIX_ACTION + ID_PREFIX_ABSTRACT +
-				   CodingManager.codify(state.get(Tags.ConcreteID), action, ROLES_ABSTRACT_ACTION));
-//		action.set(Tags.AbstractIDCustom, ID_PREFIX_ACTION + ID_PREFIX_ABSTRACT_CUSTOM +
-//					CodingManager.codify(state.get(Tags.AbstractIDCustom), action, ROLES_ABSTRACT_ACTION));
-	}
-	
+
 	/**
 	 * Builds IDs (abstract, concrete, precise) for an environment action.
 	 * @param action An action.

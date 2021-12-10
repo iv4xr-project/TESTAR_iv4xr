@@ -41,6 +41,7 @@ SequenceLength = 1
 #################################################################
 
 SuspiciousTitles = .*[eE]rror.*|.*[eE]xcepti[o?]n.*
+TagsForSuspiciousOracle = Title
 
 #################################################################
 # Oracles based on Suspicious Outputs detected by Process Listeners
@@ -77,6 +78,7 @@ ProcessLogs = .*.*
 #################################################################
 
 ClickFilter = .*[sS]istema.*|.*[sS]ystem.*|.*[cC]errar.*|.*[cC]lose.*|.*[sS]alir.*|.*[eE]xit.*|.*[mM]inimizar.*|.*[mM]inimi[zs]e.*|.*[gG]uardar.*|.*[sS]ave.*|.*[iI]mprimir.*|.*[pP]rint.*
+TagsToFilter = Title
 
 #################################################################
 # Processfilter
@@ -96,16 +98,8 @@ SUTProcesses =
 ProtocolClass = labrecruits_goal_agent_listener_tick/Protocol_labrecruits_goal_agent_listener_tick
 
 #################################################################
-# Graphdatabase settings (experimental)
-#################################################################
-GraphDBEnabled = true
-GraphDBUrl = remote:/localhost/testar
-GraphDBUser = testar
-GraphDBPassword = testar
-
-#################################################################\n"
 # State model inference settings
-#################################################################\n"
+#################################################################
 StateModelEnabled = true
 DataStore = OrientDB
 DataStoreType = remote

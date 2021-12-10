@@ -42,10 +42,7 @@ import eu.testar.iv4xr.labrecruits.LabRecruitsProcess;
  */
 public class IV4XRProtocolUtil extends ProtocolUtil {
 
-	public IV4XRProtocolUtil() {}
-
-	@Override
-	public String getStateshot(State state, int actionCount) {
+	public static String getStateshot(State state, int actionCount) {
 		if(!LabRecruitsProcess.labRecruitsGraphics) {
 			System.out.println("INFO: Not taking state screenshot because LabRecruits is running in server mode");
 			return "";

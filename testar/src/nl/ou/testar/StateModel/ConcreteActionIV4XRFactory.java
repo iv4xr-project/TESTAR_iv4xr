@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,17 +28,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package nl.ou.testar.StateModel.iv4XR;
+package nl.ou.testar.StateModel;
 
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.Tags;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
-import nl.ou.testar.StateModel.AbstractAction;
-import nl.ou.testar.StateModel.ConcreteAction;
-import nl.ou.testar.StateModel.ConcreteActionFactory;
-import nl.ou.testar.StateModel.Widget;
 
 public class ConcreteActionIV4XRFactory extends ConcreteActionFactory {
 	

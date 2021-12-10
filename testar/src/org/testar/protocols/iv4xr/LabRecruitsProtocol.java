@@ -64,7 +64,6 @@ import com.google.common.collect.Sets;
 import environments.LabRecruitsEnvironment;
 import es.upv.staq.testar.CodingManager;
 import es.upv.staq.testar.NativeLinker;
-import eu.testar.iv4xr.IV4XRProtocolUtil;
 import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
@@ -114,9 +113,6 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 			System.out.println("*************************************************************");
 			Runtime.getRuntime().exit(0);
 		}
-
-		// Currently an utility protocol to take SUT screenshots
-		protocolUtil = new IV4XRProtocolUtil();
 
 		// Define existing agent to fetch his observation entities
 		agentId = settings.get(ConfigTags.AgentId);
@@ -369,7 +365,6 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	protected void stopSystem(SUT system) {
 		system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).close();
 		super.stopSystem(system);
-		NativeLinker.cleaniv4XRLab();
 	}
 
 	/**
@@ -396,6 +391,15 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 				+ " " + status + " \"" + statusInfo + "\"" );
 
 		htmlReport.close();
+	}
+
+	/**
+	 * This method is called after the last sequence, to allow for example handling the reporting of the session
+	 */
+	@Override
+	protected void closeTestSession() {
+		super.closeTestSession();
+		NativeLinker.cleaniv4XRLab();
 	}
 
 	/**
