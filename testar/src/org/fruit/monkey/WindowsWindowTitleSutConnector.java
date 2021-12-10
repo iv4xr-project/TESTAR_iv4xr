@@ -89,9 +89,10 @@ public class WindowsWindowTitleSutConnector implements SutConnector {
 
         CodingManager.buildIDs(state);
 
+        //Do we need a screenshot at the moment we attach to the SUT?
         Shape viewPort = state.get(Tags.Shape, null);
         if(viewPort != null){
-            state.set(Tags.ScreenshotPath, ProtocolUtil.getStateshot(state));
+            state.set(Tags.ScreenshotPath, ProtocolUtil.getStateshot(state, 0));
             //Don't include WdProtocolUtil option because TESTAR doesn't connect to webdrivers through the windows title
         }
 

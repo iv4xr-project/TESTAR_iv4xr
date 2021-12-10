@@ -48,7 +48,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.fruit.Assert;
 import org.fruit.Util;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Canvas;
@@ -127,15 +126,6 @@ public class SEProtocol extends GenericUtilsProtocol {
 	protected void preSequencePreparations() {
 		//initializing the HTML sequence report:
 		htmlReport = new HtmlSequenceReport();
-	}
-
-	/**
-	 * Connect with a running SUT using the processName. 
-	 */
-	@Override
-	protected SUT getSUTByProcessName(String processName){
-		Assert.hasText(processName);
-		return NativeLinker.getNativeProcess(processName);
 	}
 
 	/**

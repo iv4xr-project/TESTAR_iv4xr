@@ -636,7 +636,7 @@ public class WebdriverProtocol extends GenericUtilsProtocol {
 			if(domainsAllowed != null && !domainsAllowed.contains(getDomain(url))) {
 				System.out.println(String.format("WEBDRIVER INFO: Automatically adding initial %s domain to domainsAllowed List", getDomain(url)));
 				String[] newDomainsAllowed = domainsAllowed.stream().toArray(String[]::new);
-				domainsAllowed = Arrays.asList(ArrayUtils.insert(newDomainsAllowed.length, newDomainsAllowed, getDomain(url)));
+				domainsAllowed = Arrays.asList(ArrayUtils.add(newDomainsAllowed, getDomain(url)));
 				System.out.println(String.format("domainsAllowed: %s", String.join(",", domainsAllowed)));
 			}
 		} catch(Exception e) {
