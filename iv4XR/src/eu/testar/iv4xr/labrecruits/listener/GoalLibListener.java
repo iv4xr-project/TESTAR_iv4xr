@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.fruit.alayer.Action;
+import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
@@ -47,7 +48,6 @@ import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.testar.iv4xr.actions.goals.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.uu.cs.aplib.mainConcepts.Goal;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
@@ -66,15 +66,9 @@ public class GoalLibListener {
 	}
 
 	// Use LabRecruits Agent to create new goal actions
-	private static LabRecruitsAgentTESTAR agentTESTAR;
-	public static void setTestAgent(LabRecruitsAgentTESTAR testAgent) {
-		GoalLibListener.agentTESTAR = testAgent;
-	}
-
-	// Use LabRecruits Agent Id to create new goal actions
-	private static String agentId;
-	public static void setAgentId(String agentId) {
-		GoalLibListener.agentId = agentId;
+	private static SUT system;
+	public static void setSUT(SUT system) {
+		GoalLibListener.system = system;
 	}
 
 	// List to save pending goal actions
@@ -127,7 +121,7 @@ public class GoalLibListener {
 	public static Goal positionInCloseRange(Vec3 goalPosition) {
 		Goal goal = GoalLib.positionInCloseRange(goalPosition);
 
-		Action executedGoalAction = new labActionGoalPositionInCloseRange(stateTESTAR, agentTESTAR, goal.lift(), agentId, goalPosition);
+		Action executedGoalAction = new labActionGoalPositionInCloseRange(stateTESTAR, system, goal.lift(), goalPosition);
 		goalActionsList.add(executedGoalAction);
 
 		return goal;
@@ -139,7 +133,7 @@ public class GoalLibListener {
 	public static GoalStructure positionsVisited(Vec3... positions) {
 		GoalStructure goalStructure = GoalLib.positionsVisited(positions);
 
-		Action executedGoalAction = new labActionGoalPositionsVisited(stateTESTAR, agentTESTAR, goalStructure, agentId, positions);
+		Action executedGoalAction = new labActionGoalPositionsVisited(stateTESTAR, system, goalStructure, positions);
 		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
@@ -153,7 +147,7 @@ public class GoalLibListener {
 		
 		Widget widget = getWidgetFromState(stateTESTAR, entityId);
 
-		Action executedGoalAction = new labActionGoalEntityInCloseRange(widget, agentTESTAR, goalStructure, agentId);
+		Action executedGoalAction = new labActionGoalEntityInCloseRange(widget, system, goalStructure);
 		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
@@ -167,7 +161,7 @@ public class GoalLibListener {
 		
 		Widget widget = getWidgetFromState(stateTESTAR, entityId);
 
-		Action executedGoalAction = new labActionGoalEntityInteracted(widget, agentTESTAR, goalStructure, agentId);
+		Action executedGoalAction = new labActionGoalEntityInteracted(widget, system, goalStructure);
 		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
@@ -181,7 +175,7 @@ public class GoalLibListener {
 		
 		Widget widget = getWidgetFromState(stateTESTAR, entityId);
 
-		Action executedGoalAction = new labActionGoalEntityStateRefreshed(widget, agentTESTAR, goalStructure, agentId);
+		Action executedGoalAction = new labActionGoalEntityStateRefreshed(widget, system, goalStructure);
 		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
@@ -195,7 +189,7 @@ public class GoalLibListener {
 		
 		Widget widget = getWidgetFromState(stateTESTAR, entityId);
 
-		Action executedGoalAction = new labActionGoalEntityInspected(widget, agentTESTAR, goalStructure, agentId, predicate);
+		Action executedGoalAction = new labActionGoalEntityInspected(widget, system, goalStructure, predicate);
 		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
@@ -209,7 +203,7 @@ public class GoalLibListener {
 		
 		Widget widget = getWidgetFromState(stateTESTAR, entityId);
 
-		Action executedGoalAction = new labActionGoalEntityInvariantChecked(widget, agentTESTAR, goalStructure, agentId, info, predicate);
+		Action executedGoalAction = new labActionGoalEntityInvariantChecked(widget, system, goalStructure, info, predicate);
 		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;
@@ -221,7 +215,7 @@ public class GoalLibListener {
 	public static GoalStructure invariantChecked(TestAgent agent, String info, Predicate<BeliefState> predicate){
 		GoalStructure goalStructure = GoalLib.invariantChecked(agent, info, predicate);
 
-		Action executedGoalAction = new labActionGoalInvariantChecked(stateTESTAR, agentTESTAR, goalStructure, agentId, info, predicate);
+		Action executedGoalAction = new labActionGoalInvariantChecked(stateTESTAR, system, goalStructure, info, predicate);
 		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;

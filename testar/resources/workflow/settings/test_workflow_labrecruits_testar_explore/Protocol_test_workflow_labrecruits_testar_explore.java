@@ -28,10 +28,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-import static nl.uu.cs.aplib.AplibEDSL.SEQ;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,7 +35,6 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.fruit.Util;
 import org.fruit.alayer.*;
-import org.fruit.alayer.actions.NOP;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Main;
@@ -47,17 +42,10 @@ import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
-import agents.LabRecruitsTestAgent;
-import agents.tactics.GoalLib;
 import environments.LabRecruitsEnvironment;
-import eu.iv4xr.framework.mainConcepts.TestDataCollector;
-import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
 import nl.ou.testar.RandomActionSelector;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-import world.BeliefState;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
@@ -91,12 +79,9 @@ public class Protocol_test_workflow_labrecruits_testar_explore extends LabRecrui
 	 */
 	@Override
 	protected void initialize(Settings settings) {
-		// Agent point of view that will Observe and extract Widgets information
-		agentId = "agent1";
-
 		super.initialize(settings);
 	}
-	
+
 	/**
 	 * Derive all possible actions that TESTAR can execute in each specific LabRecruits state.
 	 */

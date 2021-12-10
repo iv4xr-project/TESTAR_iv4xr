@@ -45,15 +45,12 @@ import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
-import agents.tactics.GoalLib;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.labrecruits.listener.GoalLibListener;
-import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-import world.BeliefState;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
@@ -92,9 +89,6 @@ public class Protocol_test_workflow_labrecruits_goal_agent_listener_complete ext
 	 */
 	@Override
 	protected void initialize(Settings settings) {
-		// Agent point of view that will Observe and extract Widgets information
-		agentId = "agent1";
-
 		super.initialize(settings);
 
 		// Used internally (LabRecruitsProtocol) to change the State Model notification flow
@@ -120,16 +114,10 @@ public class Protocol_test_workflow_labrecruits_goal_agent_listener_complete ext
 		// Set TESTAR WOM State
 		GoalLibListener.setState(state);
 
-		// Create an environment
-		LabRecruitsEnvironmentListener labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
+		LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
 
-		testAgent = new LabRecruitsAgentTESTAR(agentId) // matches the ID in the CSV file
-				. attachState(new BeliefState())
-				. attachEnvironment(labRecruitsEnvironment);
-
-		// Set LabRecruits Agent
-		GoalLibListener.setAgentId(agentId);
-		GoalLibListener.setTestAgent(testAgent);
+		// Set SUT
+		GoalLibListener.setSUT(system);
 
 		// iv4xr Agent : define the testing-task
 		goal = SEQ(
@@ -259,6 +247,7 @@ public class Protocol_test_workflow_labrecruits_goal_agent_listener_complete ext
 		 */
 		// Invoke the Agent. LabRecruitsEnvironment is listening Agent Goal
 		// this will update the derived Action to merge TESTAR and Agent Goal knowledge
+		LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
 		while(testAgent.isGoalInProgress() && !hazardousEntityFound()) {
 			testAgent.update();
 
@@ -296,6 +285,7 @@ public class Protocol_test_workflow_labrecruits_goal_agent_listener_complete ext
 	 */
 	@Override
 	protected void stopSystem(SUT system) {
+		LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
 		// check that we have passed both tests above:
 		assertTrue(testAgent.getTestDataCollector().getNumberOfPassVerdictsSeen() == 4) ;
 		// goal status should be success

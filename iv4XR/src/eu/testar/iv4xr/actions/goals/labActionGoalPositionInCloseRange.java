@@ -30,6 +30,7 @@
 
 package eu.testar.iv4xr.actions.goals;
 
+import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 
@@ -45,10 +46,8 @@ public class labActionGoalPositionInCloseRange extends labActionGoal {
 
 	private Vec3 goalPosition;
 
-	public labActionGoalPositionInCloseRange(Widget w, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId, Vec3 goalPosition) {
-		this.agentTESTAR = testAgent;
+	public labActionGoalPositionInCloseRange(Widget w, SUT system, GoalStructure goalStructure, Vec3 goalPosition) {
 		this.goalStructure = goalStructure;
-		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.entityId = w.get(IV4XRtags.entityId);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionGoalPositionInCloseRange);
@@ -56,8 +55,10 @@ public class labActionGoalPositionInCloseRange extends labActionGoal {
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, false);
 		this.set(IV4XRtags.newActionByAgent, false);
-		
+
 		// Set the goal to the agent
+		LabRecruitsAgentTESTAR agentTESTAR = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
+		this.agentId = agentTESTAR.getId();
 		agentTESTAR.setGoal(goalStructure);
 	}
 

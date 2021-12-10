@@ -45,9 +45,7 @@ import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.labrecruits.listener.GoalLibListener;
-import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-import world.BeliefState;
 import world.LabEntity;
 
 /**
@@ -92,22 +90,16 @@ public class Protocol_labrecruits_emotional_agent extends LabRecruitsProtocol {
 		// Set TESTAR WOM State
 		GoalLibListener.setState(state);
 
-		// Create an environment
-		LabRecruitsEnvironmentListener labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
+		LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
 
-		testAgent = new LabRecruitsAgentTESTAR(agentId) // matches the ID in the CSV file
-				. attachState(new BeliefState())
-				. attachEnvironment(labRecruitsEnvironment);
-		
 		// create EmotionalCritic
 		emotionalCritic = new eu.testar.iv4xr.emotions.EmotionalCritic(testAgent);
 		// Set needed value of EmotionalCritic
 		// All existing WOM entities (this is not from point of view of users)
 		emotionalCritic.known_entities = testAgent.getState().worldmodel.elements.size();
 
-		// Set LabRecruits Agent
-		GoalLibListener.setAgentId(agentId);
-		GoalLibListener.setTestAgent(testAgent);
+		// Set SUT
+		GoalLibListener.setSUT(system);
 
 		// iv4xr Agent : define the testing-task
 		goal = SEQ(GoalLibListener.entityInteracted("button1"));
@@ -219,6 +211,7 @@ public class Protocol_labrecruits_emotional_agent extends LabRecruitsProtocol {
 		 */
 		// Invoke the Agent. LabRecruitsEnvironment is listening Agent Goal
 		// this will update the derived Action to merge TESTAR and Agent Goal knowledge
+		LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
 		testAgent.update();
 
 		// If Agent finished the goal, remove from internal pending list
@@ -252,10 +245,11 @@ public class Protocol_labrecruits_emotional_agent extends LabRecruitsProtocol {
 	 */
 	@Override
 	protected void stopSystem(SUT system) {
+		LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
 		// goal status should be success
 		assertTrue(testAgent.success());
 		// agent should be close to button1
-        var agent_p  = testAgent.getState().worldmodel.getFloorPosition() ;
+        var agent_p  = testAgent.getState().worldmodel.position ;
         var button_p = ((LabEntity) testAgent.getState().worldmodel.getElement("button1")).getFloorPosition() ;
         assertTrue(Vec3.dist(agent_p, button_p) < 0.5) ;
 		super.stopSystem(system);

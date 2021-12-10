@@ -32,6 +32,7 @@ package eu.testar.iv4xr.actions.goals;
 
 import java.util.function.Predicate;
 
+import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
@@ -47,10 +48,8 @@ public class labActionGoalEntityInvariantChecked extends labActionGoal {
 	private String info;
 	private Predicate<WorldEntity> predicate;
 
-	public labActionGoalEntityInvariantChecked(Widget w, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId, String info, Predicate<WorldEntity> predicate) {
-		this.agentTESTAR = testAgent;
+	public labActionGoalEntityInvariantChecked(Widget w, SUT system, GoalStructure goalStructure, String info, Predicate<WorldEntity> predicate) {
 		this.goalStructure = goalStructure;
-		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.entityId = w.get(IV4XRtags.entityId);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionGoalEntityInvariantChecked);
@@ -59,8 +58,10 @@ public class labActionGoalEntityInvariantChecked extends labActionGoal {
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, false);
 		this.set(IV4XRtags.newActionByAgent, false);
-		
+
 		// Set the goal to the agent
+		LabRecruitsAgentTESTAR agentTESTAR = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
+		this.agentId = agentTESTAR.getId();
 		agentTESTAR.setGoal(goalStructure);
 	}
 

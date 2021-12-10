@@ -37,25 +37,26 @@ import org.fruit.alayer.State;
 import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
+import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
 public class labActionGoal extends TaggableBase implements Action {
 
 	private static final long serialVersionUID = -3743587033982637698L;
-	
+
 	protected String agentId;
 	protected String entityId;
-	protected LabRecruitsAgentTESTAR agentTESTAR;
 	protected GoalStructure goalStructure;
 
 	public GoalStructure getActionGoal() {
 		return goalStructure;
 	}
-	
+
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// It has been decided to execute this action
 		// Send the instructions to achieve the goal
+		LabRecruitsAgentTESTAR agentTESTAR = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
 		agentTESTAR.update();
 	}
 

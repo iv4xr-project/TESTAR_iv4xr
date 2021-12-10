@@ -85,7 +85,6 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	// Agent point of view that will Observe and extract Widgets information
 	protected String agentId = "agent1";
 
-	protected LabRecruitsAgentTESTAR testAgent;
 	private PrimitiveGoal previousGoal;
 	private int triesGoalInExecution = 0;
 
@@ -117,6 +116,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		// Define existing agent to fetch his observation entities
 		agentId = settings.get(ConfigTags.AgentId);
 		IV4XRStateFetcher.agentsIds = new HashSet<>(Arrays.asList(agentId));
+		LabRecruitsProcess.agentId = agentId;
 
 		// Set if LabRecruits system should be executed with the Graphics mode
 		LabRecruitsProcess.labRecruitsGraphics = settings.get(ConfigTags.LabRecruitsGraphics);
@@ -180,6 +180,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		//adding state to the HTML sequence report:
 		htmlReport.addState(latestState);
 
+		LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
 		if(testAgent != null) {
 			if(previousGoal != null && previousGoal.equals(testAgent.getCurrentGoal())) {
 				triesGoalInExecution = triesGoalInExecution + 1;
@@ -205,7 +206,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 		// TODO: Creating the SurfaceNavGraph graph in the beginSequence method returns a null object
 		// world.BeliefState.setEnvironment creates the pathfinder = new SurfaceNavGraph(e_.worldNavigableMesh,0.5f)
 		if(navGraph == null && labRecruitsEnvironment != null) {
-			navGraph = new SurfaceNavGraph(system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).worldNavigableMesh, 0.5f);
+			navGraph = new SurfaceNavGraph(system.get(IV4XRtags.iv4xrLabRecruitsEnvironment).worldNavigableMesh(), 0.5f);
 		}
 
 		Set<SVec3> navMeshNodes = new HashSet<>();

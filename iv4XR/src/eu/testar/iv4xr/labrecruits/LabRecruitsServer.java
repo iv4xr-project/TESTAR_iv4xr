@@ -38,9 +38,11 @@ import org.fruit.alayer.exceptions.SystemStopException;
 import org.fruit.alayer.windows.WinProcess;
 
 import environments.LabRecruitsConfig;
+import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
 import game.LabRecruitsTestServer;
+import world.BeliefState;
 
 public class LabRecruitsServer extends LabRecruitsProcess {
 
@@ -84,6 +86,8 @@ public class LabRecruitsServer extends LabRecruitsProcess {
 			LabRecruitsConfig environment = new LabRecruitsConfig(levelName, levelsPath);
 			LabRecruitsEnvironmentListener labRecruitsEnvironment = new LabRecruitsEnvironmentListener(environment);
 
+			TestAgent testAgent = new LabRecruitsAgentTESTAR(agentId).attachState(new BeliefState()).attachEnvironment(labRecruitsEnvironment);
+
 			Util.pause(5);
 
 			System.out.println("Welcome to the iv4XR test: " + levelName);
@@ -91,6 +95,7 @@ public class LabRecruitsServer extends LabRecruitsProcess {
 			this.set(IV4XRtags.windowsProcess, win);
 			this.set(Tags.PID, win.pid());
 			this.set(IV4XRtags.iv4xrLabRecruitsEnvironment, labRecruitsEnvironment);
+			this.set(IV4XRtags.iv4xrTestAgent, testAgent);
 
 		} catch(Exception e) {
 			System.err.println(String.format("EnvironmentConfig ERROR: Trying to loas LabRecruits level %s - %s ", levelsPath, levelName));

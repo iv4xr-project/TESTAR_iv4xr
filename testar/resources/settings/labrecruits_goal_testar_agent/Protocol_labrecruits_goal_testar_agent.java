@@ -44,10 +44,8 @@ import eu.testar.iv4xr.actions.goals.labActionGoalEntityInCloseRange;
 import eu.testar.iv4xr.actions.goals.labActionGoalEntityInteracted;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
-import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
 import nl.ou.testar.RandomActionSelector;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-import world.BeliefState;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
@@ -83,12 +81,7 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	 */
 	@Override
 	protected void beginSequence(SUT system, State state) {
-		// Create an environment
-		LabRecruitsEnvironmentListener labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
-
-		testAgent = new LabRecruitsAgentTESTAR(agentId)
-				.attachState(new BeliefState())
-				.attachEnvironment(labRecruitsEnvironment);
+		super.beginSequence(system, state);
 	}
 
 	/**
@@ -130,17 +123,18 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 		labActions = exploreVisibleNodesActions(labActions, state, labRecruitsEnv, agentId);
 
 		// For every interactive entity agents have the possibility to achieve Interact and Close Range goals
+		LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
 		for(Widget w : state) {
 			if(isInteractiveEntity(w)) {
 				String entityId = w.get(IV4XRtags.entityId);
 
 				GoalStructure goalNavigateEntity = GoalLib.entityInCloseRange(entityId);
-				Action actionNavigateEntity = new labActionGoalEntityInCloseRange(w, testAgent, goalNavigateEntity, agentId);
+				Action actionNavigateEntity = new labActionGoalEntityInCloseRange(w, system, goalNavigateEntity);
 				labActions.add(actionNavigateEntity);
 
 				if(isAgentCloseToEntity(system, w, 1.0)) {
 					GoalStructure goalEntityInteracted = GoalLib.entityInteracted(entityId);
-					Action actionEntityInteracted = new labActionGoalEntityInteracted(w, testAgent, goalEntityInteracted, agentId);
+					Action actionEntityInteracted = new labActionGoalEntityInteracted(w, system, goalEntityInteracted);
 					labActions.add(actionEntityInteracted);
 				}
 			}
@@ -186,6 +180,7 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 
 			System.out.println(action.toShortString());
 			// From selected action extract the Goal and set to the Agent
+			LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
 			if(action instanceof labActionGoal) {
 				testAgent.setGoal(((labActionGoal) action).getActionGoal());
 			} else {

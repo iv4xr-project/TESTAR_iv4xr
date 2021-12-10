@@ -30,6 +30,7 @@
 
 package eu.testar.iv4xr.actions.goals;
 
+import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 
@@ -42,24 +43,24 @@ public class labActionGoalEntityInteracted extends labActionGoal {
 
 	private static final long serialVersionUID = 257145936598623249L;
 
-	public labActionGoalEntityInteracted(Widget w, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId) {
-		this.agentTESTAR = testAgent;
+	public labActionGoalEntityInteracted(Widget w, SUT system, GoalStructure goalStructure) {
 		this.goalStructure = goalStructure;
-		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.entityId = w.get(IV4XRtags.entityId);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionGoalEntityInteracted);
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, false);
 		this.set(IV4XRtags.newActionByAgent, false);
-		
+
 		// Set the goal to the agent
-		this.agentTESTAR.setGoal(goalStructure);
+		LabRecruitsAgentTESTAR agentTESTAR = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
+		this.agentId = agentTESTAR.getId();
+		agentTESTAR.setGoal(goalStructure);
 	}
 
 	@Override
 	public String toShortString() {
-		return "Agent: " + agentId + " executing Goal EntityInteracted to " + entityId;
+		return "Agent: " + agentId + " executing Goal : " + goalStructure.showGoalStructureStatus();
 	}
 
 }

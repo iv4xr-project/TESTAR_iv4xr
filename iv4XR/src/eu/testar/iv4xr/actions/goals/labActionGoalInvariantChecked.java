@@ -32,6 +32,7 @@ package eu.testar.iv4xr.actions.goals;
 
 import java.util.function.Predicate;
 
+import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 
@@ -48,10 +49,8 @@ public class labActionGoalInvariantChecked extends labActionGoal {
 	private String info;
 	private Predicate<BeliefState> predicate;
 
-	public labActionGoalInvariantChecked(Widget w, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId, String info, Predicate<BeliefState> predicate) {
-		this.agentTESTAR = testAgent;
+	public labActionGoalInvariantChecked(Widget w, SUT system, GoalStructure goalStructure, String info, Predicate<BeliefState> predicate) {
 		this.goalStructure = goalStructure;
-		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.entityId = w.get(IV4XRtags.entityId);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionGoalInvariantChecked);
@@ -62,6 +61,8 @@ public class labActionGoalInvariantChecked extends labActionGoal {
 		this.set(IV4XRtags.newActionByAgent, false);
 		
 		// Set the goal to the agent
+		LabRecruitsAgentTESTAR agentTESTAR = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
+		this.agentId = agentTESTAR.getId();
 		agentTESTAR.setGoal(goalStructure);
 	}
 

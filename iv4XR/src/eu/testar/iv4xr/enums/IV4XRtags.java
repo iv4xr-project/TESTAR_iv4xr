@@ -39,6 +39,7 @@ import org.fruit.alayer.Widget;
 import org.fruit.alayer.windows.WinProcess;
 
 import spaceEngineers.controller.JsonRpcSpaceEngineers;
+import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.mainConcepts.W3DEnvironment;
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
@@ -60,6 +61,9 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<WinProcess> windowsProcess = from("windowsProcess", WinProcess.class);
 
 	// Specific Lab Recruits Environment, layer that facilitates the communication between agents and the Lab Recruits game
+	public static final Tag<TestAgent> iv4xrTestAgent = from("iv4xrTestAgent", TestAgent.class);
+
+	// iv4xr Test Agent that allows to execute tactics and goals
 	public static final Tag<LabRecruitsEnvironmentListener> iv4xrLabRecruitsEnvironment = from("LabRecruitsEnvironment", LabRecruitsEnvironmentListener.class);
 
 	// Specific SpaceEngineers Environment, layer that facilitates the communication between agents and the SpaceEngineers game
@@ -83,14 +87,6 @@ public class IV4XRtags extends TagsBase {
 	// Tag that contains the LabRecruits NavMesh information (node and position)
 	@SuppressWarnings("unchecked")
 	public static final Tag<Set<SVec3>> labRecruitsNavMesh = from("labRecruitsNavMesh", (Class<Set<SVec3>>) (Class<?>) HashSet.class);
-
-	// Associate a dynamic State Tag with the System for Agent Listening purposes
-	//public static final Tag<State> labRecruitsState = from("labRecruitsState", State.class);
-
-	// Associate a the dynamic Actions Tag with the System for Agent Listening purposes
-	//public static final Tag<Set<Action>> labRecruitsActions = from("labRecruitsActions", (Class<Set<Action>>) (Class<?>) HashSet.class);
-
-	//public static final Tag<Action> labRecruitsSelectedAgentAction = from("labRecruitsSelectedAgentAction", Action.class);
 
 	/**
 	 * Entity - Agent - Widget Tags

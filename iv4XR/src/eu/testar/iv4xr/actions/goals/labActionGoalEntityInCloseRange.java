@@ -30,6 +30,7 @@
 
 package eu.testar.iv4xr.actions.goals;
 
+import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 
@@ -42,19 +43,19 @@ public class labActionGoalEntityInCloseRange extends labActionGoal {
 
 	private static final long serialVersionUID = -7438624568365334647L;
 
-	public labActionGoalEntityInCloseRange(Widget w, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId) {
-		this.agentTESTAR = testAgent;
+	public labActionGoalEntityInCloseRange(Widget w, SUT system, GoalStructure goalStructure) {
 		this.goalStructure = goalStructure;
-		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.entityId = w.get(IV4XRtags.entityId);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionGoalEntityInCloseRange);
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, false);
 		this.set(IV4XRtags.newActionByAgent, false);
-		
+
 		// Set the goal to the agent
-		this.agentTESTAR.setGoal(goalStructure);
+		LabRecruitsAgentTESTAR agentTESTAR = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
+		this.agentId = agentTESTAR.getId();
+		agentTESTAR.setGoal(goalStructure);
 	}
 
 	@Override

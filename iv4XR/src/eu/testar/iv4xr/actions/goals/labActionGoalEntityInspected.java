@@ -33,6 +33,7 @@ package eu.testar.iv4xr.actions.goals;
 import java.util.function.Predicate;
 
 import org.fruit.alayer.Role;
+import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
@@ -47,10 +48,8 @@ public class labActionGoalEntityInspected extends labActionGoal {
 
 	private Predicate<WorldEntity> predicate;
 
-	public labActionGoalEntityInspected(Widget w, LabRecruitsAgentTESTAR testAgent, GoalStructure goalStructure, String agentId, Predicate<WorldEntity> predicate) {
-		this.agentTESTAR = testAgent;
+	public labActionGoalEntityInspected(Widget w, SUT system, GoalStructure goalStructure, Predicate<WorldEntity> predicate) {
 		this.goalStructure = goalStructure;
-		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.entityId = w.get(IV4XRtags.entityId);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionGoalEntityInspected);
@@ -60,6 +59,8 @@ public class labActionGoalEntityInspected extends labActionGoal {
 		this.set(IV4XRtags.newActionByAgent, false);
 		
 		// Set the goal to the agent
+		LabRecruitsAgentTESTAR agentTESTAR = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
+		this.agentId = agentTESTAR.getId();
 		agentTESTAR.setGoal(goalStructure);
 	}
 

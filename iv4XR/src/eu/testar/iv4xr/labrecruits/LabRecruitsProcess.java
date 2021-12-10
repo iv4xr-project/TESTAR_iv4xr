@@ -43,8 +43,10 @@ import org.fruit.alayer.windows.WinApiException;
 import org.fruit.alayer.windows.WinProcess;
 
 import environments.LabRecruitsConfig;
+import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
+import world.BeliefState;
 
 /**
  * This class represents the IV4XR process, is creating the OS process and the IV4XR Environment
@@ -58,7 +60,9 @@ public class LabRecruitsProcess extends SUTBase {
 	public static WinProcess win;
 	
 	public static boolean labRecruitsGraphics = true;
-	
+
+	public static String agentId = "";
+
 	public LabRecruitsProcess() {}
 
 	private LabRecruitsProcess(String path) {
@@ -118,7 +122,9 @@ public class LabRecruitsProcess extends SUTBase {
 			// Define the desired level Environment and starts the Lab Recruits Game Environment
 			LabRecruitsConfig environment = new LabRecruitsConfig(levelName, levelsPath);
 			LabRecruitsEnvironmentListener labRecruitsEnvironment = new LabRecruitsEnvironmentListener(environment);
-			
+
+			TestAgent testAgent = new LabRecruitsAgentTESTAR(agentId).attachState(new BeliefState()).attachEnvironment(labRecruitsEnvironment);
+
 			Util.pause(5);
 
 			// presses "Play" in the game for you
@@ -131,7 +137,8 @@ public class LabRecruitsProcess extends SUTBase {
 			this.set(IV4XRtags.windowsProcess, win);
 			this.set(Tags.PID, win.pid());
 			this.set(IV4XRtags.iv4xrLabRecruitsEnvironment, labRecruitsEnvironment);
-			
+			this.set(IV4XRtags.iv4xrTestAgent, testAgent);
+
 		} catch(Exception e) {
 			System.err.println(String.format("EnvironmentConfig ERROR: Trying to loas LabRecruits level %s - %s ", levelsPath, levelName));
 			System.err.println(e.getMessage());
