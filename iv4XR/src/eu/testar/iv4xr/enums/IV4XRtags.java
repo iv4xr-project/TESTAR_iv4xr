@@ -39,8 +39,8 @@ import org.fruit.alayer.Widget;
 import org.fruit.alayer.windows.WinProcess;
 
 import spaceEngineers.controller.JsonRpcSpaceEngineers;
+import eu.iv4xr.framework.environments.W3DEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
-import eu.iv4xr.framework.mainConcepts.W3DEnvironment;
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
 import world.LabWorldModel;

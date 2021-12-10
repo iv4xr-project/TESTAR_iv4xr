@@ -89,7 +89,7 @@ public class seActionNavigateToBlock extends seActionGoal {
 	 * @param system
 	 */
 	protected void navigateToBlock(SUT system) {
-		stateGrid.updateState();
+		stateGrid.updateState(agentId);
 		WorldEntity entity = getEntityByPosition(stateGrid.wom.elements.values(), widgetPosition.toString());
 
 		/**
