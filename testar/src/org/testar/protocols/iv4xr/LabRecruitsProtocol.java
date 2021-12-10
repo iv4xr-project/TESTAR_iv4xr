@@ -65,7 +65,7 @@ import environments.LabRecruitsEnvironment;
 import es.upv.staq.testar.CodingManager;
 import es.upv.staq.testar.NativeLinker;
 import eu.testar.iv4xr.IV4XRStateFetcher;
-import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
+import eu.testar.iv4xr.actions.lab.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;

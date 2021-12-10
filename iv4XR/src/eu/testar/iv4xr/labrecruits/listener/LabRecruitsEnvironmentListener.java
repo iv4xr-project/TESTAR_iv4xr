@@ -41,7 +41,7 @@ import org.fruit.alayer.Widget;
 import environments.LabRecruitsConfig;
 import environments.LabRecruitsEnvironment;
 import es.upv.staq.testar.CodingManager;
-import eu.testar.iv4xr.actions.commands.*;
+import eu.testar.iv4xr.actions.lab.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.iv4xr.framework.spatial.Vec3;
 import world.LabWorldModel;

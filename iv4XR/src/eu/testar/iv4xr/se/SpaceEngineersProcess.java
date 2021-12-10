@@ -44,9 +44,14 @@ import org.fruit.alayer.exceptions.SystemStopException;
 import org.fruit.alayer.windows.WinApiException;
 import org.fruit.alayer.windows.WinProcess;
 
+import environments.SeEnvironment;
+import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import spaceEngineers.controller.ContextControllerWrapper;
 import spaceEngineers.controller.JsonRpcSpaceEngineers;
 import spaceEngineers.controller.JsonRpcSpaceEngineersBuilder;
+import spaceEngineers.controller.SpaceEngineersTestContext;
+import uuspaceagent.UUSeAgentState;
 
 public class SpaceEngineersProcess extends SUTBase {
 
@@ -137,11 +142,22 @@ public class SpaceEngineersProcess extends SUTBase {
 				System.out.println("Loaded level: " + levelPath);
 			}
 
+			// Create UU state grid
+			UUSeAgentState stateGrid = new UUSeAgentState(characterControllerId);
+			// Prepare UU agent
+			SpaceEngineersTestContext context = new SpaceEngineersTestContext();
+			ContextControllerWrapper controllerWrapper = new ContextControllerWrapper(seRpcController, context);
+			// WorldId is empty because we are going to connect to a running level, not load a new one
+			SeEnvironment sEnv = new SeEnvironment("", controllerWrapper, context);
+			// Finally create the TestAgent
+			TestAgent testAgent = new SeAgentTESTAR(characterControllerId, "explorer").attachState(stateGrid).attachEnvironment(sEnv);
+
 			this.set(IV4XRtags.windowsProcess, win);
 			this.set(Tags.PID, win.pid());
 			this.set(IV4XRtags.iv4xrSpaceEngRpcController, seRpcController);
 			this.set(IV4XRtags.iv4xrSpaceEngCharacter, seRpcController.getCharacter());
 			this.set(IV4XRtags.iv4xrSpaceEngItems, seRpcController.getItems());
+			this.set(IV4XRtags.iv4xrTestAgent, testAgent);
 
 		} catch(Exception e) {
 			System.err.println(String.format("EnvironmentConfig ERROR: Trying to connect with %s", launchPart));

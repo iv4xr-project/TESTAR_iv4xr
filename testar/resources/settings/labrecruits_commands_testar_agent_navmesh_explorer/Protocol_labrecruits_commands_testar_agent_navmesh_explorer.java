@@ -38,7 +38,7 @@ import org.fruit.monkey.Settings;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import environments.LabRecruitsEnvironment;
-import eu.testar.iv4xr.actions.commands.*;
+import eu.testar.iv4xr.actions.lab.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import nl.ou.testar.RandomActionSelector;
 

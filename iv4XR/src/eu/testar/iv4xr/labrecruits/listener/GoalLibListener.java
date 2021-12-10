@@ -46,7 +46,7 @@ import agents.tactics.GoalLib;
 import es.upv.staq.testar.CodingManager;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
-import eu.testar.iv4xr.actions.goals.*;
+import eu.testar.iv4xr.actions.lab.goals.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.uu.cs.aplib.mainConcepts.Goal;

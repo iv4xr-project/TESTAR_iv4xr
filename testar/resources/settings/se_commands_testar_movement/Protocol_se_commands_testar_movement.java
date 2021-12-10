@@ -36,7 +36,7 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.testar.protocols.iv4xr.SEProtocol;
 
-import eu.testar.iv4xr.actions.se.*;
+import eu.testar.iv4xr.actions.se.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import nl.ou.testar.RandomActionSelector;
 
@@ -62,8 +62,6 @@ public class Protocol_se_commands_testar_movement extends SEProtocol {
 	private static Set<String> movementEntities;
 	static {
 		movementEntities = new HashSet<String>();
-		movementEntities.add("LargeHeavyBlockArmorBlock");
-		movementEntities.add("LargeBlockArmorBlock");
 		movementEntities.add("LargeBlockSmallGenerator");
 		movementEntities.add("LargeBlockBatteryBlock");
 		movementEntities.add("ButtonPanelLarge");
@@ -79,12 +77,9 @@ public class Protocol_se_commands_testar_movement extends SEProtocol {
 		// For each block widget (see movementEntities types), rotate and move until the agent is close to the position of the block
 		for(Widget w : state) {
 			if(movementEntities.contains(w.get(IV4XRtags.entityType))) {
+				labActions.add(new seActionMoveToBlock(w, agentId));
 				labActions.add(new seActionMoveGrinderBlock(w, agentId, 4, 1.0));
 				labActions.add(new seActionMoveWelderBlock(w, agentId, 4, 1.0));
-				labActions.add(new seActionMoveToBlock(w, agentId));
-				labActions.add(new seActionNavigateGrinderBlock(w, agentId, 4, 1.0));
-				labActions.add(new seActionNavigateWelderBlock(w, agentId, 4, 1.0));
-				labActions.add(new seActionNavigateToBlock(w, agentId));
 			}
 		}
 

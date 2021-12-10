@@ -32,15 +32,13 @@ import java.util.HashSet;
 import java.util.Set;
 import org.fruit.Util;
 import org.fruit.alayer.*;
-import org.fruit.alayer.actions.CompoundAction;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.testar.protocols.iv4xr.SEProtocol;
 
-import eu.testar.iv4xr.actions.se.commands.*;
+import eu.testar.iv4xr.actions.se.goals.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import nl.ou.testar.RandomActionSelector;
-import spaceEngineers.model.Vec2F;
 
 /**
  * iv4xr EU H2020 project - SpaceEngineers Use Case
@@ -59,13 +57,14 @@ import spaceEngineers.model.Vec2F;
  * State (Widget-Tree) -> Agent Observation (All Observed Entities)
  * Action              -> SpaceEngineers low level command
  */
-public class Protocol_se_commands_testar_teleport extends SEProtocol {
+public class Protocol_se_commands_testar_navigate extends SEProtocol {
 
-	private static Set<String> teleportableEntities;
+	private static Set<String> movementEntities;
 	static {
-		teleportableEntities = new HashSet<String>();
-		teleportableEntities.add("LargeHeavyBlockArmorBlock");
-		teleportableEntities.add("LargeBlockArmorBlock");
+		movementEntities = new HashSet<String>();
+		movementEntities.add("LargeBlockSmallGenerator");
+		movementEntities.add("LargeBlockBatteryBlock");
+		movementEntities.add("ButtonPanelLarge");
 	}
 
 	/**
@@ -75,38 +74,12 @@ public class Protocol_se_commands_testar_teleport extends SEProtocol {
 	protected Set<Action> deriveActions(SUT system, State state) {
 		Set<Action> labActions = new HashSet<>();
 
-		/*for(Widget w : state) {
-			if(teleportableEntities.contains(w.get(IV4XRtags.entityType))) {
-				labActions.add(new seActionCommandTeleport(w, agentId));
-			}
-		}*/
-
-		// For each visible block, teleport + rotate + grinder or welder
+		// For each block widget (see movementEntities types), rotate and move until the agent is close to the position of the block
 		for(Widget w : state) {
-			if(teleportableEntities.contains(w.get(IV4XRtags.entityType))) {
-				// Add the possibility to teleport and grinder
-				CompoundAction.Builder teleportAndGrinder = new CompoundAction.Builder();
-				teleportAndGrinder.add(new seActionCommandTeleport(w, agentId), 0.5);
-				teleportAndGrinder.add(new seActionCommandRotate(w, agentId, new Vec2F(600f, 0)), 0.5);
-				teleportAndGrinder.add(new seActionCommandGrinder(state, agentId), 0.5);
-				Action widgetGrinder = teleportAndGrinder.build();
-				widgetGrinder.set(Tags.OriginWidget, w);
-				widgetGrinder.set(Tags.Desc, "Teleport, aim and grinder");
-				widgetGrinder.set(IV4XRtags.agentAction, false);
-				widgetGrinder.set(IV4XRtags.newActionByAgent, false);
-				labActions.add(widgetGrinder);
-
-				// Add the possibility to teleport and welder
-				CompoundAction.Builder teleportAndWelder = new CompoundAction.Builder();
-				teleportAndWelder.add(new seActionCommandTeleport(w, agentId), 0.5);
-				teleportAndWelder.add(new seActionCommandRotate(w, agentId, new Vec2F(600f, 0)), 0.5);
-				teleportAndWelder.add(new seActionCommandWelder(state, agentId), 0.5);
-				Action widgetWelder = teleportAndWelder.build();
-				widgetWelder.set(Tags.OriginWidget, w);
-				widgetWelder.set(Tags.Desc, "Teleport, aim and welder");
-				widgetWelder.set(IV4XRtags.agentAction, false);
-				widgetWelder.set(IV4XRtags.newActionByAgent, false);
-				labActions.add(widgetWelder);
+			if(movementEntities.contains(w.get(IV4XRtags.entityType))) {
+				labActions.add(new seActionNavigateToBlock(w, system, agentId));
+				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 4, 1.0));
+				labActions.add(new seActionNavigateWelderBlock(w, system, agentId, 4, 1.0));
 			}
 		}
 

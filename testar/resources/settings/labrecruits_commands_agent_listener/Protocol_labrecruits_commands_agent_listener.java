@@ -44,7 +44,7 @@ import agents.tactics.GoalLib;
 import environments.LabRecruitsEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
-import eu.testar.iv4xr.actions.commands.*;
+import eu.testar.iv4xr.actions.lab.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;

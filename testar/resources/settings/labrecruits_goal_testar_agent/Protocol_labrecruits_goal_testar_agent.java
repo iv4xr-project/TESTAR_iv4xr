@@ -39,9 +39,7 @@ import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import agents.tactics.GoalLib;
 import environments.LabRecruitsEnvironment;
-import eu.testar.iv4xr.actions.goals.labActionGoal;
-import eu.testar.iv4xr.actions.goals.labActionGoalEntityInCloseRange;
-import eu.testar.iv4xr.actions.goals.labActionGoalEntityInteracted;
+import eu.testar.iv4xr.actions.lab.goals.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import nl.ou.testar.RandomActionSelector;

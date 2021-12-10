@@ -47,7 +47,7 @@ import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.visualizers.EllipseVisualizer;
 import eu.iv4xr.framework.spatial.Vec3;
-import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
+import eu.testar.iv4xr.actions.lab.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
 

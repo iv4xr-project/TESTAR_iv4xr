@@ -37,7 +37,7 @@ import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.protocols.iv4xr.SEProtocol;
 
-import eu.testar.iv4xr.actions.commands.*;
+import eu.testar.iv4xr.actions.se.commands.*;
 import nl.ou.testar.RandomActionSelector;
 import spaceEngineers.model.Vec2F;
 import spaceEngineers.model.Vec3F;
@@ -117,8 +117,8 @@ public class Protocol_se_commands_testar_dummy extends SEProtocol {
 		labActions.add(new seActionCommandRotate(state, agentId, new Vec2F(0, 500f))); // Right
 
 		// Add a block like a dummy
-		labActions.add(new seActionCommandPlaceBlock(state, agentId));
-		labActions.add(new seActionCommandPlaceHeavyBlock(state, agentId));
+		labActions.add(new seActionCommandPlaceBlock(state, agentId, "LargeBlockArmorBlock"));
+		labActions.add(new seActionCommandPlaceBlock(state, agentId, "LargeHeavyBlockArmorBlock"));
 
 		// Use Grinder or Welder tool (like a dummy)
 		labActions.add(new seActionCommandGrinder(state, agentId));
