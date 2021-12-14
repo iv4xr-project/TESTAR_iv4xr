@@ -1,8 +1,8 @@
 dependencies {
     compile 'com.google.guava:guava:26.0-jre'
     compile group: 'org.apache.commons', name: 'commons-text', version: '1.8'
-    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.14.1'
-    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.14.1'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.15.0'
+    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.15.0'
     compile files('../testar/lib/se-shadow-0.4.0.jar') // This include aplib
     // https://jitpack.io/com/github/ferpasri/iv4xr-se-plugin/uubranch3D-fernando-SNAPSHOT/build.log
     //implementation 'com.github.ferpasri:iv4xr-se-plugin:uubranch3D-fernando-SNAPSHOT'

@@ -56,7 +56,7 @@ public class GeneralPanel extends SettingsPanel implements Observer {
   private JSpinner spnSequenceLength;
   //private JCheckBox checkStopOnFault;
   private JComboBox<String> comboBoxProtocol;
-  private JCheckBox compileCheckBox, checkActionVisualization, labRecruitsGraphics;
+  private JCheckBox compileCheckBox, checkActionVisualization;
   
   private JLabel labelAppName = new JLabel("Application name");
   private JLabel labelAppVersion = new JLabel("Application version");
@@ -68,10 +68,11 @@ public class GeneralPanel extends SettingsPanel implements Observer {
   private JTextField overrideWebDriverDisplayScaleField = new JTextField();
   
   // iv4xr settings
+  private JCheckBox labRecruitsGraphics = new JCheckBox("Enable LabRecruits Graphics");
   private JLabel agentIdLabel = new JLabel("AgentId");
   private JTextField agentIdText = new JTextField();
   private JLabel spyIncrementLabel = new JLabel("Spy Increment");
-  private JSpinner spyIncrementSpinner;
+  private JSpinner spyIncrementSpinner = new JSpinner();
 
   public GeneralPanel(SettingsDialog settingsDialog) {
     setLayout(null);
@@ -141,22 +142,24 @@ public class GeneralPanel extends SettingsPanel implements Observer {
     checkActionVisualization.setBounds(10, 240, 192, 21);
     //checkActionVisualization.setToolTipText(checkStopOnFaultTTT);
     add(checkActionVisualization);
-    
-    labRecruitsGraphics = new JCheckBox("Enable LabRecruits Graphics");
+
+    // Check selected combo box protocol name by default
+    setLabRecruitsSettings(String.valueOf(comboBoxProtocol.getSelectedItem()).toLowerCase().contains("labrecruits") ? true : false);
+    // Specific setting for LabRecruits (switch graphic vs server mode)
     labRecruitsGraphics.setBounds(10, 270, 192, 21);
     add(labRecruitsGraphics);
+
+    // Specific setting for LabRecruits (draw canvas in the XR GUI)
+    spyIncrementLabel.setBounds(10, 330, 150, 27);
+    add(spyIncrementLabel);
+    spyIncrementSpinner.setBounds(170, 330, 71, 27);
+    spyIncrementSpinner.setModel(new SpinnerNumberModel(100, 1, null, 1));;
+    add(spyIncrementSpinner);
 
     agentIdLabel.setBounds(10, 300, 150, 27);
     add(agentIdLabel);
     agentIdText.setBounds(170, 300, 100, 27);
     add(agentIdText);
-
-    spyIncrementLabel.setBounds(10, 330, 150, 27);
-    add(spyIncrementLabel);
-    spyIncrementSpinner = new JSpinner();
-    spyIncrementSpinner.setBounds(170, 330, 71, 27);
-    spyIncrementSpinner.setModel(new SpinnerNumberModel(100, 1, null, 1));;
-    add(spyIncrementSpinner);
 
     labelAppName.setBounds(330, 242, 150, 27);
     labelAppName.setToolTipText(applicationNameTTT);
@@ -183,14 +186,22 @@ public class GeneralPanel extends SettingsPanel implements Observer {
   }
 
   private void setOverrideWebDriverDisplayScaleVisibility(boolean isVisible){
-    labelOverrideWebDriverDisplayScale.setVisible(isVisible);
-    overrideWebDriverDisplayScaleField.setVisible(isVisible);
+	  labelOverrideWebDriverDisplayScale.setVisible(isVisible);
+	  overrideWebDriverDisplayScaleField.setVisible(isVisible);
+  }
+
+  private void setLabRecruitsSettings(boolean isVisible){
+	  labRecruitsGraphics.setVisible(isVisible);
+	  spyIncrementLabel.setVisible(isVisible);
+	  spyIncrementSpinner.setVisible(isVisible);
   }
 
   @Override
   public void update(Observable o, Object arg) {
-    boolean showWidgets = arg.toString().contains("webdriver");
-    setOverrideWebDriverDisplayScaleVisibility(showWidgets);
+	  boolean showWidgets = arg.toString().contains("webdriver");
+	  setOverrideWebDriverDisplayScaleVisibility(showWidgets);
+	  boolean showLabRecruits = arg.toString().toLowerCase().contains("labrecruits");
+	  setLabRecruitsSettings(showLabRecruits);
   }
 
   private void addGeneralControlsLocal() {
