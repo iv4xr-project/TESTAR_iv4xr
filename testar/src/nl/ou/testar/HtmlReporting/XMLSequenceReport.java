@@ -40,10 +40,6 @@ import org.fruit.alayer.State;
 import org.fruit.alayer.Verdict;
 import org.testar.OutputStructure;
 
-
-
-import nl.ou.testar.a11y.reporting.HTMLReporter;
-
 public class XMLSequenceReport implements Reporting {
 
     class CommandLine {

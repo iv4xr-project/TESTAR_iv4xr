@@ -31,7 +31,6 @@
 
 package nl.ou.testar.HtmlReporting;
 
-import nl.ou.testar.a11y.reporting.HTMLReporter;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.State;

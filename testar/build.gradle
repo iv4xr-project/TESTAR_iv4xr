@@ -106,14 +106,13 @@ task deleteDebugging(type: Delete){
 dependencies {
     compile project(':core')
     compile project(':native')
-    compile project(':graphdb')
     compile files('./lib/jsyntaxpane-1.1.5.jar')
     compile files('./lib/eye2.jar')
     compile files('./lib/gson-2.8.5.jar')
     implementation 'com.github.iv4xr-project:iv4xrDemo:2.3.0'
     compile jnativehook
     compile 'com.google.guava:guava:26.0-jre'
-    compile group: 'com.sikulix', name: 'sikulixapi', version: '2.0.3'
+    compile group: 'com.sikulix', name: 'sikulixapi', version: '2.0.5'
     compile group: 'com.jgoodies', name: 'jgoodies-common', version: '1.8.1'
     compile group: 'com.jgoodies', name: 'jgoodies-forms', version: '1.9.0'
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
@@ -125,6 +124,7 @@ dependencies {
     compile group: 'org.eclipse.jetty', name: 'apache-jstl', version: '9.4.30.v20200611'
     compile group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
     compile group: 'commons-io', name: 'commons-io', version: '2.7'
+    compile group: 'com.orientechnologies', name: 'orientdb-graphdb', version: '3.0.34'
     runtime project(':windows')
 }
 evaluationDependsOn(':windows')
