@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package nl.ou.testar.StateModel;
+package nl.ou.testar.StateModel.iv4XR;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,21 +40,31 @@ import org.fruit.alayer.Action;
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.Tags;
 
+import eu.testar.iv4xr.enums.SVec3;
+import nl.ou.testar.StateModel.AbstractAction;
+import nl.ou.testar.StateModel.AbstractStateModel;
+import nl.ou.testar.StateModel.ModelManager;
+import nl.ou.testar.StateModel.StateModelManager;
 import nl.ou.testar.StateModel.ActionSelection.ActionSelector;
 import nl.ou.testar.StateModel.Exception.ActionNotFoundException;
 import nl.ou.testar.StateModel.Persistence.PersistenceManager;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
 
-public class iv4xrModelManager extends ModelManager implements StateModelManager {
+public class ModelManagerIV4XR extends ModelManager implements StateModelManager {
+	
+	private NavigableState previousNavigableState;
+	//private NavigableAction previousNavigableAction;
+	private Map<String, SVec3> unexecutedExploratoryActions;
 
 	/**
 	 * Constructor
 	 * @param abstractStateModel
 	 * @param actionSelector
 	 */
-	public iv4xrModelManager(AbstractStateModel abstractStateModel, ActionSelector actionSelector, PersistenceManager persistenceManager,
+	public ModelManagerIV4XR(AbstractStateModel abstractStateModel, ActionSelector actionSelector, PersistenceManager persistenceManager,
 			Set<Tag<?>> concreteStateTags, SequenceManager sequenceManager, boolean storeWidgets) {
 		super(abstractStateModel, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
+		this.unexecutedExploratoryActions = new HashMap<>();
 	}
 	
     /**
@@ -111,5 +121,72 @@ public class iv4xrModelManager extends ModelManager implements StateModelManager
             sequenceManager.notifyErrorInCurrentState(errorMessages.toString());
             errorMessages = new StringJoiner(", ");
         }
+        
+        // Remove from unexecutedExploratoryActions if exists
+        unexecutedExploratoryActions.remove(action.get(Tags.AbstractIDCustom));
+    }
+
+    /**
+     * This method should be called when TESTAR has been exploring the iv4xr environment 
+     * and has discovered a navigable state. 
+     */
+    @Override
+    public void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String actionDescription, String abstractAction) {
+    	/*
+    	AbstractAction abstractActionToExecute = null;
+    	try {
+    		abstractActionToExecute = currentAbstractState.getAction(abstractAction);
+    	} catch (ActionNotFoundException e) {
+    		// TODO Auto-generated catch block
+    		e.printStackTrace();
+    	}
+    	NavigableAction navigableAction = new NavigableAction(abstractAction, abstractActionToExecute, actionDescription);
+    	 */
+
+    	// Create the navigableState, the id will be based on the nodes or entities (or both?)
+    	NavigableState navigableState = new NavigableState(navigableNodes, reachableEntities);
+
+    	// Create the navigableAction, the id will be based on the description and the navigableState identifier
+    	NavigableAction navigableAction = new NavigableAction(abstractAction, actionDescription, navigableState.getId());
+    	navigableAction.setModelIdentifier(abstractStateModel.getModelIdentifier());
+
+    	// Associate the navigableAction to the navigableState
+    	navigableState.addNavigableAction(navigableAction.getId(), navigableAction);
+    	
+    	// save the information about the exploratory actions
+    	if(unexecutedExploratoryActions.isEmpty()) {
+    		navigableState.addUnexecutedExploratoryAction("empty", new SVec3(0, 0, 0));
+    	} else {
+    		for(Map.Entry<String, SVec3> entry : unexecutedExploratoryActions.entrySet()) {
+    			navigableState.addUnexecutedExploratoryAction(entry.getKey(), entry.getValue());
+    		}
+    	}
+    	// and reset for the next exploration iteration
+    	unexecutedExploratoryActions.clear();
+
+    	navigableState.setModelIdentifier(abstractStateModel.getModelIdentifier());
+
+    	// Save a navigable transition, or a not complete explored navigable state
+    	if(previousNavigableState != null /*&& previousNavigableAction != null*/) {
+    		persistenceManager.persistNavigableState(previousNavigableState, navigableAction, navigableState);
+    	} else {
+    		persistenceManager.persistNavigableState(null, null, navigableState);
+    	}
+
+    	previousNavigableState = navigableState;
+    	//previousNavigableAction = navigableAction;
+    }
+
+    /**
+     * Add all not executed actions in a set list, 
+     * to indicate that the navigable state needs to continue with the exploration. 
+     */
+    @Override
+    public void notifyUnexecutedExploratoryActions(Map<String, SVec3> unexecutedExploratoryActions) {
+    	for(Map.Entry<String, SVec3> entry : unexecutedExploratoryActions.entrySet()) {
+    		if(!this.unexecutedExploratoryActions.containsKey(entry.getKey())) {
+    			this.unexecutedExploratoryActions.put(entry.getKey(), entry.getValue());
+    		}
+    	}
     }
 }

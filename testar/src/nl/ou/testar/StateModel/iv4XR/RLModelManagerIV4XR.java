@@ -28,11 +28,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package nl.ou.testar.StateModel;
+package nl.ou.testar.StateModel.iv4XR;
 
 import nl.ou.testar.ReinforcementLearning.QFunctions.QFunction;
 import nl.ou.testar.ReinforcementLearning.RLTags;
 import nl.ou.testar.ReinforcementLearning.RewardFunctions.RewardFunction;
+import nl.ou.testar.StateModel.AbstractAction;
+import nl.ou.testar.StateModel.AbstractState;
+import nl.ou.testar.StateModel.AbstractStateModel;
+import nl.ou.testar.StateModel.StateModelManager;
 import nl.ou.testar.StateModel.ActionSelection.ActionSelector;
 import nl.ou.testar.StateModel.Exception.ActionNotFoundException;
 import nl.ou.testar.StateModel.Persistence.PersistenceManager;
@@ -52,9 +56,9 @@ import java.util.Set;
  * Sarsa is a reinforcement learning (Artificial Intelligence) algorithm
  * for (sequential) action selection.
  */
-public class iv4xrRLModelManager extends iv4xrModelManager implements StateModelManager {
+public class RLModelManagerIV4XR extends ModelManagerIV4XR implements StateModelManager {
 
-    private static final Logger logger = LogManager.getLogger(iv4xrRLModelManager.class);
+    private static final Logger logger = LogManager.getLogger(RLModelManagerIV4XR.class);
 
     /** The previously executed {@link AbstractAction} */
     private AbstractAction previouslySelectedAbstractAction = null;
@@ -77,7 +81,7 @@ public class iv4xrRLModelManager extends iv4xrModelManager implements StateModel
      * Constructor
      *
      */
-    public iv4xrRLModelManager(final AbstractStateModel abstractStateModel,
+    public RLModelManagerIV4XR(final AbstractStateModel abstractStateModel,
             final ActionSelector actionSelector,
             final PersistenceManager persistenceManager,
             final Set<Tag<?>> concreteStateTags,

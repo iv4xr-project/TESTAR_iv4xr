@@ -49,7 +49,7 @@ import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import environments.LabRecruitsEnvironment;
 import eu.iv4xr.framework.spatial.Vec3;
-import eu.testar.iv4xr.actions.commands.*;
+import eu.testar.iv4xr.actions.lab.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
 import nl.ou.testar.RandomActionSelector;

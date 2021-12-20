@@ -28,13 +28,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package nl.ou.testar.StateModel;
+package nl.ou.testar.StateModel.iv4XR;
 
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.Tags;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
+import nl.ou.testar.StateModel.AbstractAction;
+import nl.ou.testar.StateModel.ConcreteAction;
+import nl.ou.testar.StateModel.ConcreteActionFactory;
+import nl.ou.testar.StateModel.Widget;
 
 public class ConcreteActionIV4XRFactory extends ConcreteActionFactory {
 	

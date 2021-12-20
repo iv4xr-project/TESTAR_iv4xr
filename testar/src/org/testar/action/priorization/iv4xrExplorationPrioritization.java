@@ -36,7 +36,7 @@ import java.util.Set;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Tags;
 
-import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
+import eu.testar.iv4xr.actions.lab.commands.labActionExplorePosition;
 
 public class iv4xrExplorationPrioritization {
 

@@ -54,6 +54,7 @@ import nl.ou.testar.StateModel.Sequence.SequenceManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import nl.ou.testar.StateModel.iv4XR.ModelManagerIV4XR;
+import nl.ou.testar.StateModel.iv4XR.RLModelManagerIV4XR;
 
 import org.fruit.alayer.Tag;
 import org.fruit.monkey.ConfigTags;
@@ -128,7 +129,7 @@ public class StateModelManagerFactory {
         		final QFunction qFunction = QFunctionFactory.getQFunction(settings);
         		Tag<?> tag = ReinforcementLearningUtil.getTag(settings);
 
-        		return new iv4xrRLModelManager(abstractStateModelRL, 
+        		return new RLModelManagerIV4XR(abstractStateModelRL, 
         				actionSelector, 
         				persistenceManager, 
         				concreteStateTags, 
