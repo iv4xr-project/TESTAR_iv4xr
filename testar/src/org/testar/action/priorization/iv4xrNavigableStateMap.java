@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,49 +28,36 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package eu.testar.iv4xr.actions.lab.commands;
+package org.testar.action.priorization;
 
-import org.fruit.alayer.SUT;
-import org.fruit.alayer.State;
-import org.fruit.alayer.Tags;
-import org.fruit.alayer.Widget;
-import org.fruit.alayer.exceptions.ActionFailedException;
+import java.util.ArrayList;
 
-import environments.LabRecruitsEnvironment;
-import eu.testar.iv4xr.actions.iv4xrActionRoles;
-import eu.testar.iv4xr.enums.IV4XRtags;
+public class iv4xrNavigableStateMap {
 
-public class labActionCommandObserve extends labActionCommand {
-	private static final long serialVersionUID = 810855276392071973L;
-	
-	public void selectedByAgent() {
-		this.set(IV4XRtags.agentAction, true);
+	private ArrayList<iv4xrNavigableState> navigableStatesList;
+
+	public iv4xrNavigableStateMap () {
+		this.navigableStatesList = new ArrayList<>();
 	}
-	
-	public labActionCommandObserve(State state, Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent) {
-		this.labRecruitsEnvironment = labRecruitsEnvironment;
-		this.agentId = agentId;
-		this.set(Tags.OriginWidget, w);
-		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandObserver);
-		this.set(Tags.Desc, toShortString());
-		this.set(IV4XRtags.agentAction, agentAction);
-		this.set(IV4XRtags.newActionByAgent, newByAgent);
 
-		setActionCommandTags(w, state, null);
+	public ArrayList<iv4xrNavigableState> getNavigableStatesList() {
+		return navigableStatesList;
+	}
+
+	public void addNavigableState(iv4xrNavigableState navState) {
+		this.navigableStatesList.add(navState);
 	}
 
 	@Override
-	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		labRecruitsEnvironment.observe(agentId);
-	}
-
-	@Override
-	public String toShortString() {
-		return "Agent: " + agentId + " is observing the Environment";
-	}
-	
-	public boolean actionEquals(labActionCommandObserve action) {
-		return (this.agentId.equals(action.getAgentId()));
+	public String toString() {
+		StringBuilder sb = new StringBuilder("");
+		for(iv4xrNavigableState navState : navigableStatesList) {
+			sb.append(navState.getExecutedAction());
+			sb.append(", " + navState.getReachableEntities());
+			sb.append(", " + navState.getNavigableNodes());
+			sb.append(System.getProperty("line.separator"));
+		}
+		return sb.toString();
 	}
 
 }

@@ -38,30 +38,11 @@ import org.fruit.monkey.Settings;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import environments.LabRecruitsEnvironment;
-import eu.testar.iv4xr.actions.lab.commands.*;
+import eu.testar.iv4xr.actions.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import nl.ou.testar.RandomActionSelector;
 
-/**
- * iv4xr EU H2020 project - LabRecruits Demo
- * 
- * In this protocol LabRecruits game will act as SUT.
- * labrecruits_commands_testar_agent_dummy_explorer / test.setting file contains the:
- * - COMMAND_LINE definition to start the SUT and load the desired level
- * - State model inference settings to connect and create the State Model inside OrientDB
- * 
- * TESTAR is the Agent itself, derives is own knowledge about the observed entities,
- * and takes decisions about the command actions to execute (observe, moveTo, interactWith)
- * 
- * TESTAR uses the Navigation map internally to select a visible node and explore this LabRecruits level.
- * This level (test.settings -> buttons_doors_1) has block elements,
- * We need to explore different paths to surround the elements that block us.
- * 
- * Widget              -> Virtual Entity
- * State (Widget-Tree) -> Agent Observation (All Observed Entities)
- * Action              -> LabRecruits low level command
- */
-public class Protocol_labrecruits_commands_testar_agent_navmesh_explorer extends LabRecruitsProtocol {
+public class Protocol_debug_labrecruits_commands_action_abstraction extends LabRecruitsProtocol {
 
 	/**
 	 * Called once during the life time of TESTAR.
@@ -74,58 +55,18 @@ public class Protocol_labrecruits_commands_testar_agent_navmesh_explorer extends
 	}
 
 	/**
-	 * This method is called when the TESTAR requests the state of the SUT.
-	 * Here you can add additional information to the SUT's state or write your
-	 * own state fetching routine.
-	 *
-	 * super.getState(system) puts the state information also to the HTML sequence report
-	 *
-	 * @return  the current state of the SUT with attached oracle.
-	 */
-	@Override
-	protected State getState(SUT system) {
-		return super.getState(system);
-	}
-
-	/**
-	 * The getVerdict methods implements the online state oracles that
-	 * examine the SUT's current state and returns an oracle verdict.
-	 * @return oracle verdict, which determines whether the state is erroneous and why.
-	 */
-	@Override
-	protected Verdict getVerdict(State state) {
-		return super.getVerdict(state);
-	}
-
-	/**
 	 * Derive all possible actions that TESTAR can execute in each specific LabRecruits state.
 	 */
 	@Override
 	protected Set<Action> deriveActions(SUT system, State state) {
 		Set<Action> labActions = new HashSet<>();
 
-		// Get the LabRecruitsEnvironment
+		// Get the Observation of the State form the Agent point of view
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
 
-		// NavMesh Exploration : Add one exploration movement for each visible node
-		labActions = exploreVisibleNodesActions(labActions, state, labRecruitsEnv, agentId);
-
-		// For every interactive entity agents have the possibility to move and interact with
-		for(Widget w : state) {
-			// TESTAR can try to move towards it
-			labActions.add(new labActionCommandMove(w, state, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
-			// If TESTAR sees an Interactive Entity
-			if(isInteractiveEntity(w)) {
-				// try to move and interact with
-				labActions.add(new labActionCommandMoveInteract(w, state, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
-				// If TESTAR is in a suitable distance
-				if(isAgentCloseToEntity(system, w, 1.0)) {
-					// TESTAR can try only to interact
-					labActions.add(new labActionCommandInteract(w, state, labRecruitsEnv, agentId, false, false));
-				}
-			}
-		}
-
+		// Add Dummy Exploration Actions
+		labActions.add(new labActionExploreEast(state, state, labRecruitsEnv, agentId, false, false));
+		
 		return labActions;
 	}
 
@@ -164,39 +105,18 @@ public class Protocol_labrecruits_commands_testar_agent_navmesh_explorer extends
 			// adding the action that is going to be executed into HTML report:
 			htmlReport.addSelectedAction(state, action);
 
-			System.out.println(action.toShortString());
 			// execute selected action in the current state
 			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
 
+			System.out.println(action.toShortString());
+
 			return true;
 
 		}catch(ActionFailedException afe){
 			return false;
 		}
-	}
-
-	/**
-	 * TESTAR uses this method to determine when to stop the generation of actions for the
-	 * current sequence. You can stop deriving more actions after:
-	 * - a specified amount of executed actions, which is specified through the SequenceLength setting, or
-	 * - after a specific time, that is set in the MaxTime setting
-	 * @return  if <code>true</code> continue generation, else stop
-	 */
-	@Override
-	protected boolean moreActions(State state) {
-		// Execute many actions as indicated in SequenceLength setting
-		return super.moreActions(state);
-	}
-
-	/**
-	 * Here you can put graceful shutdown sequence for your SUT
-	 * @param system
-	 */
-	@Override
-	protected void stopSystem(SUT system) {
-		super.stopSystem(system);
 	}
 }

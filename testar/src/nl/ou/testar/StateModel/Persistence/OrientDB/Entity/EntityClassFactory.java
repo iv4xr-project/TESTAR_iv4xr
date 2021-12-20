@@ -9,8 +9,26 @@ import java.util.Map;
 
 public class EntityClassFactory {
 
-    public enum EntityClassName {AbstractState, AbstractAction, AbstractStateModel, Widget, ConcreteState, ConcreteAction, isParentOf, isChildOf, isAbstractedBy,
-        BlackHole, UnvisitedAbstractAction, TestSequence, SequenceNode, SequenceStep, Accessed, FirstNode}
+	public enum EntityClassName {
+		AbstractState, 
+		AbstractAction, 
+		AbstractStateModel, 
+		Widget, 
+		ConcreteState, 
+		ConcreteAction, 
+		isParentOf, 
+		isChildOf, 
+		isAbstractedBy, 
+		BlackHole, 
+		UnvisitedAbstractAction, 
+		TestSequence, 
+		SequenceNode, 
+		SequenceStep, 
+		Accessed, 
+		FirstNode, 
+		NavigableState,
+		NavigableAction
+	}
 
     // a repo for generated classes, so we don't execute the same generation code over and over if not needed
     private static Map<EntityClassName, EntityClass> entityClasses = new HashMap<>();
@@ -38,6 +56,8 @@ public class EntityClassFactory {
         classNameMap.put("SequenceStep", EntityClassName.SequenceStep);
         classNameMap.put("Accessed", EntityClassName.Accessed);
         classNameMap.put("FirstNode", EntityClassName.FirstNode);
+        classNameMap.put("NavigableState", EntityClassName.NavigableState);
+        classNameMap.put("NavigableAction", EntityClassName.NavigableAction);
     }
 
     /**
@@ -107,6 +127,12 @@ public class EntityClassFactory {
 
             case FirstNode:
                 return createFirstNodeClass();
+
+            case NavigableState:
+            	return createNavigableStateClass();
+
+            case NavigableAction:
+            	return createNavigableActionClass();
 
             default:
                 return null;
@@ -534,6 +560,93 @@ public class EntityClassFactory {
         entityClass.addProperty(counter);
         entityClasses.put(EntityClassName.FirstNode, entityClass);
         return entityClass;
+    }
+
+    private static EntityClass createNavigableStateClass() {
+    	EntityClass navigableStateClass = new EntityClass("NavigableState", EntityClass.EntityType.Vertex);
+
+    	Property uniqueId = new Property("uid", OType.STRING);
+    	uniqueId.setMandatory(true);
+    	uniqueId.setNullable(false);
+    	uniqueId.setIdentifier(true);
+    	uniqueId.setIndexAble(true);
+    	navigableStateClass.addProperty(uniqueId);
+
+    	Property stateId = new Property("stateId", OType.STRING);
+    	stateId.setMandatory(true);
+    	stateId.setNullable(false);
+    	navigableStateClass.addProperty(stateId);
+
+    	Property modelIdentifier = new Property("modelIdentifier", OType.STRING);
+    	modelIdentifier.setMandatory(true);
+    	modelIdentifier.setNullable(false);
+    	modelIdentifier.setIndexAble(true);
+    	navigableStateClass.addProperty(modelIdentifier);
+
+    	Property navigableNodes = new Property("navigableNodes", OType.EMBEDDEDSET, OType.STRING);
+    	navigableNodes.setMandatory(true);
+    	navigableNodes.setNullable(false);
+    	navigableStateClass.addProperty(navigableNodes);
+
+    	Property reachableEntities = new Property("reachableEntities", OType.EMBEDDEDSET, OType.STRING);
+    	reachableEntities.setMandatory(true);
+    	reachableEntities.setNullable(false);
+    	navigableStateClass.addProperty(reachableEntities);
+
+    	Property navigableActions = new Property("navigableActions", OType.EMBEDDEDSET, OType.STRING);
+    	navigableActions.setMandatory(true);
+    	navigableActions.setNullable(false);
+    	navigableStateClass.addProperty(navigableActions);
+
+    	Property navigableActionsDescriptions = new Property("navigableActionsDescriptions", OType.EMBEDDEDSET, OType.STRING);
+    	navigableActionsDescriptions.setMandatory(true);
+    	navigableActionsDescriptions.setNullable(false);
+    	navigableStateClass.addProperty(navigableActionsDescriptions);
+
+    	Property unexecutedExploratoryActions = new Property("unexecutedExploratoryActions", OType.EMBEDDEDSET, OType.STRING);
+    	unexecutedExploratoryActions.setMandatory(true);
+    	unexecutedExploratoryActions.setNullable(false);
+    	navigableStateClass.addProperty(unexecutedExploratoryActions);
+
+    	entityClasses.put(EntityClassName.NavigableState, navigableStateClass);
+    	return navigableStateClass;
+    }
+
+    private static EntityClass createNavigableActionClass() {
+    	EntityClass navigableActionClass = new EntityClass("NavigableAction", EntityClass.EntityType.Edge);
+
+    	Property uniqueId = new Property("uid", OType.STRING);
+    	uniqueId.setMandatory(true);
+    	uniqueId.setNullable(false);
+    	uniqueId.setIdentifier(true);
+    	uniqueId.setIndexAble(true);
+    	navigableActionClass.addProperty(uniqueId);
+    	
+    	Property navigableActionId = new Property("navigableActionId", OType.STRING);
+    	navigableActionId.setMandatory(true);
+    	navigableActionId.setNullable(false);
+    	navigableActionId.setIdentifier(false);
+    	navigableActionClass.addProperty(navigableActionId);
+
+    	Property modelIdentifier = new Property("modelIdentifier", OType.STRING);
+    	modelIdentifier.setMandatory(true);
+    	modelIdentifier.setNullable(false);
+    	modelIdentifier.setIndexAble(true);
+    	navigableActionClass.addProperty(modelIdentifier);
+
+    	Property abstractActionId = new Property("abstractActionId", OType.STRING);
+    	abstractActionId.setMandatory(true);
+    	abstractActionId.setNullable(false);
+    	abstractActionId.setIndexAble(true);
+    	navigableActionClass.addProperty(abstractActionId);
+
+    	Property description = new Property("description", OType.STRING);
+    	description.setMandatory(true);
+    	description.setNullable(false);
+    	navigableActionClass.addProperty(description);
+
+    	entityClasses.put(EntityClassName.NavigableAction, navigableActionClass);
+    	return navigableActionClass;
     }
 
 }

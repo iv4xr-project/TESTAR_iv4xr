@@ -30,6 +30,7 @@
 
 package nl.ou.testar.StateModel.Settings;
 
+import es.upv.staq.testar.ActionManagementTags;
 import es.upv.staq.testar.CodingManager;
 import es.upv.staq.testar.StateManagementTags;
 import nl.ou.testar.StateModel.Analysis.AnalysisManager;
@@ -93,6 +94,8 @@ public class StateModelPanel extends SettingsPanel {
     private JButton analysisButton = new JButton("Analysis");
     private Tag<?>[] allStateManagementTags;
     private Tag<?>[] selectedStateManagementTags;
+    private Tag<?>[] allActionManagementTags;
+    private Tag<?>[] selectedActionManagementTags;
 
     private String outputDir;
 
@@ -116,6 +119,9 @@ public class StateModelPanel extends SettingsPanel {
     private void initialize() {
         // fetch the available state management tags
         allStateManagementTags = StateManagementTags.getAllTags().toArray(new Tag<?>[0]);
+        // fetch the available action management tags
+        allActionManagementTags = ActionManagementTags.getAllTags().toArray(new Tag<?>[0]);
+        
         // add the components that can be enabled/disabled to the set
         components = new HashSet<>();
         components.add(dataStoreTextfield);
@@ -293,6 +299,15 @@ public class StateModelPanel extends SettingsPanel {
         else {
             selectedStateManagementTags = new Tag<?>[0];
         }
+        
+        // set the selected action management tags
+        if (settings.get(ConfigTags.AbstractActionAttributes) != null) {
+            List<String> abstractActionAttributes = settings.get(ConfigTags.AbstractActionAttributes);
+            selectedActionManagementTags = abstractActionAttributes.stream().map(ActionManagementTags::getTagFromSettingsString).filter(tag -> tag != null).toArray(Tag<?>[]::new);
+        }
+        else {
+        	selectedActionManagementTags = new Tag<?>[0];
+        }
 
         // for now, only two options, so we'll do this the quick and easy way, without creating a list model
         String currentAlgorithm = settings.get(ConfigTags.ActionSelectionAlgorithm);
@@ -327,6 +342,7 @@ public class StateModelPanel extends SettingsPanel {
         settings.set(ConfigTags.ResetDataStore, resetDatabaseCheckbox.isSelected());
         settings.set(ConfigTags.AccessBridgeEnabled, accessBridgeEnabledBox.isSelected());
         settings.set(ConfigTags.AbstractStateAttributes, Arrays.stream(selectedStateManagementTags).map(StateManagementTags::getSettingsStringFromTag).collect(Collectors.toList()));
+        settings.set(ConfigTags.AbstractActionAttributes, Arrays.stream(selectedActionManagementTags).map(ActionManagementTags::getSettingsStringFromTag).collect(Collectors.toList()));
         switch ((String) actionSelectionBox.getSelectedItem()) {
             case "Unvisited actions first":
                 settings.set(ConfigTags.ActionSelectionAlgorithm, "unvisited");
@@ -400,12 +416,15 @@ public class StateModelPanel extends SettingsPanel {
     }
 
     private void openStateTagSelection() {
-        stateTagsDialog = new AbstractStateSettings(allStateManagementTags, selectedStateManagementTags, CodingManager.getDefaultAbstractStateTags());
+        stateTagsDialog = new AbstractStateSettings(
+        		allStateManagementTags, selectedStateManagementTags, CodingManager.getDefaultAbstractStateTags(),
+        		allActionManagementTags, selectedActionManagementTags, CodingManager.getDefaultAbstractActionTags());
         stateTagsDialog.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 // tell the manager to shut down its connection
                selectedStateManagementTags = stateTagsDialog.getCurrentlySelectedStateTags();
+               selectedActionManagementTags = stateTagsDialog.getCurrentlySelectedActionTags();
             }
         });
     }

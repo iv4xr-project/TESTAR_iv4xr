@@ -108,27 +108,27 @@ public class Protocol_labrecruits_commands_testar_agent_dummy_explorer extends L
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
 
 		// Add Dummy Exploration Actions
-		labActions.add(new labActionExploreNorth(state, labRecruitsEnv, agentId, false, false));
-		labActions.add(new labActionExploreSouth(state, labRecruitsEnv, agentId, false, false));
-		labActions.add(new labActionExploreEast(state, labRecruitsEnv, agentId, false, false));
-		labActions.add(new labActionExploreWest(state, labRecruitsEnv, agentId, false, false));
+		labActions.add(new labActionExploreNorth(state, state, labRecruitsEnv, agentId, false, false));
+		labActions.add(new labActionExploreSouth(state, state, labRecruitsEnv, agentId, false, false));
+		labActions.add(new labActionExploreEast(state, state, labRecruitsEnv, agentId, false, false));
+		labActions.add(new labActionExploreWest(state, state, labRecruitsEnv, agentId, false, false));
 
 		// For every interactive entity agents have the possibility to move and interact with
 		for(Widget w : state) {
 			// TESTAR can try to move towards it
-			labActions.add(new labActionCommandMove(w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
+			labActions.add(new labActionCommandMove(w, state, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
 			// If TESTAR sees an Interactive Entity
 			if(isInteractiveEntity(w)) {
 				// try to move and interact with
-				labActions.add(new labActionCommandMoveInteract(w, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
+				labActions.add(new labActionCommandMoveInteract(w, state, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
 				// If TESTAR is in a suitable distance
 				if(isAgentCloseToEntity(system, w, 1.0)) {
 					// TESTAR can try only to interact
-					labActions.add(new labActionCommandInteract(w, labRecruitsEnv, agentId, false, false));
+					labActions.add(new labActionCommandInteract(w, state, labRecruitsEnv, agentId, false, false));
 				}
 			}
 		}
-
+		
 		return labActions;
 	}
 

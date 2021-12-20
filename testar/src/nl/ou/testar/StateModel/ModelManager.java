@@ -9,10 +9,14 @@ import nl.ou.testar.StateModel.Sequence.SequenceManager;
 import nl.ou.testar.StateModel.Util.AbstractStateService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import org.fruit.Pair;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.Tags;
+
+import eu.testar.iv4xr.enums.SVec3;
 
 import java.util.*;
 
@@ -289,4 +293,15 @@ public class ModelManager implements StateModelManager {
     protected SequenceManager getSequenceManager() {
         return sequenceManager;
     }
+
+    @Override
+    public void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String actionDescription, String abstractAction) {
+
+    }
+
+    @Override
+    public void notifyUnexecutedExploratoryActions(Map<String, SVec3> unexecutedExploratoryActions) {
+
+    }
+
 }

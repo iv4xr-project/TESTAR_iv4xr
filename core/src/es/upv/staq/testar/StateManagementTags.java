@@ -329,7 +329,6 @@ public class StateManagementTags {
     public static final Tag<Vec3> iv4xrEntityBounds = Tag.from("iv4xr Entity Bounds", Vec3.class);
     public static final Tag<Vec3> iv4xrEntityVelocity = Tag.from("iv4xr Entity Velocity", Vec3.class);
     public static final Tag<String> iv4xrEntityType = Tag.from("iv4xr Entity Type", String.class);
-    public static final Tag<Long> iv4xrEntityTimestamp = Tag.from("iv4xr Entity Timestamp", Long.class);
     public static final Tag<Boolean> iv4xrEntityIsActive = Tag.from("iv4xr Entity Is Active", Boolean.class);
     public static final Tag<Integer> iv4xrEntityLastUpdated = Tag.from("iv4xr Entity Last Updated", Integer.class);
 
@@ -444,7 +443,6 @@ public class StateManagementTags {
         	add(iv4xrEntityBounds);
         	add(iv4xrEntityVelocity);
         	add(iv4xrEntityType);
-        	add(iv4xrEntityTimestamp);
         	add(iv4xrEntityIsActive);
         	add(iv4xrEntityLastUpdated);
 
@@ -566,7 +564,6 @@ public class StateManagementTags {
         settingsMap.put(iv4xrEntityBounds, "iv4xrEntityBounds");
         settingsMap.put(iv4xrEntityVelocity, "iv4xrEntityVelocity");
         settingsMap.put(iv4xrEntityType, "iv4xrEntityType");
-        settingsMap.put(iv4xrEntityTimestamp, "iv4xrEntityTimestamp");
         settingsMap.put(iv4xrEntityIsActive, "iv4xrEntityIsActive");
         settingsMap.put(iv4xrEntityLastUpdated, "iv4xrEntityLastUpdated");
 
@@ -679,7 +676,6 @@ public class StateManagementTags {
             put(iv4xrEntityBounds, Group.iv4xr);
             put(iv4xrEntityVelocity, Group.iv4xr);
             put(iv4xrEntityType, Group.iv4xr);
-            put(iv4xrEntityTimestamp, Group.iv4xr);
             put(iv4xrEntityIsActive, Group.iv4xr);
             put(iv4xrEntityLastUpdated, Group.iv4xr);
 

@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,49 +28,43 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package eu.testar.iv4xr.actions.lab.commands;
+package org.testar.action.priorization;
 
-import org.fruit.alayer.SUT;
-import org.fruit.alayer.State;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.fruit.alayer.Action;
 import org.fruit.alayer.Tags;
-import org.fruit.alayer.Widget;
-import org.fruit.alayer.exceptions.ActionFailedException;
 
-import environments.LabRecruitsEnvironment;
-import eu.testar.iv4xr.actions.iv4xrActionRoles;
-import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.actions.commands.labActionExplorePosition;
 
-public class labActionCommandObserve extends labActionCommand {
-	private static final long serialVersionUID = 810855276392071973L;
-	
-	public void selectedByAgent() {
-		this.set(IV4XRtags.agentAction, true);
-	}
-	
-	public labActionCommandObserve(State state, Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent) {
-		this.labRecruitsEnvironment = labRecruitsEnvironment;
-		this.agentId = agentId;
-		this.set(Tags.OriginWidget, w);
-		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandObserver);
-		this.set(Tags.Desc, toShortString());
-		this.set(IV4XRtags.agentAction, agentAction);
-		this.set(IV4XRtags.newActionByAgent, newByAgent);
+public class iv4xrExplorationPrioritization {
 
-		setActionCommandTags(w, state, null);
+	private static Set<String> executedActions = new HashSet<>();
+
+	/**
+	 * Based on a set of available actions, 
+	 * return all labActionExplorePosition existing actions. 
+	 * 
+	 * @param originalActions
+	 * @return exploratoryActions if exists
+	 */
+	public static Set<Action> getUnvisitedExploratoryActions(Set<Action> originalActions) {
+		Set<Action> exploratoryActions = new HashSet<>();
+		for(Action a : originalActions) {
+			if(a instanceof labActionExplorePosition && !executedActions.contains(a.get(Tags.AbstractIDCustom))) {
+				exploratoryActions.add(a);
+			}
+		}
+		return !exploratoryActions.isEmpty() ? exploratoryActions : null;
 	}
 
-	@Override
-	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		labRecruitsEnvironment.observe(agentId);
+	public static void addExecutedExploratoryAction(Action action) {
+		executedActions.add(action.get(Tags.AbstractIDCustom));
 	}
 
-	@Override
-	public String toShortString() {
-		return "Agent: " + agentId + " is observing the Environment";
-	}
-	
-	public boolean actionEquals(labActionCommandObserve action) {
-		return (this.agentId.equals(action.getAgentId()));
+	public static void clearExecutedExploratoryActionsList() {
+		executedActions.clear();
 	}
 
 }

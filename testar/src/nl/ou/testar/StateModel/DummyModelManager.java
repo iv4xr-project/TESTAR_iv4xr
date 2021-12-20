@@ -1,8 +1,12 @@
 package nl.ou.testar.StateModel;
 
+import org.fruit.Pair;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.State;
 
+import eu.testar.iv4xr.enums.SVec3;
+
+import java.util.Map;
 import java.util.Set;
 
 public class DummyModelManager implements StateModelManager{
@@ -49,6 +53,16 @@ public class DummyModelManager implements StateModelManager{
 
     @Override
     public void notifyTestSequenceInterruptedBySystem(String message) {
+
+    }
+
+    @Override
+    public void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String actionDescription, String abstractAction) {
+
+    }
+
+    @Override
+    public void notifyUnexecutedExploratoryActions(Map<String, SVec3> unexecutedExploratoryActions) {
 
     }
 }

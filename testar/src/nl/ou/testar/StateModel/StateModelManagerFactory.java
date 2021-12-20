@@ -53,6 +53,7 @@ import nl.ou.testar.StateModel.Sequence.SequenceManager;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import nl.ou.testar.StateModel.iv4XR.ModelManagerIV4XR;
 
 import org.fruit.alayer.Tag;
 import org.fruit.monkey.ConfigTags;
@@ -110,17 +111,17 @@ public class StateModelManagerFactory {
         if(NativeLinker.getPLATFORM_OS().contains(OperatingSystems.IV4XR_LAB)
         		|| NativeLinker.getPLATFORM_OS().contains(OperatingSystems.IV4XR_SE)) {
 
-        	// create the abstract state model for the iv4xr model manager
-        	AbstractStateModelReinforcementLearning abstractStateModelRL = new AbstractStateModelReinforcementLearning(modelIdentifier,
-        			settings.get(ConfigTags.ApplicationName),
-        			settings.get(ConfigTags.ApplicationVersion),
-        			abstractTags,
-        			persistenceManager != null ? (StateModelEventListener) persistenceManager : null);
-
         	// Check if we want to use iv4xr model manager with RL framework
         	if (settings.get(ConfigTags.StateModelReinforcementLearningEnabled, false)) {
         		System.out.println("State Model iv4xr Reinforcement Learning Model Manager");
         		logger.info("State Model iv4xr Reinforcement Learning Model Manager");
+        		
+            	// create the abstract state model for the iv4xr RL model manager
+            	AbstractStateModelReinforcementLearning abstractStateModelRL = new AbstractStateModelReinforcementLearning(modelIdentifier,
+            			settings.get(ConfigTags.ApplicationName),
+            			settings.get(ConfigTags.ApplicationVersion),
+            			abstractTags,
+            			persistenceManager != null ? (StateModelEventListener) persistenceManager : null);
 
         		final ActionSelector actionSelector = new ReinforcementLearningActionSelector(PolicyFactory.getPolicy(settings)) ;
         		final RewardFunction rewardFunction = RewardFunctionFactory.getRewardFunction(settings);
@@ -141,11 +142,18 @@ public class StateModelManagerFactory {
         	// If not return the iv4xr Model Manager without RL
         	System.out.println("State Model Manager for iv4XR selected");
         	logger.info("State Model Manager for iv4XR selected");
+        	
+        	// create the abstract state model and then the state model manager
+        	AbstractStateModel abstractStateModelListener = new AbstractStateModel(modelIdentifier,
+        			settings.get(ConfigTags.ApplicationName),
+        			settings.get(ConfigTags.ApplicationVersion),
+        			abstractTags,
+        			persistenceManager instanceof StateModelEventListener ? (StateModelEventListener) persistenceManager : null);
 
         	// Prepare an action selector not related with RL framework
         	ActionSelector actionSelector = CompoundFactory.getCompoundActionSelector(settings);
 
-        	return new iv4xrModelManager(abstractStateModelRL, 
+        	return new ModelManagerIV4XR(abstractStateModelListener, 
         			actionSelector, 
         			persistenceManager, 
         			concreteStateTags, 

@@ -159,7 +159,7 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 		// Find the LabRecruit Entity Widget in the TESTAR State, and create a Default Interact command Action
 		for(Widget w : stateTESTAR) {
 			if(w.get(IV4XRtags.entityId,"").equals(target)) {
-				this.actionExecutedTESTAR = new labActionCommandInteract(w, this, agentId, true, true);
+				this.actionExecutedTESTAR = new labActionCommandInteract(w, stateTESTAR, this, agentId, true, true);
 			}
 		}
 		boolean addNewAction = true;
@@ -208,14 +208,14 @@ public class LabRecruitsEnvironmentListener extends LabRecruitsEnvironment {
 		// Sometime the Agent can't or doesn't know how to reach the exact position of a Widget - LabEntity,
 		// and he moves to a position exploring his knowledge path
 		// Indicate as unique, navigation movements are actions that TESTAR doesn't derive by default and we need to add
-		this.actionExecutedTESTAR = new labActionCommandMove(stateTESTAR, this, agentId, target, false, true, true);
+		this.actionExecutedTESTAR = new labActionCommandMove(stateTESTAR, stateTESTAR, this, agentId, target, false, true, true);
 		boolean addNewAction = true;
 
 		for(Widget w : stateTESTAR) {
 			if(w.get(IV4XRtags.entityPosition, new Vec3(-1,-1,-1)).equals(target)) {
 				// If Agent is moving to a specific Widget - LabEntity, update the Action
 				// Still being unique Agent Action, next step is verify if TESTAR knows
-				this.actionExecutedTESTAR = new labActionCommandMove(w, this, agentId, target, false, true, true);
+				this.actionExecutedTESTAR = new labActionCommandMove(w, stateTESTAR, this, agentId, target, false, true, true);
 			}
 		}
 

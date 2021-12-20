@@ -51,7 +51,8 @@
             <div class="extra-margin-left"><label for="toggle-concrete-layer" class="custom-checkbox">Show concrete layer<input type="checkbox" id="toggle-concrete-layer" checked><span class="checkmark"></span></label></div>
             <div class="extra-margin-left"><label for="toggle-sequence-layer" class="custom-checkbox">Show sequence layer<input type="checkbox" id="toggle-sequence-layer" checked><span class="checkmark"></span></label></div>
             <div class="extra-margin-left"><label for="toggle-layer-transitions" class="custom-checkbox">Show inter-layer edges<input type="checkbox" id="toggle-layer-transitions" checked><span class="checkmark"></span></label></div>
-        </div>
+            <div class="extra-margin-left"><label for="toggle-navigable-layer" class="custom-checkbox">Show navigable layer<input type="checkbox" id="toggle-navigable-layer" checked><span class="checkmark"></span></label></div>
+		</div>
 
         <div class="column">
             <div class="extra-margin-left"><span class="legend">Legend:</span></div>
@@ -61,12 +62,14 @@
             <div class="legend-box abstract-state" id="legend-abstract-state"></div>
             <div class="legend-box concrete-state" id="legend-concrete-state"></div>
             <div class="legend-box sequence-node"></div>
+            <div class="legend-box navigable-state" id="legend-navigable-state"></div>
         </div>
 
         <div class="column">
             <div class="legend-text">Abstract state</div>
             <div class="legend-text">Concrete State</div>
             <div class="legend-text">Sequence Node</div>
+            <div class="legend-text">Navigable Node</div>
         </div>
 
         <div class="column">
@@ -87,6 +90,8 @@
                 <div class="stats-text" id="stats-abstract-actions"></div>
                 <div class="stats-text" id="stats-concrete-states"></div>
                 <div class="stats-text" id="stats-concrete-actions"></div>
+                <div class="stats-text" id="stats-navigable-states"></div>
+                <div class="stats-text" id="stats-navigable-actions"></div>
             </div>
         </div>
     </div>
@@ -304,6 +309,22 @@
                     'target-arrow-color': "#1c9099",
                     'line-style': 'dashed',
                     'width': 1
+                }
+            },
+
+            {
+                selector: '.NavigableState',
+                style: {
+                    'background-color': '#0dfbff',
+                    'label' : 'data(customLabel)'
+                }
+            },
+
+            {
+                selector: '.NavigableAction',
+                style: {
+                    'line-color': '#0dfbff',
+                    'target-arrow-color': '#0dfbff'
                 }
             },
 
@@ -784,7 +805,7 @@
     });
 
     // when edges get selected, we also open the side panel, but show just the close button and the data
-    cy.on('tap', 'edge.ConcreteAction,edge.AbstractAction,edge.SequenceStep', function(evt) {
+    cy.on('tap', 'edge.ConcreteAction,edge.AbstractAction,edge.SequenceStep,edge.NavigableAction', function(evt) {
         let targetEdge = evt.target;
         let sidePanel = document.getElementsByClassName("cd-panel")[0];
         let contentPanel = document.getElementById("cd-content-panel");
@@ -947,12 +968,15 @@
         appStatus.nrOfAbstractStates =  cy.$('node.AbstractState').size();
         appStatus.nrOfConcreteStates = cy.$('node.ConcreteState').size();
         appStatus.nrOfSequenceNodes = cy.$('node.SequenceNode').size();
+        appStatus.nrOfNavigableStates = cy.$('node.NavigableState').size();
+        appStatus.nrOfNavigableActions  = cy.$('edge.NavigableAction').size();
         appStatus.nrOfAbstractActions = cy.$('edge.AbstractAction').size();
         appStatus.nrOfConcreteActions = cy.$('edge.ConcreteAction').size();
         appStatus.nrOfUnvisitedAbstractActions = cy.$('edge.UnvisitedAbstractAction').size();
         appStatus.abstractLayerPresent = appStatus.nrOfAbstractStates > 0;
         appStatus.concreteLayerPresent = appStatus.nrOfConcreteStates > 0;
         appStatus.sequenceLayerPresent = appStatus.nrOfSequenceNodes > 0;
+        appStatus.navigableLayerPresent = appStatus.nrOfNavigableStates > 0;
         appStatus.nrOfLayersPresent = 0;
         console.log(appStatus);
 
@@ -1048,6 +1072,14 @@
 
         div = document.getElementById('stats-concrete-actions');
         text = document.createTextNode('Nr of concrete actions: ' + appStatus.nrOfConcreteActions);
+        div.append(text);
+		
+        div = document.getElementById('stats-navigable-states');
+        text = document.createTextNode('Nr of navigable states: ' + appStatus.nrOfNavigableStates);
+        div.append(text);
+		
+        div = document.getElementById('stats-navigable-actions');
+        text = document.createTextNode('Nr of navigable actions: ' + appStatus.nrOfNavigableActions);
         div.append(text);
     }
 

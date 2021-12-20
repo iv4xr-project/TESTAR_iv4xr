@@ -81,6 +81,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 	protected HtmlSequenceReport htmlReport;
 	protected State latestState;
+	protected String lastInteractActionAbstractIDCustom;
 
 	// Agent point of view that will Observe and extract Widgets information
 	protected String agentId = "agent1";
@@ -129,6 +130,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	protected void preSequencePreparations() {
 		//initializing the HTML sequence report:
 		htmlReport = new HtmlSequenceReport();
+		lastInteractActionAbstractIDCustom = "Initial";
 	}
 
 	/**
@@ -462,7 +464,9 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	protected Set<Action> exploreVisibleNodesActions(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
 		if(state.get(IV4XRtags.labRecruitsNavMesh, null) != null && !state.get(IV4XRtags.labRecruitsNavMesh).isEmpty() /*&& navGraph != null*/) {
 			for(SVec3 nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {
-				actions.add(new labActionExplorePosition(state, labRecruitsEnvironment, agentId, new Vec3(nodeNavMesh.x, nodeNavMesh.y, nodeNavMesh.z), false, false));
+				actions.add(
+						new labActionExplorePosition(state.get(IV4XRtags.agentWidget), state, labRecruitsEnvironment, agentId, 
+								new Vec3(nodeNavMesh.x, nodeNavMesh.y, nodeNavMesh.z), false, false));
 			}
 		}
 

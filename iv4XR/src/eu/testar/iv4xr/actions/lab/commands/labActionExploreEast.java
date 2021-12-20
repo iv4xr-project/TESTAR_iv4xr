@@ -43,12 +43,14 @@ import eu.iv4xr.framework.spatial.Vec3;
 
 public class labActionExploreEast extends labActionCommand {
 	private static final long serialVersionUID = 4431931844664688235L;
+	
+	private Vec3 targetPosition = new Vec3(2.0f, 0.0f, 0.0f);
 		
 	public void selectedByAgent() {
 		this.set(IV4XRtags.agentAction, true);
 	}
 	
-	public labActionExploreEast(Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent){
+	public labActionExploreEast(Widget w, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent){
 		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
@@ -56,12 +58,14 @@ public class labActionExploreEast extends labActionCommand {
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, agentAction);
 		this.set(IV4XRtags.newActionByAgent, newByAgent);
+		
+		setActionCommandTags(w, state, targetPosition);
 	}
 	
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// Move a bit to the East
-		labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), new Vec3(2.0f, 0.0f, 0.0f)));
+		labRecruitsEnvironment.moveToward(agentId, currentAgentPosition(), addPositions(currentAgentPosition(), targetPosition));
 	}
 
 	@Override

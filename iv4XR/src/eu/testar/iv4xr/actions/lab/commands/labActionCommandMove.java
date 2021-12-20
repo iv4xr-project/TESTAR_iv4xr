@@ -59,7 +59,7 @@ public class labActionCommandMove extends labActionCommand {
 		this.set(IV4XRtags.agentAction, true);
 	}
 	
-	public labActionCommandMove(Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 targetPosition, boolean jump, boolean agentAction, boolean newByAgent){
+	public labActionCommandMove(Widget w, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, Vec3 targetPosition, boolean jump, boolean agentAction, boolean newByAgent){
 		this.labRecruitsEnvironment = labRecruitsEnvironment;
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
@@ -69,11 +69,13 @@ public class labActionCommandMove extends labActionCommand {
 		this.set(Tags.Desc, toShortString());
 		this.set(IV4XRtags.agentAction, agentAction);
 		this.set(IV4XRtags.newActionByAgent, newByAgent);
+
+		setActionCommandTags(w, state, targetPosition);
 	}
 	
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		int maxTriesMovement = 10;
+		int maxTriesMovement = 30;
 		int triesMove = 0;
 
 		// One pure movement command is not enough to move to the final target position

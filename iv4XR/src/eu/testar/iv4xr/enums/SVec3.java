@@ -32,8 +32,6 @@ package eu.testar.iv4xr.enums;
 
 import java.util.Objects;
 
-import eu.iv4xr.framework.spatial.Vec3;
-
 public class SVec3 implements java.io.Serializable {
 	private static final long serialVersionUID = 639048627994203600L;
 
@@ -52,8 +50,8 @@ public class SVec3 implements java.io.Serializable {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof Vec3)) return false;
-		Vec3 v = (Vec3) obj;
+		if (!(obj instanceof SVec3)) return false;
+		SVec3 v = (SVec3) obj;
 		return x == v.x && y == v.y && z == v.z;
 	}
 

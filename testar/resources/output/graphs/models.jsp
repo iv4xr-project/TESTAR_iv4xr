@@ -93,6 +93,9 @@
                                 <div class="col-4"><label for="sequenceoption"><input id="sequenceoption"
                                                                                       name="sequenceoption" type="checkbox">
                                     Sequence Layer</label></div>
+                                <div class="col-4"><label for="navigableoption"><input id="navigableoption"
+                                                                                      name="navigableoption" type="checkbox">
+                                    Navigable Layer</label></div>
                             </div>
 
                             <div class="row">

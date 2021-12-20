@@ -8,6 +8,8 @@ import nl.ou.testar.StateModel.Sequence.Sequence;
 import nl.ou.testar.StateModel.Sequence.SequenceManager;
 import nl.ou.testar.StateModel.Sequence.SequenceNode;
 import nl.ou.testar.StateModel.Sequence.SequenceStep;
+import nl.ou.testar.StateModel.iv4XR.NavigableAction;
+import nl.ou.testar.StateModel.iv4XR.NavigableState;
 
 /**
  * This class serves as a black hole for when persistance is not enabled
@@ -92,5 +94,10 @@ public class DummyManager implements PersistenceManager, StateModelEventListener
     @Override
     public int getNrOfNondeterministicActions(AbstractStateModel abstractStateModel) {
         return 0;
+    }
+
+    @Override
+    public void persistNavigableState(NavigableState previousNavigableState, NavigableAction previousNavigableAction, NavigableState navigableState) {
+
     }
 }

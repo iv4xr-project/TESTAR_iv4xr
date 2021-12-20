@@ -23,7 +23,7 @@ Mode = Spy
 # The SUT must be manually started and closed.
 #################################################################
 SUTConnector = COMMAND_LINE
-SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "buttons_doors_1"
+SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "TESTARnav1"
 
 #################################################################
 # Sequences
@@ -32,7 +32,7 @@ SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "bu
 #################################################################
 
 Sequences = 1
-SequenceLength = 100
+SequenceLength = 50
 
 #################################################################
 # Oracles based on suspicious titles
@@ -40,8 +40,7 @@ SequenceLength = 100
 # Regular expression
 #################################################################
 
-SuspiciousTitles = .*[eE]rror.*|.*[eE]xcepti[o?]n.*
-TagsForSuspiciousOracle = Title
+SuspiciousTitles = 
 
 #################################################################
 # Oracles based on Suspicious Outputs detected by Process Listeners
@@ -77,8 +76,7 @@ ProcessLogs = .*.*
 # these will be added to the protocol_filter.xml file.
 #################################################################
 
-ClickFilter = .*[sS]istema.*|.*[sS]ystem.*|.*[cC]errar.*|.*[cC]lose.*|.*[sS]alir.*|.*[eE]xit.*|.*[mM]inimizar.*|.*[mM]inimi[zs]e.*|.*[gG]uardar.*|.*[sS]ave.*|.*[iI]mprimir.*|.*[pP]rint.*
-TagsToFilter = Title
+ClickFilter = 
 
 #################################################################
 # Processfilter
@@ -95,11 +93,19 @@ SUTProcesses =
 # Indicate the location of the protocol class for your specific SUT.
 #################################################################
 
-ProtocolClass = labrecruits_commands_testar_agent_dummy_explorer/Protocol_labrecruits_commands_testar_agent_dummy_explorer
+ProtocolClass = debug_labrecruits_navmesh_action_abstraction/Protocol_debug_labrecruits_navmesh_action_abstraction
 
 #################################################################
-# State model inference settings
+# Graphdatabase settings (experimental)
 #################################################################
+GraphDBEnabled = true
+GraphDBUrl = remote:/localhost/testar
+GraphDBUser = testar
+GraphDBPassword = testar
+
+#################################################################\n"
+# State model inference settings
+#################################################################\n"
 StateModelEnabled = true
 DataStore = OrientDB
 DataStoreType = remote
@@ -118,12 +124,12 @@ iv4XRAgentListener = false
 # Specify the widget attributes that you wish to use in constructing
 # the widget and state hash strings. Use a comma separated list.
 #################################################################
-AbstractStateAttributes = iv4xrEntityId, iv4xrEntityIsActive
+AbstractStateAttributes = iv4xrEntityId,iv4xrEntityIsActive
 
 #################################################################
 # Action identifier attributes
 #################################################################
-AbstractActionAttributes = iv4xrActionOriginWidgetId,iv4xrActionOriginPos,iv4xrActionTargetAbsPos
+AbstractActionAttributes = iv4xrActionEntityId,iv4xrActionTargetAbsPos
 
 #################################################################
 # Other more advanced settings
@@ -141,13 +147,13 @@ FaultThreshold = 0.000000001
 DrawWidgetUnderCursor = true
 MyClassPath = ./settings
 OnlySaveFaultySequences = false
-ActionDuration = 2
+ActionDuration = 0.1
 ShowVisualSettingsDialogOnStartup = true
 ReplayRetryTime = 30.0
 Delete =
 MaxTime = 3.1536E7
 ShowSettingsAfterTest = true
-TimeToWaitAfterAction = 2
+TimeToWaitAfterAction = 0.1
 StartupTime = 10.0
 DrawWidgetInfo = false
 TimeToFreeze = 30.0

@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,49 +28,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package eu.testar.iv4xr.actions.lab.commands;
+package nl.ou.testar.StateModel.Persistence.OrientDB.Extractor;
 
-import org.fruit.alayer.SUT;
-import org.fruit.alayer.State;
-import org.fruit.alayer.Tags;
-import org.fruit.alayer.Widget;
-import org.fruit.alayer.exceptions.ActionFailedException;
+import nl.ou.testar.StateModel.AbstractStateModel;
+import nl.ou.testar.StateModel.Exception.ExtractionException;
+import nl.ou.testar.StateModel.Persistence.OrientDB.Entity.DocumentEntity;
+import nl.ou.testar.StateModel.iv4XR.NavigableAction;
 
-import environments.LabRecruitsEnvironment;
-import eu.testar.iv4xr.actions.iv4xrActionRoles;
-import eu.testar.iv4xr.enums.IV4XRtags;
-
-public class labActionCommandObserve extends labActionCommand {
-	private static final long serialVersionUID = 810855276392071973L;
-	
-	public void selectedByAgent() {
-		this.set(IV4XRtags.agentAction, true);
-	}
-	
-	public labActionCommandObserve(State state, Widget w, LabRecruitsEnvironment labRecruitsEnvironment, String agentId, boolean agentAction, boolean newByAgent) {
-		this.labRecruitsEnvironment = labRecruitsEnvironment;
-		this.agentId = agentId;
-		this.set(Tags.OriginWidget, w);
-		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandObserver);
-		this.set(Tags.Desc, toShortString());
-		this.set(IV4XRtags.agentAction, agentAction);
-		this.set(IV4XRtags.newActionByAgent, newByAgent);
-
-		setActionCommandTags(w, state, null);
-	}
+public class NavigableActionExtractor implements EntityExtractor<NavigableAction> {
 
 	@Override
-	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		labRecruitsEnvironment.observe(agentId);
-	}
-
-	@Override
-	public String toShortString() {
-		return "Agent: " + agentId + " is observing the Environment";
-	}
-	
-	public boolean actionEquals(labActionCommandObserve action) {
-		return (this.agentId.equals(action.getAgentId()));
+	public NavigableAction extract(DocumentEntity entity, AbstractStateModel abstractStateModel) throws ExtractionException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
