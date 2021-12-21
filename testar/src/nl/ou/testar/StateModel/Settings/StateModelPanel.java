@@ -83,7 +83,7 @@ public class StateModelPanel extends SettingsPanel {
     private JPasswordField dataStorePasswordfield = new JPasswordField();
     private JCheckBox resetDatabaseCheckbox = new JCheckBox();
     private JComboBox<String> dataStoreModeBox = new JComboBox<>(new String[]{"none", "instant", "delayed", "hybrid"});
-    private JComboBox<String> actionSelectionBox = new JComboBox<>(new String[]{"Random selection", "Unvisited actions first"});
+    private JComboBox<String> actionSelectionBox = new JComboBox<>(new String[]{"Random selection", "Unvisited actions first", "Explore Navigable Space"});
     private JComboBox<String> dataStoreTypeBox = new JComboBox<>(new String[]{"remote", "plocal"});
     private Set<JComponent> components;
     private JCheckBox accessBridgeEnabledBox = new JCheckBox();
@@ -320,6 +320,10 @@ public class StateModelPanel extends SettingsPanel {
                 actionSelectionBox.setSelectedIndex(i);
                 break;
             }
+            if (actionSelectionBox.getItemAt(i).equals("Explore Navigable Space") && currentAlgorithm.equals("explore")) {
+            	actionSelectionBox.setSelectedIndex(i);
+            	break;
+            }
         }
 
     }
@@ -347,7 +351,9 @@ public class StateModelPanel extends SettingsPanel {
             case "Unvisited actions first":
                 settings.set(ConfigTags.ActionSelectionAlgorithm, "unvisited");
                 break;
-
+            case "Explore Navigable Space":
+            	settings.set(ConfigTags.ActionSelectionAlgorithm, "explore");
+            	break;
             default:
                 settings.set(ConfigTags.ActionSelectionAlgorithm, "random");
         }

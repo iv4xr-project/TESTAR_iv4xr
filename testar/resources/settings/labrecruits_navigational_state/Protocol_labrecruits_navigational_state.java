@@ -73,7 +73,7 @@ import nl.ou.testar.RandomActionSelector;
  * State (Widget-Tree) -> Agent Observation (All Observed Entities)
  * Action              -> LabRecruits low level command
  */
-public class Protocol_debug_labrecruits_navmesh_action_abstraction extends LabRecruitsProtocol {
+public class Protocol_labrecruits_navigational_state extends LabRecruitsProtocol {
 
 	// Navigable State that an agent can explore
 	private iv4xrNavigableState navigableState = new iv4xrNavigableState("Initial");

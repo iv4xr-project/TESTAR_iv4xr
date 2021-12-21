@@ -13,6 +13,10 @@ public abstract class ExtractorFactory {
 
     public static final int EXTRACTOR_ABSTRACT_STATE_TRANSITION = 3;
 
+    public static final int EXTRACTOR_NAVIGABLE_STATE = 4;
+
+    public static final int EXTRACTOR_NAVIGABLE_ACTION = 5;
+
     // a repo for generated classes, so we don't execute the same generation code over and over if not needed
     private static Map<Integer, EntityExtractor> extractors = new HashMap<>();
 
@@ -36,6 +40,12 @@ public abstract class ExtractorFactory {
 
             case EXTRACTOR_ABSTRACT_STATE_TRANSITION:
                 return createAbstractStateTransitionExtractor();
+
+            case EXTRACTOR_NAVIGABLE_STATE:
+            	return createNavigableStateExtractor();
+
+            case EXTRACTOR_NAVIGABLE_ACTION:
+            	return createNavigableActionExtractor();
 
             default: throw new ExtractionException("Illegal extractor type specified");
         }
@@ -69,6 +79,23 @@ public abstract class ExtractorFactory {
         catch (ExtractionException ex) {
             return null;
         }
+    }
+
+    private static NavigableStateExtractor createNavigableStateExtractor() {
+    	NavigableStateExtractor navigableStateExtractor = null;
+    	try {
+    		navigableStateExtractor = new NavigableStateExtractor((NavigableActionExtractor) ExtractorFactory.getExtractor(EXTRACTOR_NAVIGABLE_ACTION));
+    	} catch (ExtractionException e) {
+    		return null;
+    	}
+    	extractors.put(EXTRACTOR_NAVIGABLE_STATE, navigableStateExtractor);
+    	return navigableStateExtractor;
+    }
+
+    private static NavigableActionExtractor createNavigableActionExtractor() {
+    	NavigableActionExtractor navigableActionExtractor = new NavigableActionExtractor();
+    	extractors.put(EXTRACTOR_NAVIGABLE_ACTION, navigableActionExtractor);
+    	return navigableActionExtractor;
     }
 
 }

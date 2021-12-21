@@ -6,6 +6,8 @@ import nl.ou.testar.StateModel.AbstractStateModel;
 import nl.ou.testar.StateModel.ActionSelection.Model.SelectorNode;
 import nl.ou.testar.StateModel.ActionSelection.Model.SelectorTree;
 import nl.ou.testar.StateModel.Exception.ActionNotFoundException;
+import nl.ou.testar.StateModel.iv4XR.AbstractStateModelIV4XR;
+import nl.ou.testar.StateModel.iv4XR.NavigableState;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -144,5 +146,10 @@ public class ImprovedUnvisitedActionSelector implements ActionSelector {
 
         // we were able to gain a new level in our selector tree, so let's try again
         return retrieveUnvisitedActions(tree, abstractStateModel, visitedStateIds);
+    }
+
+    @Override
+    public AbstractAction selectAction(NavigableState currentNavigableState, AbstractStateModelIV4XR abstractStateModeliv4xr) throws ActionNotFoundException {
+    	return null;
     }
 }

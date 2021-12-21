@@ -48,7 +48,9 @@ public class NavigableState extends AbstractEntity implements Persistable {
 	private Set<Pair<String, Boolean>> reachableEntities;
 	private Map<String, NavigableAction> navigableActions;
 	private Set<String> navigableActionsDescription;
-	private Map<String, SVec3> unexecutedExploratoryActions;
+
+	// TODO: If AbstractCustomAction depends on position node, we can use a single Set<String>
+	private Set<Pair<String, SVec3>> unexecutedExploratoryActions;
 
 	public NavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities) {
 		/**
@@ -74,7 +76,7 @@ public class NavigableState extends AbstractEntity implements Persistable {
 		this.reachableEntities = new HashSet<>(reachableEntities);
 		this.navigableActions = new HashMap<>();
 		this.navigableActionsDescription = new HashSet<>();
-		this.unexecutedExploratoryActions = new HashMap<>();
+		this.unexecutedExploratoryActions = new HashSet<>();
 	}
 
 	public Set<SVec3> getNavigableNodes() {
@@ -98,19 +100,27 @@ public class NavigableState extends AbstractEntity implements Persistable {
 		this.navigableActionsDescription.add(navigableAction.getDescription());
 	}
 
-	public Map<String, SVec3> getUnexecutedExploratoryActions() {
+	public Set<Pair<String, SVec3>> getUnexecutedExploratoryActions() {
 		return unexecutedExploratoryActions;
 	}
 
 	public void addUnexecutedExploratoryAction(String unexecutedExploratoryAction, SVec3 actionNode) {
-		if(!this.unexecutedExploratoryActions.containsKey(unexecutedExploratoryAction)) {
-			this.unexecutedExploratoryActions.put(unexecutedExploratoryAction, actionNode);
+		Pair<String, SVec3> action = new Pair<String, SVec3>(unexecutedExploratoryAction, actionNode);
+		if(!this.unexecutedExploratoryActions.contains(action)) {
+			this.unexecutedExploratoryActions.add(action);
 		}
 	}
 
+	// TODO: Do not use set to invoke from NavigableStateExtractor, but create a new constructor
+	public void setUnexecutedExploratoryAction(Set<Pair<String, SVec3>> unexecutedExploratoryActions) {
+		this.unexecutedExploratoryActions = unexecutedExploratoryActions;
+	}
+
 	public void removeExploratoryActionFromUnexecuted(String executedExploratoryAction) {
-		if(this.unexecutedExploratoryActions.containsKey(executedExploratoryAction)) {
-			this.unexecutedExploratoryActions.remove(executedExploratoryAction);
+		for(Pair<String, SVec3> action : this.unexecutedExploratoryActions) {
+			if(action.left().equals(executedExploratoryAction)) {
+				this.unexecutedExploratoryActions.remove(action);
+			}
 		}
 	}
 

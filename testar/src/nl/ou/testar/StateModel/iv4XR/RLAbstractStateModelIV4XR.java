@@ -1,20 +1,23 @@
-package nl.ou.testar.StateModel;
+package nl.ou.testar.StateModel.iv4XR;
 
 import java.util.Set;
 
 import org.fruit.alayer.Tag;
 
+import nl.ou.testar.StateModel.AbstractAction;
+import nl.ou.testar.StateModel.AbstractState;
+import nl.ou.testar.StateModel.AbstractStateTransition;
 import nl.ou.testar.StateModel.Event.StateModelEvent;
 import nl.ou.testar.StateModel.Event.StateModelEventListener;
 import nl.ou.testar.StateModel.Event.StateModelEventType;
 import nl.ou.testar.StateModel.Exception.StateModelException;
 
-public class AbstractStateModelReinforcementLearning extends AbstractStateModel {
+public class RLAbstractStateModelIV4XR extends AbstractStateModelIV4XR {
 	
     /**
      * constructor
      */
-    public AbstractStateModelReinforcementLearning(String modelIdentifier,
+    public RLAbstractStateModelIV4XR(String modelIdentifier,
                               String applicationName,
                               String applicationVersion,
                               Set<Tag<?>> tags,

@@ -53,7 +53,10 @@ import nl.ou.testar.StateModel.Sequence.SequenceManager;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import nl.ou.testar.StateModel.iv4XR.AbstractStateModelIV4XR;
 import nl.ou.testar.StateModel.iv4XR.ModelManagerIV4XR;
+import nl.ou.testar.StateModel.iv4XR.RLAbstractStateModelIV4XR;
 import nl.ou.testar.StateModel.iv4XR.RLModelManagerIV4XR;
 
 import org.fruit.alayer.Tag;
@@ -118,7 +121,7 @@ public class StateModelManagerFactory {
         		logger.info("State Model iv4xr Reinforcement Learning Model Manager");
         		
             	// create the abstract state model for the iv4xr RL model manager
-            	AbstractStateModelReinforcementLearning abstractStateModelRL = new AbstractStateModelReinforcementLearning(modelIdentifier,
+            	RLAbstractStateModelIV4XR abstractStateModelRL = new RLAbstractStateModelIV4XR(modelIdentifier,
             			settings.get(ConfigTags.ApplicationName),
             			settings.get(ConfigTags.ApplicationVersion),
             			abstractTags,
@@ -145,7 +148,7 @@ public class StateModelManagerFactory {
         	logger.info("State Model Manager for iv4XR selected");
         	
         	// create the abstract state model and then the state model manager
-        	AbstractStateModel abstractStateModelListener = new AbstractStateModel(modelIdentifier,
+        	AbstractStateModelIV4XR abstractStateModeliv4xr = new AbstractStateModelIV4XR(modelIdentifier,
         			settings.get(ConfigTags.ApplicationName),
         			settings.get(ConfigTags.ApplicationVersion),
         			abstractTags,
@@ -154,7 +157,7 @@ public class StateModelManagerFactory {
         	// Prepare an action selector not related with RL framework
         	ActionSelector actionSelector = CompoundFactory.getCompoundActionSelector(settings);
 
-        	return new ModelManagerIV4XR(abstractStateModelListener, 
+        	return new ModelManagerIV4XR(abstractStateModeliv4xr, 
         			actionSelector, 
         			persistenceManager, 
         			concreteStateTags, 
@@ -171,7 +174,8 @@ public class StateModelManagerFactory {
         		persistenceManager != null ? (StateModelEventListener) persistenceManager : null);
         ActionSelector actionSelector = CompoundFactory.getCompoundActionSelector(settings);
 
-        logger.info("State model with modelManager selected");
+        System.out.println("State model with modelManager selected (no iv4xr no RL)");
+        logger.info("State model with modelManager selected (no iv4xr no RL)");
         return new ModelManager(abstractStateModel,
         		actionSelector,
         		persistenceManager,

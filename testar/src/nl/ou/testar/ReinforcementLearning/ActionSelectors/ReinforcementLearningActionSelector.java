@@ -7,6 +7,9 @@ import nl.ou.testar.StateModel.AbstractState;
 import nl.ou.testar.StateModel.AbstractStateModel;
 import nl.ou.testar.StateModel.ActionSelection.ActionSelector;
 import nl.ou.testar.StateModel.Exception.ActionNotFoundException;
+import nl.ou.testar.StateModel.iv4XR.AbstractStateModelIV4XR;
+import nl.ou.testar.StateModel.iv4XR.NavigableState;
+
 import org.apache.commons.collections.CollectionUtils;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.State;
@@ -32,5 +35,10 @@ public class ReinforcementLearningActionSelector implements ActionSelector {
         }
 
         return policy.applyPolicy(actions);
+    }
+
+    @Override
+    public AbstractAction selectAction(NavigableState currentNavigableState, AbstractStateModelIV4XR abstractStateModeliv4xr) throws ActionNotFoundException {
+    	return null;
     }
 }

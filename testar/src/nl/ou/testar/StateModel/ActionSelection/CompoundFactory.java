@@ -14,6 +14,9 @@ public class CompoundFactory {
         if (settings.get(ConfigTags.ActionSelectionAlgorithm).equals("unvisited")) {
             selectors.add(new ImprovedUnvisitedActionSelector());
         }
+        if (settings.get(ConfigTags.ActionSelectionAlgorithm).equals("explore")) {
+        	selectors.add(new ExploreNavigableSpaceSelector());
+        }
         selectors.add(new RandomActionSelector());
         return new CompoundActionSelector(selectors);
     }

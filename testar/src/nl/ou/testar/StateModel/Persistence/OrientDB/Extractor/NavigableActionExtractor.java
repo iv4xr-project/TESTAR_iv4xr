@@ -30,17 +30,50 @@
 
 package nl.ou.testar.StateModel.Persistence.OrientDB.Extractor;
 
+import com.orientechnologies.orient.core.metadata.schema.OType;
+
 import nl.ou.testar.StateModel.AbstractStateModel;
 import nl.ou.testar.StateModel.Exception.ExtractionException;
 import nl.ou.testar.StateModel.Persistence.OrientDB.Entity.DocumentEntity;
+import nl.ou.testar.StateModel.Persistence.OrientDB.Entity.EdgeEntity;
+import nl.ou.testar.StateModel.Persistence.OrientDB.Entity.PropertyValue;
 import nl.ou.testar.StateModel.iv4XR.NavigableAction;
 
 public class NavigableActionExtractor implements EntityExtractor<NavigableAction> {
 
+	private String navigableStateId;
+
+	public void setNavigableStateId(String navigableStateId) {
+		this.navigableStateId = navigableStateId;
+	}
+
 	@Override
 	public NavigableAction extract(DocumentEntity entity, AbstractStateModel abstractStateModel) throws ExtractionException {
-		// TODO Auto-generated method stub
-		return null;
+		if (!(entity instanceof EdgeEntity)) {
+			throw new ExtractionException("Navigable action extractor expects an edge entity. Instance of " + entity.getClass().toString() + " was given.");
+		}
+		if (!entity.getEntityClass().getClassName().equals("NavigableAction")) {
+			throw new ExtractionException("Entity of class NavigableAction expected. Class " + entity.getEntityClass().getClassName() + " given.");
+		}
+
+		// get the navigable abstractActionId
+		PropertyValue abstractActionIdValue = entity.getPropertyValue("abstractActionId");
+		if (abstractActionIdValue.getType() != OType.STRING) {
+			throw new ExtractionException("Expected string value for abstractActionId attribute. Type " + abstractActionIdValue.getType().toString() + " given.");
+		}
+		String abstractActionId = abstractActionIdValue.getValue().toString();
+
+		// get the navigable description
+		PropertyValue descriptionValue = entity.getPropertyValue("description");
+		if (descriptionValue.getType() != OType.STRING) {
+			throw new ExtractionException("Expected string value for description attribute. Type " + descriptionValue.getType().toString() + " given.");
+		}
+		String description = descriptionValue.getValue().toString();
+
+		NavigableAction navigableAction = new NavigableAction(abstractActionId, description, navigableStateId);
+		navigableAction.setModelIdentifier(abstractStateModel.getModelIdentifier());
+
+		return navigableAction;
 	}
 
 }

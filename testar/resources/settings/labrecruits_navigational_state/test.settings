@@ -32,7 +32,7 @@ SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "TE
 #################################################################
 
 Sequences = 1
-SequenceLength = 50
+SequenceLength = 10
 
 #################################################################
 # Oracles based on suspicious titles
@@ -93,29 +93,24 @@ SUTProcesses =
 # Indicate the location of the protocol class for your specific SUT.
 #################################################################
 
-ProtocolClass = debug_labrecruits_navmesh_action_abstraction/Protocol_debug_labrecruits_navmesh_action_abstraction
+ProtocolClass = labrecruits_navigational_state/Protocol_labrecruits_navigational_state
 
 #################################################################
-# Graphdatabase settings (experimental)
-#################################################################
-GraphDBEnabled = true
-GraphDBUrl = remote:/localhost/testar
-GraphDBUser = testar
-GraphDBPassword = testar
-
-#################################################################\n"
 # State model inference settings
-#################################################################\n"
+#################################################################
 StateModelEnabled = true
 DataStore = OrientDB
-DataStoreType = remote
+DataStoreType = plocal
 DataStoreServer = localhost
+DataStoreDirectory = C:\\Users\\Fernando\\Desktop\\iv4xr\\orientdb-3.0.34\\databases
 DataStoreDB = testar
 DataStoreUser = testar
 DataStorePassword = testar
 DataStoreMode = instant
+ApplicationName = debug
+ApplicationVersion = 1
 ActionSelectionAlgorithm = unvisited
-StateModelStoreWidgets = false
+StateModelStoreWidgets = true
 iv4XRAgentListener = false
 
 #################################################################

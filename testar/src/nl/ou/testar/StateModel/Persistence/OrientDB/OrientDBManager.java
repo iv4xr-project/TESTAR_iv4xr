@@ -25,6 +25,7 @@ import nl.ou.testar.StateModel.Sequence.SequenceNode;
 import nl.ou.testar.StateModel.Sequence.SequenceStep;
 import nl.ou.testar.StateModel.Util.EventHelper;
 import nl.ou.testar.StateModel.Util.HydrationHelper;
+import nl.ou.testar.StateModel.iv4XR.AbstractStateModelIV4XR;
 import nl.ou.testar.StateModel.iv4XR.NavigableAction;
 import nl.ou.testar.StateModel.iv4XR.NavigableState;
 import nl.ou.testar.StateModel.Widget;
@@ -554,8 +555,50 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
             }
         }
 
+        // TODO: Move to a iv4xr extended class (OrientDBManagerIV4XR)
+        // Create or extract Navigable State Layer
+        initNavigableLayer(abstractStateModel, stateModelClass, stateModelEntity);
+
         // enable the event listener again
         setListening(true);
+    }
+
+    private void initNavigableLayer(AbstractStateModel abstractStateModel, EntityClass stateModelClass, VertexEntity stateModelEntity) {
+    	if(!(abstractStateModel instanceof AbstractStateModelIV4XR)) {
+    		return;
+    	}
+
+    	AbstractStateModelIV4XR abstractStateModeliv4xr = (AbstractStateModelIV4XR) abstractStateModel;
+
+    	// see if there are navigable states present in the data store that are tied to this abstract state model
+    	EntityClass navigableStateClass = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.NavigableState);
+    	if (navigableStateClass == null) throw new RuntimeException("Error occurred: could not retrieve a navigable state entity class.");
+
+    	// in order to retrieve the navigable states, we need to provide the abstract state model identifier to the query
+    	Map<String, PropertyValue> entityProperties = new HashMap<>();
+    	Property stateModelClassIdentifier = stateModelClass.getIdentifier(); // Identifier from AbstractStateModel
+    	if (stateModelClassIdentifier == null) throw new RuntimeException("Error occurred: abstract state model does not have an id property set.");
+    	entityProperties.put("modelIdentifier", stateModelEntity.getPropertyValue(stateModelClassIdentifier.getPropertyName()));
+
+    	Set<DocumentEntity> retrievedDocuments = entityManager.retrieveAllOfClass(navigableStateClass, entityProperties);
+    	if (retrievedDocuments.isEmpty()) {
+    		System.out.println("Could not find navigable states in the model");
+    	}
+    	else {
+    		// we need to create the navigable states from the returned document entities
+    		try {
+    			EntityExtractor<NavigableState> navigableStateExtractor = ExtractorFactory.getExtractor(ExtractorFactory.EXTRACTOR_NAVIGABLE_STATE);
+    			for (DocumentEntity documentEntity : retrievedDocuments) {
+    				NavigableState navigableState = navigableStateExtractor.extract(documentEntity, abstractStateModeliv4xr);
+    				abstractStateModeliv4xr.addNavigableState(navigableState);
+    			}
+    		} catch (ExtractionException | StateModelException e) {
+    			e.printStackTrace();
+    		}
+    	}
+
+    	//TODO: Extract NavigableAction / NavigableTransition
+    	// And abstractStateModeliv4xr.addNavigableTransition(navigableTransition);
     }
 
     public void persistSequence(Sequence sequence) {
