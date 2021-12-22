@@ -66,6 +66,7 @@ public class labActionCommand extends TaggableBase implements Action {
 		this.set(IV4XRtags.iv4xrActionOriginWidgetPath, widget.get(Tags.Path));
 		this.set(IV4XRtags.iv4xrActionOriginStateId, state.get(Tags.AbstractIDCustom));
 		this.set(IV4XRtags.iv4xrActionEntityId, widget.get(IV4XRtags.entityId));
+		this.set(IV4XRtags.iv4xrActionEntityIsActive, widget.get(IV4XRtags.labRecruitsEntityIsActive));
 		this.set(IV4XRtags.iv4xrActionOriginPos, currentAgentPosition());
 
 		/**

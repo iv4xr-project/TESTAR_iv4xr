@@ -124,7 +124,7 @@ AbstractStateAttributes = iv4xrEntityId,iv4xrEntityIsActive
 #################################################################
 # Action identifier attributes
 #################################################################
-AbstractActionAttributes = iv4xrActionEntityId,iv4xrActionTargetAbsPos
+AbstractActionAttributes = iv4xrActionEntityId,iv4xrActionEntityIsActive,iv4xrActionTargetAbsPos
 
 #################################################################
 # Other more advanced settings

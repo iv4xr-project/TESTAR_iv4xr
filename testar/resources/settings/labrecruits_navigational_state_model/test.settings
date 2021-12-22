@@ -23,7 +23,7 @@ Mode = Spy
 # The SUT must be manually started and closed.
 #################################################################
 SUTConnector = COMMAND_LINE
-SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "TESTARnav1"
+SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "TESTARnavSimple"
 
 #################################################################
 # Sequences
@@ -124,7 +124,7 @@ AbstractStateAttributes = iv4xrEntityId,iv4xrEntityIsActive
 #################################################################
 # Action identifier attributes
 #################################################################
-AbstractActionAttributes = iv4xrActionEntityId,iv4xrActionTargetAbsPos
+AbstractActionAttributes = iv4xrActionEntityId,iv4xrActionEntityIsActive,iv4xrActionTargetAbsPos
 
 #################################################################
 # Other more advanced settings
@@ -159,3 +159,4 @@ VisualizeSelectedAction = true
 TestGenerator = random
 MaxReward = 9999999
 Discount = .95
+LabRecruitsGraphics = false

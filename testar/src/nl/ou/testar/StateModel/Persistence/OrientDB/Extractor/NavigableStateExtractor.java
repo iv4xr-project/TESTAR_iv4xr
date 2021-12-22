@@ -94,7 +94,7 @@ public class NavigableStateExtractor implements EntityExtractor<NavigableState> 
 
 		// add the navigable actions information (this also includes the action description)
 		for(NavigableAction navigableAction : actions) {
-			navigableState.addNavigableAction(navigableAction.getId(), navigableAction);
+			navigableState.addOutgoingNavigableAction(navigableAction.getId(), navigableAction);
 		}
 
 		// add the unexecuted Exploratory Actions information
@@ -111,6 +111,7 @@ public class NavigableStateExtractor implements EntityExtractor<NavigableState> 
 		System.out.println("navigableState.getId(): " + navigableState.getId());
 		System.out.println("navigableState.getNavigableNodes(): " + navigableState.getNavigableNodes());
 		System.out.println("navigableState.getReachableEntities(): " + navigableState.getReachableEntities());
+		System.out.println("navigableState.getOutgoingNavigableActionsDescriptions(): " + navigableState.getOutgoingNavigableActionsDescriptions());
 		System.out.println("navigableState.getUnexecutedExploratoryActions(): " + navigableState.getUnexecutedExploratoryActions());
 
 		return navigableState;

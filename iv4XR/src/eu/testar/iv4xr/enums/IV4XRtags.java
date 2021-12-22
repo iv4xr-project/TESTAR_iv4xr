@@ -181,6 +181,7 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<String> iv4xrActionOriginWidgetPath = Tag.from("iv4xrActionOriginWidgetPath", String.class);
 	public static final Tag<String> iv4xrActionOriginStateId = Tag.from("iv4xrActionOriginStateId", String.class);
 	public static final Tag<String> iv4xrActionEntityId = Tag.from("iv4xrActionEntityId", String.class);
+	public static final Tag<Boolean> iv4xrActionEntityIsActive = Tag.from("iv4xrActionEntityIsActive", Boolean.class);
 	public static final Tag<Vec3> iv4xrActionOriginPos = Tag.from("iv4xrActionOriginPos", Vec3.class);
 	public static final Tag<Vec3> iv4xrActionTargetAbsPos = Tag.from("iv4xrActionTargetAbsPos", Vec3.class);
 	public static final Tag<Vec3> iv4xrActionTargetRelPos = Tag.from("iv4xrActionTargetRelPos", Vec3.class);

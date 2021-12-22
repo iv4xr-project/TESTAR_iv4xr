@@ -28,27 +28,17 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
-import org.testar.OutputStructure;
-import org.testar.action.priorization.iv4xrExplorationPrioritization;
 import org.testar.action.priorization.iv4xrNavigableState;
-import org.testar.action.priorization.iv4xrNavigableStateMap;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import environments.LabRecruitsEnvironment;
-import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.lab.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
@@ -76,9 +66,7 @@ import nl.ou.testar.RandomActionSelector;
 public class Protocol_labrecruits_navigational_state_model extends LabRecruitsProtocol {
 
 	// Navigable State that an agent can explore
-	private iv4xrNavigableState navigableState = new iv4xrNavigableState("Initial");
-	// A map to connect multiple navigableState
-	private iv4xrNavigableStateMap navigableStateMap = new iv4xrNavigableStateMap();
+	private iv4xrNavigableState navigableState = new iv4xrNavigableState("");
 
 	/**
 	 * This method is called when the TESTAR requests the state of the SUT.
@@ -148,14 +136,10 @@ public class Protocol_labrecruits_navigational_state_model extends LabRecruitsPr
 	 */
 	@Override
 	protected Action selectAction(State state, Set<Action> originalActions){
-		// Now actions have been derived and AbstractIDCustom Tag calculated
-		// Save the information of exploratory actions in the State Model
-		saveExploratoryActionsStateModel(originalActions);
-
 		//Call the preSelectAction method from the AbstractProtocol so that, if necessary,
 		//unwanted processes are killed and SUT is put into foreground.
 		Action retAction = preSelectAction(state, originalActions);
-		if (retAction == null) {
+		if(retAction == null) {
 			//using the action selector of the state model:
 			retAction = stateModelManager.getAbstractActionToExecute(originalActions);
 		}
@@ -168,20 +152,6 @@ public class Protocol_labrecruits_navigational_state_model extends LabRecruitsPr
 		return retAction;
 	}
 
-	private void saveExploratoryActionsStateModel(Set<Action> derivedActions) {
-		Map<String, SVec3> unexecutedExploratoryActions = new HashMap<>();
-		Set<Action> exploratoryActions = new HashSet<>();
-		for(Action action : derivedActions) {
-			if(action instanceof labActionExplorePosition) {
-				Vec3 nodePosition = ((labActionExplorePosition) action).getExplorePosition();
-				SVec3 unexploredNode = new SVec3(nodePosition.x, nodePosition.y, nodePosition.z);
-				unexecutedExploratoryActions.put(action.get(Tags.AbstractIDCustom), unexploredNode);
-				exploratoryActions.add(action);
-			}
-		}
-		stateModelManager.notifyUnexecutedExploratoryActions(unexecutedExploratoryActions, exploratoryActions);
-	}
-
 	/**
 	 * Execute TESTAR as agent command Action
 	 */
@@ -191,7 +161,6 @@ public class Protocol_labrecruits_navigational_state_model extends LabRecruitsPr
 			// adding the action that is going to be executed into HTML report:
 			htmlReport.addSelectedAction(state, action);
 
-			System.out.println(action.toShortString());
 			// execute selected action in the current state
 			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
 
@@ -199,14 +168,6 @@ public class Protocol_labrecruits_navigational_state_model extends LabRecruitsPr
 			Util.pause(waitTime);
 
 			if(action instanceof labActionCommandMoveInteract) {
-				// Add explored navigable state in our map
-				navigableStateMap.addNavigableState(navigableState);
-				// Create a Navigable State in the State Model
-				stateModelManager.notifyNewNavigableState(navigableState.getNavigableNodes(), 
-						navigableState.getReachableEntities(), 
-						navigableState.getExecutedAction(),
-						action.get(Tags.AbstractIDCustom));
-
 				// Then create a new navigable state object based in the current interacted entity
 				String interactedEntity = ((labActionCommandMoveInteract) action).getEntityId();
 				String beforeIsActive = action.get(Tags.OriginWidget).get(IV4XRtags.labRecruitsEntityIsActive).toString();
@@ -217,15 +178,21 @@ public class Protocol_labrecruits_navigational_state_model extends LabRecruitsPr
 				}
 
 				String interactionInfo = "Entity:" + interactedEntity + ",From:" + beforeIsActive + ",To:" + afterIsActive;
-				navigableState = new iv4xrNavigableState(interactionInfo);
+
+				// Create a Navigable State in the State Model
+				stateModelManager.notifyNewNavigableState(navigableState.getNavigableNodes(), 
+						navigableState.getReachableEntities(), 
+						interactionInfo,
+						action.get(Tags.AbstractIDCustom));
+
+				navigableState = new iv4xrNavigableState("");
 
 				// Update lastInteractAction for the finishSequence case
 				lastInteractActionAbstractIDCustom = action.get(Tags.AbstractIDCustom);
 			}
 
 			return true;
-
-		}catch(ActionFailedException afe){
+		}catch(ActionFailedException afe) {
 			return false;
 		}
 	}
@@ -238,7 +205,6 @@ public class Protocol_labrecruits_navigational_state_model extends LabRecruitsPr
 				return w;
 			}
 		}
-
 		return null;
 	}
 
@@ -250,25 +216,10 @@ public class Protocol_labrecruits_navigational_state_model extends LabRecruitsPr
 	protected void finishSequence() {
 		super.finishSequence();
 		//TODO: Do we want to save last navigable state if is not complete?
-		// Add last explored navigable state in our map
-		navigableStateMap.addNavigableState(navigableState);
-		// Create a Navigable State in the State Model
+		// Create last Navigable State in the State Model
 		stateModelManager.notifyNewNavigableState(navigableState.getNavigableNodes(), 
 				navigableState.getReachableEntities(), 
-				navigableState.getExecutedAction(),
+				"NotExecutedAction",
 				lastInteractActionAbstractIDCustom);
-
-		String navigableStateMapInfo = navigableStateMap.toString();
-		System.out.println(navigableStateMapInfo);
-		try {
-			File outputFolder = new File(OutputStructure.outerLoopOutputDir).getCanonicalFile();
-			String outputFile = outputFolder.getPath() + File.separator + "navigableStateMapInfo.txt";
-			BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile, true));
-			writer.append(navigableStateMapInfo);
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.err.println("ERROR: Writing navigableStateMapInfo results");
-		}
 	}
 }

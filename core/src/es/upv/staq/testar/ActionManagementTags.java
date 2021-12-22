@@ -50,6 +50,7 @@ public class ActionManagementTags {
 	public static final Tag<String> iv4xrActionOriginWidgetPath = Tag.from("iv4xr Action Origin WidgetPath", String.class);
 	public static final Tag<String> iv4xrActionOriginStateId = Tag.from("iv4xr Action Origin StateId", String.class);
 	public static final Tag<String> iv4xrActionEntityId = Tag.from("iv4xr Action Entity Id", String.class);
+	public static final Tag<Boolean> iv4xrActionEntityIsActive = Tag.from("iv4xr Action Entity IsActive", Boolean.class);
 	public static final Tag<Vec3> iv4xrActionOriginPos = Tag.from("iv4xr Action Origin Pos", Vec3.class);
 	public static final Tag<Vec3> iv4xrActionTargetAbsPos = Tag.from("iv4xr Action Target Abs Pos", Vec3.class);
 	public static final Tag<Vec3> iv4xrActionTargetRelPos = Tag.from("iv4xr Action Target Rel Pos", Vec3.class);
@@ -63,6 +64,7 @@ public class ActionManagementTags {
 			add(iv4xrActionOriginWidgetPath);
 			add(iv4xrActionOriginStateId);
 			add(iv4xrActionEntityId);
+			add(iv4xrActionEntityIsActive);
 			add(iv4xrActionOriginPos);
 			add(iv4xrActionTargetAbsPos);
 			add(iv4xrActionTargetRelPos);
@@ -86,6 +88,7 @@ public class ActionManagementTags {
 		settingsMap.put(iv4xrActionOriginWidgetPath, "iv4xrActionOriginWidgetPath");
 		settingsMap.put(iv4xrActionOriginStateId, "iv4xrActionOriginStateId");
 		settingsMap.put(iv4xrActionEntityId, "iv4xrActionEntityId");
+		settingsMap.put(iv4xrActionEntityIsActive, "iv4xrActionEntityIsActive");
 		settingsMap.put(iv4xrActionOriginPos, "iv4xrActionOriginPos");
 		settingsMap.put(iv4xrActionTargetAbsPos, "iv4xrActionTargetAbsPos");
 		settingsMap.put(iv4xrActionTargetRelPos, "iv4xrActionTargetRelPos");
@@ -100,6 +103,7 @@ public class ActionManagementTags {
 			put(iv4xrActionOriginWidgetPath, Group.iv4xrAction);
 			put(iv4xrActionOriginStateId, Group.iv4xrAction);
 			put(iv4xrActionEntityId, Group.iv4xrAction);
+			put(iv4xrActionEntityIsActive, Group.iv4xrAction);
 			put(iv4xrActionOriginPos, Group.iv4xrAction);
 			put(iv4xrActionTargetAbsPos, Group.iv4xrAction);
 			put(iv4xrActionTargetRelPos, Group.iv4xrAction);

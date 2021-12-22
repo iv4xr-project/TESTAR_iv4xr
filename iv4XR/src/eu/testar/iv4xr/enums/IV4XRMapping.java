@@ -89,6 +89,7 @@ public class IV4XRMapping {
     		put(ActionManagementTags.iv4xrActionOriginWidgetPath, IV4XRtags.iv4xrActionOriginWidgetPath);
     		put(ActionManagementTags.iv4xrActionOriginStateId, IV4XRtags.iv4xrActionOriginStateId);
     		put(ActionManagementTags.iv4xrActionEntityId, IV4XRtags.iv4xrActionEntityId);
+    		put(ActionManagementTags.iv4xrActionEntityIsActive, IV4XRtags.iv4xrActionEntityIsActive);
     		put(ActionManagementTags.iv4xrActionOriginPos, IV4XRtags.iv4xrActionOriginPos);
     		put(ActionManagementTags.iv4xrActionTargetAbsPos, IV4XRtags.iv4xrActionTargetAbsPos);
     		put(ActionManagementTags.iv4xrActionTargetRelPos, IV4XRtags.iv4xrActionTargetRelPos);

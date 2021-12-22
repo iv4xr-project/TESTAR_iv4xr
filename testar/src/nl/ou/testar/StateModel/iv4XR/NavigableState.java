@@ -46,8 +46,8 @@ public class NavigableState extends AbstractEntity implements Persistable {
 
 	private Set<SVec3> navigableNodes;
 	private Set<Pair<String, Boolean>> reachableEntities;
-	private Map<String, NavigableAction> navigableActions;
-	private Set<String> navigableActionsDescription;
+	private Map<String, NavigableAction> outgoingNavigableActions;
+	private Set<String> outgoingNavigableActionsDescription;
 
 	// TODO: If AbstractCustomAction depends on position node, we can use a single Set<String>
 	private Set<Pair<String, SVec3>> unexecutedExploratoryActions;
@@ -74,8 +74,8 @@ public class NavigableState extends AbstractEntity implements Persistable {
 		//super(String.valueOf(Objects.hash(navigableNodes)));
 		this.navigableNodes = new HashSet<>(navigableNodes);
 		this.reachableEntities = new HashSet<>(reachableEntities);
-		this.navigableActions = new HashMap<>();
-		this.navigableActionsDescription = new HashSet<>();
+		this.outgoingNavigableActions = new HashMap<>();
+		this.outgoingNavigableActionsDescription = new HashSet<>();
 		this.unexecutedExploratoryActions = new HashSet<>();
 	}
 
@@ -87,17 +87,17 @@ public class NavigableState extends AbstractEntity implements Persistable {
 		return reachableEntities;
 	}
 
-	public Map<String, NavigableAction> getNavigableActions() {
-		return navigableActions;
+	public Map<String, NavigableAction> getOutgoingNavigableActions() {
+		return outgoingNavigableActions;
 	}
 
-	public Set<String> getNavigableActionsDescriptions(){
-		return navigableActionsDescription;
+	public Set<String> getOutgoingNavigableActionsDescriptions() {
+		return outgoingNavigableActionsDescription;
 	}
 
-	public void addNavigableAction(String navigableActionId, NavigableAction navigableAction) {
-		this.navigableActions.put(navigableActionId, navigableAction);
-		this.navigableActionsDescription.add(navigableAction.getDescription());
+	public void addOutgoingNavigableAction(String navigableActionId, NavigableAction navigableAction) {
+		this.outgoingNavigableActions.putIfAbsent(navigableActionId, navigableAction);
+		this.outgoingNavigableActionsDescription.add(navigableAction.getDescription());
 	}
 
 	public Set<Pair<String, SVec3>> getUnexecutedExploratoryActions() {

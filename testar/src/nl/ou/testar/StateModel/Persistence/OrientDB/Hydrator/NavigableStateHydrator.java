@@ -83,22 +83,22 @@ public class NavigableStateHydrator implements EntityHydrator<VertexEntity> {
 			target.addPropertyValue(reachableEntities.getPropertyName(), new PropertyValue(reachableEntities.getPropertyType(), ((NavigableState) source).getReachableEntities()));
 		}
 
-		// add navigableActions
-		Property navigableActions = HydrationHelper.getProperty(target.getEntityClass().getProperties(), "navigableActions");
-		if (navigableActions == null) {
+		// add outgoingNavigableActions
+		Property outgoingNavigableActions = HydrationHelper.getProperty(target.getEntityClass().getProperties(), "outgoingNavigableActions");
+		if (outgoingNavigableActions == null) {
 			throw new HydrationException();
 		}
-		if (!((NavigableState) source).getNavigableActions().isEmpty()) {
-			target.addPropertyValue(navigableActions.getPropertyName(), new PropertyValue(navigableActions.getPropertyType(), ((NavigableState) source).getNavigableActions()));
+		if (!((NavigableState) source).getOutgoingNavigableActions().isEmpty()) {
+			target.addPropertyValue(outgoingNavigableActions.getPropertyName(), new PropertyValue(outgoingNavigableActions.getPropertyType(), ((NavigableState) source).getOutgoingNavigableActions()));
 		}
 
-		// add navigableActionsDescriptions
-		Property navigableActionsDescriptions = HydrationHelper.getProperty(target.getEntityClass().getProperties(), "navigableActionsDescriptions");
-		if (navigableActionsDescriptions == null) {
+		// add outgoingNavigableActionsDescription
+		Property outgoingNavigableActionsDescription = HydrationHelper.getProperty(target.getEntityClass().getProperties(), "outgoingNavigableActionsDescription");
+		if (outgoingNavigableActionsDescription == null) {
 			throw new HydrationException();
 		}
-		if (!((NavigableState) source).getNavigableActionsDescriptions().isEmpty()) {
-			target.addPropertyValue(navigableActionsDescriptions.getPropertyName(), new PropertyValue(navigableActionsDescriptions.getPropertyType(), ((NavigableState) source).getNavigableActionsDescriptions()));
+		if (!((NavigableState) source).getOutgoingNavigableActionsDescriptions().isEmpty()) {
+			target.addPropertyValue(outgoingNavigableActionsDescription.getPropertyName(), new PropertyValue(outgoingNavigableActionsDescription.getPropertyType(), ((NavigableState) source).getOutgoingNavigableActionsDescriptions()));
 		}
 
 		// add unexecutedExploratoryActions

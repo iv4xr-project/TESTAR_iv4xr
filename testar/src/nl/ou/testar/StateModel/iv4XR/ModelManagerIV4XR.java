@@ -38,9 +38,13 @@ import java.util.StringJoiner;
 
 import org.fruit.Pair;
 import org.fruit.alayer.Action;
+import org.fruit.alayer.State;
 import org.fruit.alayer.Tag;
 import org.fruit.alayer.Tags;
 
+import eu.iv4xr.framework.spatial.Vec3;
+import eu.testar.iv4xr.actions.lab.commands.labActionCommandMoveInteract;
+import eu.testar.iv4xr.actions.lab.commands.labActionExplorePosition;
 import eu.testar.iv4xr.enums.SVec3;
 import nl.ou.testar.StateModel.AbstractAction;
 import nl.ou.testar.StateModel.AbstractStateModel;
@@ -54,10 +58,11 @@ import nl.ou.testar.StateModel.Sequence.SequenceManager;
 public class ModelManagerIV4XR extends ModelManager implements StateModelManager {
 	
 	private NavigableState previousNavigableState;
-	//private NavigableAction previousNavigableAction;
+	private NavigableAction previousNavigableAction;
 	private Map<String, SVec3> descriptionUnexecutedExploratoryActions;
 	private Set<Action> actionExploreUnexecuted; // List of discovered exploratory actions not executed
-	private Set<Action> executedActions; // List of executed exploratory actions
+	private Set<Action> actionNavigateUnexecuted; // List of discovered navigate actions not executed
+	private Set<Action> executedActions; // List of executed actions
 
 	/**
 	 * Constructor
@@ -69,9 +74,72 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
 		super(abstractStateModel, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
 		this.descriptionUnexecutedExploratoryActions = new HashMap<>();
 		this.actionExploreUnexecuted = new HashSet<>();
+		this.actionNavigateUnexecuted = new HashSet<>();
 		this.executedActions = new HashSet<>();
 	}
-	
+
+	/**
+	 * This method should be called once when a new state is reached after the execution
+	 * of an action or succesfully starting the SUT.
+	 * @param newState
+	 * @param actions
+	 */
+	@Override
+	public void notifyNewStateReached(State newState, Set<Action> actions) {
+		// Here we have all derivedActions (explore position and navigate interaction)
+		for(Action action : actions) {
+			// In case of exploratory actions
+			if(action instanceof labActionExplorePosition) {
+				String actionAbstractIDCustom = action.get(Tags.AbstractIDCustom);
+				// If the exploratory action was not executed and not saved in the unexecuted list
+				if(!actionWasExecuted(actionAbstractIDCustom) && !isSavedAsExploreUnexecuted(actionAbstractIDCustom)) {
+					// Save the exploratory action as a pending to execute
+					Vec3 nodePosition = ((labActionExplorePosition) action).getExplorePosition();
+					SVec3 unexploredNode = new SVec3(nodePosition.x, nodePosition.y, nodePosition.z);
+					this.descriptionUnexecutedExploratoryActions.put(actionAbstractIDCustom, unexploredNode);
+					actionExploreUnexecuted.add(action);
+				}
+			}
+			// In case of navigable interaction actions
+			if(action instanceof labActionCommandMoveInteract) {
+				String actionAbstractIDCustom = action.get(Tags.AbstractIDCustom);
+				// If the navigable interaction action was not executed and not saved in the unexecuted list
+				if(!actionWasExecuted(actionAbstractIDCustom) && !isSavedAsNavigateUnexecuted(actionAbstractIDCustom)) {
+					// Save the navigate interaction action as a pending to execute
+					actionNavigateUnexecuted.add(action);
+				}
+			}
+		}
+		super.notifyNewStateReached(newState, actions);
+	}
+
+	private boolean actionWasExecuted(String actionAbstractIDCustom) {
+		for(Action execAct : executedActions) {
+			if(execAct.get(Tags.AbstractIDCustom).equals(actionAbstractIDCustom)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isSavedAsExploreUnexecuted(String actionAbstractIDCustom) {
+		for(Action unexecAct : actionExploreUnexecuted) {
+			if(unexecAct.get(Tags.AbstractIDCustom).equals(actionAbstractIDCustom)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean isSavedAsNavigateUnexecuted(String actionAbstractIDCustom) {
+		for(Action unexecAct : actionNavigateUnexecuted) {
+			if(unexecAct.get(Tags.AbstractIDCustom).equals(actionAbstractIDCustom)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
     /**
      * This method should be called when TESTAR is listening actions instead of execute them.
      * @param action
@@ -143,6 +211,8 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
         	actionExploreUnexecuted.remove(findAction); // Remove from unexecuted
         	executedActions.add(findAction); // Add to executed
         }
+        // Do not remove from actionNavigateUnexecuted list because we use the info in notifyNewNavigableState
+        // And we are going to reset the list anyway
     }
 
     /**
@@ -150,27 +220,10 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
      * and has discovered a navigable state. 
      */
     @Override
-    public void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String actionDescription, String abstractAction) {
-    	/*
-    	AbstractAction abstractActionToExecute = null;
-    	try {
-    		abstractActionToExecute = currentAbstractState.getAction(abstractAction);
-    	} catch (ActionNotFoundException e) {
-    		// TODO Auto-generated catch block
-    		e.printStackTrace();
-    	}
-    	NavigableAction navigableAction = new NavigableAction(abstractAction, abstractActionToExecute, actionDescription);
-    	 */
-
+    public void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String executedNavigableActionDescription, String abstractAction) {
     	// Create the navigableState, the id will be based on the nodes or entities (or both?)
     	NavigableState navigableState = new NavigableState(navigableNodes, reachableEntities);
-
-    	// Create the navigableAction, the id will be based on the description and the navigableState identifier
-    	NavigableAction navigableAction = new NavigableAction(abstractAction, actionDescription, navigableState.getId());
-    	navigableAction.setModelIdentifier(abstractStateModel.getModelIdentifier());
-
-    	// Associate the navigableAction to the navigableState
-    	navigableState.addNavigableAction(navigableAction.getId(), navigableAction);
+    	navigableState.setModelIdentifier(abstractStateModel.getModelIdentifier());
 
     	// save the information about the exploratory actions
     	if(descriptionUnexecutedExploratoryActions.isEmpty()) {
@@ -181,63 +234,33 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
     		}
     	}
 
+    	// Add all discovered Actions as existing outgoing
+    	for(Action action : actionNavigateUnexecuted) {
+    		NavigableAction navigableAction = new NavigableAction(action.get(Tags.AbstractIDCustom), action.get(Tags.Desc), navigableState.getId());
+    		navigableAction.setModelIdentifier(abstractStateModel.getModelIdentifier());
+    		navigableState.addOutgoingNavigableAction(navigableAction.getId(), navigableAction);
+    	}
+
+    	// Create the navigableAction, the id will be based on the description and the navigableState identifier
+    	NavigableAction executedNavigableAction = new NavigableAction(abstractAction, executedNavigableActionDescription, navigableState.getId());
+    	executedNavigableAction.setModelIdentifier(abstractStateModel.getModelIdentifier());
+
     	//System.out.println("ModelManagerIV4XR notifyNewNavigableState clear actions lists");
     	// and reset for the next exploration iteration
     	descriptionUnexecutedExploratoryActions.clear();
     	actionExploreUnexecuted.clear();
+    	actionNavigateUnexecuted.clear();
     	executedActions.clear();
 
-    	navigableState.setModelIdentifier(abstractStateModel.getModelIdentifier());
-
     	// Save a navigable transition, or a not complete explored navigable state
-    	if(previousNavigableState != null /*&& previousNavigableAction != null*/) {
-    		persistenceManager.persistNavigableState(previousNavigableState, navigableAction, navigableState);
+    	if(previousNavigableState != null && previousNavigableAction != null) {
+    		persistenceManager.persistNavigableState(previousNavigableState, previousNavigableAction, navigableState);
     	} else {
     		persistenceManager.persistNavigableState(null, null, navigableState);
     	}
 
     	previousNavigableState = navigableState;
-    	//previousNavigableAction = navigableAction;
-    }
-
-    /**
-     * Add all not executed actions in a set list, 
-     * to indicate that the navigable state needs to continue with the exploration. 
-     */
-    @Override
-    public void notifyUnexecutedExploratoryActions(Map<String, SVec3> unexecutedExploratoryActions, Set<Action> actions) {
-    	for(Map.Entry<String, SVec3> entry : unexecutedExploratoryActions.entrySet()) {
-    		if(!this.descriptionUnexecutedExploratoryActions.containsKey(entry.getKey())) {
-    			this.descriptionUnexecutedExploratoryActions.put(entry.getKey(), entry.getValue());
-    		}
-    	}
-
-    	// We have discovered new exploratory actions, but these may have been executed previously
-    	for(Action discoveredAction : actions) {
-    		if(!actionWasExecuted(discoveredAction) && !isSavedAsUnexecuted(discoveredAction)) {
-    			actionExploreUnexecuted.add(discoveredAction);
-    		}
-    	}
-    }
-
-    private boolean actionWasExecuted(Action action) {
-    	String abstractIdCustom = action.get(Tags.AbstractIDCustom);
-    	for(Action execAct : executedActions) {
-    		if(execAct.get(Tags.AbstractIDCustom).equals(abstractIdCustom)) {
-    			return true;
-    		}
-    	}
-    	return false;
-    }
-
-    private boolean isSavedAsUnexecuted(Action action) {
-    	String abstractIdCustom = action.get(Tags.AbstractIDCustom);
-    	for(Action unexecAct : actionExploreUnexecuted) {
-    		if(unexecAct.get(Tags.AbstractIDCustom).equals(abstractIdCustom)) {
-    			return true;
-    		}
-    	}
-    	return false;
+    	previousNavigableAction = executedNavigableAction;
     }
 
     /**

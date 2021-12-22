@@ -593,15 +593,15 @@ public class EntityClassFactory {
     	reachableEntities.setNullable(false);
     	navigableStateClass.addProperty(reachableEntities);
 
-    	Property navigableActions = new Property("navigableActions", OType.EMBEDDEDSET, OType.STRING);
-    	navigableActions.setMandatory(true);
-    	navigableActions.setNullable(false);
-    	navigableStateClass.addProperty(navigableActions);
+    	Property outgoingNavigableActions = new Property("outgoingNavigableActions", OType.EMBEDDEDSET, OType.STRING);
+    	outgoingNavigableActions.setMandatory(true);
+    	outgoingNavigableActions.setNullable(false);
+    	navigableStateClass.addProperty(outgoingNavigableActions);
 
-    	Property navigableActionsDescriptions = new Property("navigableActionsDescriptions", OType.EMBEDDEDSET, OType.STRING);
-    	navigableActionsDescriptions.setMandatory(true);
-    	navigableActionsDescriptions.setNullable(false);
-    	navigableStateClass.addProperty(navigableActionsDescriptions);
+    	Property outgoingNavigableActionsDescription = new Property("outgoingNavigableActionsDescription", OType.EMBEDDEDSET, OType.STRING);
+    	outgoingNavigableActionsDescription.setMandatory(true);
+    	outgoingNavigableActionsDescription.setNullable(false);
+    	navigableStateClass.addProperty(outgoingNavigableActionsDescription);
 
     	Property unexecutedExploratoryActions = new Property("unexecutedExploratoryActions", OType.EMBEDDEDSET, OType.STRING);
     	unexecutedExploratoryActions.setMandatory(true);
@@ -644,6 +644,12 @@ public class EntityClassFactory {
     	description.setMandatory(true);
     	description.setNullable(false);
     	navigableActionClass.addProperty(description);
+
+    	Property originNavigableState = new Property("originNavigableState", OType.STRING);
+    	originNavigableState.setMandatory(true);
+    	originNavigableState.setNullable(false);
+    	originNavigableState.setIndexAble(true);
+    	navigableActionClass.addProperty(originNavigableState);
 
     	entityClasses.put(EntityClassName.NavigableAction, navigableActionClass);
     	return navigableActionClass;

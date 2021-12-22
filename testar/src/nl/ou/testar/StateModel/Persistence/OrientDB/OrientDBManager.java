@@ -747,7 +747,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
     		hydrator.hydrate(stateEntity, navigableState);
     	} catch (HydrationException e) {
     		e.printStackTrace();
-    		System.out.println("Encountered a problem while saving navigable state " + previousNavigableState.getNavigableActions() + " to the orient database");
+    		System.out.println("Encountered a problem while saving navigable state " + previousNavigableState.getOutgoingNavigableActions() + " to the orient database");
     		return;
     	}
 
@@ -784,7 +784,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
     		hydrator.hydrate(stateEntity, navigableState);
     	} catch (HydrationException e) {
     		e.printStackTrace();
-    		System.out.println("Encountered a problem while saving navigable state " + navigableState.getNavigableActions() + " to the orient database");
+    		System.out.println("Encountered a problem while saving navigable state " + navigableState.getOutgoingNavigableActions() + " to the orient database");
     		return;
     	}
 
