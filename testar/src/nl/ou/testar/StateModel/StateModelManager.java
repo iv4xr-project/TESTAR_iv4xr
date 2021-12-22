@@ -30,5 +30,5 @@ public interface StateModelManager {
     
     void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String actionDescription, String abstractAction);
 
-    void notifyUnexecutedExploratoryActions(Map<String, SVec3> unexecutedExploratoryActions);
+    void notifyUnexecutedExploratoryActions(Map<String, SVec3> unexecutedExploratoryActions, Set<Action> actions);
 }

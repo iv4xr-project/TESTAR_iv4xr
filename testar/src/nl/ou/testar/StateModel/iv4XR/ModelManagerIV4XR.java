@@ -31,6 +31,7 @@
 package nl.ou.testar.StateModel.iv4XR;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
@@ -54,7 +55,9 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
 	
 	private NavigableState previousNavigableState;
 	//private NavigableAction previousNavigableAction;
-	private Map<String, SVec3> unexecutedExploratoryActions;
+	private Map<String, SVec3> descriptionUnexecutedExploratoryActions;
+	private Set<Action> actionExploreUnexecuted; // List of discovered exploratory actions not executed
+	private Set<Action> executedActions; // List of executed exploratory actions
 
 	/**
 	 * Constructor
@@ -64,7 +67,9 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
 	public ModelManagerIV4XR(AbstractStateModel abstractStateModel, ActionSelector actionSelector, PersistenceManager persistenceManager,
 			Set<Tag<?>> concreteStateTags, SequenceManager sequenceManager, boolean storeWidgets) {
 		super(abstractStateModel, actionSelector, persistenceManager, concreteStateTags, sequenceManager, storeWidgets);
-		this.unexecutedExploratoryActions = new HashMap<>();
+		this.descriptionUnexecutedExploratoryActions = new HashMap<>();
+		this.actionExploreUnexecuted = new HashSet<>();
+		this.executedActions = new HashSet<>();
 	}
 	
     /**
@@ -121,9 +126,23 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
             sequenceManager.notifyErrorInCurrentState(errorMessages.toString());
             errorMessages = new StringJoiner(", ");
         }
-        
-        // Remove from unexecutedExploratoryActions if exists
-        unexecutedExploratoryActions.remove(action.get(Tags.AbstractIDCustom));
+
+        // Remove from descriptionUnexecutedExploratoryActions if exists
+        descriptionUnexecutedExploratoryActions.remove(action.get(Tags.AbstractIDCustom));
+
+        // TODO: Improve next finding code
+        Action findAction = null;
+        for(Action unexecutedAct : actionExploreUnexecuted) {
+        	if(unexecutedAct.get(Tags.AbstractIDCustom).equals(action.get(Tags.AbstractIDCustom))) {
+        		findAction = unexecutedAct;
+        		break;
+        	}
+        }
+        if(findAction!=null) {
+        	//System.out.println("remove found action : " + findAction.toShortString());
+        	actionExploreUnexecuted.remove(findAction); // Remove from unexecuted
+        	executedActions.add(findAction); // Add to executed
+        }
     }
 
     /**
@@ -152,17 +171,21 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
 
     	// Associate the navigableAction to the navigableState
     	navigableState.addNavigableAction(navigableAction.getId(), navigableAction);
-    	
+
     	// save the information about the exploratory actions
-    	if(unexecutedExploratoryActions.isEmpty()) {
+    	if(descriptionUnexecutedExploratoryActions.isEmpty()) {
     		navigableState.addUnexecutedExploratoryAction("empty", new SVec3(0, 0, 0));
     	} else {
-    		for(Map.Entry<String, SVec3> entry : unexecutedExploratoryActions.entrySet()) {
+    		for(Map.Entry<String, SVec3> entry : descriptionUnexecutedExploratoryActions.entrySet()) {
     			navigableState.addUnexecutedExploratoryAction(entry.getKey(), entry.getValue());
     		}
     	}
+
+    	//System.out.println("ModelManagerIV4XR notifyNewNavigableState clear actions lists");
     	// and reset for the next exploration iteration
-    	unexecutedExploratoryActions.clear();
+    	descriptionUnexecutedExploratoryActions.clear();
+    	actionExploreUnexecuted.clear();
+    	executedActions.clear();
 
     	navigableState.setModelIdentifier(abstractStateModel.getModelIdentifier());
 
@@ -182,11 +205,63 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
      * to indicate that the navigable state needs to continue with the exploration. 
      */
     @Override
-    public void notifyUnexecutedExploratoryActions(Map<String, SVec3> unexecutedExploratoryActions) {
+    public void notifyUnexecutedExploratoryActions(Map<String, SVec3> unexecutedExploratoryActions, Set<Action> actions) {
     	for(Map.Entry<String, SVec3> entry : unexecutedExploratoryActions.entrySet()) {
-    		if(!this.unexecutedExploratoryActions.containsKey(entry.getKey())) {
-    			this.unexecutedExploratoryActions.put(entry.getKey(), entry.getValue());
+    		if(!this.descriptionUnexecutedExploratoryActions.containsKey(entry.getKey())) {
+    			this.descriptionUnexecutedExploratoryActions.put(entry.getKey(), entry.getValue());
     		}
     	}
+
+    	// We have discovered new exploratory actions, but these may have been executed previously
+    	for(Action discoveredAction : actions) {
+    		if(!actionWasExecuted(discoveredAction) && !isSavedAsUnexecuted(discoveredAction)) {
+    			actionExploreUnexecuted.add(discoveredAction);
+    		}
+    	}
+    }
+
+    private boolean actionWasExecuted(Action action) {
+    	String abstractIdCustom = action.get(Tags.AbstractIDCustom);
+    	for(Action execAct : executedActions) {
+    		if(execAct.get(Tags.AbstractIDCustom).equals(abstractIdCustom)) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+
+    private boolean isSavedAsUnexecuted(Action action) {
+    	String abstractIdCustom = action.get(Tags.AbstractIDCustom);
+    	for(Action unexecAct : actionExploreUnexecuted) {
+    		if(unexecAct.get(Tags.AbstractIDCustom).equals(abstractIdCustom)) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+
+    /**
+     * This method uses the abstract state model to return the abstract id of an action to execute
+     * @return
+     */
+    @Override
+    public Action getAbstractActionToExecute(Set<Action> actions) {
+    	if (currentAbstractState == null) {
+    		return null;
+    	}
+//    	System.out.println("********************************************");
+//    	System.out.println("ModelManagerIV4XR getAbstractActionToExecute");
+//    	for(Action a : actionExploreUnexecuted) {
+//    		System.out.println("unexecutedExpActions: " + a.toShortString());
+//    	}
+    	// Prioritize the selection of unexecuted exploratory actions
+    	try {
+    		Action exploratoryAction = actionSelector.selectAction(actionExploreUnexecuted);
+    		return exploratoryAction;
+    	} catch (ActionNotFoundException e1) {
+    		System.out.println("ALL exploratory actions executed, try to find an unvisited interactive action");
+    	}
+    	// Execute unvisited abstract action selection
+    	return super.getAbstractActionToExecute(actions);
     }
 }

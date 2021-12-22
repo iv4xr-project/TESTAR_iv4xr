@@ -28,26 +28,38 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package nl.ou.testar.StateModel.ActionSelection;
+package nl.ou.testar.StateModel.iv4XR;
 
+import java.util.Set;
+
+import org.fruit.alayer.Action;
+import eu.testar.iv4xr.actions.lab.commands.labActionExplorePosition;
 import nl.ou.testar.StateModel.AbstractAction;
 import nl.ou.testar.StateModel.AbstractState;
 import nl.ou.testar.StateModel.AbstractStateModel;
+import nl.ou.testar.StateModel.ActionSelection.ImprovedUnvisitedActionSelector;
 import nl.ou.testar.StateModel.Exception.ActionNotFoundException;
-import nl.ou.testar.StateModel.iv4XR.AbstractStateModelIV4XR;
-import nl.ou.testar.StateModel.iv4XR.NavigableState;
 
-public class ExploreNavigableSpaceSelector implements ActionSelector {
+public class ExploreNavigableSpaceSelector extends ImprovedUnvisitedActionSelector {
 
-	@Override
-	public AbstractAction selectAction(AbstractState currentState, AbstractStateModel abstractStateModel) throws ActionNotFoundException {
-		return null;
+	public ExploreNavigableSpaceSelector() {
+		super();
 	}
 
 	@Override
-	public AbstractAction selectAction(NavigableState currentNavigableState, AbstractStateModelIV4XR abstractStateModeliv4xr) throws ActionNotFoundException {
-		// TODO implement
-		return null;
+	public AbstractAction selectAction(AbstractState currentState, AbstractStateModel abstractStateModel) throws ActionNotFoundException {
+		return super.selectAction(currentState, abstractStateModel);
+	}
+
+	@Override
+	public Action selectAction(Set<Action> actions) throws ActionNotFoundException {
+		for(Action a : actions) {
+			if(a instanceof labActionExplorePosition) {
+				System.out.println("ExploreNavigableSpaceSelector selectAction : " + a.toShortString());
+				return a;
+			}
+		}
+		throw new ActionNotFoundException();
 	}
 
 }

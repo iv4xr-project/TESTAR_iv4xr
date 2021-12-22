@@ -6,12 +6,11 @@ import nl.ou.testar.StateModel.AbstractStateModel;
 import nl.ou.testar.StateModel.ActionSelection.Model.SelectorNode;
 import nl.ou.testar.StateModel.ActionSelection.Model.SelectorTree;
 import nl.ou.testar.StateModel.Exception.ActionNotFoundException;
-import nl.ou.testar.StateModel.iv4XR.AbstractStateModelIV4XR;
-import nl.ou.testar.StateModel.iv4XR.NavigableState;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import org.fruit.alayer.Action;
 
 public class ImprovedUnvisitedActionSelector implements ActionSelector {
 
@@ -33,7 +32,7 @@ public class ImprovedUnvisitedActionSelector implements ActionSelector {
     /**
      * Constructor
      */
-    ImprovedUnvisitedActionSelector() {
+    protected ImprovedUnvisitedActionSelector() {
         executionPath = new LinkedList<>();
         nrOfFlowAlterations = 0;
     }
@@ -149,7 +148,7 @@ public class ImprovedUnvisitedActionSelector implements ActionSelector {
     }
 
     @Override
-    public AbstractAction selectAction(NavigableState currentNavigableState, AbstractStateModelIV4XR abstractStateModeliv4xr) throws ActionNotFoundException {
+    public Action selectAction(Set<Action> actions) throws ActionNotFoundException {
     	return null;
     }
 }

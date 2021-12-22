@@ -73,7 +73,7 @@ import nl.ou.testar.RandomActionSelector;
  * State (Widget-Tree) -> Agent Observation (All Observed Entities)
  * Action              -> LabRecruits low level command
  */
-public class Protocol_labrecruits_navigational_state extends LabRecruitsProtocol {
+public class Protocol_labrecruits_navigational_state_model extends LabRecruitsProtocol {
 
 	// Navigable State that an agent can explore
 	private iv4xrNavigableState navigableState = new iv4xrNavigableState("Initial");
@@ -148,47 +148,18 @@ public class Protocol_labrecruits_navigational_state extends LabRecruitsProtocol
 	 */
 	@Override
 	protected Action selectAction(State state, Set<Action> originalActions){
+		// Now actions have been derived and AbstractIDCustom Tag calculated
+		// Save the information of exploratory actions in the State Model
+		saveExploratoryActionsStateModel(originalActions);
 
 		//Call the preSelectAction method from the AbstractProtocol so that, if necessary,
 		//unwanted processes are killed and SUT is put into foreground.
 		Action retAction = preSelectAction(state, originalActions);
-		if (retAction== null) {
-			//if no preSelected actions are needed, then implement your own action selection strategy
-
-			//System.out.println("----------- Available Actions -----------");
-			//for(Action a : originalActions) {
-			//	System.out.println(a.get(Tags.AbstractIDCustom) + " : " + a.get(Tags.Desc, ""));
-			//}
-
-			// Try to get the labActionExplorePosition actions to prioritize exploration
-			Set<Action> exploratoryActions = iv4xrExplorationPrioritization.getUnvisitedExploratoryActions(originalActions);
-
-			// If we have exploratory actions to execute, select one of them randomly
-			if(exploratoryActions != null) {
-				//System.out.println("----------- getExploratoryActions Actions -----------");
-				//for(Action a : exploratoryActions) {
-				//	System.out.println(a.get(Tags.AbstractIDCustom) + " : " + a.get(Tags.Desc, ""));
-				//}
-				//System.out.println("-----------------------------------------------------");
-
-				//randomly select one of the unvisited exploratory actions
-				retAction = RandomActionSelector.selectAction(exploratoryActions);
-				// update as executed for next iteration
-				iv4xrExplorationPrioritization.addExecutedExploratoryAction(retAction);
-				saveExploratoryActionStateModel(exploratoryActions);
-			} 
-			// If we do not have exploratory actions to execute, 
-			// use the state model to select other type of action
-			else {
-				//System.out.println("----------- getExploratoryActions Actions -----------");
-				System.out.println("----------- All ExploratoryActions EXECUTED ---------");
-				//System.out.println("-----------------------------------------------------");
-
-				//using the action selector of the state model:
-				retAction = stateModelManager.getAbstractActionToExecute(originalActions);
-			}
+		if (retAction == null) {
+			//using the action selector of the state model:
+			retAction = stateModelManager.getAbstractActionToExecute(originalActions);
 		}
-		if(retAction==null) {
+		if(retAction == null) {
 			System.out.println("Exploratory and State model based action selection did not find an action. Using random action selection.");
 			// use random
 			retAction = RandomActionSelector.selectAction(originalActions);
@@ -197,13 +168,15 @@ public class Protocol_labrecruits_navigational_state extends LabRecruitsProtocol
 		return retAction;
 	}
 
-	private void saveExploratoryActionStateModel(Set<Action> exploratoryActions) {
+	private void saveExploratoryActionsStateModel(Set<Action> derivedActions) {
 		Map<String, SVec3> unexecutedExploratoryActions = new HashMap<>();
-		for(Action action : exploratoryActions) {
+		Set<Action> exploratoryActions = new HashSet<>();
+		for(Action action : derivedActions) {
 			if(action instanceof labActionExplorePosition) {
 				Vec3 nodePosition = ((labActionExplorePosition) action).getExplorePosition();
 				SVec3 unexploredNode = new SVec3(nodePosition.x, nodePosition.y, nodePosition.z);
 				unexecutedExploratoryActions.put(action.get(Tags.AbstractIDCustom), unexploredNode);
+				exploratoryActions.add(action);
 			}
 		}
 		stateModelManager.notifyUnexecutedExploratoryActions(unexecutedExploratoryActions, exploratoryActions);
@@ -226,8 +199,6 @@ public class Protocol_labrecruits_navigational_state extends LabRecruitsProtocol
 			Util.pause(waitTime);
 
 			if(action instanceof labActionCommandMoveInteract) {
-				iv4xrExplorationPrioritization.clearExecutedExploratoryActionsList();
-
 				// Add explored navigable state in our map
 				navigableStateMap.addNavigableState(navigableState);
 				// Create a Navigable State in the State Model
@@ -278,6 +249,7 @@ public class Protocol_labrecruits_navigational_state extends LabRecruitsProtocol
 	@Override
 	protected void finishSequence() {
 		super.finishSequence();
+		//TODO: Do we want to save last navigable state if is not complete?
 		// Add last explored navigable state in our map
 		navigableStateMap.addNavigableState(navigableState);
 		// Create a Navigable State in the State Model
@@ -298,7 +270,5 @@ public class Protocol_labrecruits_navigational_state extends LabRecruitsProtocol
 			e.printStackTrace();
 			System.err.println("ERROR: Writing navigableStateMapInfo results");
 		}
-
-		iv4xrExplorationPrioritization.clearExecutedExploratoryActionsList();
 	}
 }

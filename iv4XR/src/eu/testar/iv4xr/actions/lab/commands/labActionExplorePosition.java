@@ -83,16 +83,15 @@ public class labActionExplorePosition extends labActionCommand {
 
 	@Override
 	public String toShortString() {
-		return "Agent: " + agentId + " explore NavMesh  from: " + currentAgentPosition() + " to: " + explorePosition;
+		return "Agent: " + agentId + " explore position NavMesh: " + explorePosition;
 	}
 
 	/**
-	 * Two labActionExploreNavMesh are equals if the same agent tries to move to the North
-	 * from the coordinates of a nearby position
+	 * Two labActionExploreNavMesh are equals if the same agent tries to move to the same position. 
+	 * It does not matter the origin position of the agent. 
 	 */
 	public boolean actionEquals(labActionExplorePosition action) {
-		return (this.agentId.equals(action.getAgentId()) 
-				&& Vec3.dist(this.currentAgentPosition(), action.currentAgentPosition()) < 0.2);
+		return (this.agentId.equals(action.getAgentId()) && explorePosition.equals(action.getExplorePosition()));
 	}
 
 }

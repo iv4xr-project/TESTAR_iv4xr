@@ -1,11 +1,13 @@
 package nl.ou.testar.StateModel.ActionSelection;
 
+import java.util.Set;
+
+import org.fruit.alayer.Action;
+
 import nl.ou.testar.StateModel.AbstractAction;
 import nl.ou.testar.StateModel.AbstractState;
 import nl.ou.testar.StateModel.AbstractStateModel;
 import nl.ou.testar.StateModel.Exception.ActionNotFoundException;
-import nl.ou.testar.StateModel.iv4XR.AbstractStateModelIV4XR;
-import nl.ou.testar.StateModel.iv4XR.NavigableState;
 
 public interface ActionSelector {
 
@@ -18,11 +20,10 @@ public interface ActionSelector {
     public AbstractAction selectAction(final AbstractState currentState, final AbstractStateModel abstractStateModel) throws ActionNotFoundException;
 
     /**
-     * This method returns a navigable action to execute
-     * @param currentNavigableState
-     * @param abstractStateModeliv4xr
+     * This method returns an exploratory action to execute
+     * @param actions
      * @return
      */
-    public AbstractAction selectAction(NavigableState currentNavigableState, AbstractStateModelIV4XR abstractStateModeliv4xr) throws ActionNotFoundException;
+    public Action selectAction(Set<Action> actions) throws ActionNotFoundException;
 
 }
