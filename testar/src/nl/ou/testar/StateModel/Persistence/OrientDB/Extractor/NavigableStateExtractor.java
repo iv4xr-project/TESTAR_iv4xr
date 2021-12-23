@@ -103,9 +103,8 @@ public class NavigableStateExtractor implements EntityExtractor<NavigableState> 
 			throw new ExtractionException("Exception extracting from State Model: unexecutedExploratoryActions is not an instance of Set");
 		}
 		Set<Pair<String, SVec3>> unexecutedExploratoryActions = (Set<Pair<String, SVec3>>)unexecutedExploratoryActionsValue.getValue();
-		if(!unexecutedExploratoryActions.toString().contains("empty")) {
-			navigableState.setUnexecutedExploratoryAction(unexecutedExploratoryActions);
-		}
+		// This can contains pending exploratory actions to execute, or the empty signal to indicate exploration was complete
+		navigableState.setUnexecutedExploratoryAction(unexecutedExploratoryActions);
 
 		System.out.println("****** NavigableStateExtractor ******");
 		System.out.println("navigableState.getId(): " + navigableState.getId());

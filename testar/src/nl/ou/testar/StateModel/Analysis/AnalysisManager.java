@@ -650,7 +650,9 @@ public class AnalysisManager {
                 OVertexDocument target = actionEdge.getProperty("in");
                 Edge jsonEdge = new Edge("e" + formatId(actionEdge.getIdentity().toString()), "n" + formatId(source.getIdentity().toString()), "n" + formatId(target.getIdentity().toString()));
                 for (String propertyName : actionEdge.getPropertyNames()) {
-                    if (propertyName.contains("in") || propertyName.contains("out")) {
+                	//TODO: This may affect other edge properties as "originNavigableStateId" :)
+                	//if (propertyName.contains("in") || propertyName.contains("out")) {
+                	if (propertyName.equals("in") || propertyName.equals("out")) {
                         // these are edge indicators. Ignore
                         continue;
                     }

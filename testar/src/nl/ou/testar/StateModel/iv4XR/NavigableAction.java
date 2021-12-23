@@ -37,7 +37,7 @@ public class NavigableAction extends AbstractEntity implements Persistable {
 
 	private String abstractActionId;
 	private String description;
-	private String originNavigableState;
+	private String originNavigableStateId;
 	//private AbstractAction abstractAction;
 
 	public NavigableAction(String abstractActionId, /*AbstractAction abstractAction,*/ String description, String originNavigableStateId) {
@@ -47,7 +47,7 @@ public class NavigableAction extends AbstractEntity implements Persistable {
 		//this.abstractAction = abstractAction;
 		this.abstractActionId = abstractActionId;
 		this.description = description;
-		this.originNavigableState = originNavigableStateId;
+		this.originNavigableStateId = originNavigableStateId;
 	}
 
 	/*public AbstractAction getAbstractAction() {
@@ -62,8 +62,8 @@ public class NavigableAction extends AbstractEntity implements Persistable {
 		return description;
 	}
 
-	public String getOriginNavigableState() {
-		return originNavigableState;
+	public String getOriginNavigableStateId() {
+		return originNavigableStateId;
 	}
 
 	@Override

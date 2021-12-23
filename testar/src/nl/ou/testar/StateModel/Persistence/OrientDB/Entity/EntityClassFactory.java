@@ -645,11 +645,10 @@ public class EntityClassFactory {
     	description.setNullable(false);
     	navigableActionClass.addProperty(description);
 
-    	Property originNavigableState = new Property("originNavigableState", OType.STRING);
-    	originNavigableState.setMandatory(true);
-    	originNavigableState.setNullable(false);
-    	originNavigableState.setIndexAble(true);
-    	navigableActionClass.addProperty(originNavigableState);
+    	Property originNavigableStateId = new Property("originNavigableStateId", OType.STRING);
+    	originNavigableStateId.setMandatory(true);
+    	originNavigableStateId.setNullable(false);
+    	navigableActionClass.addProperty(originNavigableStateId);
 
     	entityClasses.put(EntityClassName.NavigableAction, navigableActionClass);
     	return navigableActionClass;

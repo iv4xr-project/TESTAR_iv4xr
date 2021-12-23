@@ -105,6 +105,11 @@ public class NavigableState extends AbstractEntity implements Persistable {
 	}
 
 	public void addUnexecutedExploratoryAction(String unexecutedExploratoryAction, SVec3 actionNode) {
+		// If unexecuted list contains empty signal, this specific NavigableState was already explored
+		// Do not include exploratory actions anymore
+		if(this.unexecutedExploratoryActions.toString().contains("empty")) {
+			return;
+		}
 		Pair<String, SVec3> action = new Pair<String, SVec3>(unexecutedExploratoryAction, actionNode);
 		if(!this.unexecutedExploratoryActions.contains(action)) {
 			this.unexecutedExploratoryActions.add(action);

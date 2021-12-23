@@ -727,18 +727,31 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
     }
     
     @Override
-    public void persistNavigableState(NavigableState previousNavigableState, NavigableAction navigableAction, NavigableState navigableState) {
+    public void persistNavigableState(NavigableState previousNavigableState, NavigableAction previousNavigableAction, NavigableState navigableState) {
     	// If we don not have the navigable transition save only the current navigable state
     	// TODO: Prepare a better implementation
-    	if(previousNavigableState == null || navigableAction == null) {
+    	if(previousNavigableState == null || previousNavigableAction == null) {
     		persistNavigableState(navigableState);
     		return;
     	}
-    	
+
     	// create the NavigableState entity to persist to the database
     	EntityClass entityClassState = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.NavigableState);
+    	// Problem here is that we want to update a navigable state that contains unexplored actions
+    	// But we do not know if all unexplored actions were discovered and executed until have the empty action
+    	// If the navigable state was explored completely, allow to update the properties
     	VertexEntity previousStateEntity = new VertexEntity(entityClassState);
+    	if(previousNavigableState.getUnexecutedExploratoryActions().toString().contains("empty")) {
+    		previousStateEntity.enableUpdate(true);
+    	} else {
+    		previousStateEntity.enableUpdate(false);
+    	}
     	VertexEntity stateEntity = new VertexEntity(entityClassState);
+    	if(navigableState.getUnexecutedExploratoryActions().toString().contains("empty")) {
+    		stateEntity.enableUpdate(true);
+    	} else {
+    		stateEntity.enableUpdate(false);
+    	}
 
     	// hydrate the entity to a format the orient database can store
     	try {
@@ -757,26 +770,33 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
 
     	// create an entity to persist to the database
     	EntityClass entityClassAction = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.NavigableAction);
-    	EdgeEntity actionEntity = new EdgeEntity(entityClassAction, previousStateEntity, stateEntity);
+    	EdgeEntity previousActionEntity = new EdgeEntity(entityClassAction, previousStateEntity, stateEntity);
+    	previousActionEntity.enableUpdate(false);
 
     	// hydrate the entity to a format the orient database can store
     	try {
     		EntityHydrator hydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_NAVIGABLE_ACTION);
-    		hydrator.hydrate(actionEntity, navigableAction);
+    		hydrator.hydrate(previousActionEntity, previousNavigableAction);
     	} catch (HydrationException e) {
     		e.printStackTrace();
-    		System.out.println("Encountered a problem while saving navigable action " + navigableAction.getDescription() + " to the orient database");
+    		System.out.println("Encountered a problem while saving navigable action " + previousNavigableAction.getDescription() + " to the orient database");
     		return;
     	}
 
     	// save the entity!	
-    	entityManager.saveEntity(actionEntity);
+    	entityManager.saveEntity(previousActionEntity);
     }
     
     public void persistNavigableState(NavigableState navigableState) {
     	// create the NavigableState entity to persist to the database
     	EntityClass entityClassState = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.NavigableState);
     	VertexEntity stateEntity = new VertexEntity(entityClassState);
+    	// If the navigable state was explored completely, allow to update the properties
+    	if(navigableState.getUnexecutedExploratoryActions().toString().contains("empty")) {
+    		stateEntity.enableUpdate(true);
+    	} else {
+    		stateEntity.enableUpdate(false);
+    	}
 
     	// hydrate the entity to a format the orient database can store
     	try {

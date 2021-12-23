@@ -81,8 +81,8 @@ public class NavigableActionHydrator implements EntityHydrator<EdgeEntity> {
 		// add the description
 		edgeEntity.addPropertyValue("description", new PropertyValue(OType.STRING, ((NavigableAction) source).getDescription()));
 
-		// add the originNavigableState
-		edgeEntity.addPropertyValue("originNavigableState", new PropertyValue(OType.STRING, ((NavigableAction) source).getOriginNavigableState()));
+		// add the originNavigableStateId
+		edgeEntity.addPropertyValue("originNavigableStateId", new PropertyValue(OType.STRING, ((NavigableAction) source).getOriginNavigableStateId()));
 
 	}
 
