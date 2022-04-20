@@ -70,7 +70,7 @@ import static org.fruit.monkey.dialog.ToolTipTexts.*;
 public class SettingsDialog extends JFrame implements Observer {
   private static final long serialVersionUID = 5156320008281200950L;
 
-  static final String TESTAR_VERSION = "2.3.4 - master - 3.2 iv4XR (10-Dec-2021)";
+  static final String TESTAR_VERSION = "2.3.4 - master - 3.3 iv4XR (20-Apr-2022)";
 
 
   private String settingsFile;

@@ -40,6 +40,7 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import spaceEngineers.model.DefinitionId;
 import spaceEngineers.model.ToolbarLocation;
 
 public class seActionCommandGrinder extends seActionCommand {
@@ -81,7 +82,7 @@ public class seActionCommandGrinder extends seActionCommand {
 		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
 
 		// Prepare the desired tool in the SE tool bar
-		seItems.setToolbarItem(grinderType, ToolbarLocation.Companion.fromIndex(5, 6));
+		seItems.setToolbarItem(DefinitionId.Companion.physicalGun(grinderType), ToolbarLocation.Companion.fromIndex(5, 6));
 
 		Util.pause(0.5);
 

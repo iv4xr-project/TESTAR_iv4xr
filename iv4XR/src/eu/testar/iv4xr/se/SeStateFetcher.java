@@ -40,8 +40,8 @@ import eu.testar.iv4xr.IV4XRElement;
 import eu.testar.iv4xr.IV4XRRootElement;
 import eu.testar.iv4xr.IV4XRStateFetcher;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.controller.JsonRpcSpaceEngineers;
 import spaceEngineers.controller.Observer;
+import spaceEngineers.controller.SpaceEngineers;
 import spaceEngineers.model.CubeGrid;
 import spaceEngineers.model.Observation;
 import spaceEngineers.model.Block;
@@ -61,15 +61,15 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 	@Override
 	protected IV4XRRootElement fetchIV4XRElements(IV4XRRootElement rootElement) {
 		// Get the controller attached to the SE system (SpaceEngineersProcess)
-		JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
+		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 
 		// Check that TESTAR it can observe the SE system
-		Observer seObserver = seRpcController.getObserver();
+		Observer seObserver = seController.getObserver();
 		if(seObserver == null) throw new StateBuildException("SE Agent Oberver is null! Exception trying to fetch the State of iv4XR SpaceEngineers");
 
 		// Get the Character and Blocks observation that we use to create the element tree
-		CharacterObservation seObsCharacter = seRpcController.getObserver().observe();
-		Observation seObsBlocks = seRpcController.getObserver().observeBlocks();
+		CharacterObservation seObsCharacter = seController.getObserver().observe();
+		Observation seObsBlocks = seController.getObserver().observeBlocks();
 
 		// If the agent observes himself and in this instant of time also has observation of blocks
 		if(seObsCharacter != null && seObsBlocks != null && seObsBlocks.getGrids() != null && seObsBlocks.getGrids().size() > 0) {
@@ -128,7 +128,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.seAgentHealth = seObsCharacter.getHealth();
 
 		childElement.entityVelocity = new Vec3(seObsCharacter.getVelocity().getX(), seObsCharacter.getVelocity().getY(), seObsCharacter.getVelocity().getZ());
-		childElement.entityId = system.get(IV4XRtags.iv4xrSpaceEngRpcController).getAgentId();
+		childElement.entityId = system.get(IV4XRtags.iv4xrSpaceEngineers).getObserver().observe().getId();
 		childElement.entityType = "AGENT"; //TODO: check proper entity for agent
 		childElement.entityTimestamp = -1;
 
