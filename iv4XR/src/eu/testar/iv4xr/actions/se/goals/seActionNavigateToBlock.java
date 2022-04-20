@@ -152,8 +152,8 @@ public class seActionNavigateToBlock extends seActionGoal {
 	 */
 	protected void rotateToBlockDestination(SUT system) {
 		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
-		spaceEngineers.controller.JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
-		spaceEngineers.controller.Observer seObserver = seRpcController.getObserver();
+		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+		spaceEngineers.controller.Observer seObserver = seController.getObserver();
 
 		eu.iv4xr.framework.spatial.Vec3 agentPosition = SVec3.seToLab(seObserver.observe().getPosition());
 		eu.iv4xr.framework.spatial.Vec3 entityPosition = SVec3.seToLab(targetPosition);

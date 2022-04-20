@@ -64,8 +64,8 @@ public class seActionCommandTeleport extends seActionCommand {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		spaceEngineers.controller.JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
-		seRpcController.getAdmin().getCharacter().teleport(targetPosition, orientationForward, orientationUp);
+		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+		seController.getAdmin().getCharacter().teleport(targetPosition, orientationForward, orientationUp);
 	}
 
 	@Override
