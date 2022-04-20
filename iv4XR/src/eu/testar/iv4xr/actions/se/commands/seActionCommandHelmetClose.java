@@ -55,7 +55,7 @@ public class seActionCommandHelmetClose extends seActionCommand {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		boolean isHelmentEnabled = system.get(IV4XRtags.iv4xrSpaceEngRpcController).getObserver().observe().getHelmetEnabled();
+		boolean isHelmentEnabled = system.get(IV4XRtags.iv4xrSpaceEngineers).getObserver().observe().getHelmetEnabled();
 		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
 
 		if(isHelmentEnabled) {return;} else {seCharacter.switchHelmet();}

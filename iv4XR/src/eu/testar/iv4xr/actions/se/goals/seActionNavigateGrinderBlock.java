@@ -38,6 +38,7 @@ import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
+import spaceEngineers.model.DefinitionId;
 import spaceEngineers.model.ToolbarLocation;
 
 public class seActionNavigateGrinderBlock extends seActionNavigateToBlock {
@@ -87,7 +88,7 @@ public class seActionNavigateGrinderBlock extends seActionNavigateToBlock {
 	private void equipGrinder(SUT system) {
 		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
 
-		seItems.setToolbarItem(grinderType, ToolbarLocation.Companion.fromIndex(5, 6));
+		seItems.setToolbarItem(DefinitionId.Companion.physicalGun(grinderType), ToolbarLocation.Companion.fromIndex(5, 6));
 		Util.pause(0.5);
 		seItems.equip(ToolbarLocation.Companion.fromIndex(5, 6));
 	}

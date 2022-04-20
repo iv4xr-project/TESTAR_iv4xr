@@ -40,6 +40,7 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import spaceEngineers.model.DefinitionId;
 import spaceEngineers.model.ToolbarLocation;
 
 public class seActionCommandPlaceBlock extends seActionCommand {
@@ -61,9 +62,9 @@ public class seActionCommandPlaceBlock extends seActionCommand {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
-		spaceEngineers.controller.JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
+		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 
-		seItems.setToolbarItem(blockType, ToolbarLocation.Companion.fromIndex(1, 2));
+		seItems.setToolbarItem(DefinitionId.Companion.cubeBlock(blockType), ToolbarLocation.Companion.fromIndex(1, 2));
 
 		Util.pause(0.5);
 
@@ -71,7 +72,7 @@ public class seActionCommandPlaceBlock extends seActionCommand {
 
 		Util.pause(0.5);
 
-		seRpcController.getBlocks().place();
+		seController.getBlocks().place();
 	}
 
 	@Override

@@ -410,7 +410,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected void stopSystem(SUT system) {
-		SocketReaderWriterKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngRpcController));
+		SocketReaderWriterKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));
 		super.stopSystem(system);
 	}
 
@@ -519,8 +519,8 @@ public class SEProtocol extends GenericUtilsProtocol {
 
 			//Draw the state information in the canvas
 			try {
-				spaceEngineers.controller.JsonRpcSpaceEngineers seRpcController = system.get(IV4XRtags.iv4xrSpaceEngRpcController);
-				spaceEngineers.controller.Observer seObserver = seRpcController.getObserver();
+				spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+				spaceEngineers.controller.Observer seObserver = seController.getObserver();
 				
 				spaceEngineers.model.Block targetBlock;
 				if((targetBlock = seObserver.observe().getTargetBlock()) != null) { Iv4xrSeVisualization.showSpaceEngineersAimingElement(cv, targetBlock); }

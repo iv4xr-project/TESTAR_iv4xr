@@ -38,7 +38,7 @@ import org.fruit.alayer.TagsBase;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.windows.WinProcess;
 
-import spaceEngineers.controller.JsonRpcSpaceEngineers;
+import spaceEngineers.controller.SpaceEngineers;
 import eu.iv4xr.framework.environments.W3DEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.spatial.Vec3;
@@ -67,7 +67,7 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<LabRecruitsEnvironmentListener> iv4xrLabRecruitsEnvironment = from("LabRecruitsEnvironment", LabRecruitsEnvironmentListener.class);
 
 	// Specific SpaceEngineers Environment, layer that facilitates the communication between agents and the SpaceEngineers game
-	public static final Tag<JsonRpcSpaceEngineers> iv4xrSpaceEngRpcController = from("iv4xrSpaceEngRpcController", JsonRpcSpaceEngineers.class);
+	public static final Tag<SpaceEngineers> iv4xrSpaceEngineers = from("iv4xrSpaceEngineers", SpaceEngineers.class);
 	public static final Tag<spaceEngineers.controller.Character> iv4xrSpaceEngCharacter = from("iv4xrSpaceEngCharacter", spaceEngineers.controller.Character.class);
 	public static final Tag<spaceEngineers.controller.Items> iv4xrSpaceEngItems = from("iv4xrSpaceEngItems", spaceEngineers.controller.Items.class);
 

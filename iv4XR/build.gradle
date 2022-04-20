@@ -2,5 +2,5 @@ dependencies {
     compile project(':core')
     compile project(':windows')
     compile files('../testar/lib/gson-2.8.5.jar')
-    implementation 'com.github.iv4xr-project:iv4xrDemo:2.3.0'
+    implementation 'com.github.iv4xr-project:iv4xrDemo:2.3.4c'
 }
