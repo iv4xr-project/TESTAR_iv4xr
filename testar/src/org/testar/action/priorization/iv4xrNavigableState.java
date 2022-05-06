@@ -30,6 +30,7 @@
 
 package org.testar.action.priorization;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -58,7 +59,8 @@ public class iv4xrNavigableState {
 	}
 
 	public Set<Pair<String, Boolean>> getReachableEntities() {
-		return reachableEntities;
+		if(!reachableEntities.isEmpty()) return reachableEntities;
+		return new HashSet<>(Arrays.asList(new Pair<String, Boolean>("None", false)));
 	}
 
 	public void addNavigableNode(Set<SVec3> nodesPositions) {

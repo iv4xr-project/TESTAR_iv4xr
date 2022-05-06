@@ -30,6 +30,7 @@
 
 package nl.ou.testar.StateModel.iv4XR;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -88,11 +89,14 @@ public class NavigableState extends AbstractEntity implements Persistable {
 	}
 
 	public Map<String, NavigableAction> getOutgoingNavigableActions() {
-		return outgoingNavigableActions;
+		if(!outgoingNavigableActions.isEmpty()) return outgoingNavigableActions;
+		NavigableAction emptyNavigableAction = new NavigableAction("NoNavigableAction", "NoNavigableAction", this.getId());
+		return new HashMap<>() {{put("NoNavigableAction", emptyNavigableAction);}};
 	}
 
 	public Set<String> getOutgoingNavigableActionsDescriptions() {
-		return outgoingNavigableActionsDescription;
+		if(!outgoingNavigableActionsDescription.isEmpty()) return outgoingNavigableActionsDescription;
+		return new HashSet<>(Arrays.asList("NoNavigableAction"));
 	}
 
 	public void addOutgoingNavigableAction(String navigableActionId, NavigableAction navigableAction) {
