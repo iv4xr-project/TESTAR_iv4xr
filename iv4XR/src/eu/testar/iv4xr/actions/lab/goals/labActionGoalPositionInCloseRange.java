@@ -31,14 +31,16 @@
 package eu.testar.iv4xr.actions.lab.goals;
 
 import org.fruit.alayer.SUT;
+import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 
+import agents.tactics.GoalLib;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import eu.iv4xr.framework.spatial.Vec3;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure;
+import nl.uu.cs.aplib.mainConcepts.Goal;
 
 public class labActionGoalPositionInCloseRange extends labActionGoal {
 
@@ -46,8 +48,14 @@ public class labActionGoalPositionInCloseRange extends labActionGoal {
 
 	private Vec3 goalPosition;
 
-	public labActionGoalPositionInCloseRange(Widget w, SUT system, GoalStructure goalStructure, Vec3 goalPosition) {
-		this.goalStructure = goalStructure;
+	public Vec3 getGoalPosition() {
+		return goalPosition;
+	}
+
+	public labActionGoalPositionInCloseRange(Widget w, State state, SUT system, Vec3 goalPosition) {
+		this.labRecruitsEnvironment = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
+		Goal reachPosition = GoalLib.positionInCloseRange(goalPosition);
+		this.goalStructure = reachPosition.lift();
 		this.set(Tags.OriginWidget, w);
 		this.entityId = w.get(IV4XRtags.entityId);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionGoalPositionInCloseRange);
@@ -61,11 +69,23 @@ public class labActionGoalPositionInCloseRange extends labActionGoal {
 		this.set(Tags.Desc, toShortString());
 
 		agentTESTAR.setGoal(goalStructure);
+		setActionCommandTags(w, state, goalPosition);
 	}
 
 	@Override
 	public String toShortString() {
 		return "Agent: " + agentId + " executing Goal PositionInCloseRange to " + goalPosition;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		return (o instanceof labActionGoalPositionInCloseRange) 
+				&& (((labActionGoalPositionInCloseRange) o).getGoalPosition()).equals(this.goalPosition);
+	}
+
+	@Override
+	public int hashCode() {
+		return toShortString().hashCode();
 	}
 
 }

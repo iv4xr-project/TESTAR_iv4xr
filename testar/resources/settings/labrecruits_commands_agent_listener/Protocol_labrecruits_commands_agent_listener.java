@@ -28,6 +28,9 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
+import static nl.uu.cs.aplib.AplibEDSL.FAIL;
+import static nl.uu.cs.aplib.AplibEDSL.FIRSTof;
+import static nl.uu.cs.aplib.AplibEDSL.IFELSE;
 import static nl.uu.cs.aplib.AplibEDSL.SEQ;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,6 +44,7 @@ import org.fruit.monkey.Settings;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import agents.tactics.GoalLib;
+import agents.tactics.GoalLibExtended;
 import environments.LabRecruitsEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
@@ -48,6 +52,7 @@ import eu.testar.iv4xr.actions.lab.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
+import world.BeliefStateExtended;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
@@ -99,35 +104,69 @@ public class Protocol_labrecruits_commands_agent_listener extends LabRecruitsPro
 		LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
 
 		// iv4xr Agent : define the testing-task
+		// goal for "buttons_doors_1" level
+//		goal = SEQ(
+//				GoalLib.entityInteracted("button1"),
+//				GoalLib.entityStateRefreshed("door1"),
+//				GoalLib.entityInvariantChecked(testAgent,
+//						"door1", 
+//						"door1 should be open", 
+//						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
+//
+//				GoalLib.entityInteracted("button3"),
+//				GoalLib.entityStateRefreshed("door2"),
+//				GoalLib.entityInvariantChecked(testAgent,
+//						"door2", 
+//						"door2 should be open", 
+//						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
+//
+//				GoalLib.entityInteracted("button4"),
+//				GoalLib.entityStateRefreshed("door1"),
+//				GoalLib.entityInvariantChecked(testAgent,
+//						"door1", 
+//						"door1 should be open", 
+//						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
+//
+//				GoalLib.entityStateRefreshed("door3"),
+//				GoalLib.entityInvariantChecked(testAgent,
+//						"door3", 
+//						"door3 should be open", 
+//						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
+//				GoalLib.entityInCloseRange("door3")
+//				);
+
+		// Generic goal with a unique treasureDoor to search
+		BeliefStateExtended beliefState = (BeliefStateExtended) testAgent.getState();
+		String treasureDoor = "door1";
 		goal = SEQ(
-				GoalLib.entityInteracted("button1"),
-				GoalLib.entityStateRefreshed("door1"),
-				GoalLib.entityInvariantChecked(testAgent,
-						"door1", 
-						"door1 should be open", 
-						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-
-				GoalLib.entityInteracted("button3"),
-				GoalLib.entityStateRefreshed("door2"),
-				GoalLib.entityInvariantChecked(testAgent,
-						"door2", 
-						"door2 should be open", 
-						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-
-				GoalLib.entityInteracted("button4"),
-				GoalLib.entityStateRefreshed("door1"),
-				GoalLib.entityInvariantChecked(testAgent,
-						"door1", 
-						"door1 should be open", 
-						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-
-				GoalLib.entityStateRefreshed("door3"),
-				GoalLib.entityInvariantChecked(testAgent,
-						"door3", 
-						"door3 should be open", 
-						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-				GoalLib.entityInCloseRange("door3")
-				);
+        		GoalLibExtended.NEWREPEAT(
+        				(BeliefStateExtended b) -> GoalLibExtended.openDoorPredicate(b, treasureDoor), 
+        				 SEQ(
+	    	        		FIRSTof(
+	    	        				GoalLibExtended.neighborsObjects(testAgent),
+	    	        				GoalLibExtended.NEWREPEAT(
+	    	        						(BeliefStateExtended b) -> GoalLibExtended.checkExplore(b),
+	    	        						SEQ(
+	    	        								GoalLibExtended.findNeighbors(testAgent, beliefState)
+	    	        						))
+	    	        				),		
+	    	        		FIRSTof(
+	    	        				//if during the exploration to find a new entity, agent sees the goal, we check that it is open or not
+	    	        				GoalLibExtended.finalGoal(treasureDoor),
+	    	        				// if the goal is not achieved yet, we select an entity to navigate to it based on some specific policies
+	    	        				//if the all neighbors of the current position has seen before
+	    	        				GoalLibExtended.ExtendedAStar(treasureDoor)
+	    	        				),		    	        		
+	    	        		IFELSE(
+	    	        				(BeliefStateExtended b) -> GoalLibExtended.entityTypePredicate(beliefState),
+	    	        				GoalLibExtended.navigateToDoor(beliefState),
+	    	        				GoalLibExtended.navigateToButton(beliefState)),
+	    	        		IFELSE(
+	    	        				(BeliefStateExtended b) -> GoalLibExtended.checkEntityStatePredicate(beliefState),GoalLibExtended.findingAButton(beliefState, testAgent), FAIL()),
+	    	        		GoalLibExtended.removeDynamicGoal(testAgent, null),			    	        		
+	    	        		GoalLibExtended.finalGoal(treasureDoor)
+        				))		        		
+        		);
 
 		// attaching the goal and testdata-collector
 		var dataCollector = new TestDataCollector();
@@ -155,16 +194,6 @@ public class Protocol_labrecruits_commands_agent_listener extends LabRecruitsPro
 	}
 
 	/**
-	 * The getVerdict methods implements the online state oracles that
-	 * examine the SUT's current state and returns an oracle verdict.
-	 * @return oracle verdict, which determines whether the state is erroneous and why.
-	 */
-	@Override
-	protected Verdict getVerdict(State state) {
-		return super.getVerdict(state);
-	}
-
-	/**
 	 * Derive all possible actions that agents can execute in each specific LabRecruits state.
 	 */
 	@Override
@@ -174,14 +203,13 @@ public class Protocol_labrecruits_commands_agent_listener extends LabRecruitsPro
 		// Get the Observation of the State form the Agent point of view
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
 
-		// Every time the agents have the possibility to observe the Environment
-		labActions.add(new labActionCommandObserve(state, state, labRecruitsEnv, agentId, false, false));
+		// NavMesh Exploration : Add one exploration movement for each visible node
+		labActions = exploreVisibleNodesActions(labActions, state, labRecruitsEnv, agentId);
 
-		// For every interactive entity agents have the possibility to move and interact with
+		// For all entities have the possibility to move and interact with
 		for(Widget w : state) {
 			if(isInteractiveEntity(w)) {
-				labActions.add(new labActionCommandMove(w, state, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
-				labActions.add(new labActionCommandInteract(w, state, labRecruitsEnv, agentId, false, false));
+				labActions.add(new labActionCommandMoveInteract(w, state, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
 			}
 		}
 
@@ -231,6 +259,8 @@ public class Protocol_labrecruits_commands_agent_listener extends LabRecruitsPro
 
 		// Add the information about iv4xr agent selected action inside the State Model
 		notifyLabAgentActionToStateModel(system, state, agentAction);
+		// Add the Navigable State information in the State model
+		notifyNavigableStateAfterAction(system, agentAction);
 
 		return true;
 	}
@@ -258,8 +288,6 @@ public class Protocol_labrecruits_commands_agent_listener extends LabRecruitsPro
 	@Override
 	protected void stopSystem(SUT system) {
 		LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
-		// check that we have passed both tests above:
-		assertTrue(testAgent.getTestDataCollector().getNumberOfPassVerdictsSeen() == 4) ;
 		// goal status should be success
 		assertTrue(testAgent.success());
 		super.stopSystem(system);

@@ -45,6 +45,7 @@ import org.fruit.alayer.Tags;
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.lab.commands.labActionCommandMoveInteract;
 import eu.testar.iv4xr.actions.lab.commands.labActionExplorePosition;
+import eu.testar.iv4xr.actions.lab.goals.labActionGoalPositionInCloseRange;
 import eu.testar.iv4xr.enums.SVec3;
 import nl.ou.testar.StateModel.AbstractAction;
 import nl.ou.testar.StateModel.AbstractStateModel;
@@ -88,13 +89,25 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
 	public void notifyNewStateReached(State newState, Set<Action> actions) {
 		// Here we have all derivedActions (explore position and navigate interaction)
 		for(Action action : actions) {
-			// In case of exploratory actions
+			// In case of exploratory command actions
 			if(action instanceof labActionExplorePosition) {
 				String actionAbstractIDCustom = action.get(Tags.AbstractIDCustom);
 				// If the exploratory action was not executed and not saved in the unexecuted list
 				if(!actionWasExecuted(actionAbstractIDCustom) && !isSavedAsExploreUnexecuted(actionAbstractIDCustom)) {
 					// Save the exploratory action as a pending to execute
 					Vec3 nodePosition = ((labActionExplorePosition) action).getExplorePosition();
+					SVec3 unexploredNode = new SVec3(nodePosition.x, nodePosition.y, nodePosition.z);
+					this.descriptionUnexecutedExploratoryActions.put(actionAbstractIDCustom, unexploredNode);
+					actionExploreUnexecuted.add(action);
+				}
+			}
+			// In case of exploratory goal actions
+			if(action instanceof labActionGoalPositionInCloseRange) {
+				String actionAbstractIDCustom = action.get(Tags.AbstractIDCustom);
+				// If the exploratory action was not executed and not saved in the unexecuted list
+				if(!actionWasExecuted(actionAbstractIDCustom) && !isSavedAsExploreUnexecuted(actionAbstractIDCustom)) {
+					// Save the exploratory action as a pending to execute
+					Vec3 nodePosition = ((labActionGoalPositionInCloseRange) action).getGoalPosition();
 					SVec3 unexploredNode = new SVec3(nodePosition.x, nodePosition.y, nodePosition.z);
 					this.descriptionUnexecutedExploratoryActions.put(actionAbstractIDCustom, unexploredNode);
 					actionExploreUnexecuted.add(action);
@@ -272,11 +285,6 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
     	if (currentAbstractState == null) {
     		return null;
     	}
-//    	System.out.println("********************************************");
-//    	System.out.println("ModelManagerIV4XR getAbstractActionToExecute");
-//    	for(Action a : actionExploreUnexecuted) {
-//    		System.out.println("unexecutedExpActions: " + a.toShortString());
-//    	}
     	// Prioritize the selection of unexecuted exploratory actions
     	try {
     		Action exploratoryAction = actionSelector.selectAction(actionExploreUnexecuted);
@@ -284,7 +292,8 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
     	} catch (ActionNotFoundException e1) {
     		System.out.println("ALL exploratory actions executed, try to find an unvisited interactive action");
     	}
-    	// Execute unvisited abstract action selection
+    	// If all unexplored exploratory actions were executed, 
+    	// call unvisited abstract action selection strategy to obtain an interactive non-executed abstract action
     	return super.getAbstractActionToExecute(actions);
     }
 }

@@ -33,8 +33,12 @@ package org.testar.protocols.iv4xr;
 import java.awt.AWTException;
 import java.awt.Robot;
 import java.awt.event.InputEvent;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -51,11 +55,14 @@ import org.fruit.alayer.Widget;
 import org.fruit.alayer.devices.AWTMouse;
 import org.fruit.alayer.devices.Mouse;
 import org.fruit.alayer.exceptions.ActionBuildException;
+import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.alayer.exceptions.StateBuildException;
 import org.fruit.alayer.windows.GDIScreenCanvas;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
+import org.testar.action.priorization.iv4xrNavigableState;
+import org.testar.action.priorization.iv4xrNavigableStateMap;
 import org.testar.protocols.GenericUtilsProtocol;
 import org.testar.visualization.iv4xr.Iv4xrLabRecruitsVisualization;
 
@@ -65,7 +72,10 @@ import environments.LabRecruitsEnvironment;
 import es.upv.staq.testar.CodingManager;
 import es.upv.staq.testar.NativeLinker;
 import eu.testar.iv4xr.IV4XRStateFetcher;
+import eu.testar.iv4xr.actions.lab.commands.labActionCommandInteract;
+import eu.testar.iv4xr.actions.lab.commands.labActionCommandMoveInteract;
 import eu.testar.iv4xr.actions.lab.commands.labActionExplorePosition;
+import eu.testar.iv4xr.actions.lab.goals.labActionGoalPositionInCloseRange;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
@@ -81,7 +91,11 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 	protected HtmlSequenceReport htmlReport;
 	protected State latestState;
-	protected String lastInteractActionAbstractIDCustom;
+
+	// Navigable State that an agent can explore
+	private iv4xrNavigableState navigableState = new iv4xrNavigableState("");
+	private iv4xrNavigableStateMap memoryNavigableStateMap = new iv4xrNavigableStateMap();
+	private String lastInteractActionAbstractIDCustom;
 
 	// Agent point of view that will Observe and extract Widgets information
 	protected String agentId = "agent1";
@@ -192,6 +206,16 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 			previousGoal = testAgent.getCurrentGoal();
 		}
 
+		// Update Navigable State entities and navMesh positions information
+		for(Widget w : latestState) {
+			// Ignore the agent itself and the state
+			if(w.equals(latestState.get(IV4XRtags.agentWidget)) || w.equals(latestState)) continue;
+			// Add the visible entity information
+			navigableState.addReachableEntity(w.get(IV4XRtags.entityId, ""), w.get(IV4XRtags.labRecruitsEntityIsActive, false));
+		}
+		// Add the visible and navigable navMesh nodes
+		navigableState.addNavigableNode(latestState.get(IV4XRtags.labRecruitsNavMesh, Collections.<SVec3>emptySet()));
+
 		return latestState;
 	}
 
@@ -279,20 +303,26 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	}
 
 	/**
-	 * Select one of the available actions (e.g. at random)
+	 * Select one of the available actions using an action selection algorithm (for example random action selection)
+	 *
 	 * @param state the SUT's current state
 	 * @param actions the set of derived actions
-	 * @return  the selected action (non-null!)
+	 * @return the selected action (non-null!)
 	 */
 	@Override
-	protected Action selectAction(State state, Set<Action> actions){
-		//Call the preSelectAction method from the DefaultProtocol so that, if necessary,
+	protected Action selectAction(State state, Set<Action> originalActions){
+		//Call the preSelectAction method from the AbstractProtocol so that, if necessary,
 		//unwanted processes are killed and SUT is put into foreground.
-		Action retAction = preSelectAction(state, actions);
-		if (retAction == null) {
-			//if no preSelected actions are needed, then implement your own strategy
-			retAction = RandomActionSelector.selectAction(actions);
+		Action retAction = preSelectAction(state, originalActions);
+		if(retAction == null) {
+			//using the action selector of the state model:
+			retAction = stateModelManager.getAbstractActionToExecute(originalActions);
 		}
+		if(retAction == null) {
+			System.out.println("State model based action selection did not find an action. Using random action selection.");
+			retAction = RandomActionSelector.selectAction(originalActions);
+		}
+
 		return retAction;
 	}
 
@@ -305,9 +335,35 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
-		// adding the action that is going to be executed into HTML report:
-		htmlReport.addSelectedAction(state, action);
-		return super.executeAction(system, state, action);
+		try {
+			// adding the action that is going to be executed into HTML report:
+			htmlReport.addSelectedAction(state, action);
+
+			System.out.println(action.toShortString());
+			// execute selected action in the current state
+			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
+
+			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
+			Util.pause(waitTime);
+
+			notifyNavigableStateAfterAction(system, action);
+
+			return true;
+
+		}catch(ActionFailedException afe){
+			return false;
+		}
+	}
+
+	private Widget getEntityWidgetFromState(SUT system, String entityId) {
+		Util.pause(2);
+		// User super getState to avoid navigableState conflicts
+		for(Widget w : super.getState(system)) {
+			if(w.get(IV4XRtags.entityId, "").equals(entityId)) {
+				return w;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -352,12 +408,72 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	}
 
 	/**
+	 * After executing an interact action with an entity, this will create a Navigable State in the model. 
+	 * 
+	 * @param system
+	 * @param action
+	 */
+	protected void notifyNavigableStateAfterAction(SUT system, Action action) {
+		//TODO: Improve this way to detect interactive actions
+		String actionType = action.getClass().getSimpleName();
+		if(actionType.contains("Interact")) {
+			// Then create a new navigable state object based in the current interacted entity
+			String interactedEntity = "Unknown";
+			if(action instanceof labActionCommandMoveInteract) interactedEntity = ((labActionCommandMoveInteract) action).getEntityId();
+			else if(action instanceof labActionCommandInteract) interactedEntity = ((labActionCommandInteract) action).getEntityId();
+
+			String beforeIsActive = action.get(Tags.OriginWidget).get(IV4XRtags.labRecruitsEntityIsActive).toString();
+			String afterIsActive = "Unknown";
+			Widget afterWidget = getEntityWidgetFromState(system, interactedEntity);
+			if(afterWidget != null) {
+				afterIsActive = afterWidget.get(IV4XRtags.labRecruitsEntityIsActive).toString();
+			}
+
+			String interactionInfo = "Entity:" + interactedEntity + ",From:" + beforeIsActive + ",To:" + afterIsActive;
+
+			// Add explored navigable state in our memory debugging map
+			memoryNavigableStateMap.addNavigableState(navigableState);
+			// Create a Navigable State in the State Model
+			stateModelManager.notifyNewNavigableState(navigableState.getNavigableNodes(), 
+					navigableState.getReachableEntities(), 
+					interactionInfo,
+					action.get(Tags.AbstractIDCustom));
+
+			navigableState = new iv4xrNavigableState("");
+
+			// Update lastInteractAction for the finishSequence case
+			lastInteractActionAbstractIDCustom = action.get(Tags.AbstractIDCustom);
+		}
+	}
+
+	/**
 	 * This method is invoked each time the TESTAR has reached the stop criteria for generating a sequence.
 	 * This can be used for example for graceful shutdown of the SUT, maybe pressing "Close" or "Exit" button
 	 */
 	@Override
 	protected void finishSequence() {
-		//
+		// Add last explored navigable state in our memory debugging map
+		memoryNavigableStateMap.addNavigableState(navigableState);
+		//TODO: Do we want to save last navigable state if is not complete?
+		// Create last Navigable State in the State Model
+		stateModelManager.notifyNewNavigableState(navigableState.getNavigableNodes(), 
+				navigableState.getReachableEntities(), 
+				"NotExecutedAction",
+				lastInteractActionAbstractIDCustom);
+
+		// Print debugging memoryNavigableStateMap information
+		String navigableStateMapInfo = memoryNavigableStateMap.toString();
+		System.out.println(navigableStateMapInfo);
+		try {
+			File outputFolder = new File(OutputStructure.outerLoopOutputDir).getCanonicalFile();
+			String outputFile = outputFolder.getPath() + File.separator + "navigableStateMapInfo.txt";
+			BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile, true));
+			writer.append(navigableStateMapInfo);
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("ERROR: Writing navigableStateMapInfo results");
+		}
 	}
 
 	/**
@@ -462,11 +578,29 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 	 * @return explore navmesh actions
 	 */
 	protected Set<Action> exploreVisibleNodesActions(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
-		if(state.get(IV4XRtags.labRecruitsNavMesh, null) != null && !state.get(IV4XRtags.labRecruitsNavMesh).isEmpty() /*&& navGraph != null*/) {
+		if(state.get(IV4XRtags.labRecruitsNavMesh, null) != null && !state.get(IV4XRtags.labRecruitsNavMesh).isEmpty()) {
 			for(SVec3 nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {
-				actions.add(
-						new labActionExplorePosition(state.get(IV4XRtags.agentWidget), state, labRecruitsEnvironment, agentId, 
-								new Vec3(nodeNavMesh.x, nodeNavMesh.y, nodeNavMesh.z), false, false));
+				actions.add(new labActionExplorePosition(
+						state.get(IV4XRtags.agentWidget), 
+						state, 
+						labRecruitsEnvironment, 
+						agentId, 
+						new Vec3(nodeNavMesh.x, nodeNavMesh.y, nodeNavMesh.z), false, false));
+			}
+		}
+
+		return actions;
+	}
+
+	protected Set<Action> exploreGoalNodePositions(Set<Action> actions, State state, SUT system) {
+		if(state.get(IV4XRtags.labRecruitsNavMesh, null) != null && !state.get(IV4XRtags.labRecruitsNavMesh).isEmpty()) {
+			for(SVec3 nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {
+				labActionGoalPositionInCloseRange newAction = new labActionGoalPositionInCloseRange(
+						state.get(IV4XRtags.agentWidget), 
+						state, 
+						system, 
+						new Vec3(nodeNavMesh.x, nodeNavMesh.y, nodeNavMesh.z));
+				actions.add(newAction);
 			}
 		}
 

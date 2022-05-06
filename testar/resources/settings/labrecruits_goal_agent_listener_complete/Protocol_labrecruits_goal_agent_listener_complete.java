@@ -251,6 +251,9 @@ public class Protocol_labrecruits_goal_agent_listener_complete extends LabRecrui
 		// Clear Derived Actions List, will be updated next iteration
 		GoalLibListener.clearDerivedGoalAction();
 
+		// Add the Navigable State information in the State model
+		notifyNavigableStateAfterAction(system, agentGoalAction);
+
 		return true;
 	}
 

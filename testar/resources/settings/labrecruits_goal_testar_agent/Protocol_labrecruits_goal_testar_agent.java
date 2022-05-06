@@ -65,49 +65,6 @@ import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol {
 
 	/**
-	 * Called once during the life time of TESTAR.
-	 * This method can be used to perform initial setup work.
-	 * @param   settings  the current TESTAR test.settings as specified by the user.
-	 */
-	@Override
-	protected void initialize(Settings settings) {
-		super.initialize(settings);
-	}
-
-	/**
-	 * This method is invoked each time the TESTAR starts the SUT to generate a new sequence.
-	 */
-	@Override
-	protected void beginSequence(SUT system, State state) {
-		super.beginSequence(system, state);
-	}
-
-	/**
-	 * This method is called when the TESTAR requests the state of the SUT.
-	 * Here you can add additional information to the SUT's state or write your
-	 * own state fetching routine.
-	 *
-	 * super.getState(system) puts the state information also to the HTML sequence report
-	 *
-	 * @return  the current state of the SUT with attached oracle.
-	 */
-	@Override
-	protected State getState(SUT system) {
-		State state = super.getState(system);
-		return state;
-	}
-
-	/**
-	 * The getVerdict methods implements the online state oracles that
-	 * examine the SUT's current state and returns an oracle verdict.
-	 * @return oracle verdict, which determines whether the state is erroneous and why.
-	 */
-	@Override
-	protected Verdict getVerdict(State state) {
-		return super.getVerdict(state);
-	}
-
-	/**
 	 * Derive all possible actions goals that TESTAR can execute in each specific LabRecruits state.
 	 */
 	@Override
@@ -150,21 +107,7 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 	 */
 	@Override
 	protected Action selectAction(State state, Set<Action> actions){
-
-		//Call the preSelectAction method from the AbstractProtocol so that, if necessary,
-		//unwanted processes are killed and SUT is put into foreground.
-		Action retAction = preSelectAction(state, actions);
-		if (retAction== null) {
-			//if no preSelected actions are needed, then implement your own action selection strategy
-			//using the action selector of the state model:
-			retAction = stateModelManager.getAbstractActionToExecute(actions);
-		}
-		if(retAction==null) {
-			System.out.println("State model based action selection did not find an action. Using random action selection.");
-			// if state model fails, use random (default would call preSelectAction() again, causing double actions HTML report):
-			retAction = RandomActionSelector.selectAction(actions);
-		}
-		return retAction;
+		return super.selectAction(state, actions);
 	}
 
 	/**
@@ -192,6 +135,9 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 				double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 				Util.pause(waitTime);
 
+				// Add the Navigable State information in the State model
+				notifyNavigableStateAfterAction(system, action);
+
 				return true;
 			}
 
@@ -213,27 +159,4 @@ public class Protocol_labrecruits_goal_testar_agent extends LabRecruitsProtocol 
 			return false;
 		}
 	}
-
-	/**
-	 * TESTAR uses this method to determine when to stop the generation of actions for the
-	 * current sequence. You can stop deriving more actions after:
-	 * - a specified amount of executed actions, which is specified through the SequenceLength setting, or
-	 * - after a specific time, that is set in the MaxTime setting
-	 * @return  if <code>true</code> continue generation, else stop
-	 */
-	@Override
-	protected boolean moreActions(State state) {
-		// Execute many actions as indicated in SequenceLength setting
-		return super.moreActions(state);
-	}
-
-	/**
-	 * Here you can put graceful shutdown sequence for your SUT
-	 * @param system
-	 */
-	@Override
-	protected void stopSystem(SUT system) {
-		super.stopSystem(system);
-	}
-
 }

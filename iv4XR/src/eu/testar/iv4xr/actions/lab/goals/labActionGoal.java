@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,17 +30,11 @@
 
 package eu.testar.iv4xr.actions.lab.goals;
 
-import org.fruit.alayer.Action;
-import org.fruit.alayer.Role;
-import org.fruit.alayer.SUT;
-import org.fruit.alayer.State;
-import org.fruit.alayer.TaggableBase;
-import org.fruit.alayer.exceptions.ActionFailedException;
-
+import eu.testar.iv4xr.actions.lab.commands.labActionCommand;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
-public class labActionGoal extends TaggableBase implements Action {
+public class labActionGoal extends labActionCommand {
 
 	private static final long serialVersionUID = -3743587033982637698L;
 
@@ -51,30 +45,6 @@ public class labActionGoal extends TaggableBase implements Action {
 
 	public GoalStructure getActionGoal() {
 		return goalStructure;
-	}
-
-	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		// It has been decided to execute this action
-		// Send the instructions to achieve the goal
-
-	}
-
-	@Override
-	public String toShortString() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String toParametersString() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String toString(Role... discardParameters) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

@@ -121,7 +121,7 @@ public class GoalLibListener {
 	public static Goal positionInCloseRange(Vec3 goalPosition) {
 		Goal goal = GoalLib.positionInCloseRange(goalPosition);
 
-		Action executedGoalAction = new labActionGoalPositionInCloseRange(stateTESTAR, system, goal.lift(), goalPosition);
+		Action executedGoalAction = new labActionGoalPositionInCloseRange(stateTESTAR, stateTESTAR, system, goalPosition);
 		goalActionsList.add(executedGoalAction);
 
 		return goal;

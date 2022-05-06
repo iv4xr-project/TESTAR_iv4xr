@@ -34,6 +34,7 @@ import java.util.Set;
 
 import org.fruit.alayer.Action;
 import eu.testar.iv4xr.actions.lab.commands.labActionExplorePosition;
+import eu.testar.iv4xr.actions.lab.goals.labActionGoalPositionInCloseRange;
 import nl.ou.testar.StateModel.AbstractAction;
 import nl.ou.testar.StateModel.AbstractState;
 import nl.ou.testar.StateModel.AbstractStateModel;
@@ -54,7 +55,7 @@ public class ExploreNavigableSpaceSelector extends ImprovedUnvisitedActionSelect
 	@Override
 	public Action selectAction(Set<Action> actions) throws ActionNotFoundException {
 		for(Action a : actions) {
-			if(a instanceof labActionExplorePosition) {
+			if(a instanceof labActionExplorePosition || a instanceof labActionGoalPositionInCloseRange) {
 				System.out.println("ExploreNavigableSpaceSelector selectAction : " + a.toShortString());
 				return a;
 			}

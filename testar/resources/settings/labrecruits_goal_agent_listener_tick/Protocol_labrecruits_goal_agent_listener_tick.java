@@ -246,6 +246,9 @@ public class Protocol_labrecruits_goal_agent_listener_tick extends LabRecruitsPr
 		// Clear Derived Actions List, will be updated next iteration
 		GoalLibListener.clearDerivedGoalAction();
 
+		// Add the Navigable State information in the State model
+		notifyNavigableStateAfterAction(system, agentGoalAction);
+
 		return true;
 	}
 

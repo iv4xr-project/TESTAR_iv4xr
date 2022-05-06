@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -60,6 +60,11 @@ public class labActionCommand extends TaggableBase implements Action {
 		return labRecruitsEnvironment.observe(agentId).position;
 	}
 
+	// This method is to avoid invoking an observation in the listener environment
+	private Vec3 currentAgentPosition(State state) {
+		return state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition);
+	}
+
 	protected void setActionCommandTags(Widget widget, State state, Vec3 targetPosition) {
 		// iv4xr Action Tags
 		this.set(IV4XRtags.iv4xrActionOriginWidgetId, widget.get(Tags.AbstractIDCustom));
@@ -67,7 +72,7 @@ public class labActionCommand extends TaggableBase implements Action {
 		this.set(IV4XRtags.iv4xrActionOriginStateId, state.get(Tags.AbstractIDCustom));
 		this.set(IV4XRtags.iv4xrActionEntityId, widget.get(IV4XRtags.entityId));
 		this.set(IV4XRtags.iv4xrActionEntityIsActive, widget.get(IV4XRtags.labRecruitsEntityIsActive));
-		this.set(IV4XRtags.iv4xrActionOriginPos, currentAgentPosition());
+		this.set(IV4XRtags.iv4xrActionOriginPos, currentAgentPosition(state));
 
 		/**
 		 * TargetPosition is the "intention" of the position movement. 
@@ -77,11 +82,11 @@ public class labActionCommand extends TaggableBase implements Action {
 
 		// Some action like interact command has not agent movement
 		if(targetPosition == null) {
-			this.set(IV4XRtags.iv4xrActionTargetAbsPos, currentAgentPosition());
+			this.set(IV4XRtags.iv4xrActionTargetAbsPos, currentAgentPosition(state));
 			this.set(IV4XRtags.iv4xrActionTargetRelPos, new Vec3(0, 0, 0));
 		} else {
 			this.set(IV4XRtags.iv4xrActionTargetAbsPos, targetPosition);
-			this.set(IV4XRtags.iv4xrActionTargetRelPos, Vec3.sub(targetPosition, currentAgentPosition()));
+			this.set(IV4XRtags.iv4xrActionTargetRelPos, Vec3.sub(targetPosition, currentAgentPosition(state)));
 		}
 
 		setActionManagementTags(this);

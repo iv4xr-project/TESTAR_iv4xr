@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019 - 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2019 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2019 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,59 +28,44 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
-import org.fruit.monkey.Settings;
+import org.testar.action.priorization.iv4xrNavigableState;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import environments.LabRecruitsEnvironment;
 import eu.testar.iv4xr.actions.lab.commands.*;
+import eu.testar.iv4xr.actions.lab.goals.labActionGoal;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.enums.SVec3;
+import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import nl.ou.testar.RandomActionSelector;
-import nl.ou.testar.ReinforcementLearning.ActionSelectors.ReinforcementLearningActionSelector;
-import nl.ou.testar.ReinforcementLearning.Policies.Policy;
-import nl.ou.testar.ReinforcementLearning.Policies.PolicyFactory;
-import nl.ou.testar.StateModel.ActionSelection.ActionSelector;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
  * 
  * In this protocol LabRecruits game will act as SUT.
- * labrecruits_testar_reinforcement_learning / test.setting file contains the:
+ * labrecruits_commands_testar_agent_dummy_explorer / test.setting file contains the:
  * - COMMAND_LINE definition to start the SUT and load the desired level
  * - State model inference settings to connect and create the State Model inside OrientDB
  * 
  * TESTAR is the Agent itself, derives is own knowledge about the observed entities,
  * and takes decisions about the command actions to execute (observe, moveTo, interactWith)
  * 
- * This protocol is using TESTAR Reinforcement Learning framework
+ * TESTAR uses the Navigation map internally to select a visible node and explore this LabRecruits level.
+ * This level (test.settings -> buttons_doors_1) has block elements,
+ * We need to explore different paths to surround the elements that block us.
  * 
  * Widget              -> Virtual Entity
  * State (Widget-Tree) -> Agent Observation (All Observed Entities)
- * Action              -> LabRecruits goal or command
+ * Action              -> LabRecruits low level command
  */
-public class Protocol_labrecruits_testar_reinforcement_learning extends LabRecruitsProtocol {
-	private ActionSelector actionSelector = null;
-	private Policy policy = null;
-
-	/**
-	 * Called once during the life time of TESTAR.
-	 * This method can be used to perform initial setup work.
-	 * @param   settings  the current TESTAR test.settings as specified by the user.
-	 */
-	@Override
-	protected void initialize(Settings settings) {
-		//Create Abstract Model with Reinforcement Learning Implementation
-		settings.set(ConfigTags.StateModelReinforcementLearningEnabled, true);
-
-		policy = PolicyFactory.getPolicy(settings);
-		actionSelector = new ReinforcementLearningActionSelector(policy);
-		super.initialize(settings);
-	}
+public class Protocol_labrecruits_navigational_goal_explorer extends LabRecruitsProtocol {
 
 	/**
 	 * Derive all possible actions that TESTAR can execute in each specific LabRecruits state.
@@ -89,43 +74,79 @@ public class Protocol_labrecruits_testar_reinforcement_learning extends LabRecru
 	protected Set<Action> deriveActions(SUT system, State state) {
 		Set<Action> labActions = new HashSet<>();
 
-		// Get the Observation of the State form the Agent point of view
+		// Get the LabRecruitsEnvironment
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
 
-		// Add Dummy Exploration Actions
-		labActions.add(new labActionExploreNorth(state, state, labRecruitsEnv, agentId, false, false));
-		labActions.add(new labActionExploreSouth(state, state, labRecruitsEnv, agentId, false, false));
-		labActions.add(new labActionExploreEast(state, state, labRecruitsEnv, agentId, false, false));
-		labActions.add(new labActionExploreWest(state, state, labRecruitsEnv, agentId, false, false));
-
-		// For every interactive entity agents have the possibility to move and interact with
-		for(Widget w : state) {
-			// TESTAR can try to move towards it
-			labActions.add(new labActionCommandMove(w, state, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
-			// If TESTAR sees an Interactive Entity
-			if(isInteractiveEntity(w)) {
-				// try to move and interact with
-				labActions.add(new labActionCommandMoveInteract(w, state, labRecruitsEnv, agentId, w.get(IV4XRtags.entityPosition), false, false, false));
-				// If TESTAR is in a suitable distance
-				if(isAgentCloseToEntity(system, w, 1.0)) {
-					// TESTAR can try only to interact
-					labActions.add(new labActionCommandInteract(w, state, labRecruitsEnv, agentId, false, false));
-				}
-			}
-		}
+		// NavMesh Exploration : Add one exploration movement for each visible node
+		labActions = exploreGoalNodePositions(labActions, state, system);
 
 		return labActions;
 	}
 
 	/**
-	 * Select one of the available actions using an action selection algorithm (for example random action selection)
-	 *
-	 * @param state the SUT's current state
-	 * @param actions the set of derived actions
-	 * @return  the selected action (non-null!)
+	 * Determine if the iv4xr Widget Entity is Interactive.
 	 */
 	@Override
-	protected Action selectAction(State state, Set<Action> actions){
-		return super.selectAction(state, actions);
+	protected boolean isInteractiveEntity(Widget widget) {
+		return (widget.get(IV4XRtags.entityType, null) != null &&
+				widget.get(IV4XRtags.entityType, null).toString().equals("Switch"));
+	}
+
+	/**
+	 * Execute TESTAR as agent Goal Action
+	 */
+	@Override
+	protected boolean executeAction(SUT system, State state, Action action){
+		try {
+			// adding the action that is going to be executed into HTML report:
+			htmlReport.addSelectedAction(state, action);
+
+			// From selected action extract the Goal and set to the Agent
+			LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
+			if(action instanceof labActionGoal) {
+				testAgent.setGoal(((labActionGoal) action).getActionGoal());
+			} else {
+				// execute selected action in the current state
+				action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
+
+				double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
+				Util.pause(waitTime);
+
+				// TODO: Implement for GoalActions
+				notifyNavigableStateAfterAction(system, action);
+
+				return true;
+			}
+
+			/**
+			 * We are going to execute the Action-Goal completely (solved or stopped)
+			 * At the end of this Action-Goal execution Agent may have moved long distances
+			 */
+			while(testAgent.isGoalInProgress() && !hazardousEntityFound()) {
+				testAgent.update();
+			}
+
+			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
+			Util.pause(waitTime);
+
+			// TODO: Implement for GoalActions
+			notifyNavigableStateAfterAction(system, action);
+
+			return true;
+
+		} catch(ActionFailedException afe){
+			return false;
+		}
+	}
+
+	private Widget getEntityWidgetFromState(SUT system, String entityId) {
+		Util.pause(2);
+		// User super getState to avoid navigableState conflicts
+		for(Widget w : super.getState(system)) {
+			if(w.get(IV4XRtags.entityId, "").equals(entityId)) {
+				return w;
+			}
+		}
+		return null;
 	}
 }
