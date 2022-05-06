@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,67 +28,48 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package org.testar.action.priorization;
+package eu.testar.iv4xr.actions.lab.goals;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import static nl.uu.cs.aplib.AplibEDSL.SEQ;
+import static nl.uu.cs.aplib.AplibEDSL.SUCCESS;
 
-import org.fruit.Pair;
+import org.fruit.alayer.SUT;
+import org.fruit.alayer.Tags;
+import org.fruit.alayer.Widget;
 
-import eu.testar.iv4xr.enums.SVec3;
+import agents.tactics.GoalLib;
+import eu.testar.iv4xr.actions.iv4xrActionRoles;
+import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 
-public class iv4xrNavigableState {
+public class labActionGoalReachInteractEntity extends labActionGoal {
 
-	private String executedAction;
-	private Set<SVec3> navigableNodes;
-	private Set<Pair<String, Boolean>> reachableEntities;
+	private static final long serialVersionUID = -7438624568365334647L;
 
-	public iv4xrNavigableState(String executedAction) {
-		this.executedAction = executedAction;
-		this.navigableNodes = new HashSet<>();
-		this.reachableEntities = new HashSet<>();
+	public String getEntityId() {
+		return entityId;
 	}
 
-	public String getExecutedAction() {
-		return executedAction;
-	}
+	public labActionGoalReachInteractEntity(Widget w, SUT system) {
+		this.set(Tags.OriginWidget, w);
+		this.entityId = w.get(IV4XRtags.entityId);
+		// Composed goal to navigate to the entity and interact with it
+		this.goalStructure = SEQ(GoalLib.entityInCloseRange(entityId), GoalLib.entityInteracted(entityId), SUCCESS());
+		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionGoalReachInteractEntity);
+		this.set(IV4XRtags.agentAction, false);
+		this.set(IV4XRtags.newActionByAgent, false);
 
-	public Set<SVec3> getNavigableNodes() {
-		return navigableNodes;
-	}
+		// Set the goal to the agent
+		agentTESTAR = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
+		this.agentId = agentTESTAR.getId();
+		this.set(Tags.Desc, toShortString());
 
-	public Set<Pair<String, Boolean>> getReachableEntities() {
-		if(!reachableEntities.isEmpty()) return reachableEntities;
-		return new HashSet<>(Arrays.asList(new Pair<String, Boolean>("None", false)));
-	}
-
-	public void addNavigableNode(Set<SVec3> nodesPositions) {
-		for(SVec3 nodePosition : nodesPositions) {
-			this.navigableNodes.add(nodePosition);
-		}
-	}
-
-	public void addReachableEntity(String entityId, boolean entityIsActive) {
-		this.reachableEntities.add(new Pair<String, Boolean>(entityId, entityIsActive));
+		agentTESTAR.setGoal(goalStructure);
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		if(!(o instanceof iv4xrNavigableState)) {
-			return false;
-		}
-		if(!((iv4xrNavigableState) o).getExecutedAction().equals(this.executedAction)) {
-			return false;
-		}
-		if(!((iv4xrNavigableState) o).getNavigableNodes().equals(this.navigableNodes)) {
-			return false;
-		}
-		if(!((iv4xrNavigableState) o).getReachableEntities().equals(this.reachableEntities)) {
-			return false;
-		}
-
-		return true;
+	public String toShortString() {
+		return "Agent: " + agentId + " executing Goal ReachInteractEntity to " + entityId;
 	}
 
 }

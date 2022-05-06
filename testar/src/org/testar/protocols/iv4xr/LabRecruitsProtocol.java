@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019 - 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2019 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2019 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -61,8 +61,6 @@ import org.fruit.alayer.windows.GDIScreenCanvas;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
-import org.testar.action.priorization.iv4xrNavigableState;
-import org.testar.action.priorization.iv4xrNavigableStateMap;
 import org.testar.protocols.GenericUtilsProtocol;
 import org.testar.visualization.iv4xr.Iv4xrLabRecruitsVisualization;
 
@@ -76,6 +74,7 @@ import eu.testar.iv4xr.actions.lab.commands.labActionCommandInteract;
 import eu.testar.iv4xr.actions.lab.commands.labActionCommandMoveInteract;
 import eu.testar.iv4xr.actions.lab.commands.labActionExplorePosition;
 import eu.testar.iv4xr.actions.lab.goals.labActionGoalPositionInCloseRange;
+import eu.testar.iv4xr.actions.lab.goals.labActionGoalReachInteractEntity;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
@@ -421,6 +420,7 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 			String interactedEntity = "Unknown";
 			if(action instanceof labActionCommandMoveInteract) interactedEntity = ((labActionCommandMoveInteract) action).getEntityId();
 			else if(action instanceof labActionCommandInteract) interactedEntity = ((labActionCommandInteract) action).getEntityId();
+			else if(action instanceof labActionGoalReachInteractEntity) interactedEntity = ((labActionGoalReachInteractEntity) action).getEntityId();
 
 			String beforeIsActive = action.get(Tags.OriginWidget).get(IV4XRtags.labRecruitsEntityIsActive).toString();
 			String afterIsActive = "Unknown";

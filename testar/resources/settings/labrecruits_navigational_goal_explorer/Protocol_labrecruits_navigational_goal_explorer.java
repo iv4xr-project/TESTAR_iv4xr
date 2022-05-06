@@ -28,23 +28,19 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
-import org.testar.action.priorization.iv4xrNavigableState;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import environments.LabRecruitsEnvironment;
-import eu.testar.iv4xr.actions.lab.commands.*;
 import eu.testar.iv4xr.actions.lab.goals.labActionGoal;
+import eu.testar.iv4xr.actions.lab.goals.labActionGoalReachInteractEntity;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.testar.iv4xr.enums.SVec3;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
-import nl.ou.testar.RandomActionSelector;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
@@ -80,6 +76,14 @@ public class Protocol_labrecruits_navigational_goal_explorer extends LabRecruits
 		// NavMesh Exploration : Add one exploration movement for each visible node
 		labActions = exploreGoalNodePositions(labActions, state, system);
 
+		// For every interactive entity agents have the possibility to achieve Interact and Close Range goals
+		for(Widget w : state) {
+			if(isInteractiveEntity(w)) {
+				Action actionNavigateEntity = new labActionGoalReachInteractEntity(w, system);
+				labActions.add(actionNavigateEntity);
+			}
+		}
+
 		return labActions;
 	}
 
@@ -112,7 +116,6 @@ public class Protocol_labrecruits_navigational_goal_explorer extends LabRecruits
 				double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 				Util.pause(waitTime);
 
-				// TODO: Implement for GoalActions
 				notifyNavigableStateAfterAction(system, action);
 
 				return true;
@@ -129,7 +132,6 @@ public class Protocol_labrecruits_navigational_goal_explorer extends LabRecruits
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
 
-			// TODO: Implement for GoalActions
 			notifyNavigableStateAfterAction(system, action);
 
 			return true;
@@ -137,16 +139,5 @@ public class Protocol_labrecruits_navigational_goal_explorer extends LabRecruits
 		} catch(ActionFailedException afe){
 			return false;
 		}
-	}
-
-	private Widget getEntityWidgetFromState(SUT system, String entityId) {
-		Util.pause(2);
-		// User super getState to avoid navigableState conflicts
-		for(Widget w : super.getState(system)) {
-			if(w.get(IV4XRtags.entityId, "").equals(entityId)) {
-				return w;
-			}
-		}
-		return null;
 	}
 }

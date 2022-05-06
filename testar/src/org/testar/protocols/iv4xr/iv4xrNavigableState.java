@@ -28,43 +28,67 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package org.testar.action.priorization;
+package org.testar.protocols.iv4xr;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.fruit.alayer.Action;
-import org.fruit.alayer.Tags;
+import org.fruit.Pair;
 
-import eu.testar.iv4xr.actions.lab.commands.labActionExplorePosition;
+import eu.testar.iv4xr.enums.SVec3;
 
-public class iv4xrExplorationPrioritization {
+public class iv4xrNavigableState {
 
-	private static Set<String> executedActions = new HashSet<>();
+	private String executedAction;
+	private Set<SVec3> navigableNodes;
+	private Set<Pair<String, Boolean>> reachableEntities;
 
-	/**
-	 * Based on a set of available actions, 
-	 * return all labActionExplorePosition existing actions. 
-	 * 
-	 * @param originalActions
-	 * @return exploratoryActions if exists
-	 */
-	public static Set<Action> getUnvisitedExploratoryActions(Set<Action> originalActions) {
-		Set<Action> exploratoryActions = new HashSet<>();
-		for(Action a : originalActions) {
-			if(a instanceof labActionExplorePosition && !executedActions.contains(a.get(Tags.AbstractIDCustom))) {
-				exploratoryActions.add(a);
-			}
+	public iv4xrNavigableState(String executedAction) {
+		this.executedAction = executedAction;
+		this.navigableNodes = new HashSet<>();
+		this.reachableEntities = new HashSet<>();
+	}
+
+	public String getExecutedAction() {
+		return executedAction;
+	}
+
+	public Set<SVec3> getNavigableNodes() {
+		return navigableNodes;
+	}
+
+	public Set<Pair<String, Boolean>> getReachableEntities() {
+		if(!reachableEntities.isEmpty()) return reachableEntities;
+		return new HashSet<>(Arrays.asList(new Pair<String, Boolean>("None", false)));
+	}
+
+	public void addNavigableNode(Set<SVec3> nodesPositions) {
+		for(SVec3 nodePosition : nodesPositions) {
+			this.navigableNodes.add(nodePosition);
 		}
-		return !exploratoryActions.isEmpty() ? exploratoryActions : null;
 	}
 
-	public static void addExecutedExploratoryAction(Action action) {
-		executedActions.add(action.get(Tags.AbstractIDCustom));
+	public void addReachableEntity(String entityId, boolean entityIsActive) {
+		this.reachableEntities.add(new Pair<String, Boolean>(entityId, entityIsActive));
 	}
 
-	public static void clearExecutedExploratoryActionsList() {
-		executedActions.clear();
+	@Override
+	public boolean equals(Object o) {
+		if(!(o instanceof iv4xrNavigableState)) {
+			return false;
+		}
+		if(!((iv4xrNavigableState) o).getExecutedAction().equals(this.executedAction)) {
+			return false;
+		}
+		if(!((iv4xrNavigableState) o).getNavigableNodes().equals(this.navigableNodes)) {
+			return false;
+		}
+		if(!((iv4xrNavigableState) o).getReachableEntities().equals(this.reachableEntities)) {
+			return false;
+		}
+
+		return true;
 	}
 
 }

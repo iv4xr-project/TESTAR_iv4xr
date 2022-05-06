@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019 - 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2019 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2019 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -28,22 +28,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import org.fruit.Util;
 import org.fruit.alayer.*;
-import org.fruit.alayer.exceptions.ActionFailedException;
-import org.fruit.monkey.ConfigTags;
-import org.testar.action.priorization.iv4xrNavigableState;
-import org.testar.action.priorization.iv4xrNavigableStateMap;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
-
 import environments.LabRecruitsEnvironment;
 import eu.testar.iv4xr.actions.lab.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.testar.iv4xr.enums.SVec3;
-import nl.ou.testar.RandomActionSelector;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo

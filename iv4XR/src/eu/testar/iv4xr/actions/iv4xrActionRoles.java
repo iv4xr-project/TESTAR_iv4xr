@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 - 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -54,6 +54,7 @@ public class iv4xrActionRoles {
 	iv4xrActionGoalPositionInCloseRange = Role.from("iv4xrActionGoalPositionInCloseRange", iv4xrActionGoal),
 	iv4xrActionGoalPositionsVisited = Role.from("iv4xrActionGoalPositionsVisited", iv4xrActionGoal),
 	iv4xrActionGoalEntityInCloseRange = Role.from("iv4xrActionGoalEntityInCloseRange", iv4xrActionGoal),
+	iv4xrActionGoalReachInteractEntity = Role.from("iv4xrActionGoalReachInteractEntity", iv4xrActionGoal),
 	iv4xrActionGoalEntityInteracted = Role.from("iv4xrActionGoalEntityInteracted", iv4xrActionGoal),
 	iv4xrActionGoalEntityStateRefreshed = Role.from("iv4xrActionGoalEntityStateRefreshed", iv4xrActionGoal),
 	iv4xrActionGoalEntityInspected = Role.from("iv4xrActionGoalEntityInspected", iv4xrActionGoal),

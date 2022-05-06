@@ -28,7 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-package org.testar.action.priorization;
+package org.testar.protocols.iv4xr;
 
 import java.util.ArrayList;
 
