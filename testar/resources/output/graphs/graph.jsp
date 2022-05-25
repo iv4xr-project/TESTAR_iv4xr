@@ -671,6 +671,27 @@
 
             contentPanelHeader.appendChild(traceButton);
         }
+		
+		// for navigable states, we offer a button that will open the navigational heat map
+        if (targetNode.hasClass("NavigableState")) {
+            let heatMapForm = document.createElement("form");
+
+            localStorage.setItem('navigableNodes', targetNode.data('navigableNodes'));
+
+            heatMapForm.method = "POST";
+            heatMapForm.action = "leaflet.html";
+            heatMapForm.target = "_blank";
+            contentPanel.appendChild(heatMapForm);
+
+            let heatMapButton = document.createElement("button");
+            heatMapButton.id = "heat-map-button";
+            heatMapButton.classList.add("skip");
+            heatMapButton.appendChild(document.createTextNode("Heat Map"));
+            heatMapButton.addEventListener("click", () => {
+				heatMapForm.submit();
+            });
+            contentPanelHeader.appendChild(heatMapButton);
+        }
 
         //////////////// end add button section //////////////////
 
