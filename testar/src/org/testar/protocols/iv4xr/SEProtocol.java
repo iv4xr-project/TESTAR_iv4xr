@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -58,6 +58,7 @@ import org.fruit.alayer.Tags;
 import org.fruit.alayer.Verdict;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionBuildException;
+import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.alayer.exceptions.StateBuildException;
 import org.fruit.alayer.windows.GDIScreenCanvas;
 import org.fruit.monkey.ConfigTags;
@@ -258,20 +259,26 @@ public class SEProtocol extends GenericUtilsProtocol {
 	}
 
 	/**
-	 * Select one of the available actions (e.g. at random)
+	 * Select one of the available actions using an action selection algorithm (for example random action selection)
+	 *
 	 * @param state the SUT's current state
 	 * @param actions the set of derived actions
-	 * @return  the selected action (non-null!)
+	 * @return the selected action (non-null!)
 	 */
 	@Override
-	protected Action selectAction(State state, Set<Action> actions){
-		//Call the preSelectAction method from the DefaultProtocol so that, if necessary,
+	protected Action selectAction(State state, Set<Action> originalActions){
+		//Call the preSelectAction method from the AbstractProtocol so that, if necessary,
 		//unwanted processes are killed and SUT is put into foreground.
-		Action retAction = preSelectAction(state, actions);
-		if (retAction == null) {
-			//if no preSelected actions are needed, then implement your own strategy
-			retAction = RandomActionSelector.selectAction(actions);
+		Action retAction = preSelectAction(state, originalActions);
+		if(retAction == null) {
+			//using the action selector of the state model:
+			retAction = stateModelManager.getAbstractActionToExecute(originalActions);
 		}
+		if(retAction == null) {
+			System.out.println("State model based action selection did not find an action. Using random action selection.");
+			retAction = RandomActionSelector.selectAction(originalActions);
+		}
+
 		return retAction;
 	}
 
@@ -284,9 +291,22 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
-		// adding the action that is going to be executed into HTML report:
-		htmlReport.addSelectedAction(state, action);
-		return super.executeAction(system, state, action);
+		try {
+			// adding the action that is going to be executed into HTML report:
+			htmlReport.addSelectedAction(state, action);
+
+			System.out.println(action.toShortString());
+			// execute selected action in the current state
+			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
+
+			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
+			Util.pause(waitTime);
+
+			return true;
+
+		}catch(ActionFailedException afe){
+			return false;
+		}
 	}
 
 	/**

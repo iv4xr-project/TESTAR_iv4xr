@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,16 +30,12 @@
 
 import java.util.HashSet;
 import java.util.Set;
-import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.actions.CompoundAction;
-import org.fruit.alayer.exceptions.ActionFailedException;
-import org.fruit.monkey.ConfigTags;
 import org.testar.protocols.iv4xr.SEProtocol;
 
 import eu.testar.iv4xr.actions.se.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import nl.ou.testar.RandomActionSelector;
 import spaceEngineers.model.Vec2F;
 
 /**
@@ -113,52 +109,4 @@ public class Protocol_se_commands_testar_teleport extends SEProtocol {
 		return labActions;
 	}
 
-	/**
-	 * Select one of the available actions using an action selection algorithm (for example random action selection)
-	 *
-	 * @param state the SUT's current state
-	 * @param actions the set of derived actions
-	 * @return  the selected action (non-null!)
-	 */
-	@Override
-	protected Action selectAction(State state, Set<Action> actions){
-
-		//Call the preSelectAction method from the AbstractProtocol so that, if necessary,
-		//unwanted processes are killed and SUT is put into foreground.
-		Action retAction = preSelectAction(state, actions);
-		if (retAction== null) {
-			//if no preSelected actions are needed, then implement your own action selection strategy
-			//using the action selector of the state model:
-			retAction = stateModelManager.getAbstractActionToExecute(actions);
-		}
-		if(retAction==null) {
-			System.out.println("State model based action selection did not find an action. Using default action selection.");
-			// if state model fails, use default:
-			retAction = RandomActionSelector.selectAction(actions);
-		}
-		return retAction;
-	}
-
-	/**
-	 * Execute TESTAR as agent command Action
-	 */
-	@Override
-	protected boolean executeAction(SUT system, State state, Action action){
-		try {
-			// adding the action that is going to be executed into HTML report:
-			htmlReport.addSelectedAction(state, action);
-
-			System.out.println(action.toShortString());
-			// execute selected action in the current state
-			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
-
-			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
-			Util.pause(waitTime);
-
-			return true;
-
-		}catch(ActionFailedException afe){
-			return false;
-		}
-	}
 }
