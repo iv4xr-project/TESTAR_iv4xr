@@ -677,6 +677,7 @@
             let heatMapForm = document.createElement("form");
 
             localStorage.setItem('navigableNodes', targetNode.data('navigableNodes'));
+            localStorage.setItem('unexecutedExploratoryActions', targetNode.data('unexecutedExploratoryActions'));
 
             heatMapForm.method = "POST";
             heatMapForm.action = "leaflet.html";
