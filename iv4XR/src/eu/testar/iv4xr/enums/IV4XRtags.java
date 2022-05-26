@@ -107,6 +107,8 @@ public class IV4XRtags extends TagsBase {
 	// The center position of WOM Entity
 	public static final Tag<Vec3> entityPosition = from("entityPosition", Vec3.class);
 	public static final Tag<String> entityPositionRepresentation = from("entityPositionRepresentation", String.class);
+	// A position close to the entity that allows to interact with it
+	public static final Tag<Vec3> reachablePosition = from("reachablePosition", Vec3.class);
 
 	// Bounds box of WOM Entity
 	public static final Tag<Vec3> entityBounds = from("entityBounds", Vec3.class);

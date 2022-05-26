@@ -28,4 +28,6 @@ public interface StateModelManager {
     void notifyTestSequenceInterruptedBySystem(String message);
     
     void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<Pair<String, Boolean>> reachableEntities, String actionDescription, String abstractAction);
+
+    void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<SVec3> unexploredNodes, Set<Pair<String, Boolean>> reachableEntities, String actionDescription, String abstractAction);
 }

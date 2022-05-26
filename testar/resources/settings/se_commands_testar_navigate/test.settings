@@ -22,8 +22,8 @@ Mode = Spy
 # SUTCONNECTOR = SUT_PROCESS_NAME: SUTConnectorValue property must be the process name of the SUT.
 # The SUT must be manually started and closed.
 #################################################################
-SUTConnector = COMMAND_LINE
-SUTConnectorValue = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\SpaceEngineers\\Bin64\\SpaceEngineers.exe" "suts/se_levels/simple-place-grind-torch"
+SUTConnector = SUT_PROCESS_NAME
+SUTConnectorValue = SpaceEngineers.exe
 
 #################################################################
 # Sequences
@@ -32,7 +32,7 @@ SUTConnectorValue = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\SpaceEng
 #################################################################
 
 Sequences = 1
-SequenceLength = 100
+SequenceLength = 10
 
 #################################################################
 # Oracles based on suspicious titles
@@ -95,18 +95,10 @@ SUTProcesses =
 
 ProtocolClass = se_commands_testar_navigate/Protocol_se_commands_testar_navigate
 
-#################################################################
-# Graphdatabase settings (experimental)
-#################################################################
-GraphDBEnabled = true
-GraphDBUrl = remote:/localhost/testar
-GraphDBUser = testar
-GraphDBPassword = testar
-
 #################################################################\n"
 # State model inference settings
 #################################################################\n"
-StateModelEnabled = true
+StateModelEnabled = false
 DataStore = OrientDB
 DataStoreType = remote
 DataStoreServer = localhost

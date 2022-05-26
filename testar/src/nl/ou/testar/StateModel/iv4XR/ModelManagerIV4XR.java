@@ -33,6 +33,7 @@ package nl.ou.testar.StateModel.iv4XR;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -258,7 +259,6 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
     	NavigableAction executedNavigableAction = new NavigableAction(abstractAction, executedNavigableActionDescription, navigableState.getId());
     	executedNavigableAction.setModelIdentifier(abstractStateModel.getModelIdentifier());
 
-    	//System.out.println("ModelManagerIV4XR notifyNewNavigableState clear actions lists");
     	// and reset for the next exploration iteration
     	descriptionUnexecutedExploratoryActions.clear();
     	actionExploreUnexecuted.clear();
@@ -274,6 +274,20 @@ public class ModelManagerIV4XR extends ModelManager implements StateModelManager
 
     	previousNavigableState = navigableState;
     	previousNavigableAction = executedNavigableAction;
+    }
+
+    @Override
+    public void notifyNewNavigableState(Set<SVec3> navigableNodes, Set<SVec3> unexploredNodes, Set<Pair<String, Boolean>> reachableEntities, String actionDescription, String abstractAction) {
+    	// Space Engineers
+    	// If the descriptionUnexecutedExploratoryActions is Empty, add the unexecuted actions with the specific indicated unexplored nodes
+    	if(descriptionUnexecutedExploratoryActions.isEmpty()) {
+    		for(SVec3 node : unexploredNodes) {
+    			// TODO: Space Engineers use seGoalExplorePosition identifier
+    			descriptionUnexecutedExploratoryActions.put("TEMP"+String.valueOf(Objects.hash(node)), node);
+    		}
+    	}
+    	// Then invoke notifyNewNavigableState to create and persist the navigableState
+    	notifyNewNavigableState(navigableNodes, reachableEntities, actionDescription, abstractAction);
     }
 
     /**
