@@ -673,6 +673,7 @@
         }
 		
 		// for navigable states, we offer a button that will open the navigational heat map
+		// Single Heat Map for current Navigable State
         if (targetNode.hasClass("NavigableState")) {
             let heatMapForm = document.createElement("form");
 
@@ -692,6 +693,70 @@
 				heatMapForm.submit();
             });
             contentPanelHeader.appendChild(heatMapButton);
+        }
+
+		// Heat Map that contains info of all existing Navigable States
+        if (targetNode.hasClass("NavigableState")) {
+			let completeHeatMapForm = document.createElement("form");
+
+            completeHeatMapForm.method = "POST";
+            completeHeatMapForm.action = "leaflet.html";
+            completeHeatMapForm.target = "_blank";
+            contentPanel.appendChild(completeHeatMapForm);
+
+            let completeHeatMapButton = document.createElement("button");
+            completeHeatMapButton.id = "complete-heat-map-button";
+            completeHeatMapButton.classList.add("skip");
+            completeHeatMapButton.appendChild(document.createTextNode("Complete HeatMap"));
+            completeHeatMapButton.addEventListener("click", () => {
+				// Extract the navigable nodes info from all existing Navigable states
+				var selectedNodes = cy.$('.NavigableState');
+				// Prepare an array to save all the positions
+				const allPositionArray = [];
+				const allUnexploredPositionArray = [];
+
+				for( var i = 0; i < selectedNodes.length; i++ ){
+					/**
+					* First, the navigable positions
+					**/
+					var navigableNodesPosition = selectedNodes[i].data('navigableNodes');
+					// Remove non desired character from the string
+					navigableNodesPosition = navigableNodesPosition.replace('[','').replace(']','').replaceAll(' ','');
+					// Transform the string into an array
+					navigableNodesPosition = navigableNodesPosition.replaceAll('>,','>,,');
+					const navigableNodesPositionArray = navigableNodesPosition.split(",,");
+					// Add non existing navigable positions to the general array
+					navigableNodesPositionArray.forEach((pos, i) => {
+						if (allPositionArray.indexOf(pos) === -1){
+							allPositionArray.push(pos);
+						}
+					});
+
+					/**
+					* Second, the unexplored positions
+					**/
+					var unexploredPosition = selectedNodes[i].data('unexecutedExploratoryActions');
+					// Remove non desired character from the string
+					unexploredPosition = unexploredPosition.replace('[','').replace(']','').replaceAll(' ','');
+					// Transform the string into an array
+					unexploredPosition = unexploredPosition.replaceAll('),','),,');
+					const unexploredPositionArray = unexploredPosition.split(",,");
+					// Add unexplored navigable positions to the general array
+					unexploredPositionArray.forEach((pos, i) => {
+						// Do not add empty unexplored positions
+						if (!unexploredPositionArray.includes("(empty,<0.0,0.0,0.0>)")
+						&& allUnexploredPositionArray.indexOf(pos) === -1){
+							allUnexploredPositionArray.push(pos);
+						}
+					});
+				}
+
+				localStorage.setItem('navigableNodes', allPositionArray.toString());
+				localStorage.setItem('unexecutedExploratoryActions', allUnexploredPositionArray.toString());
+
+				completeHeatMapForm.submit();
+            });
+            contentPanelHeader.appendChild(completeHeatMapButton);
         }
 
         //////////////// end add button section //////////////////
