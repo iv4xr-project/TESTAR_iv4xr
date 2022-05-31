@@ -86,6 +86,10 @@ https://s3.us-east-2.amazonaws.com/orientdb3/releases/3.0.34/orientdb-3.0.34.zip
 
 ``Warning: Since August 2020 there is version 3.1.X of OrientDB, however TESTAR currently requires the use of versions 3.0.X``
 
+### TESTAR remote connection issue
+
+Due to an issue with the remote connection to OrientDB (https://github.com/iv4xr-project/TESTAR_iv4xr/issues/1), it is necessary to use the **plocal** connection to infer the State Model.
+
 ### Install and configure OrientDB Server
 In order to use the State Model feature it's advised to install a graph database on your machine or in a remote server.
 
