@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -40,33 +40,24 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.testar.iv4xr.enums.SVec3;
 import eu.testar.iv4xr.se.SeAgentTESTAR;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import nl.uu.cs.aplib.utils.Pair;
-import spaceEngineers.model.Vec2F;
-import spaceEngineers.model.Vec3F;
 import uuspaceagent.UUTacticLib;
 
-public class seActionNavigateToBlock extends seActionGoal {
-	private static final long serialVersionUID = 1846118675335766867L;
+public class seActionExplorePosition extends seActionGoal {
+	private static final long serialVersionUID = -5843747535124644882L;
 
-	protected String widgetType;
-	protected String widgetId;
-	protected eu.iv4xr.framework.spatial.Vec3 widgetPosition;
-	protected Vec3F targetPosition;
-	protected Vec3 calculatedReachablePosition;
-	protected final float DEGREES = 2416f;
+	protected Vec3 targetPosition;
 
-	public seActionNavigateToBlock(Widget w, Vec3 reachablePosition, SUT system, String agentId){
+	public Vec3 getTargetPosition() {
+		return targetPosition;
+	}
+
+	public seActionExplorePosition(Widget w, Vec3 position, SUT system, String agentId){
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
-		this.widgetType = w.get(IV4XRtags.entityType);
-		this.widgetId = w.get(IV4XRtags.entityId);
-		this.widgetPosition = w.get(IV4XRtags.entityPosition);
-		this.targetPosition = SVec3.labToSE(w.get(IV4XRtags.entityPosition));
-		// Save the reachable position calculated by a pathfinding algorithm
-		this.calculatedReachablePosition = reachablePosition;
+		this.targetPosition = position;
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
 		this.set(Tags.Desc, toShortString());
 		// TODO: Update with Goal Solving agents
@@ -79,8 +70,7 @@ public class seActionNavigateToBlock extends seActionGoal {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		navigateToReachableBlockPosition(system);
-		rotateToBlockDestination(system);
+		navigateToReachablePosition();
 	}
 
 	/**
@@ -88,7 +78,7 @@ public class seActionNavigateToBlock extends seActionGoal {
 	 * 
 	 * @param system
 	 */
-	protected void navigateToReachableBlockPosition(SUT system) {
+	protected void navigateToReachablePosition() {
 		stateGrid.updateState(agentId);
 
 		/**
@@ -96,15 +86,15 @@ public class seActionNavigateToBlock extends seActionGoal {
 		 */
 		float THRESHOLD_SQUARED_DEVIATED_DISTANCE_TO_SQUARE = 2f;
 
-		var sqDestination = stateGrid.navgrid.gridProjectedLocation(calculatedReachablePosition);
+		var sqDestination = stateGrid.navgrid.gridProjectedLocation(targetPosition);
 		var centerOfSqDestination = stateGrid.navgrid.getSquareCenterLocation(sqDestination);
 
-		GoalStructure G = nl.uu.cs.aplib.AplibEDSL.goal("navigate to position: " + calculatedReachablePosition)
+		GoalStructure G = nl.uu.cs.aplib.AplibEDSL.goal("explore position: " + targetPosition)
 				.toSolve((Pair<Vec3,Vec3> positionAndOrientation) -> {
 					var pos = positionAndOrientation.fst;
 					return Vec3.sub(centerOfSqDestination,pos).lengthSq() <= THRESHOLD_SQUARED_DEVIATED_DISTANCE_TO_SQUARE;
 				})
-				.withTactic(UUTacticLib.navigateToTAC(calculatedReachablePosition))
+				.withTactic(UUTacticLib.navigateToTAC(targetPosition))
 				.lift();
 
 		testAgent.setGoal(G);
@@ -117,53 +107,9 @@ public class seActionNavigateToBlock extends seActionGoal {
 		}
 	}
 
-	/**
-	 * Rotate tick by tick until the agent aims the block destination. 
-	 * Based on: https://github.com/iv4xr-project/iv4xr-se-plugin/blob/uubranch3D/JvmClient/src/jvmMain/java/uuspaceagent/UUTacticLib.java#L160
-	 * 
-	 * @param system
-	 */
-	protected void rotateToBlockDestination(SUT system) {
-		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
-		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
-		spaceEngineers.controller.Observer seObserver = seController.getObserver();
-
-		eu.iv4xr.framework.spatial.Vec3 agentPosition = SVec3.seToLab(seObserver.observe().getPosition());
-		eu.iv4xr.framework.spatial.Vec3 entityPosition = SVec3.seToLab(targetPosition);
-		eu.iv4xr.framework.spatial.Vec3 directionToGo = eu.iv4xr.framework.spatial.Vec3.sub(agentPosition, entityPosition);
-		eu.iv4xr.framework.spatial.Vec3 agentOrientation = SVec3.seToLab(seObserver.observe().getOrientationForward());
-
-		directionToGo.y = 0;
-		agentOrientation.y = 0;
-
-		directionToGo = directionToGo.normalized();
-		agentOrientation = agentOrientation.normalized();
-
-		float cos_alpha = eu.iv4xr.framework.spatial.Vec3.dot(agentOrientation, directionToGo);
-
-		while(cos_alpha > -0.99f) {
-			// rotate faster until the aiming is close
-			if(cos_alpha > -0.95f) {seCharacter.moveAndRotate(new Vec3F(0,0,0),  new Vec2F(0, DEGREES*0.007f), 0f, 1);}
-			else {seCharacter.moveAndRotate(new Vec3F(0,0,0), Vec2F.Companion.getROTATE_RIGHT(), 0f, 1);}
-
-			agentPosition = SVec3.seToLab(seObserver.observe().getPosition());
-			entityPosition = SVec3.seToLab(targetPosition);
-			directionToGo = eu.iv4xr.framework.spatial.Vec3.sub(agentPosition, entityPosition);
-			agentOrientation = SVec3.seToLab(seObserver.observe().getOrientationForward());
-
-			directionToGo.y = 0;
-			agentOrientation.y = 0;
-
-			directionToGo = directionToGo.normalized();
-			agentOrientation = agentOrientation.normalized();
-
-			cos_alpha = eu.iv4xr.framework.spatial.Vec3.dot(agentOrientation, directionToGo);
-		}
-	}
-
 	@Override
 	public String toShortString() {
-		return String.format("Agent %s navigate to: %s , located: %s", agentId, widgetType, widgetPosition);
+		return String.format("Agent %s exploring position %s", agentId, targetPosition);
 	}
 
 	@Override

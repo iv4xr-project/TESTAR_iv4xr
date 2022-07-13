@@ -37,6 +37,7 @@ import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
+import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.model.DefinitionId;
 import spaceEngineers.model.ToolbarLocation;
@@ -58,12 +59,12 @@ public class seActionNavigateWelderBlock extends seActionNavigateToBlock {
 		this.welderType = "Welder".concat(type).concat("Item");
 	}
 
-	public seActionNavigateWelderBlock(Widget w, SUT system, String agentId){
-		this(w, system, agentId, 1, 1);
+	public seActionNavigateWelderBlock(Widget w, Vec3 reachablePosition, SUT system, String agentId){
+		this(w, reachablePosition, system, agentId, 1, 1);
 	}
 
-	public seActionNavigateWelderBlock(Widget w, SUT system, String agentId, int welderType, double toolUsageTime){
-		super(w, system, agentId);
+	public seActionNavigateWelderBlock(Widget w, Vec3 reachablePosition, SUT system, String agentId, int welderType, double toolUsageTime){
+		super(w, reachablePosition, system, agentId);
 		setWelderType(welderType);
 		this.toolUsageTime = toolUsageTime;
 		this.set(Tags.Desc, toShortString());
@@ -75,9 +76,13 @@ public class seActionNavigateWelderBlock extends seActionNavigateToBlock {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		equipWelder(system);
-		navigateToBlock(system);
+		navigateToReachableBlockPosition(system);
 		rotateToBlockDestination(system);
 		useWelder(system);
+
+		// After Welder action equip an empty object
+		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
+		seItems.equip(ToolbarLocation.Companion.fromIndex(1, 1));
 	}
 
 	/**
