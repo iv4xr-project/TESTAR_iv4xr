@@ -62,6 +62,8 @@ public final class Verdict implements Serializable {
 	public static final Verdict OK = new Verdict(SEVERITY_OK, "No problem detected.", Util.NullVisualizer);
 	public static final Verdict FAIL = new Verdict(SEVERITY_FAIL, "SUT failed.", Util.NullVisualizer);
 
+	// SpaceEngineers severities
+	public static final double BLOCK_INTEGRITY_ERROR =  0.2; // error with some block integrity
 
 	private final String info;
 	private final double severity;
@@ -105,6 +107,8 @@ public final class Verdict implements Serializable {
 			return "NOT_RUNNING";
 		if(severity == Verdict.SEVERITY_UNREPLAYABLE)
 			return "NOT_REPLAYABLE";
+		if(severity == Verdict.BLOCK_INTEGRITY_ERROR)
+			return "BLOCK_INTEGRITY_ERROR";
 
 		return "ERROR";
 	}

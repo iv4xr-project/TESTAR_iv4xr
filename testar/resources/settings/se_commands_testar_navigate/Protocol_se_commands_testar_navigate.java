@@ -77,6 +77,39 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 	}
 
 	/**
+	 * The getVerdict methods implements the online state oracles that
+	 * examine the SUT's current state and returns an oracle verdict.
+	 * @return oracle verdict, which determines whether the state is erroneous and why.
+	 */
+	@Override
+	protected Verdict getVerdict(State state) {
+		// Oracle example to validate that the block integrity decreases after a Grinder action
+		Verdict verdict_block_integrity = Verdict.OK;
+		// Apply the Oracle only if last executed action was a Grinder action
+		if(lastExecutedAction != null && lastExecutedAction instanceof seActionNavigateGrinderBlock) {
+			// Check the block attached to the previous executed grinder action
+			Widget previousBlock = ((seActionNavigateGrinderBlock)lastExecutedAction).get(Tags.OriginWidget);
+			Float previousIntegrity = previousBlock.get(IV4XRtags.seIntegrity);
+			System.out.println("Previous Block Integrity: " + previousIntegrity);
+			// Try to find the same block in the current state using the block id
+			for(Widget w : state) {
+				if(w.get(IV4XRtags.entityId).equals(previousBlock.get(IV4XRtags.entityId))) {
+					Float currentIntegrity = w.get(IV4XRtags.seIntegrity);
+					System.out.println("Current Block Integrity: " + currentIntegrity);
+					// If previous integrity is the same or increased, something went wrong
+					if(currentIntegrity >= previousIntegrity) {
+						verdict_block_integrity = new Verdict(Verdict.BLOCK_INTEGRITY_ERROR, "The integrity of interacted block didn't decrease after a Grinder action");
+					}
+				}
+			}
+			// If the previous block does not exist in the current state, it has been destroyed after the grinder action
+			// We consider this OK by default, but more sophisticated oracles can be applied here
+		}
+
+		return super.getVerdict(state).join(verdict_block_integrity);
+	}
+
+	/**
 	 * Derive all possible actions that TESTAR can execute in each specific Space Engineers state.
 	 */
 	@Override
