@@ -14,9 +14,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
+import spaceEngineers.controller.JsonRpcSpaceEngineersBuilder;
 import spaceEngineers.controller.Observer;
 import spaceEngineers.controller.SpaceEngineers;
-import spaceEngineers.controller.SpaceEngineersJavaProxyBuilder;
 import spaceEngineers.model.Vec2F;
 import spaceEngineers.model.Vec3F;
 
@@ -35,7 +35,7 @@ public class ActionCommandTest {
 		// We only execute this unit tests in windows environments.
 		Assume.assumeTrue(System.getProperty("os.name").toLowerCase().contains("windows"));
 		// If Space Engineers game is running with the iv4xr-plugin enabled
-		SpaceEngineers seController = new SpaceEngineersJavaProxyBuilder().localhost("you");
+		SpaceEngineers seController = JsonRpcSpaceEngineersBuilder.Companion.localhost("you");
 		// Empty SUT to attach the controller
 		system = new SUTBase() {
 			@Override

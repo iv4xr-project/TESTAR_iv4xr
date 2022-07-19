@@ -48,8 +48,8 @@ import environments.SeEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.controller.ContextControllerWrapper;
+import spaceEngineers.controller.JsonRpcSpaceEngineersBuilder;
 import spaceEngineers.controller.SpaceEngineers;
-import spaceEngineers.controller.SpaceEngineersJavaProxyBuilder;
 import spaceEngineers.controller.SpaceEngineersTestContext;
 import uuspaceagent.UUSeAgentState;
 
@@ -131,7 +131,7 @@ public class SpaceEngineersProcess extends SUTBase {
 
 		try {
 			// Prepare SpaceEngineers Controller
-			SpaceEngineers seBuilder = new SpaceEngineersJavaProxyBuilder().localhost(characterControllerId);
+			SpaceEngineers seBuilder = JsonRpcSpaceEngineersBuilder.Companion.localhost("you");
 			Util.pause(2);
 			System.out.println("Welcome to the SE iv4XR test: " + launchPart);
 
@@ -148,7 +148,7 @@ public class SpaceEngineersProcess extends SUTBase {
 			SpaceEngineersTestContext context = new SpaceEngineersTestContext();
 			ContextControllerWrapper controllerWrapper = new ContextControllerWrapper(seBuilder, context);
 			// WorldId is empty because we are going to connect to a running level, not load a new one
-			SeEnvironment sEnv = new SeEnvironment("", controllerWrapper);
+			SeEnvironment sEnv = new SeEnvironment("", controllerWrapper, context);
 			// Finally create the TestAgent
 			TestAgent testAgent = new SeAgentTESTAR(characterControllerId, "explorer").attachState(stateGrid).attachEnvironment(sEnv);
 

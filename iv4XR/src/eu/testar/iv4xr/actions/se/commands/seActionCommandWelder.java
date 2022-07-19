@@ -40,7 +40,6 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.model.DefinitionId;
 import spaceEngineers.model.ToolbarLocation;
 
 public class seActionCommandWelder extends seActionCommand {
@@ -82,7 +81,7 @@ public class seActionCommandWelder extends seActionCommand {
 		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
 
 		// Prepare the desired tool in the SE tool bar
-		seItems.setToolbarItem(DefinitionId.Companion.physicalGun(welderType), ToolbarLocation.Companion.fromIndex(4, 5));
+		seItems.setToolbarItem(welderType, ToolbarLocation.Companion.fromIndex(4, 5));
 
 		Util.pause(0.5);
 

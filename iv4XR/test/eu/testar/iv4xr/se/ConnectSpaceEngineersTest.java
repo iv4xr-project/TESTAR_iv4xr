@@ -10,8 +10,8 @@ import org.junit.Test;
 import environments.SeEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import spaceEngineers.controller.ContextControllerWrapper;
+import spaceEngineers.controller.JsonRpcSpaceEngineersBuilder;
 import spaceEngineers.controller.SpaceEngineers;
-import spaceEngineers.controller.SpaceEngineersJavaProxyBuilder;
 import spaceEngineers.controller.SpaceEngineersTestContext;
 import spaceEngineers.model.CharacterObservation;
 import spaceEngineers.model.Observation;
@@ -32,7 +32,7 @@ public class ConnectSpaceEngineersTest {
 		// We only execute this unit tests in windows environments.
 		Assume.assumeTrue(System.getProperty("os.name").toLowerCase().contains("windows"));
 		// If Space Engineers game is running with the iv4xr-plugin enabled
-		seController = new SpaceEngineersJavaProxyBuilder().localhost("you");
+		seController = JsonRpcSpaceEngineersBuilder.Companion.localhost("you");
 	}
 
 	@Test
@@ -53,7 +53,7 @@ public class ConnectSpaceEngineersTest {
 		SpaceEngineersTestContext context = new SpaceEngineersTestContext();
 		ContextControllerWrapper controllerWrapper = new ContextControllerWrapper(seController, context);
 		// WorldId is empty because we are going to connect to a running level, not load a new one
-		SeEnvironment sEnv = new SeEnvironment("", controllerWrapper);
+		SeEnvironment sEnv = new SeEnvironment("", controllerWrapper, context);
 		// Finally create the TestAgent
 		TestAgent testAgent = new SeAgentTESTAR("you", "explorer").attachState(stateGrid).attachEnvironment(sEnv);
 

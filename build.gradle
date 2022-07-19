@@ -24,8 +24,7 @@ subprojects {
         testCompile group: 'org.mockito', name: 'mockito-core', version: '3.3.0'
         implementation 'com.github.iv4xr-project:aplib:1.4.2'
         implementation 'com.github.iv4xr-project:iv4xrDemo:2.3.4c'
-        // https://jitpack.io/com/github/iv4xr-project/iv4xr-se-plugin/navgrid_entity-SNAPSHOT/build.log
-        implementation 'com.github.iv4xr-project:iv4xr-se-plugin:navgrid_entity-SNAPSHOT'
+        compile files('../testar/lib/se-shadow-0.4.0.jar')
     }
 
     buildDir = new File('./target')

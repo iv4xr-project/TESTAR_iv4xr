@@ -38,7 +38,6 @@ import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.model.DefinitionId;
 import spaceEngineers.model.ToolbarLocation;
 
 public class seActionMoveWelderBlock extends seActionMoveToBlock {
@@ -89,7 +88,7 @@ public class seActionMoveWelderBlock extends seActionMoveToBlock {
 	private void equipWelder(SUT system) {
 		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
 
-		seItems.setToolbarItem(DefinitionId.Companion.physicalGun(welderType), ToolbarLocation.Companion.fromIndex(4, 5));
+		seItems.setToolbarItem(welderType, ToolbarLocation.Companion.fromIndex(4, 5));
 		Util.pause(0.5);
 		seItems.equip(ToolbarLocation.Companion.fromIndex(4, 5));
 	}
