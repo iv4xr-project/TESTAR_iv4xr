@@ -126,6 +126,11 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.seAgentOrientationForward = seObsCharacter.getOrientationForward();
 		childElement.seAgentOrientationUp = seObsCharacter.getOrientationUp();
 		childElement.seAgentHealth = seObsCharacter.getHealth();
+		childElement.seAgentOxygen = seObsCharacter.getOxygen();
+		childElement.seAgentEnergy = seObsCharacter.getSuitEnergy();
+		childElement.seAgentHydrogen = seObsCharacter.getHydrogen();
+		childElement.seAgentJetpackRunning = seObsCharacter.getJetpackRunning();
+		childElement.seAgentDampenersOn = seObsCharacter.getDampenersOn();
 
 		childElement.entityVelocity = new Vec3(seObsCharacter.getVelocity().getX(), seObsCharacter.getVelocity().getY(), seObsCharacter.getVelocity().getZ());
 		childElement.entityId = system.get(IV4XRtags.iv4xrSpaceEngineers).getObserver().observe().getId();
@@ -194,6 +199,11 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.seOrientationForward = seBlock.getOrientationForward();
 		childElement.seOrientationUp = seBlock.getOrientationUp();
 		childElement.seSize = seBlock.getSize();
+		childElement.seDefinitionId = seBlock.getDefinitionId().toString();
+		childElement.seFunctional = seBlock.getFunctional();
+		childElement.seWorking = seBlock.getWorking();
+		childElement.seOwnerId = seBlock.getOwnerId();
+		childElement.seBuiltBy = seBlock.getBuiltBy();
 
 		fillRect(childElement);
 

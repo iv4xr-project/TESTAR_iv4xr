@@ -145,6 +145,11 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<spaceEngineers.model.Vec3F> seAgentOrientationForward = from("seAgentOrientationForward", spaceEngineers.model.Vec3F.class);
 	public static final Tag<spaceEngineers.model.Vec3F> seAgentOrientationUp = from("seAgentOrientationUp", spaceEngineers.model.Vec3F.class);
 	public static final Tag<Float> seAgentHealth = from("seAgentHealth", Float.class);
+	public static final Tag<Float> seAgentOxygen = from("seAgentOxygen", Float.class);
+	public static final Tag<Float> seAgentEnergy = from("seAgentEnergy", Float.class);
+	public static final Tag<Float> seAgentHydrogen = from("seAgentHydrogen", Float.class);
+	public static final Tag<Boolean> seAgentJetpackRunning = from("seAgentJetpackRunning", Boolean.class);
+	public static final Tag<Boolean> seAgentDampenersOn = from("seAgentDampenersOn", Boolean.class);
 
 	public static final Tag<Float> seBuildIntegrity = from("seBuildIntegrity", Float.class);
 	public static final Tag<Float> seIntegrity = from("seIntegrity", Float.class);
@@ -154,6 +159,11 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<spaceEngineers.model.Vec3F> seOrientationForward = from("seOrientationForward", spaceEngineers.model.Vec3F.class);
 	public static final Tag<spaceEngineers.model.Vec3F> seOrientationUp = from("seOrientationUp", spaceEngineers.model.Vec3F.class);
 	public static final Tag<spaceEngineers.model.Vec3F> seSize = from("seSize", spaceEngineers.model.Vec3F.class);
+	public static final Tag<String> seDefinitionId = from("seDefinitionId", String.class);
+	public static final Tag<Boolean> seFunctional = from("seFunctional", Boolean.class);
+	public static final Tag<Boolean> seWorking = from("seWorking", Boolean.class);
+	public static final Tag<String> seOwnerId = from("seOwnerId", String.class);
+	public static final Tag<String> seBuiltBy = from("seBuiltBy", String.class);
 
 	/**
 	 * Agent - TESTAR comparison

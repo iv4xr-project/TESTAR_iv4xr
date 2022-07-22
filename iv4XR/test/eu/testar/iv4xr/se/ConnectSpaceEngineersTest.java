@@ -2,6 +2,7 @@ package eu.testar.iv4xr.se;
 
 import static org.junit.Assert.*;
 
+import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -15,6 +16,7 @@ import spaceEngineers.controller.SpaceEngineersJavaProxyBuilder;
 import spaceEngineers.controller.SpaceEngineersTestContext;
 import spaceEngineers.model.CharacterObservation;
 import spaceEngineers.model.Observation;
+import spaceEngineers.transport.SocketReaderWriterKt;
 import uuspaceagent.UUSeAgentState;
 
 /**
@@ -38,13 +40,16 @@ public class ConnectSpaceEngineersTest {
 	@Test
 	public void character_observation() {
 		CharacterObservation characterObs = seController.getObserver().observe();
-		assertTrue(characterObs != null);
+		assertNotNull(characterObs);
+		assertNotNull(characterObs.getId());
+		assertNotNull(characterObs.getPosition());
+		assertNotNull(characterObs.getHealth());
 	}
 
 	@Test
 	public void blocks_observation() {
 		Observation blocksObs = seController.getObserver().observeBlocks();
-		assertTrue(blocksObs != null);
+		assertNotNull(blocksObs);
 	}
 
 	@Test
@@ -59,6 +64,12 @@ public class ConnectSpaceEngineersTest {
 
 		assertTrue(testAgent.getId() == "you");
 		assertTrue(testAgent.env() == sEnv);
+	}
+
+	@AfterClass
+	public static void close() {
+		// Close Space Engineers plugin session
+		SocketReaderWriterKt.closeIfCloseable(seController);
 	}
 
 }
