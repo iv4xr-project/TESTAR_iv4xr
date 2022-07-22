@@ -64,6 +64,7 @@ public final class Verdict implements Serializable {
 
 	// SpaceEngineers severities
 	public static final double BLOCK_INTEGRITY_ERROR =  0.2; // error with some block integrity
+	public static final double JETPACK_SETTINGS_ERROR =  0.21; // error with SE jetpack settings
 
 	private final String info;
 	private final double severity;
@@ -109,6 +110,8 @@ public final class Verdict implements Serializable {
 			return "NOT_REPLAYABLE";
 		if(severity == Verdict.BLOCK_INTEGRITY_ERROR)
 			return "BLOCK_INTEGRITY_ERROR";
+		if(severity == Verdict.JETPACK_SETTINGS_ERROR)
+			return "JETPACK_SETTINGS_ERROR";
 
 		return "ERROR";
 	}
