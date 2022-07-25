@@ -8,6 +8,7 @@ import org.fruit.alayer.SUTBase;
 import org.fruit.alayer.StdState;
 import org.fruit.alayer.StdWidget;
 import org.fruit.alayer.exceptions.SystemStopException;
+import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -19,6 +20,7 @@ import spaceEngineers.controller.Observer;
 import spaceEngineers.controller.SpaceEngineers;
 import spaceEngineers.model.Vec2F;
 import spaceEngineers.model.Vec3F;
+import spaceEngineers.transport.SocketReaderWriterKt;
 
 /**
  * JUnit tests ignored by default, 
@@ -166,6 +168,12 @@ public class ActionCommandTest {
 	public void place_block() {
 		Action place = new seActionCommandPlaceBlock(new StdWidget(), "you", "LargeBlockArmorBlock");
 		place.run(system, new StdState(), 0);
+	}
+
+	@AfterClass
+	public static void close() {
+		// Close Space Engineers plugin session
+		SocketReaderWriterKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));
 	}
 
 }

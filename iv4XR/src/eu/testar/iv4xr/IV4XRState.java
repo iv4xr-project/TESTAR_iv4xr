@@ -253,6 +253,21 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		else if (t.equals(IV4XRtags.seAgentHealth)) {
 			ret = w.element.seAgentHealth;
 		}
+		else if (t.equals(IV4XRtags.seAgentOxygen)) {
+			ret = w.element.seAgentOxygen;
+		}
+		else if (t.equals(IV4XRtags.seAgentEnergy)) {
+			ret = w.element.seAgentEnergy;
+		}
+		else if (t.equals(IV4XRtags.seAgentHydrogen)) {
+			ret = w.element.seAgentHydrogen;
+		}
+		else if (t.equals(IV4XRtags.seAgentJetpackRunning)) {
+			ret = w.element.seAgentJetpackRunning;
+		}
+		else if (t.equals(IV4XRtags.seAgentDampenersOn)) {
+			ret = w.element.seAgentDampenersOn;
+		}
 		else if (t.equals(IV4XRtags.seBuildIntegrity)) {
 			ret = w.element.seBuildIntegrity;
 		}
@@ -276,6 +291,21 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		}
 		else if (t.equals(IV4XRtags.seSize)) {
 			ret = w.element.seSize;
+		}
+		else if (t.equals(IV4XRtags.seDefinitionId)) {
+			ret = w.element.seDefinitionId;
+		}
+		else if (t.equals(IV4XRtags.seFunctional)) {
+			ret = w.element.seFunctional;
+		}
+		else if (t.equals(IV4XRtags.seWorking)) {
+			ret = w.element.seWorking;
+		}
+		else if (t.equals(IV4XRtags.seOwnerId)) {
+			ret = w.element.seOwnerId;
+		}
+		else if (t.equals(IV4XRtags.seBuiltBy)) {
+			ret = w.element.seBuiltBy;
 		}
 
 		cacheTag(w, t, ret);

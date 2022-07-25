@@ -152,13 +152,9 @@ public class SEProtocol extends GenericUtilsProtocol {
 		State state = super.getState(system);
 
 		// Find the Widget that represents the Agent Entity and associated into the IV4XR SUT Tag
-		for(Widget w : state) {
-			if(w.get(IV4XRtags.entityType, "").equals("AGENT")) {
-				system.set(IV4XRtags.agentWidget, w);
-				state.set(IV4XRtags.agentWidget, w);
-				break;
-			}
-		}
+		Widget agentWidget = getAgentEntityFromState(state);
+		system.set(IV4XRtags.agentWidget, agentWidget);
+		state.set(IV4XRtags.agentWidget, agentWidget);
 
 		//Spy mode didn't use the html report
 		if(settings.get(ConfigTags.Mode) == Modes.Spy) {
@@ -171,6 +167,21 @@ public class SEProtocol extends GenericUtilsProtocol {
 		htmlReport.addState(latestState);
 
 		return latestState;
+	}
+
+	/**
+	 * Get the Widget that represents the Agent Entity. 
+	 * 
+	 * @param state
+	 * @return agent widget
+	 */
+	protected final Widget getAgentEntityFromState(State state) {
+		for(Widget w : state) {
+			if(w.get(IV4XRtags.entityType, "").equals("AGENT")) {
+				return w;
+			}
+		}
+		throw new StateBuildException("Space Engineers state does not contain an Agent Widget");
 	}
 
 	/**
