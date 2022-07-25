@@ -130,7 +130,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.seAgentEnergy = seObsCharacter.getSuitEnergy();
 		childElement.seAgentHydrogen = seObsCharacter.getHydrogen();
 		childElement.seAgentJetpackRunning = seObsCharacter.getJetpackRunning();
-		childElement.seAgentDampenersOn = seObsCharacter.getDampenersOn();
+		//childElement.seAgentDampenersOn = seObsCharacter.getDampenersOn(); // Property not available for the v199-game + v0.5.0-plugin
 
 		childElement.entityVelocity = new Vec3(seObsCharacter.getVelocity().getX(), seObsCharacter.getVelocity().getY(), seObsCharacter.getVelocity().getZ());
 		childElement.entityId = system.get(IV4XRtags.iv4xrSpaceEngineers).getObserver().observe().getId();
@@ -203,7 +203,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.seFunctional = seBlock.getFunctional();
 		childElement.seWorking = seBlock.getWorking();
 		childElement.seOwnerId = seBlock.getOwnerId();
-		childElement.seBuiltBy = seBlock.getBuiltBy();
+		//childElement.seBuiltBy = seBlock.getBuiltBy(); // Property not available for the v199-game + v0.5.0-plugin
 
 		fillRect(childElement);
 

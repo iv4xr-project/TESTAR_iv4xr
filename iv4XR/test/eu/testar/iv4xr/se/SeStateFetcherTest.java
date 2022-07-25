@@ -80,8 +80,9 @@ public class SeStateFetcherTest {
 				System.out.println("Agent seAgentJetpackRunning: " + w.get(IV4XRtags.seAgentJetpackRunning));
 				assertNotNull(w.get(IV4XRtags.seAgentJetpackRunning));
 
-				System.out.println("Agent seAgentDampenersOn: " + w.get(IV4XRtags.seAgentDampenersOn));
-				assertNotNull(w.get(IV4XRtags.seAgentDampenersOn));
+				// Property not available for the v199-game + v0.5.0-plugin
+				//System.out.println("Agent seAgentDampenersOn: " + w.get(IV4XRtags.seAgentDampenersOn));
+				//assertNotNull(w.get(IV4XRtags.seAgentDampenersOn));
 			} 
 			// Block entities assertions
 			else if (!(w instanceof State)) {

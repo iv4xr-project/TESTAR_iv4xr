@@ -265,9 +265,9 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		else if (t.equals(IV4XRtags.seAgentJetpackRunning)) {
 			ret = w.element.seAgentJetpackRunning;
 		}
-		else if (t.equals(IV4XRtags.seAgentDampenersOn)) {
-			ret = w.element.seAgentDampenersOn;
-		}
+		//else if (t.equals(IV4XRtags.seAgentDampenersOn)) { // Property not available for the v199-game + v0.5.0-plugin
+		//	ret = w.element.seAgentDampenersOn;
+		//}
 		else if (t.equals(IV4XRtags.seBuildIntegrity)) {
 			ret = w.element.seBuildIntegrity;
 		}
@@ -304,9 +304,9 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		else if (t.equals(IV4XRtags.seOwnerId)) {
 			ret = w.element.seOwnerId;
 		}
-		else if (t.equals(IV4XRtags.seBuiltBy)) {
-			ret = w.element.seBuiltBy;
-		}
+		//else if (t.equals(IV4XRtags.seBuiltBy)) { // Property not available for the v199-game + v0.5.0-plugin
+		//	ret = w.element.seBuiltBy;
+		//}
 
 		cacheTag(w, t, ret);
 

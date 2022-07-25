@@ -102,7 +102,7 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 	public float seAgentEnergy = 0f;
 	public float seAgentHydrogen = 0f;
 	public boolean seAgentJetpackRunning = false;
-	public boolean seAgentDampenersOn = false;
+	//public boolean seAgentDampenersOn = false; // Property not available for the v199-game + v0.5.0-plugin
 
 	// Block properties
 	public float seBuildIntegrity = 0f;
@@ -117,7 +117,7 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 	public boolean seFunctional = false;
 	public boolean seWorking = false;
 	public String seOwnerId = "";
-	public String seBuiltBy = "";
+	//public String seBuiltBy = ""; // Property not available for the v199-game + v0.5.0-plugin
 
 	public IV4XRElement(){ this(null); }
 
