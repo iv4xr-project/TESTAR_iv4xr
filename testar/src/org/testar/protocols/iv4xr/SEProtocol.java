@@ -196,7 +196,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 
 		// Check SE logs trying to find pattern messages (ConfigTags.ProcessLogs)
 		File seLog = getLastSpaceEngineersLog();
-		if(seLog != null) {
+		if(seLog != null && settings.get(ConfigTags.ProcessLogsEnabled, false)) {
 			// Get all errors from the SE log
 			LinkedList<String> logErrors = spaceEngineersLogVerdict(seLog);
 			// And updated them to only use the new ones compared with the last verdict iteration
@@ -354,7 +354,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 		// SpaceEngineers Logs Verdict, check SE logs trying to find pattern messages (ConfigTags.ProcessLogs)
 		Verdict logVerdict = Verdict.OK;
 		File seLog = getLastSpaceEngineersLog();
-		if(seLog != null) {
+		if(seLog != null && settings.get(ConfigTags.ProcessLogsEnabled, false)) {
 			System.out.println("INFO: SpaceEngineers Log detected: " + seLog);
 			LinkedList<String> logOracles = spaceEngineersLogVerdict(seLog);
 			if(!logOracles.isEmpty()) {
@@ -532,7 +532,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 			try {
 				spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 				spaceEngineers.controller.Observer seObserver = seController.getObserver();
-				
+
 				spaceEngineers.model.Block targetBlock;
 				if((targetBlock = seObserver.observe().getTargetBlock()) != null) { Iv4xrSeVisualization.showSpaceEngineersAimingElement(cv, targetBlock); }
 				else{ Iv4xrSeVisualization.showStateObservation(cv, state); }

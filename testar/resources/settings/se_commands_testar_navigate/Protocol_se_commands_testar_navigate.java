@@ -81,8 +81,12 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 		interactiveEntities = new HashSet<String>();
 		interactiveEntities.add("Ladder2");
 		interactiveEntities.add("LargeBlockCockpit");
+		interactiveEntities.add("CockpitOpen");
 		interactiveEntities.add("LargeBlockCryoChamber");
 	}
+
+	// Oracle example to validate that the block integrity decreases after a Grinder action
+	private Verdict functional_verdict = Verdict.OK;
 
 	/**
 	 * The getVerdict methods implements the online state oracles that
@@ -91,9 +95,6 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 	 */
 	@Override
 	protected Verdict getVerdict(State state) {
-		// Oracle example to validate that the block integrity decreases after a Grinder action
-		Verdict functional_verdict = Verdict.OK;
-
 		// Apply an Oracle to check if Grinder action worked properly
 		if(lastExecutedAction != null && lastExecutedAction instanceof seActionNavigateGrinderBlock) {
 			// Check the block attached to the previous executed grinder action

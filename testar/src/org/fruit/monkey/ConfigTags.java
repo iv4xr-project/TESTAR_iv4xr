@@ -133,6 +133,7 @@ public final class ConfigTags {
 
   public static final Tag<Boolean> ProcessListenerEnabled = Tag.from("ProcessListenerEnabled", Boolean.class);
   public static final Tag<String> SuspiciousProcessOutput = Tag.from("SuspiciousProcessOutput", String.class);
+  public static final Tag<Boolean> ProcessLogsEnabled = Tag.from("ProcessLogsEnabled", Boolean.class);
   public static final Tag<String> ProcessLogs = Tag.from("ProcessLogs", String.class);
 
   // Note: Defined the tag as string on purpose so we can leave the default value empty in the pre defined settings.

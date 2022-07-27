@@ -345,6 +345,7 @@ public class Settings extends TaggableBase implements Serializable {
 					+"# process.\n"
 					+"#################################################################\n"
 					+"\n"
+					+"ProcessLogsEnabled = " + Util.lineSep()
 					+"ProcessLogs = " + Util.lineSep()
 					+"\n"
 					+"#################################################################\n"

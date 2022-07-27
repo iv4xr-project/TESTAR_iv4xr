@@ -67,6 +67,7 @@ SuspiciousProcessOutput = .*[eE]rror.*|.*[eE]xcep[ct]i[o?]n.*
 # process.
 #################################################################
 
+ProcessLogsEnabled = true
 ProcessLogs = .*[eE]rror.*|.*[eE]xcep[ct]i[o?]n.*
 
 #################################################################
@@ -96,17 +97,9 @@ SUTProcesses =
 ProtocolClass = se_commands_testar_movement/Protocol_se_commands_testar_movement
 
 #################################################################
-# Graphdatabase settings (experimental)
-#################################################################
-GraphDBEnabled = true
-GraphDBUrl = remote:/localhost/testar
-GraphDBUser = testar
-GraphDBPassword = testar
-
-#################################################################\n"
 # State model inference settings
-#################################################################\n"
-StateModelEnabled = true
+#################################################################
+StateModelEnabled = false
 DataStore = OrientDB
 DataStoreType = remote
 DataStoreServer = localhost
