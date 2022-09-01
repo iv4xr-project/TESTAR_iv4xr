@@ -22,8 +22,10 @@ subprojects {
     dependencies {
         testCompile group:'junit', name:'junit', version:'4.12'
         testCompile group: 'org.mockito', name: 'mockito-core', version: '3.3.0'
+        // https://jitpack.io/com/github/iv4xr-project/aplib/1.4.2/build.log
         implementation 'com.github.iv4xr-project:aplib:1.4.2'
-        implementation 'com.github.iv4xr-project:iv4xrDemo:2.3.4c'
+        // https://jitpack.io/com/github/iv4xr-project/iv4xrDemo/2.4.0/build.log
+        implementation 'com.github.iv4xr-project:iv4xrDemo:2.4.0'
         // https://jitpack.io/com/github/iv4xr-project/iv4xr-se-plugin/navgrid_entity-SNAPSHOT/build.log
         implementation 'com.github.iv4xr-project:iv4xr-se-plugin:navgrid_entity-SNAPSHOT'
     }
