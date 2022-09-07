@@ -22,6 +22,8 @@ subprojects {
     dependencies {
         testCompile group:'junit', name:'junit', version:'4.12'
         testCompile group: 'org.mockito', name: 'mockito-core', version: '3.3.0'
+        compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
+        compile group: 'com.orientechnologies', name: 'orientdb-graphdb', version: '3.0.34'
         // https://jitpack.io/com/github/iv4xr-project/aplib/1.4.2/build.log
         implementation 'com.github.iv4xr-project:aplib:1.4.2'
         // https://jitpack.io/com/github/iv4xr-project/iv4xrDemo/2.4.0/build.log

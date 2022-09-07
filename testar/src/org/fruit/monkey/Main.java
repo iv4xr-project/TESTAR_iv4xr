@@ -44,6 +44,8 @@ import javax.swing.*;
 import java.io.*;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 import org.fruit.alayer.exceptions.NoSuchTagException;
@@ -505,6 +507,13 @@ public class Main {
 			defaults.add(Pair.from(FlashFeedback, false));
 			defaults.add(Pair.from(ProtocolCompileDirectory, "./settings"));
 			defaults.add(Pair.from(ReportingClass,"HTML Reporting"));
+
+			// Coverage settings Tags
+			defaults.add(Pair.from(OpenCoverPath, Paths.get(settingsDir)));
+			defaults.add(Pair.from(ReportGeneratorPath, Paths.get(settingsDir)));
+			defaults.add(Pair.from(OpenCoverTarget, Paths.get(settingsDir)));
+			defaults.add(Pair.from(OpenCoverTargetArgs, settingsDir));
+			defaults.add(Pair.from(PdbFilesPath, Paths.get(settingsDir)));
 
 			defaults.add(Pair.from(AbstractStateAttributes, new ArrayList<String>() {
 				{
