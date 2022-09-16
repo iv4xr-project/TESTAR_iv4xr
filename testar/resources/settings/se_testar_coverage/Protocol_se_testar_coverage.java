@@ -29,26 +29,17 @@
  *******************************************************************************************************/
 
 import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import org.apache.commons.io.FileUtils;
+
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.alayer.exceptions.SystemStartException;
 import org.fruit.monkey.ConfigTags;
-import org.fruit.monkey.Main;
-import org.testar.OutputStructure;
+import org.testar.iv4xr.OpenCoverage;
+import org.testar.iv4xr.SpatialXMLmap;
 import org.testar.protocols.iv4xr.SEProtocol;
-
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.se.commands.*;
 import eu.testar.iv4xr.actions.se.goals.*;
@@ -101,6 +92,8 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 	// Oracle example to validate that the block integrity decreases after a Grinder action
 	private Verdict functional_verdict = Verdict.OK;
 
+	private final String SE_LEVEL_PATH = "suts/se_levels/manual-world";
+
 	/**
 	 * This methods is called before each test sequence, allowing for example using external profiling software on the SUT
 	 */
@@ -108,140 +101,12 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 	protected void preSequencePreparations() {
 		super.preSequencePreparations();
 
-		verifySteamAppidFile(settings.get(ConfigTags.OpenCoverTarget));
+		// Create a XML spatial map based on the desired SpaceEngineers level
+		SpatialXMLmap.prepareSpatialXMLmap(SE_LEVEL_PATH);
 
-		verifyPdbFiles(settings.get(ConfigTags.PdbFilesPath));
-
-		try {
-			downloadOpenCoverageTools();
-			// Add OpenCover and ReportGenerator folder temporally to the environment path
-			//String customPathEnv = settings.get(ConfigTags.OpenCoverPath).toAbsolutePath() + ";" + settings.get(ConfigTags.ReportGeneratorPath).toAbsolutePath() + ";";
-			//Util.getModifiableEnvironment().put("Path", System.getenv("Path") + customPathEnv);
-			// Launch the SUT with OpenCover tool
-			prepareLaunchOpenCoverSUTconnector();
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(0);
-		}
-	}
-
-	/**
-	 * Verify that the target folder that contains the SpaceEngineers executable contains the steam_appid.txt file. 
-	 * If this file does not exist, the SE executable invokes Steam instead of launching the game process. 
-	 * This Steam invocation does not allow OpenCover to be attached to the process properly. 
-	 * 
-	 * @param seTargetFile
-	 */
-	private void verifySteamAppidFile(Path seTargetFile) {
-		try {
-			File seFolder = new File(seTargetFile.toString()).getAbsoluteFile().getParentFile();
-			File seSteamAppFile = new File(seFolder + File.separator + "steam_appid.txt");
-			if(seSteamAppFile.exists() && Files.readString(seSteamAppFile.toPath()).equals("244850")) {
-				System.out.println("SE steam_appid file exists: " + seSteamAppFile.toString());
-			} else {
-				System.err.println("You need to create the steam_appid.txt with 244850 string content to allow running OpenCover tool with SpaceEngineers");
-				System.exit(0);
-			}
-		} catch (IOException ioe) {
-			System.err.println("You need to create the steam_appid.txt with 244850 string content to allow running OpenCover tool with SpaceEngineers");
-			ioe.printStackTrace();
-			System.exit(0);
-		}
-	}
-
-	/**
-	 * Verify that the PDB files of the .NET SUT exist and are correctly indicated in the PdbFilesPath setting. 
-	 * 
-	 * @param pdbFilesPath
-	 */
-	private void verifyPdbFiles(Path pdbFilesPath) {
-		String[] pdbFiles = getPdbFiles(pdbFilesPath);
-		System.out.println("PDB files: " + Arrays.toString(pdbFiles));
-		if(pdbFiles.length == 0) {
-			System.err.println("In order to obtain OpenCover coverage the tool needs access to the PDB files");
-			System.err.println("To do that the user needs to customize in TESTAR the PdbFilesPath setting");
-			System.exit(0);
-		}
-	}
-
-	private String[] getPdbFiles(Path pdbPath) {
-		return new File(pdbPath.toAbsolutePath().toString()).list(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String name) {
-				return name.endsWith(".pdb");
-			}
-		});
-	}
-
-	/**
-	 * Check and download OpenCover and ReportGenerator tools. 
-	 * @throws IOException 
-	 * @throws MalformedURLException 
-	 */
-	private void downloadOpenCoverageTools() throws MalformedURLException, IOException {
-		// If the folder of the OpenCover and ReportGenerator tools does not exist, 
-		// or if these are empty. 
-		// Download and prepare the tools. 
-		if(!Files.exists(settings.get(ConfigTags.OpenCoverPath)) || Util.folderIsEmpty(settings.get(ConfigTags.OpenCoverPath), true)) {
-			System.out.println("Downloading OpenCover tool...");
-			String openCoverURL = "https://github.com/OpenCover/opencover/releases/download/4.7.1221/opencover.4.7.1221.zip";
-			String openCoverTempZip = Main.tempDir + "OpenCoverTool.zip";
-			// Download the OpenCover tool
-			FileUtils.copyURLToFile(new URL(openCoverURL), new File(openCoverTempZip), 2000, 2000);
-			// Verify MD5 checksum
-			String openCoverMD5 = Util.fileMD5(openCoverTempZip);
-			String openCoverExpected = "07726b884edc145cd46debeaca67b498";
-			// If MD5 is correct, extract open cover tool zip content in the expected folder
-			if(openCoverMD5.equalsIgnoreCase(openCoverExpected)) {
-				Util.unzipFile(openCoverTempZip, settings.get(ConfigTags.OpenCoverPath).toString());
-				Files.delete(Paths.get(openCoverTempZip));
-				System.out.println("Download completed! " + settings.get(ConfigTags.OpenCoverPath).toString());
-			} 
-			// If MD5 is not the correct one, delete zip file and throw an error
-			else {
-				Files.delete(Paths.get(openCoverTempZip));
-				throw new SystemStartException(String.format("MD5 value of the OpenCover tool is not correct. URL %s , MD5 %s , expected %s", openCoverURL, openCoverMD5, openCoverExpected));
-			}
-		}
-		if(!Files.exists(settings.get(ConfigTags.ReportGeneratorPath)) || Util.folderIsEmpty(settings.get(ConfigTags.ReportGeneratorPath), true)) {
-			System.out.println("Downloading ReportGenerator tool...");
-			String reportGeneratorURL = "https://github.com/danielpalme/ReportGenerator/releases/download/v5.1.9/ReportGenerator_5.1.9.zip";
-			String reportGeneratorTempZip = Main.tempDir + "ReportGeneratorTool.zip";
-			// Download the ReportGenerator tool
-			FileUtils.copyURLToFile(new URL(reportGeneratorURL), new File(reportGeneratorTempZip), 2000, 2000);
-			// Verify MD5 checksum
-			String reportGeneratorMD5 = Util.fileMD5(reportGeneratorTempZip);
-			String reportGeneratorExpected = "37e60f620045eaf38ecf1e7b4b7b9653";
-			// If MD5 is correct, extract report generator tool zip content in the expected folder
-			if(reportGeneratorMD5.equalsIgnoreCase(reportGeneratorExpected)) {
-				Util.unzipFile(reportGeneratorTempZip, settings.get(ConfigTags.ReportGeneratorPath).toString());
-				Files.delete(Paths.get(reportGeneratorTempZip));
-				System.out.println("Download completed! " + settings.get(ConfigTags.ReportGeneratorPath).toString());
-			} 
-			// If MD5 is not the correct one, delete zip file and throw an error
-			else {
-				Files.delete(Paths.get(reportGeneratorTempZip));
-				throw new SystemStartException(String.format("MD5 value of the ReportGenerator tool is not correct. URL %s , MD5 %s , expected %s", reportGeneratorURL, reportGeneratorMD5, reportGeneratorExpected));
-			}
-		}
-	}
-
-	private void prepareLaunchOpenCoverSUTconnector() throws IOException {
-		String openCoverTool = settings.get(ConfigTags.OpenCoverPath).toAbsolutePath().toString() + File.separator + "OpenCover.Console.exe";
-		//TODO: The usage of PROGRA~2 works for the targetargs plugin but not for the SpaceEngineers.exe target
-		String target = " -target:\"" + settings.get(ConfigTags.OpenCoverTarget).toString() + "\"";
-		String targetargs = " -targetargs:\"" + settings.get(ConfigTags.OpenCoverTargetArgs) + "\"";
-		String output = " -output:\"" + OutputStructure.outerLoopOutputDir + File.separator + "se_coverage.xml\"";
-		String pdbfiles = " -searchdirs:\"" + settings.get(ConfigTags.PdbFilesPath).toString() + "\"";
-
-		// Execute OpenCover with SpaceEngineers in a new process
-		String command = openCoverTool + target + targetargs + output + pdbfiles + " -register:user";
-		System.out.println("Running SE OpenCover command: " + command);
-		Runtime.getRuntime().exec(command);
-
-		// Wait to launch the SE game
-		// TODO: Improve to wait until the process is ready
-		Util.pause(60);
+		// Verify steam, pdb and OpenCover files. 
+		// Then launch SpaceEngineers SUT with OpenCover
+		OpenCoverage.prepareLaunchOpenCoverWithSUT(settings);
 	}
 
 	/**
@@ -258,10 +123,30 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 	@Override
 	protected SUT startSystem() throws SystemStartException {
 		SUT system = super.startSystem();
+
 		// Load the desired level to execute TESTAR and obtain the coverage
-		system.get(IV4XRtags.iv4xrSpaceEngineers).getSession().loadScenario(new File("suts/se_levels/simple-place-grind-torch").getAbsolutePath());
+		system.get(IV4XRtags.iv4xrSpaceEngineers).getSession().loadScenario(new File(SE_LEVEL_PATH).getAbsolutePath());
 		Util.pause(20);
+
 		return system;
+	}
+
+	/**
+	 * This method is called when the TESTAR requests the state of the SUT.
+	 * Here you can add additional information to the SUT's state or write your
+	 * own state fetching routine.
+	 *
+	 * super.getState(system) puts the state information also to the HTML sequence report
+	 *
+	 * @return  the current state of the SUT with attached oracle.
+	 */
+	@Override
+	protected State getState(SUT system) {
+		State state = super.getState(system);
+
+		SpatialXMLmap.updateAgentPosition(state);
+
+		return state;
 	}
 
 	/**
@@ -330,17 +215,26 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 			}
 		}
 
+		// Force navigate and interact action if not empty, but we are reducing the exploration
+		//if(!labActions.isEmpty()) return labActions;
+
 		// Now add the set of actions to explore level positions
 		labActions = calculateExploratoryPositions(system, state, labActions);
 
 		// If it was not possible to navigate to an entity or realize a smart exploration
 		// prepare a dummy exploration
-		if(labActions.isEmpty()) {
+		/*if(labActions.isEmpty()) {
 			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, 1f), 30)); // Move to back
 			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, -1f), 30)); // Move to front
 			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(1f, 0, 0), 30)); // Move to Right
 			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(-1f, 0, 0), 30)); // Move to Left
-		}
+		}*/
+		// Always add the possibility to realize a dummy movements
+		// Because some corner may block the smart exploration
+		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, 1f), 30)); // Move to back
+		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, -1f), 30)); // Move to front
+		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(1f, 0, 0), 30)); // Move to Right
+		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(-1f, 0, 0), 30)); // Move to Left
 
 		return labActions;
 	}
@@ -354,7 +248,6 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 	 */
 	@Override
 	protected Action selectAction(State state, Set<Action> actions){
-
 		//Call the preSelectAction method from the AbstractProtocol so that, if necessary,
 		//unwanted processes are killed and SUT is put into foreground.
 		Action retAction = preSelectAction(state, actions);
@@ -386,6 +279,8 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
+
+			SpatialXMLmap.updateInteractedBlock(action);
 
 			return true;
 
@@ -466,29 +361,17 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 	 */
 	@Override
 	protected void stopSystem(SUT system) {
+		// Create the spatial image based on the explored level
+		SpatialXMLmap.createXMLspatialMap();
+
+		// This stops the plugin but no the SUT
 		super.stopSystem(system);
-		try {
-			Runtime.getRuntime().exec("taskkill /F /IM SpaceEngineers.exe");
-		} catch (IOException ioe) {
-			System.err.println("Error finishing SpaceEngineers process" );
-			ioe.printStackTrace();
-		}
-		// We need to pause to give time to OpenCover to extract the coverage results
-		Util.pause(30);
 
-		String reportGeneratorTool = settings.get(ConfigTags.ReportGeneratorPath).toAbsolutePath().toString() + File.separator + "netcoreapp3.1" + File.separator + "ReportGenerator.exe";
-		String reports = " -reports:\"" + new File(OutputStructure.outerLoopOutputDir + File.separator + "se_coverage.xml").getAbsolutePath() + "\"";
-		String targetdir = " -targetdir:\"" + new File(OutputStructure.outerLoopOutputDir).getAbsolutePath() + "\"";
-		String sourcedirs = " -sourcedirs:\"" + settings.get(ConfigTags.PdbFilesPath).toString() + "\"";
-
-		// Execute ReportGenerator with SpaceEngineers in a new process
-		String command = reportGeneratorTool + reports + targetdir + sourcedirs;
-		System.out.println("Running ReportGenerator command: " + command);
-		try {
-			Runtime.getRuntime().exec(command);
-		} catch (IOException ioe) {
-			System.err.println("Error creating the HTML report using ReportGenerator : " + reports);
-			ioe.printStackTrace();
-		}
+		// Stop the SUT and extract coverage
+		OpenCoverage.finishOpenCoverSUTandWait("SpaceEngineers.exe", 60);
+		OpenCoverage.extractSummaryCoverage();
+		OpenCoverage.createHTMLCoverageReport(settings);
 	}
+
+
 }
