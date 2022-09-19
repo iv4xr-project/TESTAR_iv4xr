@@ -140,17 +140,15 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 
 		// For each block widget (see movementEntities types), rotate and move until the agent is close to the position of the block
 		for(Widget w : state) {
-			Vec3 reachablePosition = null;
-			if(toolEntities.contains(w.get(IV4XRtags.entityType))
-					&& (reachablePosition = seReachablePositionHelper.calculateAdjacentReachablePosToEntity(system, w)) != null) {
-				labActions.add(new seActionNavigateGrinderBlock(w, reachablePosition, system, agentId, 4, 1.0));
-				labActions.add(new seActionNavigateWelderBlock(w, reachablePosition, system, agentId, 4, 1.0));
+			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 4, 1.0));
+				labActions.add(new seActionNavigateWelderBlock(w, system, agentId, 4, 1.0));
 			}
 
 			// FIXME: Fix Ladder2 is not observed as entityType
 			if((interactiveEntities.contains(w.get(IV4XRtags.entityType)) || w.get(IV4XRtags.seDefinitionId).contains("Ladder2"))
-					&& (reachablePosition = seReachablePositionHelper.calculateAdjacentReachablePosToEntity(system, w)) != null) {
-				labActions.add(new seActionNavigateInteract(w, reachablePosition, system, agentId));
+					&& seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+				labActions.add(new seActionNavigateInteract(w, system, agentId));
 			}
 		}
 

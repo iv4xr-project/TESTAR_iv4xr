@@ -37,7 +37,6 @@ import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.model.Vec2F;
 import spaceEngineers.model.Vec3F;
@@ -47,8 +46,8 @@ public class seActionNavigateInteract extends seActionNavigateToBlock {
 
 	protected Widget targetBlock;
 
-	public seActionNavigateInteract(Widget w, Vec3 reachablePosition, SUT system, String agentId){
-		super(w, reachablePosition, system, agentId);
+	public seActionNavigateInteract(Widget w, SUT system, String agentId){
+		super(w, system, agentId);
 		this.targetBlock = w;
 		this.set(Tags.Desc, toShortString());
 		// TODO: Update with Goal Solving agents

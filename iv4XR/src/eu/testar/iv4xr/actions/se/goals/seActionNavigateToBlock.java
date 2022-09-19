@@ -30,6 +30,7 @@
 
 package eu.testar.iv4xr.actions.se.goals;
 
+import java.util.List;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
@@ -41,12 +42,16 @@ import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
-import eu.testar.iv4xr.se.SeAgentTESTAR;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-import nl.uu.cs.aplib.utils.Pair;
+import spaceEngineers.controller.Observer;
+import spaceEngineers.model.extensions.ObservationExtensionsKt;
+import spaceEngineers.navigation.NavGraph;
+import spaceEngineers.navigation.Node;
+import spaceEngineers.navigation.RichNavGraph;
+import spaceEngineers.navigation.RichNavGraphKt;
+import spaceEngineers.controller.SpaceEngineers;
+import spaceEngineers.iv4xr.navigation.NavigableGraph;
 import spaceEngineers.model.Vec2F;
 import spaceEngineers.model.Vec3F;
-import uuspaceagent.UUTacticLib;
 
 public class seActionNavigateToBlock extends seActionGoal {
 	private static final long serialVersionUID = 1846118675335766867L;
@@ -58,23 +63,20 @@ public class seActionNavigateToBlock extends seActionGoal {
 	protected Vec3 calculatedReachablePosition;
 	protected final float DEGREES = 2416f;
 
-	public seActionNavigateToBlock(Widget w, Vec3 reachablePosition, SUT system, String agentId){
+	public seActionNavigateToBlock(Widget w, SUT system, String agentId){
 		this.agentId = agentId;
 		this.set(Tags.OriginWidget, w);
 		this.widgetType = w.get(IV4XRtags.entityType);
 		this.widgetId = w.get(IV4XRtags.entityId);
 		this.widgetPosition = w.get(IV4XRtags.entityPosition);
 		this.targetPosition = SVec3.labToSE(w.get(IV4XRtags.entityPosition));
-		// Save the reachable position calculated by a pathfinding algorithm
-		this.calculatedReachablePosition = reachablePosition;
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionCommandMove);
 		this.set(Tags.Desc, toShortString());
 		// TODO: Update with Goal Solving agents
 		this.set(IV4XRtags.agentAction, false);
 		this.set(IV4XRtags.newActionByAgent, false);
 
-		this.testAgent = (SeAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
-		this.stateGrid = testAgent.getStateGrid();
+		this.testAgent = system.get(IV4XRtags.iv4xrTestAgent);
 	}
 
 	@Override
@@ -89,31 +91,33 @@ public class seActionNavigateToBlock extends seActionGoal {
 	 * @param system
 	 */
 	protected void navigateToReachableBlockPosition(SUT system) {
-		stateGrid.updateState(agentId);
+		// Create a navigational graph of the largest grid
+		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+		Observer seObserver = seController.getObserver();
+		String largestGridId = ObservationExtensionsKt.largestGrid(seObserver.observeBlocks()).getId();
+		NavGraph navGraph = seObserver.navigationGraph(largestGridId);
+		RichNavGraph richNavGraph = RichNavGraphKt.toRichGraph(navGraph);
 
-		/**
-		 * Hardcoded temporally, we will need to use deviated square for calculation
-		 */
-		float THRESHOLD_SQUARED_DEVIATED_DISTANCE_TO_SQUARE = 2f;
+		// Check if there is a reachable node in the navigational graph
+		// that allows the agent to reach the target block position
+		int reachableNode = -1;
+		float closestDistance = 3f; // Near the block to be able to interact later
+		for (Node node : richNavGraph.getNodeMap().values()) {
+			float distance = node.getPosition().distanceTo(targetPosition); // the target position of the widget to interact with
+			if(distance < closestDistance){
+				reachableNode = node.getId();
+				closestDistance = distance;
+			}
+		}
 
-		var sqDestination = stateGrid.navgrid.gridProjectedLocation(calculatedReachablePosition);
-		var centerOfSqDestination = stateGrid.navgrid.getSquareCenterLocation(sqDestination);
+		if(reachableNode != -1) {
+			NavigableGraph navigableGraph = new NavigableGraph(navGraph);
+			int targetNode = navGraph.getNodes().get(reachableNode).getId();
+			List<Integer> nodePath = getPath(navigableGraph, targetNode);
 
-		GoalStructure G = nl.uu.cs.aplib.AplibEDSL.goal("navigate to position: " + calculatedReachablePosition)
-				.toSolve((Pair<Vec3,Vec3> positionAndOrientation) -> {
-					var pos = positionAndOrientation.fst;
-					return Vec3.sub(centerOfSqDestination,pos).lengthSq() <= THRESHOLD_SQUARED_DEVIATED_DISTANCE_TO_SQUARE;
-				})
-				.withTactic(UUTacticLib.navigateToTAC(calculatedReachablePosition))
-				.lift();
-
-		testAgent.setGoal(G);
-
-		int turn= 0;
-		while(G.getStatus().inProgress()) {
-			testAgent.update();
-			turn++;
-			if (turn >= 100) break;
+			for (Integer nodeId : nodePath) {
+				new SEnavigator().moveInLine(system, navigableGraph.node(nodeId).getPosition());
+			}
 		}
 	}
 

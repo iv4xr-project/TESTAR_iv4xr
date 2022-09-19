@@ -47,11 +47,11 @@ import org.fruit.alayer.windows.WinProcess;
 import environments.SeEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import nl.uu.cs.aplib.agents.State;
 import spaceEngineers.controller.ContextControllerWrapper;
 import spaceEngineers.controller.SpaceEngineers;
 import spaceEngineers.controller.SpaceEngineersJavaProxyBuilder;
 import spaceEngineers.controller.SpaceEngineersTestContext;
-import uuspaceagent.UUSeAgentState;
 
 public class SpaceEngineersProcess extends SUTBase {
 
@@ -142,15 +142,12 @@ public class SpaceEngineersProcess extends SUTBase {
 				System.out.println("Loaded level: " + levelPath);
 			}
 
-			// Create UU state grid
-			UUSeAgentState stateGrid = new UUSeAgentState(characterControllerId);
-			// Prepare UU agent
 			SpaceEngineersTestContext context = new SpaceEngineersTestContext();
 			ContextControllerWrapper controllerWrapper = new ContextControllerWrapper(seBuilder, context);
 			// WorldId is empty because we are going to connect to a running level, not load a new one
 			SeEnvironment sEnv = new SeEnvironment("", controllerWrapper);
 			// Finally create the TestAgent
-			TestAgent testAgent = new SeAgentTESTAR(characterControllerId, "explorer").attachState(stateGrid).attachEnvironment(sEnv);
+			TestAgent testAgent = new TestAgent(characterControllerId, "explorer").attachState(new State()).attachEnvironment(sEnv);
 
 			this.set(IV4XRtags.windowsProcess, win);
 			this.set(Tags.PID, win.pid());

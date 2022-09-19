@@ -37,7 +37,6 @@ import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.model.DefinitionId;
 import spaceEngineers.model.ToolbarLocation;
@@ -59,12 +58,12 @@ public class seActionNavigateGrinderBlock extends seActionNavigateToBlock {
 		this.grinderType = "AngleGrinder".concat(type).concat("Item");
 	}
 
-	public seActionNavigateGrinderBlock(Widget w, Vec3 reachablePosition, SUT system, String agentId){
-		this(w, reachablePosition, system, agentId, 1, 1);
+	public seActionNavigateGrinderBlock(Widget w, SUT system, String agentId){
+		this(w, system, agentId, 1, 1);
 	}
 
-	public seActionNavigateGrinderBlock(Widget w, Vec3 reachablePosition, SUT system, String agentId, int grinderType, double toolUsageTime){
-		super(w, reachablePosition, system, agentId);
+	public seActionNavigateGrinderBlock(Widget w, SUT system, String agentId, int grinderType, double toolUsageTime){
+		super(w, system, agentId);
 		setGrinderType(grinderType);
 		this.toolUsageTime = toolUsageTime;
 		this.set(Tags.Desc, toShortString());

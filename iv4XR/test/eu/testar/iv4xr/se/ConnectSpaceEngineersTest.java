@@ -17,7 +17,6 @@ import spaceEngineers.controller.SpaceEngineersTestContext;
 import spaceEngineers.model.CharacterObservation;
 import spaceEngineers.model.Observation;
 import spaceEngineers.transport.SocketReaderWriterKt;
-import uuspaceagent.UUSeAgentState;
 
 /**
  * JUnit tests ignored by default, 
@@ -54,13 +53,12 @@ public class ConnectSpaceEngineersTest {
 
 	@Test
 	public void create_agent() {
-		UUSeAgentState stateGrid = new UUSeAgentState("you");
 		SpaceEngineersTestContext context = new SpaceEngineersTestContext();
 		ContextControllerWrapper controllerWrapper = new ContextControllerWrapper(seController, context);
 		// WorldId is empty because we are going to connect to a running level, not load a new one
 		SeEnvironment sEnv = new SeEnvironment("", controllerWrapper);
 		// Finally create the TestAgent
-		TestAgent testAgent = new SeAgentTESTAR("you", "explorer").attachState(stateGrid).attachEnvironment(sEnv);
+		TestAgent testAgent = new TestAgent("you", "explorer").attachEnvironment(sEnv);
 
 		assertTrue(testAgent.getId() == "you");
 		assertTrue(testAgent.env() == sEnv);

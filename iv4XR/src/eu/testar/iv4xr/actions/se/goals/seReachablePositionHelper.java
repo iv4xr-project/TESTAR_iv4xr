@@ -30,84 +30,55 @@
 
 package eu.testar.iv4xr.actions.se.goals;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.Widget;
 
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.testar.iv4xr.se.SeAgentTESTAR;
-import uuspaceagent.DPos3;
-import uuspaceagent.UUSeAgentState;
+import eu.testar.iv4xr.enums.SVec3;
+import spaceEngineers.controller.Observer;
+import spaceEngineers.controller.SpaceEngineers;
+import spaceEngineers.model.Vec3F;
+import spaceEngineers.model.extensions.ObservationExtensionsKt;
+import spaceEngineers.navigation.NavGraph;
+import spaceEngineers.navigation.Node;
+import spaceEngineers.navigation.RichNavGraph;
+import spaceEngineers.navigation.RichNavGraphKt;
 
 public class seReachablePositionHelper {
 
 	private seReachablePositionHelper() {}
 
 	/**
-	 * Try to calculate a reachable position near the desired entity. 
-	 * If this is not possible, return null. 
+	 * Calculate a reachable node position near the desired entity. 
 	 * 
 	 * @param system
 	 * @param w
-	 * @return Vec3 or null
+	 * @return
 	 */
-	public static Vec3 calculateAdjacentReachablePosToEntity(SUT system, Widget w) {
-		// Calculate if we can reach the entity using the pathfinding algorithm
-		SeAgentTESTAR testAgent = (SeAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
-		UUSeAgentState stateGrid = testAgent.getStateGrid();
-		stateGrid.navgrid.enableFlying = false;
-		stateGrid.updateState(testAgent.getId());
+	public static boolean calculateIfEntityReachable(SUT system, Widget w) {
+		Vec3F targetPosition = SVec3.labToSE(w.get(IV4XRtags.entityPosition));
 
-		Vec3 destination = w.get(IV4XRtags.entityPosition);
+		// Create a navigational graph of the largest grid
+		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+		Observer seObserver = seController.getObserver();
+		String largestGridId = ObservationExtensionsKt.largestGrid(seObserver.observeBlocks()).getId();
+		NavGraph navGraph = seObserver.navigationGraph(largestGridId);
+		RichNavGraph richNavGraph = RichNavGraphKt.toRichGraph(navGraph);
 
-		var sqAgent = stateGrid.navgrid.gridProjectedLocation(stateGrid.wom.position);
-		var sqDestination = stateGrid.navgrid.gridProjectedLocation(destination);
-		List<DPos3> path = stateGrid.pathfinder2D.findPath(stateGrid.navgrid, sqAgent, sqDestination);
-
-		if (path == null) {
-			// the pathfinder cannot find a path
-			System.out.println("### NO path to " + destination);
-
-			// 3D adjacent positions
-			//[{-3,-3,-3}{-3,-3,-2}..{0,-1,0}{0,0,-1}{0,0,0},{0,0,1},{0,1,0}..{3,3,2}{3,3,3}]
-			List<Vec3> recalculate_adjacent = new ArrayList<Vec3>();
-			for(int i = 0; i < 4; i++) {
-				for(int j = 0; j < 4; j++) {
-					for(int k = 0; k < 4; k++) {
-						recalculate_adjacent.add(new Vec3(i, j, k));
-						recalculate_adjacent.add(new Vec3(i*-1, j*-1, k*-1));
-					}
-				}
+		// Check if there is a reachable node in the navigational graph
+		// that allows the agent to reach the target block position
+		int reachableNode = -1;
+		float closestDistance = 3f; // Near the block to be able to interact later
+		for (Node node : richNavGraph.getNodeMap().values()) {
+			float distance = node.getPosition().distanceTo(targetPosition); // the target position of the widget to interact with
+			if(distance < closestDistance){
+				reachableNode = node.getId();
+				closestDistance = distance;
 			}
-
-			System.out.println("Try to recalculate destination with adjacent list: " + Arrays.toString(recalculate_adjacent.toArray()));
-
-			for(Vec3 adjacentDestination : recalculate_adjacent) {
-				Vec3 recalculatedDestination = Vec3.add(destination, adjacentDestination);
-
-				sqAgent = stateGrid.navgrid.gridProjectedLocation(stateGrid.wom.position);
-				sqDestination = stateGrid.navgrid.gridProjectedLocation(recalculatedDestination);
-				path = stateGrid.pathfinder2D.findPath(stateGrid.navgrid, sqAgent, sqDestination);
-
-				if(path != null) {
-					// If we finally found a path to the entity, using an adjacent position, return the new recalculated position
-					System.out.println("!!! Path recalculated to " + recalculatedDestination);
-					return recalculatedDestination;
-				} else {
-					System.out.println("### NO modified path to " + recalculatedDestination);
-				}
-			}
-		} else {
-			// Path was not null in the beginning, this means that the initial destination was reachable
-			return destination;
 		}
 
-		// It was not possible to calculate a reachable position near the desired entity, return null
-		return null;
+		return (reachableNode != -1);
 	}
 
 	/**
@@ -118,23 +89,28 @@ public class seReachablePositionHelper {
 	 * @return true or false
 	 */
 	public static boolean calculateIfPositionIsReachable(SUT system, Vec3 position) {
-		// Calculate if we can reach a specific position using the pathfinding algorithm
-		SeAgentTESTAR testAgent = (SeAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
-		UUSeAgentState stateGrid = testAgent.getStateGrid();
-		stateGrid.navgrid.enableFlying = false;
-		stateGrid.updateState(testAgent.getId());
+		Vec3F destinationPosition = SVec3.labToSE(position);
 
-		var sqAgent = stateGrid.navgrid.gridProjectedLocation(stateGrid.wom.position);
-		var sqDestination = stateGrid.navgrid.gridProjectedLocation(position);
-		List<DPos3> path = stateGrid.pathfinder2D.findPath(stateGrid.navgrid, sqAgent, sqDestination);
+		// Create a navigational graph of the largest grid
+		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+		Observer seObserver = seController.getObserver();
+		String largestGridId = ObservationExtensionsKt.largestGrid(seObserver.observeBlocks()).getId();
+		NavGraph navGraph = seObserver.navigationGraph(largestGridId);
+		RichNavGraph richNavGraph = RichNavGraphKt.toRichGraph(navGraph);
 
-		if (path == null) {
-			// the pathfinder cannot find a path
-			return false;
-		} else {
-			// Path is available, this means that the initial destination was reachable
-			return true;
+		// Check if there is a reachable node in the navigational graph
+		// that allows the agent to reach the position to explore
+		int reachableNode = -1;
+		float closestDistance = 0.5f; // Not exactly the same position but almost
+		for (Node node : richNavGraph.getNodeMap().values()) {
+			float distance = node.getPosition().distanceTo(destinationPosition); // the destination position to explore
+			if(distance < closestDistance){
+				reachableNode = node.getId();
+				closestDistance = distance;
+			}
 		}
+
+		return (reachableNode != -1);
 	}
 
 }

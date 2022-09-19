@@ -201,40 +201,29 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 
 		// For each block widget (see movementEntities types), rotate and move until the agent is close to the position of the block
 		for(Widget w : state) {
-			Vec3 reachablePosition = null;
-			if(toolEntities.contains(w.get(IV4XRtags.entityType))
-					&& (reachablePosition = seReachablePositionHelper.calculateAdjacentReachablePosToEntity(system, w)) != null) {
-				labActions.add(new seActionNavigateGrinderBlock(w, reachablePosition, system, agentId, 4, 1.0));
-				labActions.add(new seActionNavigateWelderBlock(w, reachablePosition, system, agentId, 4, 1.0));
+			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 4, 1.0));
+				labActions.add(new seActionNavigateWelderBlock(w, system, agentId, 4, 1.0));
 			}
 
 			// FIXME: Fix Ladder2 is not observed as entityType
 			if((interactiveEntities.contains(w.get(IV4XRtags.entityType)) || w.get(IV4XRtags.seDefinitionId).contains("Ladder2"))
-					&& (reachablePosition = seReachablePositionHelper.calculateAdjacentReachablePosToEntity(system, w)) != null) {
-				labActions.add(new seActionNavigateInteract(w, reachablePosition, system, agentId));
+					&& seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+				labActions.add(new seActionNavigateInteract(w, system, agentId));
 			}
 		}
-
-		// Force navigate and interact action if not empty, but we are reducing the exploration
-		//if(!labActions.isEmpty()) return labActions;
 
 		// Now add the set of actions to explore level positions
 		labActions = calculateExploratoryPositions(system, state, labActions);
 
 		// If it was not possible to navigate to an entity or realize a smart exploration
 		// prepare a dummy exploration
-		/*if(labActions.isEmpty()) {
+		if(labActions.isEmpty()) {
 			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, 1f), 30)); // Move to back
 			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, -1f), 30)); // Move to front
 			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(1f, 0, 0), 30)); // Move to Right
 			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(-1f, 0, 0), 30)); // Move to Left
-		}*/
-		// Always add the possibility to realize a dummy movements
-		// Because some corner may block the smart exploration
-		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, 1f), 30)); // Move to back
-		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, -1f), 30)); // Move to front
-		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(1f, 0, 0), 30)); // Move to Right
-		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(-1f, 0, 0), 30)); // Move to Left
+		}
 
 		return labActions;
 	}
@@ -372,6 +361,5 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 		OpenCoverage.extractSummaryCoverage();
 		OpenCoverage.createHTMLCoverageReport(settings);
 	}
-
 
 }
