@@ -42,7 +42,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -72,18 +71,14 @@ import org.xml.sax.SAXException;
 import com.google.gson.Gson;
 
 import eu.iv4xr.framework.spatial.Vec3;
-import eu.testar.iv4xr.actions.se.goals.seActionNavigateGrinderBlock;
-import eu.testar.iv4xr.actions.se.goals.seActionNavigateInteract;
 import eu.testar.iv4xr.enums.IV4XRtags;
 
 public class SpatialXMLmap {
 
 	private SpatialXMLmap() {}
 
-	private static HashMap<String, String> xml_initial_interactive_blocks = new HashMap<>();
-	private static Set<String> xml_interacted_blocks = new HashSet<>();
-
 	private static int [][] xml_space_blocks = {{0,0,0}};
+
 	private static int agentObservationRadius = 0; //TODO: Verify 1 to 2,5 game distance relation
 	private static Vec3 initialAgentPosition = new Vec3(0, 0, 0);
 	private static Vec3 initialPlatformPosition = new Vec3(0, 0, 0);
@@ -94,8 +89,6 @@ public class SpatialXMLmap {
 
 	public static void prepareSpatialXMLmap(String levelPath) {
 		// First, clear and load the initial XML blocks information
-		xml_initial_interactive_blocks = new HashMap<>();
-		xml_interacted_blocks = new HashSet<>();
 		xml_space_blocks = new int[][]{{0,0,0}};
 
 		try {
@@ -109,14 +102,6 @@ public class SpatialXMLmap {
 			e.printStackTrace();
 			throw new SystemStartException("Exception reading the Space Engineers file to prepare the xml coverage");
 		}
-
-		System.out.println("---------------------------------------------------------------------------------");
-		System.out.println("Initial interactive block detected in the XML file: " + levelPath);
-		System.out.println("---------------------------------------------------------------------------------");
-		xml_initial_interactive_blocks.entrySet().forEach(entry -> {
-			System.out.println("BlockEntityId: " + entry.getKey() + " with Type: " + entry.getValue());
-		});
-		System.out.println("---------------------------------------------------------------------------------");
 	}
 
 	private static void obtainObservationRadius() throws IOException {
@@ -182,7 +167,7 @@ public class SpatialXMLmap {
 		// SANDBOX_0_0_0_.sbs is the SE file that contains information about the existing blocks of the level
 		FileInputStream fileIS = new FileInputStream(new File(levelPath + File.separator + "SANDBOX_0_0_0_.sbs"));
 		// MyObjectBuilder_CubeBlock seems to be the XML element that represents each block
-		// Prepare a xPath expression to obtain all the block that contains the entity id property
+		// Prepare a xPath expression to obtain all the functional blocsk that contains the entity id property
 		String expression = "/MyObjectBuilder_Sector/SectorObjects/MyObjectBuilder_EntityBase/CubeBlocks/MyObjectBuilder_CubeBlock/EntityId";
 
 		DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
@@ -193,12 +178,6 @@ public class SpatialXMLmap {
 		NodeList allBlocksElements = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
 		for (int i = 0; i < allBlocksElements.getLength(); i++) {
 			Node blockElement = allBlocksElements.item(i);
-			// Prepare the entity id for the map
-			String blockEntityId = blockElement.getTextContent().trim();
-			// Also obtain the type of block because is a more descriptive information
-			String blockType = blockElement.getParentNode().getAttributes().getNamedItem("xsi:type").getNodeValue();
-			xml_initial_interactive_blocks.put(blockEntityId, blockType);
-
 			// Now extract the position for the XML space map
 			// TODO: Improve with a new xPath expression
 			NodeList allBlockProperties = blockElement.getParentNode().getChildNodes();
@@ -319,12 +298,6 @@ public class SpatialXMLmap {
 	}
 
 	public static void updateInteractedBlock(Action action) {
-		if(action instanceof seActionNavigateGrinderBlock || action instanceof seActionNavigateInteract) {
-			String interactedBlockId = action.get(Tags.OriginWidget).get(IV4XRtags.entityId);
-			System.out.println("Interacted Block Id: " + interactedBlockId);
-			xml_interacted_blocks.add(interactedBlockId);
-		}
-
 		// Prepare the relative position to match the relative XML information
 		Vec3 relativePosition = Vec3.sub(initialAgentPosition, initialPlatformPosition);
 		// If the action contains a functional origin widget
@@ -344,24 +317,7 @@ public class SpatialXMLmap {
 	}
 
 	public static void createXMLspatialMap() {
-
 		printSpaceBlocks();
-
-		System.out.println("---------------------------------------------------------------------------------");
-		System.out.println("Interacted block entities by Id");
-		System.out.println("---------------------------------------------------------------------------------");
-
-		xml_interacted_blocks.forEach(System.out::println);
-
-		System.out.println("*********************************************************************************");
-		System.out.println("Initial BUT NOT interacted entities");
-		System.out.println("*********************************************************************************");
-		xml_initial_interactive_blocks.entrySet().forEach(entry -> {
-			if(!xml_interacted_blocks.contains(entry.getKey())) {
-				System.out.println("BlockEntityId: " + entry.getKey() + " with Type: " + entry.getValue());
-			}
-		});
-
 		extractSummarySpatial();
 	}
 
@@ -444,7 +400,7 @@ public class SpatialXMLmap {
 	private static void extractSummarySpatial() {
 		int interactedBlocksCount = linearSearch(xml_space_blocks, 5);
 		int observedBlocksCount = linearSearch(xml_space_blocks, 4) + interactedBlocksCount;
-		int existingBlocksCount = linearSearch(xml_space_blocks, 3) + observedBlocksCount + interactedBlocksCount;
+		int existingBlocksCount = linearSearch(xml_space_blocks, 3) + observedBlocksCount;
 
 		String totalSummary = "Sequence | " + OutputStructure.sequenceInnerLoopCount +
 				" | existingBlocks | " + existingBlocksCount +
