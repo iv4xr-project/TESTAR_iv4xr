@@ -35,6 +35,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -60,6 +61,7 @@ import org.fruit.Assert;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
+import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.SystemStartException;
 import org.testar.OutputStructure;
 import org.w3c.dom.Document;
@@ -98,8 +100,9 @@ public class SpatialXMLmap {
 
 		try {
 			obtainObservationRadius();
-			loadInitialInteractiveBlocks(levelPath);
+			// First load the space blocks to calculate the max and min axis
 			loadSpaceBlocks(levelPath);
+			loadInitialInteractiveBlocks(levelPath);
 			loadInitialAgentPosition(levelPath);
 			loadInitialPlatformPosition(levelPath);
 		} catch(Exception e) {
@@ -123,31 +126,6 @@ public class SpatialXMLmap {
 		agentObservationRadius = (int)Math.round((double)map.get("ObservationRadius"));
 		System.out.println("ObservationRadius: " + agentObservationRadius);
 		reader.close();
-	}
-
-	private static void loadInitialInteractiveBlocks(String levelPath) throws ParserConfigurationException, XPathExpressionException, SAXException, IOException {
-		// SANDBOX_0_0_0_.sbs is the SE file that contains information about the existing blocks of the level
-		FileInputStream fileIS = new FileInputStream(new File(levelPath + File.separator + "SANDBOX_0_0_0_.sbs"));
-		// MyObjectBuilder_CubeBlock seems to be the XML element that represents each block
-		// Prepare a xPath expression to obtain all the block that contains the entity id property
-		String expression = "/MyObjectBuilder_Sector/SectorObjects/MyObjectBuilder_EntityBase/CubeBlocks/MyObjectBuilder_CubeBlock/EntityId";
-
-		DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder builder = builderFactory.newDocumentBuilder();
-		Document xmlDocument = builder.parse(fileIS);
-		XPath xPath = XPathFactory.newInstance().newXPath();
-
-		NodeList allBlocksElements = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
-		for (int i = 0; i < allBlocksElements.getLength(); i++) {
-			Node blockElement = allBlocksElements.item(i);
-			// Prepare the entity id for the map
-			String blockEntityId = blockElement.getTextContent().trim();
-			// Also obtain the type of block because is a more descriptive information
-			String blockType = blockElement.getParentNode().getAttributes().getNamedItem("xsi:type").getNodeValue();
-			xml_initial_interactive_blocks.put(blockEntityId, blockType);
-		}
-
-		fileIS.close();
 	}
 
 	private static void loadSpaceBlocks(String levelPath) throws ParserConfigurationException, XPathExpressionException, SAXException, IOException {
@@ -191,10 +169,50 @@ public class SpatialXMLmap {
 		for(Node coordElement : coordNodesSet) {
 			// Obtain the x, y, z attributes from the coordinates node
 			int x = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem("x").getNodeValue()));
-			int y = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem("y").getNodeValue()));
+			//int y = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem("y").getNodeValue()));
 			int z = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem("z").getNodeValue()));
 
 			xml_space_blocks[x - minX][z - minZ] = 1;
+		}
+
+		fileIS.close();
+	}
+
+	private static void loadInitialInteractiveBlocks(String levelPath) throws ParserConfigurationException, XPathExpressionException, SAXException, IOException {
+		// SANDBOX_0_0_0_.sbs is the SE file that contains information about the existing blocks of the level
+		FileInputStream fileIS = new FileInputStream(new File(levelPath + File.separator + "SANDBOX_0_0_0_.sbs"));
+		// MyObjectBuilder_CubeBlock seems to be the XML element that represents each block
+		// Prepare a xPath expression to obtain all the block that contains the entity id property
+		String expression = "/MyObjectBuilder_Sector/SectorObjects/MyObjectBuilder_EntityBase/CubeBlocks/MyObjectBuilder_CubeBlock/EntityId";
+
+		DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = builderFactory.newDocumentBuilder();
+		Document xmlDocument = builder.parse(fileIS);
+		XPath xPath = XPathFactory.newInstance().newXPath();
+
+		NodeList allBlocksElements = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
+		for (int i = 0; i < allBlocksElements.getLength(); i++) {
+			Node blockElement = allBlocksElements.item(i);
+			// Prepare the entity id for the map
+			String blockEntityId = blockElement.getTextContent().trim();
+			// Also obtain the type of block because is a more descriptive information
+			String blockType = blockElement.getParentNode().getAttributes().getNamedItem("xsi:type").getNodeValue();
+			xml_initial_interactive_blocks.put(blockEntityId, blockType);
+
+			// Now extract the position for the XML space map
+			// TODO: Improve with a new xPath expression
+			NodeList allBlockProperties = blockElement.getParentNode().getChildNodes();
+			for (int j = 0; j < allBlockProperties.getLength(); j++) {
+				// Search for the Min property that represents the block coordinates
+				if(allBlockProperties.item(j).getNodeName().equals("Min")) {
+					// Obtain the x, y, z attributes from the Min property
+					int x = Integer.parseInt(allBlockProperties.item(j).getAttributes().getNamedItem("x").getNodeValue());
+					//int y = Integer.parseInt(allBlockProperties.item(j).getAttributes().getNamedItem("y").getNodeValue());
+					int z = Integer.parseInt(allBlockProperties.item(j).getAttributes().getNamedItem("z").getNodeValue());
+
+					xml_space_blocks[x - minX][z - minZ] = 3;
+				}
+			}
 		}
 
 		fileIS.close();
@@ -254,14 +272,17 @@ public class SpatialXMLmap {
 		fileIS.close();
 	}
 
-	public static void updateAgentPosition(State state) {
-		Vec3 agentPosition = state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition);
-		System.out.println("agentPosition: " + agentPosition);
-
+	public static void updateAgentObservation(State state) {
 		// Prepare the relative position to match the relative XML information
 		Vec3 relativePosition = Vec3.sub(initialAgentPosition, initialPlatformPosition);
+
+		updateAgentPosition(state, relativePosition);
+		updateObservedEntities(state, relativePosition);
+	}
+
+	private static void updateAgentPosition(State state, Vec3 relativePosition) {
+		Vec3 agentPosition = state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition);
 		agentPosition = Vec3.add(Vec3.sub(agentPosition, initialAgentPosition), relativePosition);
-		System.out.println("relativePosition: " + agentPosition);
 
 		float gameToXML = 2.5f;
 		int x = Math.round(agentPosition.x / gameToXML);
@@ -269,7 +290,32 @@ public class SpatialXMLmap {
 		int z = Math.round(agentPosition.z / gameToXML);
 
 		// 2 represents the space explored by agent
-		xml_space_blocks[x - minX][z - minZ] = 2;
+		// Because this position is updated every state, 
+		// do not overwrite the position of functional blocks (3,4,5)
+		if(xml_space_blocks[x - minX][z - minZ] < 2) {
+			xml_space_blocks[x - minX][z - minZ] = 2;
+		}
+	}
+
+	private static void updateObservedEntities(State state, Vec3 relativePosition) {
+		for(Widget w : state) {
+			if(w.get(IV4XRtags.seFunctional, false)) {
+				Vec3 widgetBlockPosition = w.get(IV4XRtags.entityPosition);
+				widgetBlockPosition = Vec3.add(Vec3.sub(widgetBlockPosition, initialAgentPosition), relativePosition);
+
+				float gameToXML = 2.5f;
+				int x = Math.round(widgetBlockPosition.x / gameToXML);
+				//int y = Math.round(agentPosition.y / gameToXML);
+				int z = Math.round(widgetBlockPosition.z / gameToXML);
+
+				// 4 represents an observed functional entity
+				// Because this position is updated every state, 
+				// do not overwrite the position of interacted functional blocks (5)
+				if(xml_space_blocks[x - minX][z - minZ] < 4) {
+					xml_space_blocks[x - minX][z - minZ] = 4;
+				}
+			}
+		}
 	}
 
 	public static void updateInteractedBlock(Action action) {
@@ -277,6 +323,23 @@ public class SpatialXMLmap {
 			String interactedBlockId = action.get(Tags.OriginWidget).get(IV4XRtags.entityId);
 			System.out.println("Interacted Block Id: " + interactedBlockId);
 			xml_interacted_blocks.add(interactedBlockId);
+		}
+
+		// Prepare the relative position to match the relative XML information
+		Vec3 relativePosition = Vec3.sub(initialAgentPosition, initialPlatformPosition);
+		// If the action contains a functional origin widget
+		if(action.get(Tags.OriginWidget, null) != null && action.get(Tags.OriginWidget).get(IV4XRtags.seFunctional, false)) {
+			Widget interactedWidget = action.get(Tags.OriginWidget);
+			Vec3 widgetBlockPosition = interactedWidget.get(IV4XRtags.entityPosition);
+			widgetBlockPosition = Vec3.add(Vec3.sub(widgetBlockPosition, initialAgentPosition), relativePosition);
+
+			float gameToXML = 2.5f;
+			int x = Math.round(widgetBlockPosition.x / gameToXML);
+			//int y = Math.round(agentPosition.y / gameToXML);
+			int z = Math.round(widgetBlockPosition.z / gameToXML);
+
+			// 5 represents an interacted functional entity
+			xml_space_blocks[x - minX][z - minZ] = 5;
 		}
 	}
 
@@ -298,6 +361,8 @@ public class SpatialXMLmap {
 				System.out.println("BlockEntityId: " + entry.getKey() + " with Type: " + entry.getValue());
 			}
 		});
+
+		extractSummarySpatial();
 	}
 
 	private static void printSpaceBlocks() {
@@ -311,6 +376,9 @@ public class SpatialXMLmap {
 			List<Rectangle> emptySpaceList = new ArrayList<>();
 			List<Rectangle> existingBlockList = new ArrayList<>();
 			List<Rectangle> exploredBlockList = new ArrayList<>();
+			List<Rectangle> existingFunctional = new ArrayList<>();
+			List<Rectangle> observedFunctional = new ArrayList<>();
+			List<Rectangle> interactedFunctional = new ArrayList<>();
 
 			// Prepare the list of elements to draw the map
 			for(int i = 0; i < WIDTH; i++) {
@@ -327,10 +395,21 @@ public class SpatialXMLmap {
 					else if(xml_space_blocks[i][j] == 2) {
 						exploredBlockList.add(new Rectangle(i * reSizeMap, j * reSizeMap, reSizeMap, reSizeMap));
 					}
+					// 3 represents an existing functional block
+					else if(xml_space_blocks[i][j] == 3) {
+						existingFunctional.add(new Rectangle(i * reSizeMap, j * reSizeMap, reSizeMap, reSizeMap));
+					}
+					// 4 represents an observed functional block
+					else if(xml_space_blocks[i][j] == 4) {
+						observedFunctional.add(new Rectangle(i * reSizeMap, j * reSizeMap, reSizeMap, reSizeMap));
+					}
+					// 5 represents an interacted functional block
+					else if(xml_space_blocks[i][j] == 5) {
+						interactedFunctional.add(new Rectangle(i * reSizeMap, j * reSizeMap, reSizeMap, reSizeMap));
+					}
 					else {
 						System.err.println("ERROR trying to process and printing exploration map");
 					}
-					//ImageIO.write(image, "png", new File("map" + i + j + ".png"));
 				}
 			}
 
@@ -345,6 +424,9 @@ public class SpatialXMLmap {
 				g.setColor(java.awt.Color.green); 
 				g.fillOval(r.x, r.y, r.width, r.height);
 			}
+			for(Rectangle r : existingFunctional) {g.setColor(java.awt.Color.magenta); g.fillOval(r.x, r.y, r.width, r.height);}
+			for(Rectangle r : observedFunctional) {g.setColor(java.awt.Color.pink); g.fillOval(r.x, r.y, r.width, r.height);}
+			for(Rectangle r : interactedFunctional) {g.setColor(java.awt.Color.orange); g.fillOval(r.x, r.y, r.width, r.height);}
 
 			ImageIO.write(image, "png", new File(OutputStructure.outerLoopOutputDir + File.separator + "xml_map" + OutputStructure.sequenceInnerLoopCount + ".png"));
 
@@ -357,5 +439,40 @@ public class SpatialXMLmap {
 		x = x-(r/2);
 		y = y-(r/2);
 		g.drawOval(x,y,r,r);
+	}
+
+	private static void extractSummarySpatial() {
+		int interactedBlocksCount = linearSearch(xml_space_blocks, 5);
+		int observedBlocksCount = linearSearch(xml_space_blocks, 4) + interactedBlocksCount;
+		int existingBlocksCount = linearSearch(xml_space_blocks, 3) + observedBlocksCount + interactedBlocksCount;
+
+		String totalSummary = "Sequence | " + OutputStructure.sequenceInnerLoopCount +
+				" | existingBlocks | " + existingBlocksCount +
+				" | observedBlocks | " + observedBlocksCount +
+				" | observedPercentage | " + String.format("%.2f", (double)observedBlocksCount * 100.0 / (double)existingBlocksCount).replace(".", ",") +
+				" | interactedBlocks | " + interactedBlocksCount +
+				" | interactedBlocks | " + String.format("%.2f", (double)interactedBlocksCount * 100.0 / (double)existingBlocksCount).replace(".", ",");
+
+		try {
+			File metricsFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "summary_spatial_coverage.txt").getAbsoluteFile();
+			metricsFile.createNewFile();
+			FileWriter myWriter = new FileWriter(metricsFile, true);
+			myWriter.write(totalSummary + "\r\n");
+			myWriter.close();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+	}
+
+	private static int linearSearch(int[][] arr, int target) {
+		int count = 0;
+		for (int i = 0; i < arr.length; i++) {
+			for (int j = 0; j < arr[i].length; j++) {
+				if (arr[i][j] == target) {
+					count++;
+				}
+			}
+		}
+		return count;
 	}
 }

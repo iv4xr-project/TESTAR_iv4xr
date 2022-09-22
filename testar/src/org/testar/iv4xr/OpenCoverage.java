@@ -266,7 +266,7 @@ public class OpenCoverage {
 
 			fileIS.close();
 
-			File metricsFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "summary_coverage.txt").getAbsoluteFile();
+			File metricsFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "summary_code_coverage.txt").getAbsoluteFile();
 			metricsFile.createNewFile();
 			FileWriter myWriter = new FileWriter(metricsFile, true);
 			myWriter.write(totalSummary + "\r\n");
