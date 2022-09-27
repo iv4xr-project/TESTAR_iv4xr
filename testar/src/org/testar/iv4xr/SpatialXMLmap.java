@@ -32,6 +32,8 @@ package org.testar.iv4xr;
 
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.geom.Area;
+import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -85,7 +87,7 @@ public class SpatialXMLmap {
 	private static int minX = 0, maxX = 0, minZ = 0, maxZ = 0;
 	private static int WIDTH = 0;
 	private static int HEIGHT = 0;
-	private static int reSizeMap = 10;
+	private static int reSizeMap = 10; // This is to have a picture with a bigger scale
 
 	public static void prepareSpatialXMLmap(String levelPath) {
 		// First, clear and load the initial XML blocks information
@@ -144,7 +146,6 @@ public class SpatialXMLmap {
 
 		WIDTH = (maxX - minX + 1);
 		HEIGHT = (maxZ - minZ + 1);
-		reSizeMap = 10; // This is to have a picture with a bigger scale
 
 		xml_space_blocks = new int[ WIDTH ][ HEIGHT ];
 
@@ -316,6 +317,8 @@ public class SpatialXMLmap {
 		}
 	}
 
+	private static int observedBlocksPositions = 0;
+
 	public static void createXMLspatialMap() {
 		printSpaceBlocks();
 		extractSummarySpatial();
@@ -324,6 +327,8 @@ public class SpatialXMLmap {
 	private static void printSpaceBlocks() {
 		try {
 			System.out.println(Arrays.deepToString(xml_space_blocks));
+
+			Area observedLevelArea = new Area();
 
 			BufferedImage image = new BufferedImage(WIDTH * reSizeMap + 1, HEIGHT * reSizeMap + 1, BufferedImage.TYPE_INT_ARGB);
 			Graphics2D g = image.createGraphics();
@@ -374,11 +379,14 @@ public class SpatialXMLmap {
 			for(Rectangle r : existingBlockList) {g.setColor(java.awt.Color.yellow); g.drawRect(r.x, r.y, r.width, r.height);}
 			for(Rectangle r : exploredBlockList) {
 				// draw the agent observation
-				g.setColor(java.awt.Color.blue); 
-				drawCenteredCircle(g, r.x, r.y, agentObservationRadius * reSizeMap);
+				g.setColor(java.awt.Color.blue);
+				Ellipse2D observationEllipse = drawCenteredCircle(g, r.x, r.y, agentObservationRadius * reSizeMap);
 				// fill the agent position
 				g.setColor(java.awt.Color.green); 
 				g.fillOval(r.x, r.y, r.width, r.height);
+
+				// Add the observed blocks to the observed level area
+				observedLevelArea.add(new Area(observationEllipse));
 			}
 			for(Rectangle r : existingFunctional) {g.setColor(java.awt.Color.magenta); g.fillOval(r.x, r.y, r.width, r.height);}
 			for(Rectangle r : observedFunctional) {g.setColor(java.awt.Color.pink); g.fillOval(r.x, r.y, r.width, r.height);}
@@ -386,15 +394,23 @@ public class SpatialXMLmap {
 
 			ImageIO.write(image, "png", new File(OutputStructure.outerLoopOutputDir + File.separator + "xml_map" + OutputStructure.sequenceInnerLoopCount + ".png"));
 
+			// Count the observed blocks
+			for(Rectangle r : existingBlockList) {
+				if(observedLevelArea.contains(r)) {
+					observedBlocksPositions ++;
+				}
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	private static void drawCenteredCircle(Graphics2D g, int x, int y, int r) {
+	private static Ellipse2D drawCenteredCircle(Graphics2D g, int x, int y, int r) {
 		x = x-(r/2);
 		y = y-(r/2);
 		g.drawOval(x,y,r,r);
+		return new Ellipse2D.Double(x, y, r, r);
 	}
 
 	private static void extractSummarySpatial() {
@@ -402,12 +418,28 @@ public class SpatialXMLmap {
 		int observedBlocksCount = linearSearch(xml_space_blocks, 4) + interactedBlocksCount;
 		int existingBlocksCount = linearSearch(xml_space_blocks, 3) + observedBlocksCount;
 
+		int walkedPositions = linearSearch(xml_space_blocks, 2);
+		int existingPositions = linearSearch(xml_space_blocks, 1) + walkedPositions;
+
 		String totalSummary = "Sequence | " + OutputStructure.sequenceInnerLoopCount +
 				" | existingBlocks | " + existingBlocksCount +
+				// Observed entities number and percentage
 				" | observedBlocks | " + observedBlocksCount +
-				" | observedPercentage | " + String.format("%.2f", (double)observedBlocksCount * 100.0 / (double)existingBlocksCount).replace(".", ",") +
+				" | " + String.format("%.2f", (double)observedBlocksCount * 100.0 / (double)existingBlocksCount).replace(".", ",") +
+				// Interacted number and percentage
 				" | interactedBlocks | " + interactedBlocksCount +
-				" | interactedBlocks | " + String.format("%.2f", (double)interactedBlocksCount * 100.0 / (double)existingBlocksCount).replace(".", ",");
+				" | " + String.format("%.2f", (double)interactedBlocksCount * 100.0 / (double)existingBlocksCount).replace(".", ",") +
+
+				" | existingPositions | " + existingPositions +
+				// Walked number and percentage
+				" | walkedPositions | " + walkedPositions +
+				" | " + String.format("%.2f", (double)walkedPositions * 100.0 / (double)existingPositions).replace(".", ",") +
+				// Observed position number and percentage
+				" | observedLevelArea | " + observedBlocksPositions +
+				" | " + String.format("%.2f", (double)observedBlocksPositions * 100.0 / (double)existingPositions).replace(".", ",") +
+				// Unexplored position number and percentage
+				" | unexploredLevelArea | " + (existingPositions - observedBlocksPositions) +
+				" | " + String.format("%.2f", (double)(existingPositions - observedBlocksPositions) * 100.0 / (double)existingPositions).replace(".", ",");
 
 		try {
 			File metricsFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "summary_spatial_coverage.txt").getAbsoluteFile();
