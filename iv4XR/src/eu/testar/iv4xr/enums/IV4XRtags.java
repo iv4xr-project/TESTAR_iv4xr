@@ -165,6 +165,17 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<String> seOwnerId = from("seOwnerId", String.class);
 	public static final Tag<String> seBuiltBy = from("seBuiltBy", String.class);
 
+	public static final Tag<String> seCustomName = from("seCustomName", String.class);
+	public static final Tag<Boolean> seShowInInventory = from("seShowInInventory", Boolean.class);
+	public static final Tag<Boolean> seShowInTerminal = from("seShowInTerminal", Boolean.class);
+	public static final Tag<Boolean> seShowOnHUD = from("seShowOnHUD", Boolean.class);
+	public static final Tag<Boolean> seFunctionalEnabled = from("seFunctionalEnabled", Boolean.class);
+	public static final Tag<Boolean> seDoorOpen = from("seDoorOpen", Boolean.class);
+	public static final Tag<Boolean> seDoorAnyoneCanUse = from("seDoorAnyoneCanUse", Boolean.class);
+	public static final Tag<Float> seFuelMaxOutput = from("seFuelMaxOutput", Float.class);
+	public static final Tag<Float> seFuelCurrentOutput = from("seFuelCurrentOutput", Float.class);
+	public static final Tag<Float> seFuelCapacity = from("seFuelCapacity", Float.class);
+
 	/**
 	 * Agent - TESTAR comparison
 	 */

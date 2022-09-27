@@ -49,6 +49,10 @@ import org.fruit.alayer.visualizers.EllipseVisualizer;
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
+import spaceEngineers.model.DoorBase;
+import spaceEngineers.model.FueledPowerProducer;
+import spaceEngineers.model.FunctionalBlock;
+import spaceEngineers.model.TerminalBlock;
 
 public class Iv4xrSeVisualization {
 
@@ -136,6 +140,18 @@ public class Iv4xrSeVisualization {
 
 		canvas.text(YellowPen, 10, 210, 0, "Block Type: " + block.getDefinitionId().toString());
 		canvas.text(YellowPen, 10, 230, 0, "Block Id: " + block.getId());
+		if(block instanceof TerminalBlock) {
+			canvas.text(YellowPen, 10, 250, 0, "Block CustomName: " + ((TerminalBlock)block).getCustomName());
+		}
+		else if(block instanceof FunctionalBlock) {
+			canvas.text(YellowPen, 10, 250, 0, "Block CustomName: " + ((FunctionalBlock)block).getCustomName());
+		}
+		else if(block instanceof DoorBase) {
+			canvas.text(YellowPen, 10, 250, 0, "Block CustomName: " + ((DoorBase)block).getCustomName());
+		}
+		else if(block instanceof FueledPowerProducer) {
+			canvas.text(YellowPen, 10, 250, 0, "Block CustomName: " + ((FueledPowerProducer)block).getCustomName());
+		}
 
 		canvas.text(BluePen, 10, 270, 0, "Block Integrity: " + String.valueOf(block.getIntegrity()));
 		canvas.text(BluePen, 10, 290, 0, "Block Max Integrity: " + String.valueOf(block.getMaxIntegrity()));

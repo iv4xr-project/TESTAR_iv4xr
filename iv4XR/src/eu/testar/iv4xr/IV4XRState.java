@@ -307,6 +307,36 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		else if (t.equals(IV4XRtags.seBuiltBy)) {
 			ret = w.element.seBuiltBy;
 		}
+		else if (t.equals(IV4XRtags.seCustomName)) {
+			ret = w.element.seCustomName;
+		}
+		else if (t.equals(IV4XRtags.seShowInInventory)) {
+			ret = w.element.seShowInInventory;
+		}
+		else if (t.equals(IV4XRtags.seShowInTerminal)) {
+			ret = w.element.seShowInTerminal;
+		}
+		else if (t.equals(IV4XRtags.seShowOnHUD)) {
+			ret = w.element.seShowOnHUD;
+		}
+		else if (t.equals(IV4XRtags.seFunctionalEnabled)) {
+			ret = w.element.seFunctionalEnabled;
+		}
+		else if (t.equals(IV4XRtags.seDoorOpen)) {
+			ret = w.element.seDoorOpen;
+		}
+		else if (t.equals(IV4XRtags.seDoorAnyoneCanUse)) {
+			ret = w.element.seDoorAnyoneCanUse;
+		}
+		else if (t.equals(IV4XRtags.seFuelMaxOutput)) {
+			ret = w.element.seFuelMaxOutput;
+		}
+		else if (t.equals(IV4XRtags.seFuelCurrentOutput)) {
+			ret = w.element.seFuelCurrentOutput;
+		}
+		else if (t.equals(IV4XRtags.seFuelCapacity)) {
+			ret = w.element.seFuelCapacity;
+		}
 
 		cacheTag(w, t, ret);
 

@@ -484,6 +484,7 @@
               </ComponentData>
             </Components>
           </ComponentContainer>
+          <CustomName>LargeBlockSmallGenerator_3_1_-1</CustomName>
           <ShowOnHUD>false</ShowOnHUD>
           <ShowInTerminal>true</ShowInTerminal>
           <ShowInToolbarConfig>true</ShowInToolbarConfig>
@@ -500,6 +501,7 @@
           <Owner>144115188075855895</Owner>
           <BuiltBy>144115188075855895</BuiltBy>
           <ShareMode>Faction</ShareMode>
+          <CustomName>GravityGenerator_4_1_-1</CustomName>
           <ShowOnHUD>false</ShowOnHUD>
           <ShowInTerminal>true</ShowInTerminal>
           <ShowInToolbarConfig>true</ShowInToolbarConfig>
@@ -2034,6 +2036,7 @@
               </ComponentData>
             </Components>
           </ComponentContainer>
+          <CustomName>LargeBlockCryoChamber_8_1_12</CustomName>
           <ShowOnHUD>false</ShowOnHUD>
           <ShowInTerminal>true</ShowInTerminal>
           <ShowInToolbarConfig>true</ShowInToolbarConfig>
@@ -2100,6 +2103,7 @@
               </ComponentData>
             </Components>
           </ComponentContainer>
+          <CustomName>LargeBlockCryoChamber_7_1_-23</CustomName>
           <ShowOnHUD>false</ShowOnHUD>
           <ShowInTerminal>true</ShowInTerminal>
           <ShowInToolbarConfig>true</ShowInToolbarConfig>
@@ -2149,6 +2153,7 @@
           <Owner>144115188075855895</Owner>
           <BuiltBy>144115188075855895</BuiltBy>
           <ShareMode>Faction</ShareMode>
+          <CustomName>LargeBlockBatteryBlock_8_1_-23</CustomName>
           <ShowOnHUD>false</ShowOnHUD>
           <ShowInTerminal>true</ShowInTerminal>
           <ShowInToolbarConfig>true</ShowInToolbarConfig>
@@ -2217,6 +2222,7 @@
               </ComponentData>
             </Components>
           </ComponentContainer>
+          <CustomName>SurvivalKitLarge_9_1_-1</CustomName>
           <ShowOnHUD>false</ShowOnHUD>
           <ShowInTerminal>true</ShowInTerminal>
           <ShowInToolbarConfig>true</ShowInToolbarConfig>

@@ -424,8 +424,10 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected void stopSystem(SUT system) {
-		// Save the level as a result in the output folder
-		saveLevel(system);
+		// Save the level as a result in the output folder (only for generate mode)
+		if(settings.get(ConfigTags.Mode).equals(Modes.Generate)) {
+			saveLevel(system);
+		}
 		SocketReaderWriterKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));
 		super.stopSystem(system);
 	}

@@ -119,6 +119,22 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 	public String seOwnerId = "";
 	public String seBuiltBy = "";
 
+	// https://github.com/iv4xr-project/iv4xr-se-plugin/blob/main/JvmClient/src/commonMain/kotlin/spaceEngineers/model/BlockDataClasses.kt
+	// Specific properties of functional, terminal, door and power blocks
+	public String seCustomName = "";
+	public boolean seShowInInventory = false;
+	public boolean seShowInTerminal = false;
+	public boolean seShowOnHUD = false;
+
+	public boolean seFunctionalEnabled = false;
+
+	public boolean seDoorOpen = false;
+	public boolean seDoorAnyoneCanUse = false;
+
+	public float seFuelMaxOutput = 0f;
+	public float seFuelCurrentOutput = 0f;
+	public float seFuelCapacity = 0f;
+
 	public IV4XRElement(){ this(null); }
 
 	public IV4XRElement(IV4XRElement parent){

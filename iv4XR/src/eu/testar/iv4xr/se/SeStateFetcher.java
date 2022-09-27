@@ -43,7 +43,11 @@ import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.controller.Observer;
 import spaceEngineers.controller.SpaceEngineers;
 import spaceEngineers.model.CubeGrid;
+import spaceEngineers.model.DoorBase;
+import spaceEngineers.model.FueledPowerProducer;
+import spaceEngineers.model.FunctionalBlock;
 import spaceEngineers.model.Observation;
+import spaceEngineers.model.TerminalBlock;
 import spaceEngineers.model.Block;
 import spaceEngineers.model.CharacterObservation;
 
@@ -204,6 +208,42 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.seWorking = seBlock.getWorking();
 		childElement.seOwnerId = seBlock.getOwnerId();
 		childElement.seBuiltBy = seBlock.getBuiltBy();
+
+		// TODO: Think a better way to maintain these different types of blocks / entities
+		// https://github.com/iv4xr-project/iv4xr-se-plugin/blob/main/JvmClient/src/commonMain/kotlin/spaceEngineers/model/BlockDataClasses.kt
+		// Specific properties of functional, terminal, door and power blocks
+		if(seBlock instanceof TerminalBlock) {
+			childElement.seCustomName = ((TerminalBlock)seBlock).getCustomName();
+			childElement.seShowInInventory = ((TerminalBlock)seBlock).getShowInInventory();
+			childElement.seShowInTerminal = ((TerminalBlock)seBlock).getShowInTerminal();
+			childElement.seShowOnHUD = ((TerminalBlock)seBlock).getShowOnHUD();
+		}
+		else if(seBlock instanceof FunctionalBlock) {
+			childElement.seCustomName = ((FunctionalBlock)seBlock).getCustomName();
+			childElement.seShowInInventory = ((FunctionalBlock)seBlock).getShowInInventory();
+			childElement.seShowInTerminal = ((FunctionalBlock)seBlock).getShowInTerminal();
+			childElement.seShowOnHUD = ((FunctionalBlock)seBlock).getShowOnHUD();
+			childElement.seFunctionalEnabled = ((FunctionalBlock)seBlock).getEnabled();
+		}
+		else if(seBlock instanceof DoorBase) {
+			childElement.seCustomName = ((DoorBase)seBlock).getCustomName();
+			childElement.seShowInInventory = ((DoorBase)seBlock).getShowInInventory();
+			childElement.seShowInTerminal = ((DoorBase)seBlock).getShowInTerminal();
+			childElement.seShowOnHUD = ((DoorBase)seBlock).getShowOnHUD();
+			childElement.seFunctionalEnabled = ((DoorBase)seBlock).getEnabled();
+			childElement.seDoorOpen = ((DoorBase)seBlock).getOpen();
+			childElement.seDoorAnyoneCanUse = ((DoorBase)seBlock).getAnyoneCanUse();
+		}
+		else if(seBlock instanceof FueledPowerProducer) {
+			childElement.seCustomName = ((FueledPowerProducer)seBlock).getCustomName();
+			childElement.seShowInInventory = ((FueledPowerProducer)seBlock).getShowInInventory();
+			childElement.seShowInTerminal = ((FueledPowerProducer)seBlock).getShowInTerminal();
+			childElement.seShowOnHUD = ((FueledPowerProducer)seBlock).getShowOnHUD();
+			childElement.seFunctionalEnabled = ((FueledPowerProducer)seBlock).getEnabled();
+			childElement.seFuelMaxOutput = ((FueledPowerProducer)seBlock).getMaxOutput();
+			childElement.seFuelCurrentOutput = ((FueledPowerProducer)seBlock).getCurrentOutput();
+			childElement.seFuelCapacity = ((FueledPowerProducer)seBlock).getCapacity();
+		}
 
 		fillRect(childElement);
 
