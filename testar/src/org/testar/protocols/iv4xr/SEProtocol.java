@@ -35,6 +35,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -46,6 +47,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.fruit.Util;
@@ -61,6 +63,7 @@ import org.fruit.alayer.exceptions.ActionBuildException;
 import org.fruit.alayer.exceptions.StateBuildException;
 import org.fruit.alayer.windows.GDIScreenCanvas;
 import org.fruit.monkey.ConfigTags;
+import org.fruit.monkey.Main;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
 import org.testar.protocols.GenericUtilsProtocol;
@@ -421,8 +424,37 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected void stopSystem(SUT system) {
+		// Save the level as a result in the output folder
+		saveLevel(system);
 		SocketReaderWriterKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));
 		super.stopSystem(system);
+	}
+
+	private void saveLevel(SUT system) {
+		// Save the level as the sequence number + execution date
+		String saveAsName = Integer.toString(OutputStructure.sequenceInnerLoopCount) + "_" + OutputStructure.startInnerLoopDateString;
+
+		// Save the result level in the default SE directory
+		system.get(IV4XRtags.iv4xrSpaceEngineers).getScreens().getGamePlay().showMainMenu();
+		Util.pause(1);
+		system.get(IV4XRtags.iv4xrSpaceEngineers).getScreens().getMainMenu().saveAs();
+		Util.pause(1);
+		system.get(IV4XRtags.iv4xrSpaceEngineers).getScreens().getSaveAs().setName(saveAsName);
+		Util.pause(1);
+		system.get(IV4XRtags.iv4xrSpaceEngineers).getScreens().getSaveAs().pressOk();
+		Util.pause(5);
+
+		// Then move to TESTAR output results
+		try {
+			// testar\suts\se_levels\saveAsName
+			File savesDir = new File(Main.testarDir + File.separator + "suts" + File.separator + "se_levels" + File.separator + saveAsName);
+			// testar\output\2022-08-30_09h52m07s_SUT\se_level_output\sequenceX_innerDate
+			File testarOutputDir = new File(OutputStructure.outerLoopOutputDir + File.separator + "se_saves_output" + File.separator + saveAsName).getAbsoluteFile();
+			FileUtils.moveDirectory(savesDir, testarOutputDir);
+		} catch (IOException ioe) {
+			System.err.println("Error saving SE level: " + saveAsName);
+			ioe.printStackTrace();
+		}
 	}
 
 	/**
