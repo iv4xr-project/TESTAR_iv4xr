@@ -90,51 +90,6 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 	public int labRecruitsAgentScore = -1;
 	public String labRecruitsAgentMood = "";
 
-	/**
-	 * Specific Space Engineers iv4xr properties
-	 */
-	// Agent properties
-	public spaceEngineers.model.Vec3F seAgentPosition = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public spaceEngineers.model.Vec3F seAgentOrientationForward = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public spaceEngineers.model.Vec3F seAgentOrientationUp = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public float seAgentHealth = 0f;
-	public float seAgentOxygen = 0f;
-	public float seAgentEnergy = 0f;
-	public float seAgentHydrogen = 0f;
-	public boolean seAgentJetpackRunning = false;
-	public boolean seAgentDampenersOn = false;
-
-	// Block properties
-	public float seBuildIntegrity = 0f;
-	public float seIntegrity = 0f;
-	public float seMaxIntegrity = 0f;
-	public spaceEngineers.model.Vec3F seMaxPosition = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public spaceEngineers.model.Vec3F seMinPosition = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public spaceEngineers.model.Vec3F seOrientationForward = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public spaceEngineers.model.Vec3F seOrientationUp = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public spaceEngineers.model.Vec3F seSize = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public String seDefinitionId = "";
-	public boolean seFunctional = false;
-	public boolean seWorking = false;
-	public String seOwnerId = "";
-	public String seBuiltBy = "";
-
-	// https://github.com/iv4xr-project/iv4xr-se-plugin/blob/main/JvmClient/src/commonMain/kotlin/spaceEngineers/model/BlockDataClasses.kt
-	// Specific properties of functional, terminal, door and power blocks
-	public String seCustomName = "";
-	public boolean seShowInInventory = false;
-	public boolean seShowInTerminal = false;
-	public boolean seShowOnHUD = false;
-
-	public boolean seFunctionalEnabled = false;
-
-	public boolean seDoorOpen = false;
-	public boolean seDoorAnyoneCanUse = false;
-
-	public float seFuelMaxOutput = 0f;
-	public float seFuelCurrentOutput = 0f;
-	public float seFuelCapacity = 0f;
-
 	public IV4XRElement(){ this(null); }
 
 	public IV4XRElement(IV4XRElement parent){

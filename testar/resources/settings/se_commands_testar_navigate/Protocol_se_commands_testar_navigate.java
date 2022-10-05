@@ -146,7 +146,7 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 			}
 
 			// FIXME: Fix Ladder2 is not observed as entityType
-			if((interactiveEntities.contains(w.get(IV4XRtags.entityType)) || w.get(IV4XRtags.seDefinitionId).contains("Ladder2"))
+			if((interactiveEntities.contains(w.get(IV4XRtags.entityType)) || w.get(IV4XRtags.seDefinitionId, "").contains("Ladder2"))
 					&& seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
 				labActions.add(new seActionNavigateInteract(w, system, agentId));
 			}

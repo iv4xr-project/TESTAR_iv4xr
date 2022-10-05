@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -100,7 +100,7 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		w.parent = webParent;
 	}
 
-	IV4XRWidgetEntity addChild(IV4XRWidgetEntity parent, IV4XRElement element) {
+	public IV4XRWidgetEntity addChild(IV4XRWidgetEntity parent, IV4XRElement element) {
 		IV4XRWidgetEntity ret = new IV4XRWidgetEntity(this, parent, element);
 		return ret;
 	}
@@ -238,113 +238,18 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		else if (t.equals(IV4XRtags.labRecruitsAgentMood)) {
 			ret = w.element.labRecruitsAgentMood;
 		}
-		/**
-		 * Specific iv4xr System Tags (SpaceEngineers)
-		 */
-		else if (t.equals(IV4XRtags.seAgentPosition)) {
-			ret = w.element.seAgentPosition;
-		}
-		else if (t.equals(IV4XRtags.seAgentOrientationForward)) {
-			ret = w.element.seAgentOrientationForward;
-		}
-		else if (t.equals(IV4XRtags.seAgentOrientationUp)) {
-			ret = w.element.seAgentOrientationUp;
-		}
-		else if (t.equals(IV4XRtags.seAgentHealth)) {
-			ret = w.element.seAgentHealth;
-		}
-		else if (t.equals(IV4XRtags.seAgentOxygen)) {
-			ret = w.element.seAgentOxygen;
-		}
-		else if (t.equals(IV4XRtags.seAgentEnergy)) {
-			ret = w.element.seAgentEnergy;
-		}
-		else if (t.equals(IV4XRtags.seAgentHydrogen)) {
-			ret = w.element.seAgentHydrogen;
-		}
-		else if (t.equals(IV4XRtags.seAgentJetpackRunning)) {
-			ret = w.element.seAgentJetpackRunning;
-		}
-		else if (t.equals(IV4XRtags.seAgentDampenersOn)) {
-			ret = w.element.seAgentDampenersOn;
-		}
-		else if (t.equals(IV4XRtags.seBuildIntegrity)) {
-			ret = w.element.seBuildIntegrity;
-		}
-		else if (t.equals(IV4XRtags.seIntegrity)) {
-			ret = w.element.seIntegrity;
-		}
-		else if (t.equals(IV4XRtags.seMaxIntegrity)) {
-			ret = w.element.seMaxIntegrity;
-		}
-		else if (t.equals(IV4XRtags.seMaxPosition)) {
-			ret = w.element.seMaxPosition;
-		}
-		else if (t.equals(IV4XRtags.seMinPosition)) {
-			ret = w.element.seMinPosition;
-		}
-		else if (t.equals(IV4XRtags.seOrientationForward)) {
-			ret = w.element.seOrientationForward;
-		}
-		else if (t.equals(IV4XRtags.seOrientationUp)) {
-			ret = w.element.seOrientationUp;
-		}
-		else if (t.equals(IV4XRtags.seSize)) {
-			ret = w.element.seSize;
-		}
-		else if (t.equals(IV4XRtags.seDefinitionId)) {
-			ret = w.element.seDefinitionId;
-		}
-		else if (t.equals(IV4XRtags.seFunctional)) {
-			ret = w.element.seFunctional;
-		}
-		else if (t.equals(IV4XRtags.seWorking)) {
-			ret = w.element.seWorking;
-		}
-		else if (t.equals(IV4XRtags.seOwnerId)) {
-			ret = w.element.seOwnerId;
-		}
-		else if (t.equals(IV4XRtags.seBuiltBy)) {
-			ret = w.element.seBuiltBy;
-		}
-		else if (t.equals(IV4XRtags.seCustomName)) {
-			ret = w.element.seCustomName;
-		}
-		else if (t.equals(IV4XRtags.seShowInInventory)) {
-			ret = w.element.seShowInInventory;
-		}
-		else if (t.equals(IV4XRtags.seShowInTerminal)) {
-			ret = w.element.seShowInTerminal;
-		}
-		else if (t.equals(IV4XRtags.seShowOnHUD)) {
-			ret = w.element.seShowOnHUD;
-		}
-		else if (t.equals(IV4XRtags.seFunctionalEnabled)) {
-			ret = w.element.seFunctionalEnabled;
-		}
-		else if (t.equals(IV4XRtags.seDoorOpen)) {
-			ret = w.element.seDoorOpen;
-		}
-		else if (t.equals(IV4XRtags.seDoorAnyoneCanUse)) {
-			ret = w.element.seDoorAnyoneCanUse;
-		}
-		else if (t.equals(IV4XRtags.seFuelMaxOutput)) {
-			ret = w.element.seFuelMaxOutput;
-		}
-		else if (t.equals(IV4XRtags.seFuelCurrentOutput)) {
-			ret = w.element.seFuelCurrentOutput;
-		}
-		else if (t.equals(IV4XRtags.seFuelCapacity)) {
-			ret = w.element.seFuelCapacity;
-		}
 
-		cacheTag(w, t, ret);
+		// If the return value is not null, add it to the tags map
+		if(ret != null) {
+			cacheTag(w, t, ret);
+		}
 
 		return (ret == null) ? defaultValue : (T) ret;
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T> T cacheTag(IV4XRWidgetEntity w, Tag<T> t, Object value) {
+		Assert.notNull(value);
 		w.tags.put(t, value);
 		return (T) value;
 	}

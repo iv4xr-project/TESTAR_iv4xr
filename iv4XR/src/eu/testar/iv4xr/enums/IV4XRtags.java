@@ -38,7 +38,11 @@ import org.fruit.alayer.TagsBase;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.windows.WinProcess;
 
+import spaceEngineers.controller.InventorySide;
 import spaceEngineers.controller.SpaceEngineers;
+import spaceEngineers.model.TerminalControlPanelData;
+import spaceEngineers.model.TerminalInventoryData;
+import spaceEngineers.model.TerminalProductionData;
 import eu.iv4xr.framework.environments.W3DEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.spatial.Vec3;
@@ -175,6 +179,14 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<Float> seFuelMaxOutput = from("seFuelMaxOutput", Float.class);
 	public static final Tag<Float> seFuelCurrentOutput = from("seFuelCurrentOutput", Float.class);
 	public static final Tag<Float> seFuelCapacity = from("seFuelCapacity", Float.class);
+
+	public static final Tag<String> seFocusedScreen = from("seFocusedScreen", String.class);
+	public static final Tag<String> seTerminalTab = from("seTerminalTab", String.class);
+	public static final Tag<TerminalInventoryData> seDataInventory = from("seDataInventory", TerminalInventoryData.class);
+	public static final Tag<InventorySide> seLeftInventory = from("seLeftInventory", InventorySide.class);
+	public static final Tag<InventorySide> seRightInventory = from("seRightInventory", InventorySide.class);
+	public static final Tag<TerminalControlPanelData> seDataControlPanel = from("seDataControlPanel", TerminalControlPanelData.class);
+	public static final Tag<TerminalProductionData> seDataProduction = from("seDataProduction", TerminalProductionData.class);
 
 	/**
 	 * Agent - TESTAR comparison

@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,25 +30,18 @@
 
 package eu.testar.iv4xr.se;
 
-import java.util.ArrayList;
-
 import org.fruit.alayer.SUT;
-import org.fruit.alayer.exceptions.StateBuildException;
+import org.fruit.alayer.Tags;
+import org.fruit.alayer.windows.Windows;
 
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.IV4XRElement;
 import eu.testar.iv4xr.IV4XRRootElement;
+import eu.testar.iv4xr.IV4XRState;
 import eu.testar.iv4xr.IV4XRStateFetcher;
+import eu.testar.iv4xr.IV4XRWidgetEntity;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.controller.Observer;
 import spaceEngineers.controller.SpaceEngineers;
-import spaceEngineers.model.CubeGrid;
-import spaceEngineers.model.DoorBase;
-import spaceEngineers.model.FueledPowerProducer;
-import spaceEngineers.model.FunctionalBlock;
-import spaceEngineers.model.Observation;
-import spaceEngineers.model.TerminalBlock;
-import spaceEngineers.model.Block;
 import spaceEngineers.model.CharacterObservation;
 
 public class SeStateFetcher extends IV4XRStateFetcher {
@@ -58,55 +51,64 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 	}
 
 	/**
+	 * Create the root element that represents the SE state
+	 */
+	@Override
+	protected IV4XRRootElement buildVirtualEnvironment(SUT system) {
+		SERootElement rootElement = new SERootElement();
+		rootElement.isRunning = system.isRunning();
+		rootElement.timeStamp = System.currentTimeMillis();
+		rootElement.pid = system.get(Tags.PID);
+
+		if(!rootElement.isRunning) {
+			return rootElement;
+		}
+
+		rootElement.pid = system.get(Tags.PID, (long)-1);
+
+		for(long windowHandle : getVisibleTopLevelWindowHandles()) {
+			if(rootElement.pid == Windows.GetWindowProcessId(windowHandle)) {
+				rootElement.windowsHandle = windowHandle;
+				system.set(Tags.HWND, windowHandle);
+				rootElement.set(Tags.HWND, windowHandle);
+			}
+		}
+
+		return fetchIV4XRElements(rootElement);
+	}
+
+	/**
 	 * Create an Array tree of elements that later becomes the Widget-tree.
 	 * Use the Space Engineers Rpc Controller to extract the Agent and Blocks information from the WOM. 
 	 * Every instant of time the Agent will observe himself and the Blocks if these are in close range. 
 	 */
 	@Override
 	protected IV4XRRootElement fetchIV4XRElements(IV4XRRootElement rootElement) {
+		return fetchScreenSE((SERootElement) rootElement);
+	}
+
+	private SERootElement fetchScreenSE(SERootElement seRootElement) {
 		// Get the controller attached to the SE system (SpaceEngineersProcess)
 		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 
-		// Check that TESTAR it can observe the SE system
-		Observer seObserver = seController.getObserver();
-		if(seObserver == null) throw new StateBuildException("SE Agent Oberver is null! Exception trying to fetch the State of iv4XR SpaceEngineers");
+		// The root element of SE will indicate which screen is focused
+		seRootElement.focusedScreen = seController.getScreens().getFocusedScreen().data().getName();
 
-		// Get the Character and Blocks observation that we use to create the element tree
-		CharacterObservation seObsCharacter = seController.getObserver().observe();
-		Observation seObsBlocks = seController.getObserver().observeBlocks();
-
-		// If the agent observes himself and in this instant of time also has observation of blocks
-		if(seObsCharacter != null && seObsBlocks != null && seObsBlocks.getGrids() != null && seObsBlocks.getGrids().size() > 0) {
-			// Add manually the Agent as an Element (Observed Blocks + 1)
-			rootElement.children = new ArrayList<IV4XRElement>((int) seObserver.observeBlocks().getGrids().size() + 1);
-
-			rootElement.zindex = 0;
-			fillRect(rootElement);
-
-			// Create the Agent as element of the tree, because always exists as a Widget
-			SEagent(rootElement, seObsCharacter);
-
-			// If the Agent observes blocks create the elements blocks tree
-			if(seObsBlocks.getGrids().size() > 0) {
-				for(CubeGrid seCubeGrid : seObsBlocks.getGrids()) {
-					SEGridDescend(rootElement, seCubeGrid);
-				}
-			}
+		// GamePlay screen represents the WOM / State that allows agents to interact with grids and blocks
+		if(seRootElement.focusedScreen.contains("GamePlay")) {
+			return new SeGamePlayFetcher(system).fetchGamePlayScreen(seRootElement, seController);
 		} 
-		// If agent observes himself but in this instant has NO observation of blocks 
-		else if (seObsCharacter != null) {
-			// Add manually the Agent as an Element (Observed Entities + 1)
-			rootElement.children = new ArrayList<IV4XRElement>(1);
-
-			rootElement.zindex = 0;
-			fillRect(rootElement);
-
-			SEagent(rootElement, seObsCharacter);
-		} else {
-			System.err.println("ERROR: No Agent and no BLOCKS in the current Observation");
+		// Terminal screen represents the WOM / State that allows agents to interact with management panels
+		else if(seRootElement.focusedScreen.contains("Terminal")) {
+			return new SeTerminalFetcher(system).fetchTerminalScreen(seRootElement, seController);
+		}
+		//TODO: Think about what is the default SE screen 
+		// and if we need to manage an empty state / action to return to game play by default
+		else {
+			System.err.println("ERROR: Current SE Screen is not valid / not implemented");
 		}
 
-		return rootElement;
+		return seRootElement;
 	}
 
 	/**
@@ -117,8 +119,8 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 	 * @param seObsCharacter
 	 * @return agent Element
 	 */
-	private IV4XRElement SEagent(IV4XRElement parent, CharacterObservation seObsCharacter) {
-		IV4XRElement childElement = new IV4XRElement(parent);
+	protected SeElement SEagent(IV4XRElement parent, CharacterObservation seObsCharacter) {
+		SeElement childElement = new SeElement(parent);
 		parent.children.add(childElement);
 
 		childElement.enabled = true; //TODO: check when should be enabled (careful with createWidgetTree)
@@ -146,107 +148,24 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		return childElement;
 	}
 
-	/**
-	 * Based on the Space Engineers blocks Observation, extract the CubeGrid properties to 
-	 * create an grid element inside the fetched tree. 
-	 * Then extract the Block that are children of these CubeGrid. 
-	 * 
-	 * @param parent
-	 * @param seCubeGrid
-	 * @return CubeGrid element with Block children
-	 */
-	private IV4XRElement SEGridDescend(IV4XRElement parent, CubeGrid seCubeGrid) {
-		IV4XRElement childElement = new IV4XRElement(parent);
-		parent.children.add(childElement);
-
-		childElement.enabled = true; //TODO: check when should be enabled (careful with createWidgetTree)
-		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
-		childElement.zindex = parent.zindex +1;
-
-		childElement.entityPosition = new Vec3(seCubeGrid.getPosition().getX(), seCubeGrid.getPosition().getY(), seCubeGrid.getPosition().getZ());
-		childElement.entityId = seCubeGrid.getId();
-		childElement.entityType = seCubeGrid.getId().replaceAll("[0-9]","").replaceAll("\\s+","");
-
-		fillRect(childElement);
-
-		for(Block seBlock : seCubeGrid.getBlocks()) {
-			SEBlockDescend(childElement, seBlock);
+	@Override
+	protected IV4XRState createWidgetTree(IV4XRRootElement root) {
+		SeState state = new SeState(root);
+		root.backRef = state;
+		for (IV4XRElement childElement : root.children) {
+			createWidgetTree(state, childElement);
 		}
-
-		return childElement;
+		return state;
 	}
 
-	/**
-	 * Extract the Block properties to create an block element inside the fetched tree. 
-	 * 
-	 * @param parent
-	 * @param seBlock
-	 * @return Block element
-	 */
-	private IV4XRElement SEBlockDescend(IV4XRElement parent, Block seBlock) {
-		IV4XRElement childElement = new IV4XRElement(parent);
-		parent.children.add(childElement);
+	@Override
+	protected void createWidgetTree(IV4XRWidgetEntity parent, IV4XRElement element) {
+		IV4XRWidgetEntity w = parent.root().addChild(parent, element);
+		element.backRef = w;
 
-		childElement.enabled = true; //TODO: check when should be enabled (careful with createWidgetTree)
-		childElement.blocked = false; //TODO: check when should be blocked (agent vision?)
-		childElement.zindex = parent.zindex +1;
-
-		childElement.entityPosition = new Vec3(seBlock.getPosition().getX(), seBlock.getPosition().getY(), seBlock.getPosition().getZ());
-		childElement.entityId = seBlock.getId();
-		childElement.entityType = seBlock.getDefinitionId().getType();
-
-		childElement.seBuildIntegrity = seBlock.getBuildIntegrity();
-		childElement.seIntegrity = seBlock.getIntegrity();
-		childElement.seMaxIntegrity = seBlock.getMaxIntegrity();
-		childElement.seMaxPosition = seBlock.getMaxPosition();
-		childElement.seMinPosition = seBlock.getMinPosition();
-		childElement.seOrientationForward = seBlock.getOrientationForward();
-		childElement.seOrientationUp = seBlock.getOrientationUp();
-		childElement.seSize = seBlock.getSize();
-		childElement.seDefinitionId = seBlock.getDefinitionId().toString();
-		childElement.seFunctional = seBlock.getFunctional();
-		childElement.seWorking = seBlock.getWorking();
-		childElement.seOwnerId = seBlock.getOwnerId();
-		childElement.seBuiltBy = seBlock.getBuiltBy();
-
-		// TODO: Think a better way to maintain these different types of blocks / entities
-		// https://github.com/iv4xr-project/iv4xr-se-plugin/blob/main/JvmClient/src/commonMain/kotlin/spaceEngineers/model/BlockDataClasses.kt
-		// Specific properties of functional, terminal, door and power blocks
-		if(seBlock instanceof TerminalBlock) {
-			childElement.seCustomName = ((TerminalBlock)seBlock).getCustomName();
-			childElement.seShowInInventory = ((TerminalBlock)seBlock).getShowInInventory();
-			childElement.seShowInTerminal = ((TerminalBlock)seBlock).getShowInTerminal();
-			childElement.seShowOnHUD = ((TerminalBlock)seBlock).getShowOnHUD();
+		for (IV4XRElement child : element.children) {
+			createWidgetTree(w, child);
 		}
-		else if(seBlock instanceof FunctionalBlock) {
-			childElement.seCustomName = ((FunctionalBlock)seBlock).getCustomName();
-			childElement.seShowInInventory = ((FunctionalBlock)seBlock).getShowInInventory();
-			childElement.seShowInTerminal = ((FunctionalBlock)seBlock).getShowInTerminal();
-			childElement.seShowOnHUD = ((FunctionalBlock)seBlock).getShowOnHUD();
-			childElement.seFunctionalEnabled = ((FunctionalBlock)seBlock).getEnabled();
-		}
-		else if(seBlock instanceof DoorBase) {
-			childElement.seCustomName = ((DoorBase)seBlock).getCustomName();
-			childElement.seShowInInventory = ((DoorBase)seBlock).getShowInInventory();
-			childElement.seShowInTerminal = ((DoorBase)seBlock).getShowInTerminal();
-			childElement.seShowOnHUD = ((DoorBase)seBlock).getShowOnHUD();
-			childElement.seFunctionalEnabled = ((DoorBase)seBlock).getEnabled();
-			childElement.seDoorOpen = ((DoorBase)seBlock).getOpen();
-			childElement.seDoorAnyoneCanUse = ((DoorBase)seBlock).getAnyoneCanUse();
-		}
-		else if(seBlock instanceof FueledPowerProducer) {
-			childElement.seCustomName = ((FueledPowerProducer)seBlock).getCustomName();
-			childElement.seShowInInventory = ((FueledPowerProducer)seBlock).getShowInInventory();
-			childElement.seShowInTerminal = ((FueledPowerProducer)seBlock).getShowInTerminal();
-			childElement.seShowOnHUD = ((FueledPowerProducer)seBlock).getShowOnHUD();
-			childElement.seFunctionalEnabled = ((FueledPowerProducer)seBlock).getEnabled();
-			childElement.seFuelMaxOutput = ((FueledPowerProducer)seBlock).getMaxOutput();
-			childElement.seFuelCurrentOutput = ((FueledPowerProducer)seBlock).getCurrentOutput();
-			childElement.seFuelCapacity = ((FueledPowerProducer)seBlock).getCapacity();
-		}
-
-		fillRect(childElement);
-
-		return childElement;
 	}
+
 }

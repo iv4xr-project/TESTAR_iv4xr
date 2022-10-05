@@ -50,7 +50,7 @@ public class IV4XRWidgetEntity implements Widget, Serializable {
 
 	IV4XRState root;
 	IV4XRWidgetEntity parent;
-	Map<Tag<?>, Object> tags = new HashMap<>();
+	public Map<Tag<?>, Object> tags = new HashMap<>();
 	List<IV4XRWidgetEntity> children = new ArrayList<>();
 	public IV4XRElement element;
 
