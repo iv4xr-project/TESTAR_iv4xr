@@ -79,7 +79,7 @@ import eu.testar.iv4xr.se.SpaceEngineersProcess;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
 import nl.ou.testar.HtmlReporting.HtmlSequenceReport;
-import spaceEngineers.transport.SocketReaderWriterKt;
+import spaceEngineers.transport.CloseIfCloseableKt;
 
 public class SEProtocol extends GenericUtilsProtocol {
 
@@ -428,7 +428,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 		if(settings.get(ConfigTags.Mode).equals(Modes.Generate)) {
 			saveLevel(system);
 		}
-		SocketReaderWriterKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));
+		CloseIfCloseableKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));
 		super.stopSystem(system);
 	}
 

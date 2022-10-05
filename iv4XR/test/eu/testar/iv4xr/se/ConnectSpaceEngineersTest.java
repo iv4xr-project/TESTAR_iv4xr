@@ -10,13 +10,14 @@ import org.junit.Test;
 
 import environments.SeEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
+import nl.uu.cs.aplib.agents.State;
 import spaceEngineers.controller.ContextControllerWrapper;
 import spaceEngineers.controller.SpaceEngineers;
 import spaceEngineers.controller.SpaceEngineersJavaProxyBuilder;
 import spaceEngineers.controller.SpaceEngineersTestContext;
 import spaceEngineers.model.CharacterObservation;
 import spaceEngineers.model.Observation;
-import spaceEngineers.transport.SocketReaderWriterKt;
+import spaceEngineers.transport.CloseIfCloseableKt;
 
 /**
  * JUnit tests ignored by default, 
@@ -58,7 +59,7 @@ public class ConnectSpaceEngineersTest {
 		// WorldId is empty because we are going to connect to a running level, not load a new one
 		SeEnvironment sEnv = new SeEnvironment("", controllerWrapper);
 		// Finally create the TestAgent
-		TestAgent testAgent = new TestAgent("you", "explorer").attachEnvironment(sEnv);
+		TestAgent testAgent = new TestAgent("you", "explorer").attachState(new State()).attachEnvironment(sEnv);
 
 		assertTrue(testAgent.getId() == "you");
 		assertTrue(testAgent.env() == sEnv);
@@ -67,7 +68,7 @@ public class ConnectSpaceEngineersTest {
 	@AfterClass
 	public static void close() {
 		// Close Space Engineers plugin session
-		SocketReaderWriterKt.closeIfCloseable(seController);
+		CloseIfCloseableKt.closeIfCloseable(seController);
 	}
 
 }

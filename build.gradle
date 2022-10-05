@@ -30,7 +30,8 @@ subprojects {
         // https://jitpack.io/com/github/iv4xr-project/iv4xrDemo/2.4.0/build.log
         implementation 'com.github.iv4xr-project:iv4xrDemo:2.4.0'
         // https://jitpack.io/com/github/iv4xr-project/iv4xr-se-plugin/navgraph_entity-SNAPSHOT/build.log
-        implementation 'com.github.iv4xr-project:iv4xr-se-plugin:navgraph_entity-SNAPSHOT'
+        // https://jitpack.io/com/github/iv4xr-project/iv4xr-se-plugin/v0.9.0/build.log
+        implementation 'com.github.iv4xr-project:iv4xr-se-plugin:v0.9.0'
     }
 
     buildDir = new File('./target')
