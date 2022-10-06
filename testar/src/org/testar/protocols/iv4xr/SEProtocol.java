@@ -40,6 +40,7 @@ import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -74,6 +75,7 @@ import com.google.common.collect.Sets;
 import es.upv.staq.testar.CodingManager;
 import es.upv.staq.testar.NativeLinker;
 import eu.testar.iv4xr.IV4XRStateFetcher;
+import eu.testar.iv4xr.actions.se.commands.seActionCommandCloseScreen;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.se.SpaceEngineersProcess;
 import eu.iv4xr.framework.spatial.Vec3;
@@ -266,6 +268,15 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected Action preSelectAction(State state, Set<Action> actions){
+		// If the Space Engineers agent is on an unknown screen, close it
+		if(state.get(IV4XRtags.agentWidget) != null && state.get(IV4XRtags.agentWidget).get(IV4XRtags.seUnknownScreen, false)) {
+			System.out.println("DEBUG: Forcing Space Engineers to close current Screen");
+			Action gamePlayAction = new seActionCommandCloseScreen(state.get(IV4XRtags.agentWidget), agentId);
+			buildEnvironmentActionIdentifiers(state, gamePlayAction);
+			// adding available actions into the HTML report:
+			htmlReport.addActions(Collections.singleton(gamePlayAction));
+			return gamePlayAction;
+		}
 		// adding available actions into the HTML report:
 		htmlReport.addActions(actions);
 		return(super.preSelectAction(state, actions));

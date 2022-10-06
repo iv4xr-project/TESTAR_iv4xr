@@ -85,6 +85,7 @@ public class SeState extends IV4XRState {
 
 		SeElement seElement = (SeElement) w.element;
 
+		// Agent Tags to properties
 		if (t.equals(IV4XRtags.seAgentPosition)) {
 			ret = seElement.seAgentPosition;
 		}
@@ -112,6 +113,23 @@ public class SeState extends IV4XRState {
 		else if (t.equals(IV4XRtags.seAgentDampenersOn)) {
 			ret = seElement.seAgentDampenersOn;
 		}
+		else if (t.equals(IV4XRtags.seUnknownScreen)) {
+			ret = seElement.unknownScreen;
+		}
+		// Grids Tags to properties
+		else if (t.equals(IV4XRtags.seGridName)) {
+			ret = seElement.seGridName;
+		}
+		else if (t.equals(IV4XRtags.seGridDisplayName)) {
+			ret = seElement.seGridDisplayName;
+		}
+		else if (t.equals(IV4XRtags.seGridMass)) {
+			ret = seElement.seGridMass;
+		}
+		else if (t.equals(IV4XRtags.seGridParked)) {
+			ret = seElement.seGridParked;
+		}
+		// Block Tags to properties
 		else if (t.equals(IV4XRtags.seBuildIntegrity)) {
 			ret = seElement.seBuildIntegrity;
 		}
@@ -181,6 +199,7 @@ public class SeState extends IV4XRState {
 		else if (t.equals(IV4XRtags.seFuelCapacity)) {
 			ret = seElement.seFuelCapacity;
 		}
+		// Terminals Tags to properties
 		else if (t.equals(IV4XRtags.seFocusedScreen)) {
 			ret = ((SERootElement)seElement.root).focusedScreen;
 		}

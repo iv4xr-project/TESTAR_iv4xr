@@ -154,7 +154,15 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<Float> seAgentHydrogen = from("seAgentHydrogen", Float.class);
 	public static final Tag<Boolean> seAgentJetpackRunning = from("seAgentJetpackRunning", Boolean.class);
 	public static final Tag<Boolean> seAgentDampenersOn = from("seAgentDampenersOn", Boolean.class);
+	public static final Tag<Boolean> seUnknownScreen = from("seUnknownScreen", Boolean.class);
 
+	// Grid properties
+	public static final Tag<String> seGridName = from("seGridName", String.class);
+	public static final Tag<String> seGridDisplayName = from("seGridDisplayName", String.class);
+	public static final Tag<Float> seGridMass = from("seGridMass", Float.class);
+	public static final Tag<Boolean> seGridParked = from("seGridParked", Boolean.class);
+
+	// Block properties
 	public static final Tag<Float> seBuildIntegrity = from("seBuildIntegrity", Float.class);
 	public static final Tag<Float> seIntegrity = from("seIntegrity", Float.class);
 	public static final Tag<Float> seMaxIntegrity = from("seMaxIntegrity", Float.class);
@@ -180,6 +188,7 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<Float> seFuelCurrentOutput = from("seFuelCurrentOutput", Float.class);
 	public static final Tag<Float> seFuelCapacity = from("seFuelCapacity", Float.class);
 
+	// Terminal properties
 	public static final Tag<String> seFocusedScreen = from("seFocusedScreen", String.class);
 	public static final Tag<String> seTerminalTab = from("seTerminalTab", String.class);
 	public static final Tag<TerminalInventoryData> seDataInventory = from("seDataInventory", TerminalInventoryData.class);

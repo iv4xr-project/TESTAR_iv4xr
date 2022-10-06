@@ -118,6 +118,11 @@ public class SeGamePlayFetcher extends SeStateFetcher {
 		childElement.entityId = seCubeGrid.getId();
 		childElement.entityType = seCubeGrid.getId().replaceAll("[0-9]","").replaceAll("\\s+","");
 
+		childElement.seGridName = seCubeGrid.getName();
+		childElement.seGridDisplayName = seCubeGrid.getDisplayName();
+		childElement.seGridMass = seCubeGrid.getMass();
+		childElement.seGridParked = seCubeGrid.getParked();
+
 		fillRect(childElement);
 
 		for(Block seBlock : seCubeGrid.getBlocks()) {
@@ -134,7 +139,7 @@ public class SeGamePlayFetcher extends SeStateFetcher {
 	 * @param seBlock
 	 * @return Block element
 	 */
-	private SeElement SEBlockDescend(IV4XRElement parent, Block seBlock) {
+	private SeElement SEBlockDescend(SeElement parent, Block seBlock) {
 		SeElement childElement = new SeElement(parent);
 		parent.children.add(childElement);
 
@@ -145,6 +150,12 @@ public class SeGamePlayFetcher extends SeStateFetcher {
 		childElement.entityPosition = new Vec3(seBlock.getPosition().getX(), seBlock.getPosition().getY(), seBlock.getPosition().getZ());
 		childElement.entityId = seBlock.getId();
 		childElement.entityType = seBlock.getDefinitionId().getType();
+
+		// Because all blocks belong to a grid, set the parent grid properties
+		childElement.seGridName = parent.seGridName;
+		childElement.seGridDisplayName = parent.seGridDisplayName;
+		childElement.seGridMass = parent.seGridMass;
+		childElement.seGridParked = parent.seGridParked;
 
 		childElement.seBuildIntegrity = seBlock.getBuildIntegrity();
 		childElement.seIntegrity = seBlock.getIntegrity();

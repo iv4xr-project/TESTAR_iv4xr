@@ -30,6 +30,8 @@
 
 package eu.testar.iv4xr.se;
 
+import java.util.ArrayList;
+
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.windows.Windows;
@@ -102,10 +104,16 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		else if(seRootElement.focusedScreen.contains("Terminal")) {
 			return new SeTerminalFetcher(system).fetchTerminalScreen(seRootElement, seController);
 		}
-		//TODO: Think about what is the default SE screen 
-		// and if we need to manage an empty state / action to return to game play by default
+		// The default screen only contains the agent information
 		else {
 			System.err.println("ERROR: Current SE Screen is not valid / not implemented");
+
+			// Add manually the Agent as an Element (Observed Entities + 1)
+			seRootElement.children = new ArrayList<IV4XRElement>(1);
+			seRootElement.zindex = 0;
+			fillRect(seRootElement);
+			SeElement seAgentEl = SEagent(seRootElement, seController.getObserver().observe());
+			seAgentEl.unknownScreen = true;
 		}
 
 		return seRootElement;

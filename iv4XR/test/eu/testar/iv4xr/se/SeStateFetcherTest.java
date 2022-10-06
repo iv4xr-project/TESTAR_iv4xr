@@ -102,6 +102,9 @@ public class SeStateFetcherTest {
 
 				System.out.println("Block seFunctional: " + w.get(IV4XRtags.seFunctional));
 				assertNotNull(w.get(IV4XRtags.seFunctional));
+
+				System.out.println("Grid seGridMass: " + w.get(IV4XRtags.seGridMass));
+				assertNotNull(w.get(IV4XRtags.seGridMass));
 			}
 		}
 	}

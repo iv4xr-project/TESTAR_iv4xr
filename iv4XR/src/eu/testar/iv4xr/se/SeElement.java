@@ -54,6 +54,13 @@ public class SeElement extends IV4XRElement {
 	public float seAgentHydrogen = 0f;
 	public boolean seAgentJetpackRunning = false;
 	public boolean seAgentDampenersOn = false;
+	public boolean unknownScreen = false;
+
+	// Grid properties
+	public String seGridName = "";
+	public String seGridDisplayName = "";
+	public float seGridMass = 0f;
+	public boolean seGridParked = false;
 
 	// Block properties
 	public float seBuildIntegrity = 0f;
