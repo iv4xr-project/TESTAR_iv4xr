@@ -80,6 +80,7 @@ import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.se.SpaceEngineersProcess;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
+import nl.ou.testar.SystemProcessHandling;
 import nl.ou.testar.HtmlReporting.HtmlSequenceReport;
 import spaceEngineers.transport.CloseIfCloseableKt;
 
@@ -361,10 +362,9 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected void finishSequence() {
-		// If we use SUTConnector command line, we want to kill the process and start a new one next sequence
-		if(settings.get(ConfigTags.SUTConnector).equals(Settings.SUT_CONNECTOR_CMDLINE)) {
-			super.finishSequence();
-		}
+		// Do not invoke super.finishSequence because the invocation of SE + Steam creates a new process invocation
+		// Then TESTAR considers this process a temporal process to kill instead of the SUT process
+
 		// SpaceEngineers Logs Verdict, check SE logs trying to find pattern messages (ConfigTags.ProcessLogs)
 		Verdict logVerdict = Verdict.OK;
 		File seLog = getLastSpaceEngineersLog();
@@ -439,7 +439,13 @@ public class SEProtocol extends GenericUtilsProtocol {
 		if(settings.get(ConfigTags.Mode).equals(Modes.Generate)) {
 			saveLevel(system);
 		}
+		// Close iv4xr-plugin connection
 		CloseIfCloseableKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));
+		// If we use SUTConnector command line, we want to kill the process and start a new one next sequence
+		if(settings.get(ConfigTags.SUTConnector).equals(Settings.SUT_CONNECTOR_CMDLINE)) {
+			// super.finishSequence();
+			SystemProcessHandling.killTestLaunchedProcesses(this.contextRunningProcesses);
+		}
 		super.stopSystem(system);
 	}
 
