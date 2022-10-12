@@ -96,16 +96,8 @@ SUTProcesses =
 ProtocolClass = test_workflow_labrecruits_testar_explore/Protocol_test_workflow_labrecruits_testar_explore
 
 #################################################################
-# Graphdatabase settings (experimental)
-#################################################################
-GraphDBEnabled = false
-GraphDBUrl = remote:/localhost/testar
-GraphDBUser = testar
-GraphDBPassword = testar
-
-#################################################################\n"
 # State model inference settings
-#################################################################\n"
+#################################################################
 StateModelEnabled = false
 DataStore = OrientDB
 DataStoreType = remote

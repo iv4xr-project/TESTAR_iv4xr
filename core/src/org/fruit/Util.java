@@ -37,15 +37,27 @@ import org.fruit.alayer.exceptions.SystemStopException;
 import org.fruit.alayer.exceptions.WidgetNotFoundException;
 
 import javax.tools.*;
+import javax.xml.bind.DatatypeConverter;
+
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Utility methods.
@@ -955,6 +967,83 @@ public final class Util {
     T[] result = Arrays.copyOf(first, first.length + second.length);
     System.arraycopy(second, 0, result, first.length, second.length);
     return result;
+  }
+
+  public static boolean folderIsEmpty(Path path, boolean defaultValue) {
+	  if (Files.isDirectory(path)) {
+		  try (DirectoryStream<Path> directory = Files.newDirectoryStream(path)) {
+			  return !directory.iterator().hasNext();
+		  } catch (IOException e) {
+			  return defaultValue;
+		  }
+	  }
+	  return defaultValue;
+  }
+
+  public static String fileMD5(String file) {
+	  try {
+		  MessageDigest md = MessageDigest.getInstance("MD5");
+		  md.update(Files.readAllBytes(Paths.get(file)));
+		  byte[] digest = md.digest();
+		  return DatatypeConverter.printHexBinary(digest);
+	  } catch(NoSuchAlgorithmException | IOException e) {
+		  e.printStackTrace();
+		  return "errorMD5";
+	  }
+  }
+
+  public static void unzipFile(String zipFilePath, String destDir) throws IOException {
+	  byte[] buffer = new byte[1024];
+	  ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFilePath));
+	  ZipEntry zipEntry = zis.getNextEntry();
+	  while (zipEntry != null) {
+		  File newFile = newFile(new File(destDir), zipEntry);
+		  if (zipEntry.isDirectory()) {
+			  if (!newFile.isDirectory() && !newFile.mkdirs()) {
+				  throw new IOException("Failed to create directory " + newFile);
+			  }
+		  } else {
+			  // fix for Windows-created archives
+			  File parent = newFile.getParentFile();
+			  if (!parent.isDirectory() && !parent.mkdirs()) {
+				  throw new IOException("Failed to create directory " + parent);
+			  }
+
+			  // write file content
+			  FileOutputStream fos = new FileOutputStream(newFile);
+			  int len;
+			  while ((len = zis.read(buffer)) > 0) {
+				  fos.write(buffer, 0, len);
+			  }
+			  fos.close();
+		  }
+		  zipEntry = zis.getNextEntry();
+	  }
+	  zis.closeEntry();
+	  zis.close();
+  }
+
+  private static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException {
+	  File destFile = new File(destinationDir, zipEntry.getName());
+
+	  String destDirPath = destinationDir.getCanonicalPath();
+	  String destFilePath = destFile.getCanonicalPath();
+
+	  if (!destFilePath.startsWith(destDirPath + File.separator)) {
+		  throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+	  }
+
+	  return destFile;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static Map<String, String> getModifiableEnvironment() throws Exception {
+    Class<?> pe = Class.forName("java.lang.ProcessEnvironment");
+    Method getenv = pe.getDeclaredMethod("getenv", String.class);
+    getenv.setAccessible(true);
+    Field props = pe.getDeclaredField("theCaseInsensitiveEnvironment");
+    props.setAccessible(true);
+    return (Map<String, String>) props.get(null);
   }
 
 }

@@ -75,9 +75,13 @@ public class seActionNavigateGrinderBlock extends seActionNavigateToBlock {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		equipGrinder(system);
-		navigateToBlock(system);
+		navigateToReachableBlockPosition(system);
 		rotateToBlockDestination(system);
 		useGrinder(system);
+
+		// After Grinder action equip an empty object
+		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
+		seItems.equip(ToolbarLocation.Companion.fromIndex(1, 1));
 	}
 
 	/**

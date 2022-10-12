@@ -90,23 +90,6 @@ public class IV4XRElement extends TaggableBase implements Serializable {
 	public int labRecruitsAgentScore = -1;
 	public String labRecruitsAgentMood = "";
 
-	/**
-	 * Specific Space Engineers iv4xr properties
-	 */
-	public spaceEngineers.model.Vec3F seAgentPosition = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public spaceEngineers.model.Vec3F seAgentOrientationForward = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public spaceEngineers.model.Vec3F seAgentOrientationUp = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public float seAgentHealth = 0f;
-
-	public float seBuildIntegrity = 0f;
-	public float seIntegrity = 0f;
-	public float seMaxIntegrity = 0f;
-	public spaceEngineers.model.Vec3F seMaxPosition = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public spaceEngineers.model.Vec3F seMinPosition = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public spaceEngineers.model.Vec3F seOrientationForward = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public spaceEngineers.model.Vec3F seOrientationUp = new spaceEngineers.model.Vec3F(0, 0, 0);
-	public spaceEngineers.model.Vec3F seSize = new spaceEngineers.model.Vec3F(0, 0, 0);
-
 	public IV4XRElement(){ this(null); }
 
 	public IV4XRElement(IV4XRElement parent){

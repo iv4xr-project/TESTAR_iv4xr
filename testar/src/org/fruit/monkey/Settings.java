@@ -37,6 +37,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -158,8 +160,10 @@ public class Settings extends TaggableBase implements Serializable {
 			for(int i = 0; i < pathList.size(); i += 2)
 				ret.add(Pair.from(pathList.get(i), pathList.get(i + 1)));
 			return (T)ret;
+		}else if(tag.type().equals(Path.class)) {
+			return (T)Paths.get(stringValue);
 		}
-		throw new ConfigParseException("");
+		throw new ConfigParseException("Exception trying to parse the setting : " + tag);
 	}
 	
 	
@@ -293,6 +297,15 @@ public class Settings extends TaggableBase implements Serializable {
 					+"SUTConnectorValue = " + Util.lineSep()
 					+"\n"
 					+"#################################################################\n"
+					+"# OpenCover path settings\n"
+					+"#################################################################\n"
+					+"OpenCoverPath = " + Util.lineSep()
+					+"ReportGeneratorPath = " + Util.lineSep()
+					+"OpenCoverTarget = " + Util.lineSep()
+					+"OpenCoverTargetArgs = " + Util.lineSep()
+					+"PdbFilesPath = " + Util.lineSep()
+					+"\n"
+					+"#################################################################\n"
 					+"# Java Swing applications & Access Bridge Enabled\n"
 					+"#\n"
 					+"# Activate the Java Access Bridge in your Windows System:\n"
@@ -346,6 +359,7 @@ public class Settings extends TaggableBase implements Serializable {
 					+"# process.\n"
 					+"#################################################################\n"
 					+"\n"
+					+"ProcessLogsEnabled = " + Util.lineSep()
 					+"ProcessLogs = " + Util.lineSep()
 					+"\n"
 					+"#################################################################\n"
