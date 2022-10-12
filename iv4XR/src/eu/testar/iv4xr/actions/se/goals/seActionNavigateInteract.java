@@ -47,7 +47,7 @@ public class seActionNavigateInteract extends seActionNavigateToBlock {
 	protected Widget targetBlock;
 
 	public seActionNavigateInteract(Widget w, SUT system, String agentId){
-		super(w, system, agentId);
+		super(w, w.get(IV4XRtags.entityPosition), system, agentId);
 		this.targetBlock = w;
 		this.set(Tags.Desc, toShortString());
 		// TODO: Update with Goal Solving agents

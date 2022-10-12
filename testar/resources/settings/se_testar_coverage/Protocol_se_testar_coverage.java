@@ -202,8 +202,8 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 		// For each block widget (see movementEntities types), rotate and move until the agent is close to the position of the block
 		for(Widget w : state) {
 			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
-				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 4, 1.0));
-				labActions.add(new seActionNavigateWelderBlock(w, system, agentId, 4, 1.0));
+				labActions.add(new seActionNavigateGrinderBlock(w, w.get(IV4XRtags.entityPosition), system, agentId, 4, 1.0));
+				labActions.add(new seActionNavigateWelderBlock(w, w.get(IV4XRtags.entityPosition), system, agentId, 4, 1.0));
 			}
 
 			// FIXME: Fix Ladder2 is not observed as entityType
