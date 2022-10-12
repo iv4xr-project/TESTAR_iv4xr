@@ -47,11 +47,11 @@ import org.fruit.alayer.windows.WinProcess;
 import environments.SeEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import nl.uu.cs.aplib.agents.State;
 import spaceEngineers.controller.ContextControllerWrapper;
 import spaceEngineers.controller.SpaceEngineers;
 import spaceEngineers.controller.SpaceEngineersJavaProxyBuilder;
 import spaceEngineers.controller.SpaceEngineersTestContext;
-import uuspaceagent.UUSeAgentState;
 
 public class SpaceEngineersProcess extends SUTBase {
 
@@ -142,15 +142,12 @@ public class SpaceEngineersProcess extends SUTBase {
 				System.out.println("Loaded level: " + levelPath);
 			}
 
-			// Create UU state grid
-			UUSeAgentState stateGrid = new UUSeAgentState(characterControllerId);
-			// Prepare UU agent
 			SpaceEngineersTestContext context = new SpaceEngineersTestContext();
 			ContextControllerWrapper controllerWrapper = new ContextControllerWrapper(seBuilder, context);
 			// WorldId is empty because we are going to connect to a running level, not load a new one
 			SeEnvironment sEnv = new SeEnvironment("", controllerWrapper);
 			// Finally create the TestAgent
-			TestAgent testAgent = new SeAgentTESTAR(characterControllerId, "explorer").attachState(stateGrid).attachEnvironment(sEnv);
+			TestAgent testAgent = new TestAgent(characterControllerId, "explorer").attachState(new State()).attachEnvironment(sEnv);
 
 			this.set(IV4XRtags.windowsProcess, win);
 			this.set(Tags.PID, win.pid());
@@ -177,13 +174,13 @@ public class SpaceEngineersProcess extends SUTBase {
 				+ "To launch SpaceEngineers using COMMAND_LINE we need to know:\n" 
 				+ "1.- SpaceEngineers executable path\n"
 				+ "2.- (Optional) Path of the SpaceEngineers level to load\n"
-				+ "Example: \"C:\\\\Program Files (x86)\\\\Steam\\\\steamapps\\\\common\\\\SpaceEngineers\\\\Bin64\\\\SpaceEngineers.exe\" \"suts/se_levels/simple-place-grind-torch\"";
+				+ "Example: \"C:\\\\Program Files (x86)\\\\Steam\\\\steamapps\\\\common\\\\SpaceEngineers\\\\Bin64\\\\SpaceEngineers.exe\" \"suts/se_levels/manual-world\"";
 		if(launchment.equals(Launchment.PROCESS_NAME)) {
 			message = "ERROR: Trying to connect with Space Engineers using SUT_PROCESS_NAME connection \n"
 					+ "To connect with SpaceEngineers process we need to know:\n" 
 					+ "1.- SpaceEngineers.exe process name\n"
 					+ "2.- (Optional) Path of the SpaceEngineers level to load\n"
-					+ "Example: SpaceEngineers.exe \"suts/se_levels/simple-place-grind-torch\"";
+					+ "Example: SpaceEngineers.exe \"suts/se_levels/manual-world\"";
 		}
 		throw new IllegalArgumentException(message);
 	}

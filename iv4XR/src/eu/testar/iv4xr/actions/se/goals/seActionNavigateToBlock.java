@@ -30,8 +30,7 @@
 
 package eu.testar.iv4xr.actions.se.goals;
 
-import java.util.Collection;
-
+import java.util.List;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
@@ -39,17 +38,20 @@ import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import eu.iv4xr.framework.mainConcepts.WorldEntity;
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
-import eu.testar.iv4xr.se.SeAgentTESTAR;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-import nl.uu.cs.aplib.utils.Pair;
+import spaceEngineers.controller.Observer;
+import spaceEngineers.model.extensions.ObservationExtensionsKt;
+import spaceEngineers.navigation.NavGraph;
+import spaceEngineers.navigation.Node;
+import spaceEngineers.navigation.RichNavGraph;
+import spaceEngineers.navigation.RichNavGraphKt;
+import spaceEngineers.controller.SpaceEngineers;
+import spaceEngineers.iv4xr.navigation.NavigableGraph;
 import spaceEngineers.model.Vec2F;
 import spaceEngineers.model.Vec3F;
-import uuspaceagent.UUTacticLib;
 
 public class seActionNavigateToBlock extends seActionGoal {
 	private static final long serialVersionUID = 1846118675335766867L;
@@ -58,6 +60,7 @@ public class seActionNavigateToBlock extends seActionGoal {
 	protected String widgetId;
 	protected eu.iv4xr.framework.spatial.Vec3 widgetPosition;
 	protected Vec3F targetPosition;
+	protected Vec3 calculatedReachablePosition;
 	protected final float DEGREES = 2416f;
 
 	public seActionNavigateToBlock(Widget w, SUT system, String agentId){
@@ -73,13 +76,12 @@ public class seActionNavigateToBlock extends seActionGoal {
 		this.set(IV4XRtags.agentAction, false);
 		this.set(IV4XRtags.newActionByAgent, false);
 
-		this.testAgent = (SeAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
-		this.stateGrid = testAgent.getStateGrid();
+		this.testAgent = system.get(IV4XRtags.iv4xrTestAgent);
 	}
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		navigateToBlock(system);
+		navigateToReachableBlockPosition(system);
 		rotateToBlockDestination(system);
 	}
 
@@ -88,60 +90,35 @@ public class seActionNavigateToBlock extends seActionGoal {
 	 * 
 	 * @param system
 	 */
-	protected void navigateToBlock(SUT system) {
-		stateGrid.updateState(agentId);
-		WorldEntity entity = getEntityByPosition(stateGrid.wom.elements.values(), widgetPosition.toString());
+	protected void navigateToReachableBlockPosition(SUT system) {
+		// Create a navigational graph of the largest grid
+		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+		Observer seObserver = seController.getObserver();
+		String largestGridId = ObservationExtensionsKt.largestGrid(seObserver.observeBlocks()).getId();
+		NavGraph navGraph = seObserver.navigationGraph(largestGridId);
+		RichNavGraph richNavGraph = RichNavGraphKt.toRichGraph(navGraph);
 
-		/**
-		 * Hardcoded temporally, we will need to use deviated square for calculation
-		 */
-		float THRESHOLD_SQUARED_DEVIATED_DISTANCE_TO_SQUARE = 15f;
-
-		var sqDestination = stateGrid.navgrid.gridProjectedLocation(entity.position);
-		var centerOfSqDestination = stateGrid.navgrid.getSquareCenterLocation(sqDestination);
-
-		GoalStructure G = nl.uu.cs.aplib.AplibEDSL.goal("close to entity: " + widgetType + " : " + widgetId)
-				.toSolve((Pair<Vec3,Vec3> positionAndOrientation) -> {
-					var pos = positionAndOrientation.fst;
-					return Vec3.sub(centerOfSqDestination,pos).lengthSq() <= THRESHOLD_SQUARED_DEVIATED_DISTANCE_TO_SQUARE;
-				})
-				.withTactic(UUTacticLib.navigateToEntity(entity))
-				.lift();
-
-		testAgent.setGoal(G);
-
-		System.out.println("DEBUG: Execute Goal... ");
-
-		int turn= 0;
-		while(G.getStatus().inProgress()) {
-			testAgent.update();
-			turn++;
-			if (turn >= 100) break;
-		}
-	}
-
-	/**
-	 * Obtain the WorldModel Entity by the concrete position. 
-	 * 
-	 * @param entities
-	 * @param blockType
-	 * @return
-	 */
-	private WorldEntity getEntityByPosition(Collection<WorldEntity> entities, String blockPosition){
-		WorldEntity entity = null;
-		for (WorldEntity we : entities) {
-			if (we.properties.get("centerPosition") != null) {
-				if (we.properties.get("centerPosition").toString().equals(blockPosition)) {
-					return we;
-				}
-			}
-			// Blocks from grid
-			if(we.elements.size() > 0){
-				entity = getEntityByPosition(we.elements.values(), blockPosition);
+		// Check if there is a reachable node in the navigational graph
+		// that allows the agent to reach the target block position
+		int reachableNode = -1;
+		float closestDistance = 3f; // Near the block to be able to interact later
+		for (Node node : richNavGraph.getNodeMap().values()) {
+			float distance = node.getPosition().distanceTo(targetPosition); // the target position of the widget to interact with
+			if(distance < closestDistance){
+				reachableNode = node.getId();
+				closestDistance = distance;
 			}
 		}
 
-		return entity;
+		if(reachableNode != -1) {
+			NavigableGraph navigableGraph = new NavigableGraph(navGraph);
+			int targetNode = navGraph.getNodes().get(reachableNode).getId();
+			List<Integer> nodePath = getPath(navigableGraph, targetNode);
+
+			for (Integer nodeId : nodePath) {
+				new SEnavigator().moveInLine(system, navigableGraph.node(nodeId).getPosition());
+			}
+		}
 	}
 
 	/**

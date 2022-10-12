@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -100,7 +100,7 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		w.parent = webParent;
 	}
 
-	IV4XRWidgetEntity addChild(IV4XRWidgetEntity parent, IV4XRElement element) {
+	public IV4XRWidgetEntity addChild(IV4XRWidgetEntity parent, IV4XRElement element) {
 		IV4XRWidgetEntity ret = new IV4XRWidgetEntity(this, parent, element);
 		return ret;
 	}
@@ -238,53 +238,18 @@ public class IV4XRState extends IV4XRWidgetEntity implements State {
 		else if (t.equals(IV4XRtags.labRecruitsAgentMood)) {
 			ret = w.element.labRecruitsAgentMood;
 		}
-		/**
-		 * Specific iv4xr System Tags (SpaceEngineers)
-		 */
-		else if (t.equals(IV4XRtags.seAgentPosition)) {
-			ret = w.element.seAgentPosition;
-		}
-		else if (t.equals(IV4XRtags.seAgentOrientationForward)) {
-			ret = w.element.seAgentOrientationForward;
-		}
-		else if (t.equals(IV4XRtags.seAgentOrientationUp)) {
-			ret = w.element.seAgentOrientationUp;
-		}
-		else if (t.equals(IV4XRtags.seAgentHealth)) {
-			ret = w.element.seAgentHealth;
-		}
-		else if (t.equals(IV4XRtags.seBuildIntegrity)) {
-			ret = w.element.seBuildIntegrity;
-		}
-		else if (t.equals(IV4XRtags.seIntegrity)) {
-			ret = w.element.seIntegrity;
-		}
-		else if (t.equals(IV4XRtags.seMaxIntegrity)) {
-			ret = w.element.seMaxIntegrity;
-		}
-		else if (t.equals(IV4XRtags.seMaxPosition)) {
-			ret = w.element.seMaxPosition;
-		}
-		else if (t.equals(IV4XRtags.seMinPosition)) {
-			ret = w.element.seMinPosition;
-		}
-		else if (t.equals(IV4XRtags.seOrientationForward)) {
-			ret = w.element.seOrientationForward;
-		}
-		else if (t.equals(IV4XRtags.seOrientationUp)) {
-			ret = w.element.seOrientationUp;
-		}
-		else if (t.equals(IV4XRtags.seSize)) {
-			ret = w.element.seSize;
-		}
 
-		cacheTag(w, t, ret);
+		// If the return value is not null, add it to the tags map
+		if(ret != null) {
+			cacheTag(w, t, ret);
+		}
 
 		return (ret == null) ? defaultValue : (T) ret;
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T> T cacheTag(IV4XRWidgetEntity w, Tag<T> t, Object value) {
+		Assert.notNull(value);
 		w.tags.put(t, value);
 		return (T) value;
 	}

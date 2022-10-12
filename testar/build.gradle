@@ -110,13 +110,11 @@ dependencies {
     compile files('./lib/eye2.jar')
     compile files('./lib/gson-2.8.5.jar')
     compile files('./lib/searchbased-0.0.1.jar')
-    implementation 'com.github.iv4xr-project:iv4xrDemo:2.3.4c'
     compile jnativehook
     compile 'com.google.guava:guava:26.0-jre'
     compile group: 'com.sikulix', name: 'sikulixapi', version: '2.0.5'
     compile group: 'com.jgoodies', name: 'jgoodies-common', version: '1.8.1'
     compile group: 'com.jgoodies', name: 'jgoodies-forms', version: '1.9.0'
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
     compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.30.v20200611'
     compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: '9.4.30.v20200611'
     compile group: 'org.eclipse.jetty', name: 'jetty-webapp', version: '9.4.30.v20200611'
@@ -125,7 +123,6 @@ dependencies {
     compile group: 'org.eclipse.jetty', name: 'apache-jstl', version: '9.4.30.v20200611'
     compile group: 'org.apache.commons', name: 'commons-math3', version: '3.6.1'
     compile group: 'commons-io', name: 'commons-io', version: '2.7'
-    compile group: 'com.orientechnologies', name: 'orientdb-graphdb', version: '3.0.34'
     runtime project(':windows')
 }
 evaluationDependsOn(':windows')
@@ -208,21 +205,21 @@ startScripts.dependsOn {
 
 // Download LabRecruits SUT from the GitHub repository
 task downloadLabRecruits(type: Download) {
-    src 'https://github.com/iv4xr-project/TESTAR_iv4xr/releases/download/v3.0/labrecruits_2.1.4_windows_30fps.zip'
+    src 'https://github.com/iv4xr-project/TESTAR_iv4xr/releases/download/v3.0/labrecruits_2.2.1_windows_30fps.zip'
     dest '../iv4XR/resources/gym/Windows/bin'
     overwrite false
 }
 // Verify that we downloaded the correct file
 task verifyLabRecruits(type: Verify, dependsOn: downloadLabRecruits) {
-    src new File(downloadLabRecruits.dest, 'labrecruits_2.1.4_windows_30fps.zip')
+    src new File(downloadLabRecruits.dest, 'labrecruits_2.2.1_windows_30fps.zip')
     algorithm 'MD5'
-    checksum '7e8c20f9b6ff740dadca06c640dfeed9'
+    checksum 'd4cc4da85316f74e48730eae1469ea6c'
 }
 // Extract LabRecruits binary files
 task downloadAndUnzipLabRecruits(type: Copy, dependsOn: verifyLabRecruits) {
     group = 'distribution_iv4XR'
     description ='downloadAndUnzipLabRecruits'
-    from zipTree(new File(downloadLabRecruits.dest, 'labrecruits_2.1.4_windows_30fps.zip'))
+    from zipTree(new File(downloadLabRecruits.dest, 'labrecruits_2.2.1_windows_30fps.zip'))
     into downloadLabRecruits.dest
 }
 

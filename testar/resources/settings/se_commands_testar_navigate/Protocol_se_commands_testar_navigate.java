@@ -36,9 +36,13 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
 import org.testar.protocols.iv4xr.SEProtocol;
 
+import eu.iv4xr.framework.spatial.Vec3;
+import eu.testar.iv4xr.actions.se.commands.*;
 import eu.testar.iv4xr.actions.se.goals.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.enums.SVec3;
 import nl.ou.testar.RandomActionSelector;
+import spaceEngineers.model.Vec3F;
 
 /**
  * iv4xr EU H2020 project - SpaceEngineers Use Case
@@ -59,12 +63,72 @@ import nl.ou.testar.RandomActionSelector;
  */
 public class Protocol_se_commands_testar_navigate extends SEProtocol {
 
-	private static Set<String> movementEntities;
+	/*
+	 * Modify agent ObservationRadius in the file: 
+	 * C:\Users\<user>\AppData\Roaming\SpaceEngineers\ivxr-plugin.config
+	 */
+
+	private static Set<String> toolEntities;
 	static {
-		movementEntities = new HashSet<String>();
-		movementEntities.add("LargeBlockSmallGenerator");
-		movementEntities.add("LargeBlockBatteryBlock");
-		movementEntities.add("ButtonPanelLarge");
+		toolEntities = new HashSet<String>();
+		//toolEntities.add("LargeBlockSmallGenerator");
+		toolEntities.add("LargeBlockBatteryBlock");
+		toolEntities.add("SurvivalKitLarge");
+	}
+
+	private static Set<String> interactiveEntities;
+	static {
+		interactiveEntities = new HashSet<String>();
+		interactiveEntities.add("Ladder2");
+		interactiveEntities.add("LargeBlockCockpit");
+		interactiveEntities.add("CockpitOpen");
+		interactiveEntities.add("LargeBlockCryoChamber");
+	}
+
+	// Oracle example to validate that the block integrity decreases after a Grinder action
+	private Verdict functional_verdict = Verdict.OK;
+
+	/**
+	 * The getVerdict methods implements the online state oracles that
+	 * examine the SUT's current state and returns an oracle verdict.
+	 * @return oracle verdict, which determines whether the state is erroneous and why.
+	 */
+	@Override
+	protected Verdict getVerdict(State state) {
+		// Apply an Oracle to check if Grinder action worked properly
+		if(lastExecutedAction != null && lastExecutedAction instanceof seActionNavigateGrinderBlock) {
+			// Check the block attached to the previous executed grinder action
+			Widget previousBlock = ((seActionNavigateGrinderBlock)lastExecutedAction).get(Tags.OriginWidget);
+			Float previousIntegrity = previousBlock.get(IV4XRtags.seIntegrity);
+			System.out.println("Previous Block Integrity: " + previousIntegrity);
+			// Try to find the same block in the current state using the block id
+			for(Widget w : state) {
+				if(w.get(IV4XRtags.entityId).equals(previousBlock.get(IV4XRtags.entityId))) {
+					Float currentIntegrity = w.get(IV4XRtags.seIntegrity);
+					System.out.println("Current Block Integrity: " + currentIntegrity);
+					// If previous integrity is the same or increased, something went wrong
+					if(currentIntegrity >= previousIntegrity) {
+						String blockType = w.get(IV4XRtags.entityType);
+						functional_verdict = new Verdict(Verdict.BLOCK_INTEGRITY_ERROR, "The integrity of interacted block " + blockType + " didn't decrease after a Grinder action");
+					}
+				}
+			}
+			// If the previous block does not exist in the current state, it has been destroyed after the grinder action
+			// We consider this OK by default, but more sophisticated oracles can be applied here
+		}
+
+		// Apply an Oracle to check jet-pack settings
+		if(lastExecutedAction != null && lastExecutedAction instanceof seActionNavigateInteract) {
+			Widget previousAgent = getAgentEntityFromState(latestState);
+			Widget currentAgent = getAgentEntityFromState(state);
+
+			if(!previousAgent.get(IV4XRtags.seAgentJetpackRunning).equals(currentAgent.get(IV4XRtags.seAgentJetpackRunning))) {
+				Widget interactedBlock = ((seActionNavigateInteract)lastExecutedAction).get(Tags.OriginWidget);
+				functional_verdict = new Verdict(Verdict.JETPACK_SETTINGS_ERROR, "Jetpack settings are incorrect after interacting with block : " + interactedBlock.get(IV4XRtags.entityType));
+			}
+		}
+
+		return super.getVerdict(state).join(functional_verdict);
 	}
 
 	/**
@@ -76,11 +140,28 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 
 		// For each block widget (see movementEntities types), rotate and move until the agent is close to the position of the block
 		for(Widget w : state) {
-			if(movementEntities.contains(w.get(IV4XRtags.entityType))) {
-				labActions.add(new seActionNavigateToBlock(w, system, agentId));
+			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
 				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 4, 1.0));
 				labActions.add(new seActionNavigateWelderBlock(w, system, agentId, 4, 1.0));
 			}
+
+			// FIXME: Fix Ladder2 is not observed as entityType
+			if((interactiveEntities.contains(w.get(IV4XRtags.entityType)) || w.get(IV4XRtags.seDefinitionId, "").contains("Ladder2"))
+					&& seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+				labActions.add(new seActionNavigateInteract(w, system, agentId));
+			}
+		}
+
+		// Now add the set of actions to explore level positions
+		labActions = seReachablePositionHelper.calculateExploratoryPositions(system, state, agentId, labActions);
+
+		// If it was not possible to navigate to an entity or realize a smart exploration
+		// prepare a dummy exploration
+		if(labActions.isEmpty()) {
+			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, 1f), 30)); // Move to back
+			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, -1f), 30)); // Move to front
+			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(1f, 0, 0), 30)); // Move to Right
+			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(-1f, 0, 0), 30)); // Move to Left
 		}
 
 		return labActions;
@@ -134,4 +215,5 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 			return false;
 		}
 	}
+
 }

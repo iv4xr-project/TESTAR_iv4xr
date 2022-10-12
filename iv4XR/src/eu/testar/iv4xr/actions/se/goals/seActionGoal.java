@@ -30,6 +30,8 @@
 
 package eu.testar.iv4xr.actions.se.goals;
 
+import java.util.List;
+
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
@@ -37,20 +39,27 @@ import org.fruit.alayer.State;
 import org.fruit.alayer.TaggableBase;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
-import eu.testar.iv4xr.se.SeAgentTESTAR;
-import uuspaceagent.UUSeAgentState;
+import eu.iv4xr.framework.extensions.pathfinding.AStar;
+import eu.iv4xr.framework.mainConcepts.TestAgent;
+import spaceEngineers.iv4xr.navigation.NavigableGraph;
 
 public class seActionGoal extends TaggableBase implements Action {
 	private static final long serialVersionUID = -146033320741674607L;
 
 	protected String agentId;
-	protected SeAgentTESTAR testAgent;
-	protected UUSeAgentState stateGrid;
+	protected TestAgent testAgent;
 
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// It has been decided to execute this action
 		// Send the instructions to achieve the goal
 
+	}
+
+	protected List<Integer> getPath(NavigableGraph navigableGraph, int targetNodeId) { 
+		// Should be 0 if the nav graph was generated at the current character position
+		int startNodeId = 0;
+		AStar<Integer> pathfinder = new AStar<>();
+		return pathfinder.findPath(navigableGraph, startNodeId, targetNodeId);
 	}
 
 	@Override

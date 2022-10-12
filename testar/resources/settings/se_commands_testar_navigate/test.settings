@@ -23,7 +23,7 @@ Mode = Spy
 # The SUT must be manually started and closed.
 #################################################################
 SUTConnector = COMMAND_LINE
-SUTConnectorValue = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\SpaceEngineers\\Bin64\\SpaceEngineers.exe" "suts/se_levels/simple-place-grind-torch"
+SUTConnectorValue = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\SpaceEngineers\\Bin64\\SpaceEngineers.exe" "suts/se_levels/manual-world"
 
 #################################################################
 # Sequences
@@ -67,6 +67,7 @@ SuspiciousProcessOutput = .*[eE]rror.*|.*[eE]xcep[ct]i[o?]n.*
 # process.
 #################################################################
 
+ProcessLogsEnabled = true
 ProcessLogs = .*[eE]rror.*|.*[eE]xcep[ct]i[o?]n.*
 
 #################################################################
@@ -96,17 +97,9 @@ SUTProcesses =
 ProtocolClass = se_commands_testar_navigate/Protocol_se_commands_testar_navigate
 
 #################################################################
-# Graphdatabase settings (experimental)
-#################################################################
-GraphDBEnabled = true
-GraphDBUrl = remote:/localhost/testar
-GraphDBUser = testar
-GraphDBPassword = testar
-
-#################################################################\n"
 # State model inference settings
-#################################################################\n"
-StateModelEnabled = true
+#################################################################
+StateModelEnabled = false
 DataStore = OrientDB
 DataStoreType = remote
 DataStoreServer = localhost
