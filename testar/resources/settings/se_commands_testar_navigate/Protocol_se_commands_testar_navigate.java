@@ -48,11 +48,10 @@ import eu.testar.iv4xr.actions.se.commands.seActionCommandMove;
 import eu.testar.iv4xr.actions.se.goals.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
-import eu.testar.iv4xr.se.SeAgentTESTAR;
 import nl.ou.testar.HtmlReporting.HtmlSequenceReport;
 import spaceEngineers.model.Vec3F;
-import uuspaceagent.DPos3;
-import uuspaceagent.UUSeAgentState;
+import eu.testar.iv4xr.actions.se.commands.*;
+import nl.ou.testar.RandomActionSelector;
 
 /**
  * iv4xr EU H2020 project - SpaceEngineers Use Case
@@ -73,19 +72,36 @@ import uuspaceagent.UUSeAgentState;
  */
 public class Protocol_se_commands_testar_navigate extends SEProtocol {
 
+	/*
+	 * Modify agent ObservationRadius in the file: 
+	 * C:\Users\<user>\AppData\Roaming\SpaceEngineers\ivxr-plugin.config
+	 */
+
+	private static Set<String> toolEntities;
+	static {
+		toolEntities = new HashSet<String>();
+		//toolEntities.add("LargeBlockSmallGenerator");
+		toolEntities.add("LargeBlockBatteryBlock");
+		toolEntities.add("SurvivalKitLarge");
+	}
+
+	private static Set<String> interactiveEntities;
+	static {
+		interactiveEntities = new HashSet<String>();
+		interactiveEntities.add("Ladder2");
+		interactiveEntities.add("LargeBlockCockpit");
+		interactiveEntities.add("CockpitOpen");
+		interactiveEntities.add("LargeBlockCryoChamber");
+	}
+
+	// Oracle example to validate that the block integrity decreases after a Grinder action
+	private Verdict functional_verdict = Verdict.OK;
+
 	// Memory map to calculate explored and unexplored 3D positions
 	private NavigableAreaSE navigableAreaSE;
 
 	// Used as helper classes for State Model Navigable State
 	private iv4xrNavigableState navigableState = new iv4xrNavigableState("");
-
-	private static Set<String> interestingEntities;
-	static {
-		interestingEntities = new HashSet<String>();
-		interestingEntities.add("LargeBlockSmallGenerator");
-		interestingEntities.add("LargeBlockBatteryBlock");
-		interestingEntities.add("ButtonPanelLarge");
-	}
 
 	@Override
 	protected SUT startSystem() throws SystemStartException {
@@ -113,6 +129,49 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 	}
 
 	/**
+	 * The getVerdict methods implements the online state oracles that
+	 * examine the SUT's current state and returns an oracle verdict.
+	 * @return oracle verdict, which determines whether the state is erroneous and why.
+	 */
+	@Override
+	protected Verdict getVerdict(State state) {
+		// Apply an Oracle to check if Grinder action worked properly
+		if(lastExecutedAction != null && lastExecutedAction instanceof seActionNavigateGrinderBlock) {
+			// Check the block attached to the previous executed grinder action
+			Widget previousBlock = ((seActionNavigateGrinderBlock)lastExecutedAction).get(Tags.OriginWidget);
+			Float previousIntegrity = previousBlock.get(IV4XRtags.seIntegrity);
+			System.out.println("Previous Block Integrity: " + previousIntegrity);
+			// Try to find the same block in the current state using the block id
+			for(Widget w : state) {
+				if(w.get(IV4XRtags.entityId).equals(previousBlock.get(IV4XRtags.entityId))) {
+					Float currentIntegrity = w.get(IV4XRtags.seIntegrity);
+					System.out.println("Current Block Integrity: " + currentIntegrity);
+					// If previous integrity is the same or increased, something went wrong
+					if(currentIntegrity >= previousIntegrity) {
+						String blockType = w.get(IV4XRtags.entityType);
+						functional_verdict = new Verdict(Verdict.BLOCK_INTEGRITY_ERROR, "The integrity of interacted block " + blockType + " didn't decrease after a Grinder action");
+					}
+				}
+			}
+			// If the previous block does not exist in the current state, it has been destroyed after the grinder action
+			// We consider this OK by default, but more sophisticated oracles can be applied here
+		}
+
+		// Apply an Oracle to check jet-pack settings
+		if(lastExecutedAction != null && lastExecutedAction instanceof seActionNavigateInteract) {
+			Widget previousAgent = getAgentEntityFromState(latestState);
+			Widget currentAgent = getAgentEntityFromState(state);
+
+			if(!previousAgent.get(IV4XRtags.seAgentJetpackRunning).equals(currentAgent.get(IV4XRtags.seAgentJetpackRunning))) {
+				Widget interactedBlock = ((seActionNavigateInteract)lastExecutedAction).get(Tags.OriginWidget);
+				functional_verdict = new Verdict(Verdict.JETPACK_SETTINGS_ERROR, "Jetpack settings are incorrect after interacting with block : " + interactedBlock.get(IV4XRtags.entityType));
+			}
+		}
+
+		return super.getVerdict(state).join(functional_verdict);
+	}
+
+	/**
 	 * Derive all possible actions that TESTAR can execute in each specific Space Engineers state.
 	 */
 	@Override
@@ -122,44 +181,46 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 
 		// Update Navigable State entities and navMesh positions information
 		for(Widget w : state) {
-			// For the interesting block entities calculate if they are reachable
-			if(interestingEntities.contains(w.get(IV4XRtags.entityType))) {
-				if(calculateReachablePosToEntity(system, w)) {
-					// If an entity is reachable, think is better to just use one entity to interact with it
-					// Maintain a list of multiple reachable entities may be problematic
-					// because the reachability to interact with them may change, 
-					// no available path from other part of the level
-					// or a maintained previous entity just disappeared
-					System.out.println("----> NEXT Reachable Entity: " + navigableAreaSE.getNextEntityDescription());
+			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+				labActions.add(new seActionNavigateGrinderBlock(w, w.get(IV4XRtags.entityPosition), system, agentId, 4, 1.0));
+				labActions.add(new seActionNavigateWelderBlock(w, w.get(IV4XRtags.entityPosition), system, agentId, 4, 1.0));
+				navigableAreaSE.addNewReachableEntity(w);
+				String description = w.get(IV4XRtags.entityType) + "_" + w.get(IV4XRtags.entityId);
+				navigableState.addReachableEntity(description, true);
+			}
 
-					// Add the visible entity information to the State Model helper class
-					navigableState.addReachableEntity(navigableAreaSE.getNextEntityDescription(), true);
-
-					Widget widgetReachable = navigableAreaSE.getNextEntity();
-					labActions.add(new seActionNavigateGrinderBlock(widgetReachable, widgetReachable.get(IV4XRtags.reachablePosition), system, agentId, 4, 1.0));
-					return labActions;
-				}
+			// FIXME: Fix Ladder2 is not observed as entityType
+			if((interactiveEntities.contains(w.get(IV4XRtags.entityType)) || w.get(IV4XRtags.seDefinitionId, "").contains("Ladder2"))
+					&& seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+				labActions.add(new seActionNavigateInteract(w, system, agentId));
+				navigableAreaSE.addNewReachableEntity(w);
+				String description = w.get(IV4XRtags.entityType) + "_" + w.get(IV4XRtags.entityId);
+				navigableState.addReachableEntity(description, true);
 			}
 		}
 
-		// Create free exploration movements if a path is available
-		calculateExploratoryPositions(system, state);
-		// And if exploratory reachable position is available derive smart explore action
-		//Vec3 nextExploratoryPosition = navigableAreaSE.getNextRandomPosition();
-		Vec3 nextExploratoryPosition = navigableAreaSE.getNextFarUnexploredPosition(state);
-		if(nextExploratoryPosition != null) {
-			labActions.add(new seActionExplorePosition(state, nextExploratoryPosition, system, agentId));
-			return labActions;
+		// Now add the set of actions to explore level positions
+		labActions = seReachablePositionHelper.calculateExploratoryPositions(system, state, agentId, labActions);
+		updateExploredSpace(labActions);
+
+		// If it was not possible to navigate to an entity or realize a smart exploration
+		// prepare a dummy exploration
+		if(labActions.isEmpty()) {
+			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, 1f), 30)); // Move to back
+			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, -1f), 30)); // Move to front
+			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(1f, 0, 0), 30)); // Move to Right
+			labActions.add(new seActionCommandMove(state, agentId, new Vec3F(-1f, 0, 0), 30)); // Move to Left
 		}
 
-		// Finally if is not possible to navigate to an entity or smart exploring a position
-		// prepare a dummy exploration
-		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, 1f), 30)); // Move to back
-		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(0, 0, -1f), 30)); // Move to front
-		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(1f, 0, 0), 30)); // Move to Right
-		labActions.add(new seActionCommandMove(state, agentId, new Vec3F(-1f, 0, 0), 30)); // Move to Left
-
 		return labActions;
+	}
+
+	private void updateExploredSpace(Set<Action> actions) {
+		for(Action a : actions) {
+			if(a instanceof seActionExplorePosition) {
+				navigableAreaSE.updateExploredSpace(((seActionExplorePosition) a).getTargetPosition());
+			}
+		}
 	}
 
 	@Override
@@ -196,152 +257,4 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 				"Initial");
 	}
 
-	private boolean calculateReachablePosToEntity(SUT system, Widget w) {
-		// If the current observed state contains a block entity that is not saved as reachable yet
-		if(!navigableAreaSE.alreadyInteractedEntity(w)) {
-			// Calculate if we can reach them by using the pathfinding algorithm
-			SeAgentTESTAR testAgent = (SeAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
-			UUSeAgentState stateGrid = testAgent.getStateGrid();
-			stateGrid.navgrid.enableFlying = false;
-			stateGrid.updateState(agentId);
-
-			Vec3 destination = w.get(IV4XRtags.entityPosition);
-
-			var sqAgent = stateGrid.navgrid.gridProjectedLocation(stateGrid.wom.position);
-			var sqDestination = stateGrid.navgrid.gridProjectedLocation(destination);
-			List<DPos3> path = stateGrid.pathfinder2D.findPath(stateGrid.navgrid, sqAgent, sqDestination);
-
-			if (path == null) {
-				// the pathfinder cannot find a path
-				System.out.println("### NO path to " + destination);
-
-				// 3D adjacent positions
-				//[{-3,-3,-3}{-3,-3,-2}..{0,-1,0}{0,0,-1}{0,0,0},{0,0,1},{0,1,0}..{3,3,2}{3,3,3}]
-				List<Vec3> recalculate_adjacent = new ArrayList();
-				for(int i = 0; i < 4; i++) {
-					for(int j = 0; j < 4; j++) {
-						for(int k = 0; k < 4; k++) {
-							recalculate_adjacent.add(new Vec3(i, j, k));
-							recalculate_adjacent.add(new Vec3(i*-1, j*-1, k*-1));
-						}
-					}
-				}
-				System.out.println("Try to recalculate destination with adjacent list: " + Arrays.toString(recalculate_adjacent.toArray()));
-
-				for(Vec3 adjacentDestination : recalculate_adjacent) {
-					Vec3 recalculatedDestination = Vec3.add(destination, adjacentDestination);
-
-					sqAgent = stateGrid.navgrid.gridProjectedLocation(stateGrid.wom.position);
-					sqDestination = stateGrid.navgrid.gridProjectedLocation(recalculatedDestination);
-					path = stateGrid.pathfinder2D.findPath(stateGrid.navgrid, sqAgent, sqDestination);
-
-					if(path != null) {
-						System.out.println("!!! Path recalculated to " + recalculatedDestination);
-						// If we finally found a path to the entity, using an adjacent position, ass as reachable entity + position
-						w.set(IV4XRtags.reachablePosition, recalculatedDestination);
-						navigableAreaSE.addNewReachableEntity(w);
-						return true;
-					} else {
-						System.out.println("### NO modified path to " + recalculatedDestination);
-					}
-				}
-			} else {
-				// Path was not null in the beginning, so we have to add the default destination as reachable entity + position
-				w.set(IV4XRtags.reachablePosition, destination);
-				navigableAreaSE.addNewReachableEntity(w);
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * SE - Platform
-	 * X and Z axes are the 2D to calculate the navigation movements. 
-	 * Calculate a navigable area of nodes by adding coordinates to the current agent position. 
-	 * Avoid the use of concrete decimals because this will potentially create always new nodes. 
-	 * 
-	 * @param system
-	 * @param state
-	 */
-	private void calculateExploratoryPositions(SUT system, State state) {
-		// Calculate if we can reach a near node position by using the pathfinding algorithm
-		SeAgentTESTAR testAgent = (SeAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
-		UUSeAgentState stateGrid = testAgent.getStateGrid();
-		stateGrid.navgrid.enableFlying = false;
-		stateGrid.updateState(agentId);
-
-		var sqAgent = stateGrid.navgrid.gridProjectedLocation(stateGrid.wom.position);
-
-		// Circular positions relative to the agent center
-		// https://stackoverflow.com/a/5301049
-		Vec3 agentCenter = SVec3.seToLab(state.get(IV4XRtags.agentWidget).get(IV4XRtags.seAgentPosition));
-
-		// 1 block distance positions (near)
-		// For near positions calculate 8 positions in circle
-		int points = 8;
-		double slice = 2 * Math.PI / points;
-		double radius = 2.5;
-		for (int i = 0; i < points; i++) {
-			double angle = slice * i;
-			float newX = agentCenter.x + (float)(radius * Math.cos(angle));
-			float newZ = agentCenter.z + (float)(radius * Math.sin(angle));
-			// New destination on which we need to calculate if it is a valid navigable node
-			Vec3 destination = new Vec3(newX, agentCenter.y, newZ);
-
-			var sqDestination = stateGrid.navgrid.gridProjectedLocation(destination);
-			List<DPos3> path = stateGrid.pathfinder2D.findPath(stateGrid.navgrid, sqAgent, sqDestination);
-
-			// If the path is not null the free exploration position is added as a valid navigable node
-			if (path != null){
-				System.out.println("NEAR exploratory pos: " + destination);
-				navigableAreaSE.updateExploredSpace(destination);
-			}
-		}
-
-		// 2 block distance positions (medium)
-		// For medium positions calculate 16 positions in circle
-		points = 16;
-		slice = 2 * Math.PI / points;
-		radius = 5.0;
-		for (int i = 0; i < points; i++) {
-			double angle = slice * i;
-			float newX = agentCenter.x + (float)(radius * Math.cos(angle));
-			float newZ = agentCenter.z + (float)(radius * Math.sin(angle));
-			// New destination on which we need to calculate if it is a valid navigable node
-			Vec3 destination = new Vec3(newX, agentCenter.y, newZ);
-
-			var sqDestination = stateGrid.navgrid.gridProjectedLocation(destination);
-			List<DPos3> path = stateGrid.pathfinder2D.findPath(stateGrid.navgrid, sqAgent, sqDestination);
-
-			// If the path is not null the free exploration position is added as a valid navigable node
-			if (path != null){
-				System.out.println("MEDIUM exploratory pos: " + destination);
-				navigableAreaSE.updateExploredSpace(destination);
-			}
-		}
-
-		// 3 block distance positions (far)
-		// For far positions calculate 16 positions in circle
-		points = 16;
-		slice = 2 * Math.PI / points;
-		radius = 7.5;
-		for (int i = 0; i < points; i++) {
-			double angle = slice * i;
-			float newX = agentCenter.x + (float)(radius * Math.cos(angle));
-			float newZ = agentCenter.z + (float)(radius * Math.sin(angle));
-			// New destination on which we need to calculate if it is a valid navigable node
-			Vec3 destination = new Vec3(newX, agentCenter.y, newZ);
-
-			var sqDestination = stateGrid.navgrid.gridProjectedLocation(destination);
-			List<DPos3> path = stateGrid.pathfinder2D.findPath(stateGrid.navgrid, sqAgent, sqDestination);
-
-			// If the path is not null the free exploration position is added as a valid navigable node
-			if (path != null){
-				System.out.println("FAR exploratory pos: " + destination);
-				navigableAreaSE.updateExploredSpace(destination);
-			}
-		}
-	}
 }

@@ -38,7 +38,11 @@ import org.fruit.alayer.TagsBase;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.windows.WinProcess;
 
+import spaceEngineers.controller.InventorySide;
 import spaceEngineers.controller.SpaceEngineers;
+import spaceEngineers.model.TerminalControlPanelData;
+import spaceEngineers.model.TerminalInventoryData;
+import spaceEngineers.model.TerminalProductionData;
 import eu.iv4xr.framework.environments.W3DEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.iv4xr.framework.spatial.Vec3;
@@ -147,7 +151,20 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<spaceEngineers.model.Vec3F> seAgentOrientationForward = from("seAgentOrientationForward", spaceEngineers.model.Vec3F.class);
 	public static final Tag<spaceEngineers.model.Vec3F> seAgentOrientationUp = from("seAgentOrientationUp", spaceEngineers.model.Vec3F.class);
 	public static final Tag<Float> seAgentHealth = from("seAgentHealth", Float.class);
+	public static final Tag<Float> seAgentOxygen = from("seAgentOxygen", Float.class);
+	public static final Tag<Float> seAgentEnergy = from("seAgentEnergy", Float.class);
+	public static final Tag<Float> seAgentHydrogen = from("seAgentHydrogen", Float.class);
+	public static final Tag<Boolean> seAgentJetpackRunning = from("seAgentJetpackRunning", Boolean.class);
+	public static final Tag<Boolean> seAgentDampenersOn = from("seAgentDampenersOn", Boolean.class);
+	public static final Tag<Boolean> seUnknownScreen = from("seUnknownScreen", Boolean.class);
 
+	// Grid properties
+	public static final Tag<String> seGridName = from("seGridName", String.class);
+	public static final Tag<String> seGridDisplayName = from("seGridDisplayName", String.class);
+	public static final Tag<Float> seGridMass = from("seGridMass", Float.class);
+	public static final Tag<Boolean> seGridParked = from("seGridParked", Boolean.class);
+
+	// Block properties
 	public static final Tag<Float> seBuildIntegrity = from("seBuildIntegrity", Float.class);
 	public static final Tag<Float> seIntegrity = from("seIntegrity", Float.class);
 	public static final Tag<Float> seMaxIntegrity = from("seMaxIntegrity", Float.class);
@@ -156,6 +173,31 @@ public class IV4XRtags extends TagsBase {
 	public static final Tag<spaceEngineers.model.Vec3F> seOrientationForward = from("seOrientationForward", spaceEngineers.model.Vec3F.class);
 	public static final Tag<spaceEngineers.model.Vec3F> seOrientationUp = from("seOrientationUp", spaceEngineers.model.Vec3F.class);
 	public static final Tag<spaceEngineers.model.Vec3F> seSize = from("seSize", spaceEngineers.model.Vec3F.class);
+	public static final Tag<String> seDefinitionId = from("seDefinitionId", String.class);
+	public static final Tag<Boolean> seFunctional = from("seFunctional", Boolean.class);
+	public static final Tag<Boolean> seWorking = from("seWorking", Boolean.class);
+	public static final Tag<String> seOwnerId = from("seOwnerId", String.class);
+	public static final Tag<String> seBuiltBy = from("seBuiltBy", String.class);
+
+	public static final Tag<String> seCustomName = from("seCustomName", String.class);
+	public static final Tag<Boolean> seShowInInventory = from("seShowInInventory", Boolean.class);
+	public static final Tag<Boolean> seShowInTerminal = from("seShowInTerminal", Boolean.class);
+	public static final Tag<Boolean> seShowOnHUD = from("seShowOnHUD", Boolean.class);
+	public static final Tag<Boolean> seFunctionalEnabled = from("seFunctionalEnabled", Boolean.class);
+	public static final Tag<Boolean> seDoorOpen = from("seDoorOpen", Boolean.class);
+	public static final Tag<Boolean> seDoorAnyoneCanUse = from("seDoorAnyoneCanUse", Boolean.class);
+	public static final Tag<Float> seFuelMaxOutput = from("seFuelMaxOutput", Float.class);
+	public static final Tag<Float> seFuelCurrentOutput = from("seFuelCurrentOutput", Float.class);
+	public static final Tag<Float> seFuelCapacity = from("seFuelCapacity", Float.class);
+
+	// Terminal properties
+	public static final Tag<String> seFocusedScreen = from("seFocusedScreen", String.class);
+	public static final Tag<String> seTerminalTab = from("seTerminalTab", String.class);
+	public static final Tag<TerminalInventoryData> seDataInventory = from("seDataInventory", TerminalInventoryData.class);
+	public static final Tag<InventorySide> seLeftInventory = from("seLeftInventory", InventorySide.class);
+	public static final Tag<InventorySide> seRightInventory = from("seRightInventory", InventorySide.class);
+	public static final Tag<TerminalControlPanelData> seDataControlPanel = from("seDataControlPanel", TerminalControlPanelData.class);
+	public static final Tag<TerminalProductionData> seDataProduction = from("seDataProduction", TerminalProductionData.class);
 
 	/**
 	 * Agent - TESTAR comparison

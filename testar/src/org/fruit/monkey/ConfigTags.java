@@ -34,6 +34,7 @@ package org.fruit.monkey;
 import org.fruit.Pair;
 import org.fruit.alayer.Tag;
 
+import java.nio.file.Path;
 import java.util.List;
 
 public final class ConfigTags {
@@ -135,6 +136,7 @@ public final class ConfigTags {
 
   public static final Tag<Boolean> ProcessListenerEnabled = Tag.from("ProcessListenerEnabled", Boolean.class);
   public static final Tag<String> SuspiciousProcessOutput = Tag.from("SuspiciousProcessOutput", String.class);
+  public static final Tag<Boolean> ProcessLogsEnabled = Tag.from("ProcessLogsEnabled", Boolean.class);
   public static final Tag<String> ProcessLogs = Tag.from("ProcessLogs", String.class);
 
   // Note: Defined the tag as string on purpose so we can leave the default value empty in the pre defined settings.
@@ -173,6 +175,13 @@ public final class ConfigTags {
   public static final Tag<Boolean> FlashFeedback = Tag.from("FlashFeedback", Boolean.class);
   public static final Tag<String> ProtocolCompileDirectory = Tag.from("ProtocolCompileDirectory", String.class);
   public static final Tag<String> ReportingClass = Tag.from("ReportingClass", String.class);
+
+  // Coverage settings Tags
+  public static final Tag<Path> OpenCoverPath = Tag.from("OpenCoverPath", Path.class);
+  public static final Tag<Path> ReportGeneratorPath = Tag.from("ReportGeneratorPath", Path.class);
+  public static final Tag<Path> OpenCoverTarget = Tag.from("OpenCoverTarget", Path.class);
+  public static final Tag<String> OpenCoverTargetArgs = Tag.from("OpenCoverTargetArgs", String.class);
+  public static final Tag<Path> PdbFilesPath = Tag.from("PdbFilesPath", Path.class);
 
   /*
   //TODO web driver settings for login feature

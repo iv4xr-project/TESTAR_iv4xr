@@ -108,6 +108,10 @@ public class FileHandling {
             targetFolder = "sequences_fail";
         else if (sev == Verdict.SEVERITY_UNREPLAYABLE)
             targetFolder = "sequences_unreplayable";
+        else if (sev == Verdict.BLOCK_INTEGRITY_ERROR)
+            targetFolder = "block_integrity_error";
+        else if (sev == Verdict.JETPACK_SETTINGS_ERROR)
+            targetFolder = "jetpack_settings_error";
         else
             targetFolder = "sequences_other";
         LogSerialiser.log("Copying classified sequence (\"" + generatedSequence + "\") to " + targetFolder + " folder...\n", LogSerialiser.LogLevel.Info);

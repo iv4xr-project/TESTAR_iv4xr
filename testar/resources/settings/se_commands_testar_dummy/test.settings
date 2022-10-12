@@ -23,7 +23,7 @@ Mode = Spy
 # The SUT must be manually started and closed.
 #################################################################
 SUTConnector = COMMAND_LINE
-SUTConnectorValue = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\SpaceEngineers\\Bin64\\SpaceEngineers.exe" "suts/se_levels/simple-place-grind-torch"
+SUTConnectorValue = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\SpaceEngineers\\Bin64\\SpaceEngineers.exe" "suts/se_levels/manual-world"
 
 #################################################################
 # Sequences
@@ -68,6 +68,7 @@ SuspiciousProcessOutput = .*[eE]rror.*|.*[eE]xcep[ct]i[o?]n.*
 # process.
 #################################################################
 
+ProcessLogsEnabled = true
 ProcessLogs = .*[eE]rror.*|.*[eE]xcep[ct]i[o?]n.*
 
 #################################################################
@@ -100,7 +101,7 @@ ProtocolClass = se_commands_testar_dummy/Protocol_se_commands_testar_dummy
 #################################################################
 # State model inference settings
 #################################################################
-StateModelEnabled = true
+StateModelEnabled = false
 DataStore = OrientDB
 DataStoreType = remote
 DataStoreServer = localhost

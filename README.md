@@ -177,7 +177,7 @@ NOTE: This task also automatically downloads the labrecruits game
 
 NOTE: Use this task to create a distributed TESTAR version without the need of Visual Studio.
 
-This task will also execute ``downloadAndUnzipLabRecruits`` task : to download LabRecruits game from [github LabRecruits](https://github.com/iv4xr-project/TESTAR_iv4xr/releases/download/v3.0/labrecruits_2.1.4_windows_30fps.zip).
+This task will also execute ``downloadAndUnzipLabRecruits`` task : to download LabRecruits game from [github LabRecruits](https://github.com/iv4xr-project/TESTAR_iv4xr/releases/download/v3.0/labrecruits_2.2.1_windows_30fps.zip).
 
 Distributed files created inside:
 - ``testar\target\install\testar\bin``

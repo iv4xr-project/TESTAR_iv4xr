@@ -1,0 +1,25 @@
+1. To execute OpenCover with Space Engineers--> We need the PDB files together with the SE DLLs
+
+https://github.com/OpenCover/opencover/releases/download/4.7.1221/opencover.4.7.1221.zip
+07726b884edc145cd46debeaca67b498
+
+OpenCover command line example:
+
+C:\Users\<user>\Desktop\OpenCover\OpenCover.Console.exe 
+-target:"C:\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\SpaceEngineers.exe" 
+-output:"C:\Users\<user>\Desktop\OpenCover\results\coverage_se.xml" 
+-targetargs:"/noshadow -plugin C:\PROGRA~2\Steam\steamapps\common\SpaceEngineers\Bin64\Ivxr.PlugIndependentLib.dll C:\PROGRA~2\Steam\steamapps\common\SpaceEngineers\Bin64\Ivxr.SePlugin.dll C:\PROGRA~2\Steam\steamapps\common\SpaceEngineers\Bin64\Ivxr.SpaceEngineers.dll" 
+-register:user
+
+2. After running OpenCover, the tool generates a XML file with the coverage information.
+We can use the ReportGenerator tool to create a HTML report.
+
+https://github.com/danielpalme/ReportGenerator/releases/download/v5.1.9/ReportGenerator_5.1.9.zip
+37e60f620045eaf38ecf1e7b4b7b9653
+
+ReportGenerate command line example:
+
+C:\Users\<user>\Desktop\ReportGenerator\netcoreapp3.1\ReportGenerator.exe 
+-reports:"C:\Users\<user>\Desktop\OpenCover\results\coverage_se.xml" 
+-targetdir:"C:\Users\<user>\Desktop\OpenCover\results\html" 
+-sourcedirs:"C:\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64"

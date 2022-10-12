@@ -35,10 +35,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -46,6 +48,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.comparator.LastModifiedFileComparator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.fruit.Util;
@@ -62,6 +65,7 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.alayer.exceptions.StateBuildException;
 import org.fruit.alayer.windows.GDIScreenCanvas;
 import org.fruit.monkey.ConfigTags;
+import org.fruit.monkey.Main;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
 import org.testar.protocols.GenericUtilsProtocol;
@@ -72,12 +76,14 @@ import com.google.common.collect.Sets;
 import es.upv.staq.testar.CodingManager;
 import es.upv.staq.testar.NativeLinker;
 import eu.testar.iv4xr.IV4XRStateFetcher;
+import eu.testar.iv4xr.actions.se.commands.seActionCommandCloseScreen;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.se.SpaceEngineersProcess;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.ou.testar.RandomActionSelector;
+import nl.ou.testar.SystemProcessHandling;
 import nl.ou.testar.HtmlReporting.HtmlSequenceReport;
-import spaceEngineers.transport.SocketReaderWriterKt;
+import spaceEngineers.transport.CloseIfCloseableKt;
 
 public class SEProtocol extends GenericUtilsProtocol {
 
@@ -153,13 +159,9 @@ public class SEProtocol extends GenericUtilsProtocol {
 		State state = super.getState(system);
 
 		// Find the Widget that represents the Agent Entity and associated into the IV4XR SUT Tag
-		for(Widget w : state) {
-			if(w.get(IV4XRtags.entityType, "").equals("AGENT")) {
-				system.set(IV4XRtags.agentWidget, w);
-				state.set(IV4XRtags.agentWidget, w);
-				break;
-			}
-		}
+		Widget agentWidget = getAgentEntityFromState(state);
+		system.set(IV4XRtags.agentWidget, agentWidget);
+		state.set(IV4XRtags.agentWidget, agentWidget);
 
 		//Spy mode didn't use the html report
 		if(settings.get(ConfigTags.Mode) == Modes.Spy) {
@@ -175,6 +177,21 @@ public class SEProtocol extends GenericUtilsProtocol {
 	}
 
 	/**
+	 * Get the Widget that represents the Agent Entity. 
+	 * 
+	 * @param state
+	 * @return agent widget
+	 */
+	protected final Widget getAgentEntityFromState(State state) {
+		for(Widget w : state) {
+			if(w.get(IV4XRtags.entityType, "").equals("AGENT")) {
+				return w;
+			}
+		}
+		throw new StateBuildException("Space Engineers state does not contain an Agent Widget");
+	}
+
+	/**
 	 * The getVerdict methods implements the online state oracles that
 	 * examine the SUT's current state and returns an oracle verdict.
 	 * @return oracle verdict, which determines whether the state is erroneous and why.
@@ -186,7 +203,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 
 		// Check SE logs trying to find pattern messages (ConfigTags.ProcessLogs)
 		File seLog = getLastSpaceEngineersLog();
-		if(seLog != null) {
+		if(seLog != null && settings.get(ConfigTags.ProcessLogsEnabled, false)) {
 			// Get all errors from the SE log
 			LinkedList<String> logErrors = spaceEngineersLogVerdict(seLog);
 			// And updated them to only use the new ones compared with the last verdict iteration
@@ -253,6 +270,15 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected Action preSelectAction(State state, Set<Action> actions){
+		// If the Space Engineers agent is on an unknown screen, close it
+		if(state.get(IV4XRtags.agentWidget) != null && state.get(IV4XRtags.agentWidget).get(IV4XRtags.seUnknownScreen, false)) {
+			System.out.println("DEBUG: Forcing Space Engineers to close current Screen");
+			Action gamePlayAction = new seActionCommandCloseScreen(state.get(IV4XRtags.agentWidget), agentId);
+			buildEnvironmentActionIdentifiers(state, gamePlayAction);
+			// adding available actions into the HTML report:
+			htmlReport.addActions(Collections.singleton(gamePlayAction));
+			return gamePlayAction;
+		}
 		// adding available actions into the HTML report:
 		htmlReport.addActions(actions);
 		return(super.preSelectAction(state, actions));
@@ -356,14 +382,13 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected void finishSequence() {
-		// If we use SUTConnector command line, we want to kill the process and start a new one next sequence
-		if(settings.get(ConfigTags.SUTConnector).equals(Settings.SUT_CONNECTOR_CMDLINE)) {
-			super.finishSequence();
-		}
+		// Do not invoke super.finishSequence because the invocation of SE + Steam creates a new process invocation
+		// Then TESTAR considers this process a temporal process to kill instead of the SUT process
+
 		// SpaceEngineers Logs Verdict, check SE logs trying to find pattern messages (ConfigTags.ProcessLogs)
 		Verdict logVerdict = Verdict.OK;
 		File seLog = getLastSpaceEngineersLog();
-		if(seLog != null) {
+		if(seLog != null && settings.get(ConfigTags.ProcessLogsEnabled, false)) {
 			System.out.println("INFO: SpaceEngineers Log detected: " + seLog);
 			LinkedList<String> logOracles = spaceEngineersLogVerdict(seLog);
 			if(!logOracles.isEmpty()) {
@@ -430,8 +455,45 @@ public class SEProtocol extends GenericUtilsProtocol {
 	 */
 	@Override
 	protected void stopSystem(SUT system) {
-		SocketReaderWriterKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));
+		// Save the level as a result in the output folder (only for generate mode)
+		if(settings.get(ConfigTags.Mode).equals(Modes.Generate)) {
+			saveLevel(system);
+		}
+		// Close iv4xr-plugin connection
+		CloseIfCloseableKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));
+		// If we use SUTConnector command line, we want to kill the process and start a new one next sequence
+		if(settings.get(ConfigTags.SUTConnector).equals(Settings.SUT_CONNECTOR_CMDLINE)) {
+			// super.finishSequence();
+			SystemProcessHandling.killTestLaunchedProcesses(this.contextRunningProcesses);
+		}
 		super.stopSystem(system);
+	}
+
+	private void saveLevel(SUT system) {
+		// Save the level as the sequence number + execution date
+		String saveAsName = Integer.toString(OutputStructure.sequenceInnerLoopCount) + "_" + OutputStructure.startInnerLoopDateString;
+
+		// Save the result level in the default SE directory
+		system.get(IV4XRtags.iv4xrSpaceEngineers).getScreens().getGamePlay().showMainMenu();
+		Util.pause(1);
+		system.get(IV4XRtags.iv4xrSpaceEngineers).getScreens().getMainMenu().saveAs();
+		Util.pause(1);
+		system.get(IV4XRtags.iv4xrSpaceEngineers).getScreens().getSaveAs().setName(saveAsName);
+		Util.pause(1);
+		system.get(IV4XRtags.iv4xrSpaceEngineers).getScreens().getSaveAs().pressOk();
+		Util.pause(5);
+
+		// Then move to TESTAR output results
+		try {
+			// testar\suts\se_levels\saveAsName
+			File savesDir = new File(Main.testarDir + File.separator + "suts" + File.separator + "se_levels" + File.separator + saveAsName);
+			// testar\output\2022-08-30_09h52m07s_SUT\se_level_output\sequenceX_innerDate
+			File testarOutputDir = new File(OutputStructure.outerLoopOutputDir + File.separator + "se_saves_output" + File.separator + saveAsName).getAbsoluteFile();
+			FileUtils.moveDirectory(savesDir, testarOutputDir);
+		} catch (IOException ioe) {
+			System.err.println("Error saving SE level: " + saveAsName);
+			ioe.printStackTrace();
+		}
 	}
 
 	/**
@@ -541,7 +603,7 @@ public class SEProtocol extends GenericUtilsProtocol {
 			try {
 				spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 				spaceEngineers.controller.Observer seObserver = seController.getObserver();
-				
+
 				spaceEngineers.model.Block targetBlock;
 				if((targetBlock = seObserver.observe().getTargetBlock()) != null) { Iv4xrSeVisualization.showSpaceEngineersAimingElement(cv, targetBlock); }
 				else{ Iv4xrSeVisualization.showStateObservation(cv, state); }

@@ -620,6 +620,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 		tStart = System.currentTimeMillis();
 
 		actionCount = 1;
+		lastExecutedAction = null;
 		this.testFailTimes = 0;
 		lastSequenceActionNumber = settings().get(ConfigTags.SequenceLength) + actionCount - 1;
 		firstSequenceActionNumber = actionCount;
@@ -864,15 +865,15 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 			lastExecutedAction = action;
 			actionCount++;
 
-			//Saving the actions and the executed action into replayable test sequence:
-			saveActionIntoFragmentForReplayableSequence(action, state, actions);
-
 			// Resetting the visualization:
 			Util.clear(cv);
 			cv.end();
 
 			// fetch the new state
-            state = getState(system);
+			state = getState(system);
+
+			//Saving the actions and the executed action into replayable test sequence:
+			saveActionIntoFragmentForReplayableSequence(action, state, actions);
 		}
 
 		// notify to state model the last state

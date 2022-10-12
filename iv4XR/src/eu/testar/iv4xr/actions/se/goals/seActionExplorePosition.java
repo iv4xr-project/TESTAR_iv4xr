@@ -30,6 +30,7 @@
 
 package eu.testar.iv4xr.actions.se.goals;
 
+import java.util.List;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
@@ -40,10 +41,16 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.testar.iv4xr.se.SeAgentTESTAR;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-import nl.uu.cs.aplib.utils.Pair;
-import uuspaceagent.UUTacticLib;
+import eu.testar.iv4xr.enums.SVec3;
+import spaceEngineers.controller.Observer;
+import spaceEngineers.controller.SpaceEngineers;
+import spaceEngineers.iv4xr.navigation.NavigableGraph;
+import spaceEngineers.model.Vec3F;
+import spaceEngineers.model.extensions.ObservationExtensionsKt;
+import spaceEngineers.navigation.NavGraph;
+import spaceEngineers.navigation.Node;
+import spaceEngineers.navigation.RichNavGraph;
+import spaceEngineers.navigation.RichNavGraphKt;
 
 public class seActionExplorePosition extends seActionGoal {
 	private static final long serialVersionUID = -5843747535124644882L;
@@ -64,13 +71,12 @@ public class seActionExplorePosition extends seActionGoal {
 		this.set(IV4XRtags.agentAction, false);
 		this.set(IV4XRtags.newActionByAgent, false);
 
-		this.testAgent = (SeAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
-		this.stateGrid = testAgent.getStateGrid();
+		this.testAgent = system.get(IV4XRtags.iv4xrTestAgent);
 	}
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		navigateToReachablePosition();
+		navigateToReachablePosition(system);
 	}
 
 	/**
@@ -78,32 +84,36 @@ public class seActionExplorePosition extends seActionGoal {
 	 * 
 	 * @param system
 	 */
-	protected void navigateToReachablePosition() {
-		stateGrid.updateState(agentId);
+	protected void navigateToReachablePosition(SUT system) {
+		Vec3F destinationPosition = SVec3.labToSE(targetPosition);
 
-		/**
-		 * Hardcoded temporally, we will need to use deviated square for calculation
-		 */
-		float THRESHOLD_SQUARED_DEVIATED_DISTANCE_TO_SQUARE = 2f;
+		// Create a navigational graph of the largest grid
+		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+		Observer seObserver = seController.getObserver();
+		String largestGridId = ObservationExtensionsKt.largestGrid(seObserver.observeBlocks()).getId();
+		NavGraph navGraph = seObserver.navigationGraph(largestGridId);
+		RichNavGraph richNavGraph = RichNavGraphKt.toRichGraph(navGraph);
 
-		var sqDestination = stateGrid.navgrid.gridProjectedLocation(targetPosition);
-		var centerOfSqDestination = stateGrid.navgrid.getSquareCenterLocation(sqDestination);
+		// Check if there is a reachable node in the navigational graph
+		// that allows the agent to reach the position to explore
+		int reachableNode = -1;
+		float closestDistance = 0.5f; // Not exactly the same position but almost
+		for (Node node : richNavGraph.getNodeMap().values()) {
+			float distance = node.getPosition().distanceTo(destinationPosition); // the destination position to explore
+			if(distance < closestDistance){
+				reachableNode = node.getId();
+				closestDistance = distance;
+			}
+		}
 
-		GoalStructure G = nl.uu.cs.aplib.AplibEDSL.goal("explore position: " + targetPosition)
-				.toSolve((Pair<Vec3,Vec3> positionAndOrientation) -> {
-					var pos = positionAndOrientation.fst;
-					return Vec3.sub(centerOfSqDestination,pos).lengthSq() <= THRESHOLD_SQUARED_DEVIATED_DISTANCE_TO_SQUARE;
-				})
-				.withTactic(UUTacticLib.navigateToTAC(targetPosition))
-				.lift();
+		if(reachableNode != -1) {
+			NavigableGraph navigableGraph = new NavigableGraph(navGraph);
+			int targetNode = navGraph.getNodes().get(reachableNode).getId();
+			List<Integer> nodePath = getPath(navigableGraph, targetNode);
 
-		testAgent.setGoal(G);
-
-		int turn= 0;
-		while(G.getStatus().inProgress()) {
-			testAgent.update();
-			turn++;
-			if (turn >= 100) break;
+			for (Integer nodeId : nodePath) {
+				new SEnavigator().moveInLine(system, navigableGraph.node(nodeId).getPosition());
+			}
 		}
 	}
 
