@@ -35,18 +35,21 @@ import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
+import org.fruit.alayer.devices.AWTKeyboard;
+import org.fruit.alayer.devices.KBKeys;
+import org.fruit.alayer.devices.Keyboard;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.model.Vec2F;
 import spaceEngineers.model.Vec3F;
 
-public class seActionNavigateInteract extends seActionNavigateToBlock {
-	private static final long serialVersionUID = 5024994091150159066L;
+public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
+	private static final long serialVersionUID = 3493737977558831469L;
 
 	protected Widget targetBlock;
 
-	public seActionNavigateInteract(Widget w, SUT system, String agentId){
+	public seActionNavigateRechargeHealth(Widget w, SUT system, String agentId){
 		super(w, system, agentId);
 		this.targetBlock = w;
 		this.set(Tags.Desc, toShortString());
@@ -59,9 +62,11 @@ public class seActionNavigateInteract extends seActionNavigateToBlock {
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		navigateToReachableBlockPosition(system);
 		aimToBlock(system);
-		interactWithBlock(system);
+		// TODO: Check if possible to change to SE plugin action
+		Keyboard kb = AWTKeyboard.build();
+		kb.press(KBKeys.VK_F);
 		Util.pause(5);
-		interactWithBlock(system);
+		kb.release(KBKeys.VK_F);
 		Util.pause(1);
 	}
 
@@ -97,13 +102,8 @@ public class seActionNavigateInteract extends seActionNavigateToBlock {
 		}
 	}
 
-	private void interactWithBlock(SUT system) {
-		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
-		seCharacter.use();
-	}
-
 	@Override
 	public String toShortString() {
-		return "Navigate and interact with block: " + widgetType + ", id: " + widgetId + " using agent: " + agentId;
+		return "Navigate and recharge health with block: " + widgetType + ", id: " + widgetId + " using agent: " + agentId;
 	}
 }

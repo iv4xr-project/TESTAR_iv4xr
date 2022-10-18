@@ -148,6 +148,22 @@ public class seReachablePositionHelper {
 				actions.add(new seActionExplorePosition(state, farPosition, system, agentId));
 			}
 		}
+		
+		// 4 block distance positions (far)
+		// For far positions calculate 16 positions in circle
+		points = 16;
+		slice = 2 * Math.PI / points;
+		radius = 10;
+		for (int i = 0; i < points; i++) {
+			double angle = slice * i;
+			float newX = agentCenter.x + (float)(radius * Math.cos(angle));
+			float newZ = agentCenter.z + (float)(radius * Math.sin(angle));
+			// New destination on which we need to calculate if it is a reachable position
+			Vec3 farPosition = new Vec3(newX, agentCenter.y, newZ);
+			if(seReachablePositionHelper.calculateIfPositionIsReachable(system, farPosition)) {
+				actions.add(new seActionExplorePosition(state, farPosition, system, agentId));
+			}
+		}
 
 		return actions;
 	}
@@ -159,7 +175,7 @@ public class seReachablePositionHelper {
 	 * @param position
 	 * @return true or false
 	 */
-	private static boolean calculateIfPositionIsReachable(SUT system, Vec3 position) {
+	public static boolean calculateIfPositionIsReachable(SUT system, Vec3 position) {
 		Vec3F destinationPosition = SVec3.labToSE(position);
 
 		// Create a navigational graph of the largest grid

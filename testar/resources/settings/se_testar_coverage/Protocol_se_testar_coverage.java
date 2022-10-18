@@ -237,6 +237,7 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 	 */
 	@Override
 	protected Action selectAction(State state, Set<Action> actions){
+
 		//Call the preSelectAction method from the AbstractProtocol so that, if necessary,
 		//unwanted processes are killed and SUT is put into foreground.
 		Action retAction = preSelectAction(state, actions);
@@ -246,11 +247,61 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 			retAction = stateModelManager.getAbstractActionToExecute(actions);
 		}
 		if(retAction==null) {
+			// First, prioritize the interaction actions with non-interacted entities
+			retAction = prioritizeInteractiveAction(actions);
+		}
+		if(retAction==null) {
+			// Second, prioritize the exploration of new discovered positions
+			retAction = prioritizeExploratoryMovement(actions, state);
+		}
+		if(retAction==null) {
 			System.out.println("State model based action selection did not find an action. Using default action selection.");
 			// if state model fails, use default:
 			retAction = RandomActionSelector.selectAction(actions);
 		}
 		return retAction;
+	}
+
+	private Action prioritizeInteractiveAction(Set<Action> actions) {
+		for(Action action : actions) {
+			if(action instanceof seActionNavigateGrinderBlock 
+					|| action instanceof seActionNavigateWelderBlock
+					|| action instanceof seActionNavigateInteract) {
+
+				if(!interactedEntities.contains(action.get(Tags.OriginWidget).get(IV4XRtags.entityId, ""))) {
+					return action;
+				}
+
+			}
+		}
+		return null;
+	}
+
+	private Action prioritizeExploratoryMovement(Set<Action> actions, State state) {
+		Action farExploratoryAction = null;
+		for(Action action : actions) {
+			if(action instanceof seActionExplorePosition) {
+				// If this position was not explored previously
+				if(!exploredPositions.contains(((seActionExplorePosition) action).getTargetPosition())) {
+					// If we do not have any exploratory action yet, just assign
+					if(farExploratoryAction == null) {farExploratoryAction = action;}
+					// Else, calculate if the next action is moving the agent to a far position
+					else {
+						Vec3 agentPosition = state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition);
+						float savedActionDist = Vec3.dist(agentPosition, ((seActionExplorePosition) farExploratoryAction).getTargetPosition());
+						float newActionDist = Vec3.dist(agentPosition, ((seActionExplorePosition) action).getTargetPosition());
+						
+						System.out.println("Previous position: " + ((seActionExplorePosition) farExploratoryAction).getTargetPosition() + " and distance: " + savedActionDist);
+						System.out.println("New position: " + ((seActionExplorePosition) action).getTargetPosition() + " and distance: " + newActionDist);
+						
+						if(newActionDist > savedActionDist) {farExploratoryAction = action;}
+						
+						System.out.println("Selected position: " + ((seActionExplorePosition) farExploratoryAction).getTargetPosition());
+					}
+				}
+			}
+		}
+		return farExploratoryAction;
 	}
 
 	/**
@@ -270,11 +321,30 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 			Util.pause(waitTime);
 
 			SpatialXMLmap.updateInteractedBlock(action);
+			addInteractiveAction(action);
+			addExploredPosition(action);
 
 			return true;
 
 		}catch(ActionFailedException afe){
 			return false;
+		}
+	}
+
+	private static Set<String> interactedEntities = new HashSet<>();
+	private static Set<Vec3> exploredPositions = new HashSet<>();
+
+	private void addInteractiveAction(Action action) {
+		if(action instanceof seActionNavigateGrinderBlock 
+				|| action instanceof seActionNavigateWelderBlock
+				|| action instanceof seActionNavigateInteract) {
+			interactedEntities.add(action.get(Tags.OriginWidget).get(IV4XRtags.entityId, ""));
+		}
+	}
+
+	private void addExploredPosition(Action action) {
+		if(action instanceof seActionExplorePosition) {
+			exploredPositions.add(((seActionExplorePosition) action).getTargetPosition());
 		}
 	}
 

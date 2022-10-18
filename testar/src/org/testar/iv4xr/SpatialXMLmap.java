@@ -81,13 +81,16 @@ public class SpatialXMLmap {
 
 	private static int [][] xml_space_blocks = {{0,0,0}};
 
-	private static int agentObservationRadius = 0; //TODO: Verify 1 to 2,5 game distance relation
+	public static int agentObservationRadius = 0; //TODO: Verify 1 to 2,5 game distance relation
 	private static Vec3 initialAgentPosition = new Vec3(0, 0, 0);
 	private static Vec3 initialPlatformPosition = new Vec3(0, 0, 0);
 	private static int minX = 0, maxX = 0, minZ = 0, maxZ = 0;
 	private static int WIDTH = 0;
 	private static int HEIGHT = 0;
 	private static int reSizeMap = 10; // This is to have a picture with a bigger scale
+
+	private static float largeGameToXML = 2.5f;
+	private static float smallGameToXML = 0.5f;
 
 	public static void prepareSpatialXMLmap(String levelPath) {
 		// First, clear and load the initial XML blocks information
@@ -168,7 +171,7 @@ public class SpatialXMLmap {
 		// SANDBOX_0_0_0_.sbs is the SE file that contains information about the existing blocks of the level
 		FileInputStream fileIS = new FileInputStream(new File(levelPath + File.separator + "SANDBOX_0_0_0_.sbs"));
 		// MyObjectBuilder_CubeBlock seems to be the XML element that represents each block
-		// Prepare a xPath expression to obtain all the functional blocsk that contains the entity id property
+		// Prepare a xPath expression to obtain all the functional blocks that contains the entity id property
 		String expression = "/MyObjectBuilder_Sector/SectorObjects/MyObjectBuilder_EntityBase/CubeBlocks/MyObjectBuilder_CubeBlock/EntityId";
 
 		DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
@@ -236,9 +239,12 @@ public class SpatialXMLmap {
 		Document xmlDocument = builder.parse(fileIS);
 		XPath xPath = XPathFactory.newInstance().newXPath();
 
-		// For now, we need to work with a level on which it should exist only one platform node
+		// For now, we need to work with a level on which the main platform should be the first entity base object
 		NodeList platformCoordinatesList = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
-		Assert.isTrue(platformCoordinatesList.getLength() == 1);
+		if(platformCoordinatesList.getLength() != 1) {
+			System.out.println("WARNING! More that one MyObjectBuilder_EntityBase Grid detected");
+			System.out.println("WARNING! Only the first one will be used to calculate the spatial XML map");
+		}
 		Node platformCoordinates = platformCoordinatesList.item(0);
 
 		// Obtain the x, y, z attributes from the coordinates node
@@ -264,10 +270,9 @@ public class SpatialXMLmap {
 		Vec3 agentPosition = state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition);
 		agentPosition = Vec3.add(Vec3.sub(agentPosition, initialAgentPosition), relativePosition);
 
-		float gameToXML = 2.5f;
-		int x = Math.round(agentPosition.x / gameToXML);
-		//int y = Math.round(agentPosition.y / gameToXML);
-		int z = Math.round(agentPosition.z / gameToXML);
+		int x = Math.round(agentPosition.x / largeGameToXML);
+		//int y = Math.round(agentPosition.y / largeGameToXML);
+		int z = Math.round(agentPosition.z / largeGameToXML);
 
 		// 2 represents the space explored by agent
 		// Because this position is updated every state, 
@@ -283,10 +288,9 @@ public class SpatialXMLmap {
 				Vec3 widgetBlockPosition = w.get(IV4XRtags.entityPosition);
 				widgetBlockPosition = Vec3.add(Vec3.sub(widgetBlockPosition, initialAgentPosition), relativePosition);
 
-				float gameToXML = 2.5f;
-				int x = Math.round(widgetBlockPosition.x / gameToXML);
-				//int y = Math.round(agentPosition.y / gameToXML);
-				int z = Math.round(widgetBlockPosition.z / gameToXML);
+				int x = Math.round(widgetBlockPosition.x / largeGameToXML);
+				//int y = Math.round(agentPosition.y / largeGameToXML);
+				int z = Math.round(widgetBlockPosition.z / largeGameToXML);
 
 				// 4 represents an observed functional entity
 				// Because this position is updated every state, 
@@ -307,10 +311,9 @@ public class SpatialXMLmap {
 			Vec3 widgetBlockPosition = interactedWidget.get(IV4XRtags.entityPosition);
 			widgetBlockPosition = Vec3.add(Vec3.sub(widgetBlockPosition, initialAgentPosition), relativePosition);
 
-			float gameToXML = 2.5f;
-			int x = Math.round(widgetBlockPosition.x / gameToXML);
-			//int y = Math.round(agentPosition.y / gameToXML);
-			int z = Math.round(widgetBlockPosition.z / gameToXML);
+			int x = Math.round(widgetBlockPosition.x / largeGameToXML);
+			//int y = Math.round(agentPosition.y / largeGameToXML);
+			int z = Math.round(widgetBlockPosition.z / largeGameToXML);
 
 			// 5 represents an interacted functional entity
 			xml_space_blocks[x - minX][z - minZ] = 5;

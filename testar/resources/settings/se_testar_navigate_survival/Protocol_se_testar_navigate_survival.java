@@ -61,7 +61,7 @@ import spaceEngineers.model.Vec3F;
  * State (Widget-Tree) -> Agent Observation (All Observed Entities)
  * Action              -> SpaceEngineers low level command
  */
-public class Protocol_se_commands_testar_navigate extends SEProtocol {
+public class Protocol_se_testar_navigate_survival extends SEProtocol {
 
 	/*
 	 * Modify agent ObservationRadius in the file: 
@@ -76,13 +76,13 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 		toolEntities.add("SurvivalKitLarge");
 	}
 
-	private static Set<String> interactiveEntities;
+	private static Set<String> interactiveEnergyEntities;
 	static {
-		interactiveEntities = new HashSet<String>();
-		interactiveEntities.add("Ladder2");
-		interactiveEntities.add("LargeBlockCockpit");
-		interactiveEntities.add("CockpitOpen");
-		interactiveEntities.add("LargeBlockCryoChamber");
+		interactiveEnergyEntities = new HashSet<String>();
+		interactiveEnergyEntities.add("LargeBlockCockpit");
+		interactiveEnergyEntities.add("LargeBlockCockpitSeat");
+		interactiveEnergyEntities.add("CockpitOpen");
+		interactiveEnergyEntities.add("LargeBlockCryoChamber");
 	}
 
 	// Oracle example to validate that the block integrity decreases after a Grinder action
@@ -146,10 +146,27 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 			}
 
 			// FIXME: Fix Ladder2 is not observed as entityType
-			if((interactiveEntities.contains(w.get(IV4XRtags.entityType)) || w.get(IV4XRtags.seDefinitionId, "").contains("Ladder2"))
-					&& seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+			if(w.get(IV4XRtags.seDefinitionId, "").contains("Ladder2") && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
 				labActions.add(new seActionNavigateInteract(w, system, agentId));
 			}
+
+			// Some interactive entities allow the agent to rest inside and charge the energy
+			if(interactiveEnergyEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+				labActions.add(new seActionNavigateInteract(w, system, agentId));
+			}
+
+			// If a Medical Room exists in the level, the agent can use the panel to charge the health and energy
+			// FIXME: Navigate near to medical room is not completely functional yet
+			/*if(w.get(IV4XRtags.entityType, "").contains("MedicalRoom") && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+				labActions.add(new seActionNavigateRechargeHealth(w, system, agentId));
+			}*/
+		}
+
+		// If the agent has a reachable position in front of him, trigger a place block action
+		Vec3 agentPosition = SVec3.seToLab(state.get(IV4XRtags.agentWidget).get(IV4XRtags.seAgentPosition));
+		Vec3 frontPosition = new Vec3((agentPosition.x + 2.5f), agentPosition.y, agentPosition.z);
+		if(seReachablePositionHelper.calculateIfPositionIsReachable(system, frontPosition)) {
+			labActions.add(new seActionTriggerBlockConstruction(state, system, agentId, "LargeBlockArmorBlock"));
 		}
 
 		// Now add the set of actions to explore level positions
@@ -205,7 +222,8 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 		for(Action action : actions) {
 			if(action instanceof seActionNavigateGrinderBlock 
 					|| action instanceof seActionNavigateWelderBlock
-					|| action instanceof seActionNavigateInteract) {
+					|| action instanceof seActionNavigateInteract
+					|| action instanceof seActionNavigateRechargeHealth) {
 
 				if(!interactedEntities.contains(action.get(Tags.OriginWidget).get(IV4XRtags.entityId, ""))) {
 					return action;

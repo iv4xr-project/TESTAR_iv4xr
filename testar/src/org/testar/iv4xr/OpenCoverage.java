@@ -281,7 +281,8 @@ public class OpenCoverage {
 		File htmlCoverageReportFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "HTMLcoverage" + File.separator).getAbsoluteFile();
 		if (!htmlCoverageReportFile.exists()) htmlCoverageReportFile.mkdirs();
 
-		String reportGeneratorTool = settings.get(ConfigTags.ReportGeneratorPath).toAbsolutePath().toString() + File.separator + "netcoreapp3.1" + File.separator + "ReportGenerator.exe";
+		//FIXME: The usage of the ReportGenerate net version varies depending on the dotnet version of the host system
+		String reportGeneratorTool = settings.get(ConfigTags.ReportGeneratorPath).toAbsolutePath().toString() + File.separator + "net47" + File.separator + "ReportGenerator.exe";
 		String reports = " -reports:\"" + new File(OutputStructure.outerLoopOutputDir + File.separator + "se_coverage.xml").getAbsolutePath() + "\"";
 		String targetdir = " -targetdir:\"" + htmlCoverageReportFile + "\"";
 		String sourcedirs = " -sourcedirs:\"" + settings.get(ConfigTags.PdbFilesPath).toString() + "\"";
