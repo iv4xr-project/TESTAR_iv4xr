@@ -3,11 +3,11 @@ package eu.testar.iv4xr.actions.se.goals;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.fruit.Assert;
 import org.fruit.Util;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
+import org.fruit.alayer.Verdict;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
@@ -35,10 +35,16 @@ public class seActionTriggerBlockConstruction extends seActionGoal {
 	protected final float DEGREES = 2416f;
 	protected String blockType;
 
+	private Verdict actionVerdict = Verdict.OK;
+	public Verdict getActionVerdict() {
+		return actionVerdict;
+	}
+
 	public static Map<String, String> blockTypeDescriptionMap;
 	static {
 		blockTypeDescriptionMap = new HashMap<>();
 		blockTypeDescriptionMap.put("LargeBlockArmorBlock", "Light Armor Block");
+		blockTypeDescriptionMap.put("LargeHeavyBlockArmorBlock", "Heavy Armor Block");
 	}
 
 	public seActionTriggerBlockConstruction(Widget w, SUT system, String agentId, String blockType){
@@ -120,9 +126,19 @@ public class seActionTriggerBlockConstruction extends seActionGoal {
 		ToolbarConfigData tbcData = controller.getScreens().getToolbarConfig().data();
 		// Create a Verdict inside the action to verify
 		// Search works and the search function shows blocks
-		Assert.isTrue(!tbcData.getGridItems().isEmpty());
+		if(tbcData.getGridItems().isEmpty()) {
+			actionVerdict = new Verdict(Verdict.BLOCK_INTEGRITY_ERROR, 
+					"The are not existing block with the name: " + blockTypeDescriptionMap.get(blockType));
+			return;
+		}
 		// Verify that the search returns the desired block as the first element
-		Assert.isTrue(tbcData.getGridItems().get(0).toString().equals("MyObjectBuilder_CubeBlock/" + blockType));
+		if(!tbcData.getGridItems().get(0).toString().equals("MyObjectBuilder_CubeBlock/" + blockType)) {
+			actionVerdict = new Verdict(Verdict.BLOCK_INTEGRITY_ERROR, 
+					"The block definition Id and the block name does not match: "
+							+ blockTypeDescriptionMap.get(blockType)
+							+ "MyObjectBuilder_CubeBlock/" + blockType);
+			return;
+		}
 		Util.pause(1);
 		controller.getScreens().getToolbarConfig().close();
 	}
@@ -138,29 +154,37 @@ public class seActionTriggerBlockConstruction extends seActionGoal {
 
 		seItems.setToolbarItem(DefinitionId.Companion.cubeBlock(blockType), ToolbarLocation.Companion.fromIndex(1, 2));
 
-		Util.pause(0.5);
+		Util.pause(1);
 
 		seItems.equip(ToolbarLocation.Companion.fromIndex(1, 2));
 
-		Util.pause(0.5);
+		Util.pause(1);
 
 		// This is to empty the "buffer" of new block before placing the desired block
 		seController.getObserver().observeBlocks();
 		seController.getObserver().observeNewBlocks();
 
-		Util.pause(0.5);
+		Util.pause(1);
 
 		seController.getBlocks().place();
 
 		Util.pause(1);
 
 		Observation newObsBlocks = seController.getObserver().observeNewBlocks();
-		// Assert that only one new block exists and that is the placed one
-		Assert.isTrue(newObsBlocks.getGrids().size() == 1);
-		Assert.isTrue(newObsBlocks.getGrids().get(0).getBlocks().size() == 1);
+		// Check that one new block exists and that is the placed one
+		if(newObsBlocks.getGrids().isEmpty() || newObsBlocks.getGrids().get(0).getBlocks().isEmpty()) {
+			actionVerdict = new Verdict(Verdict.BLOCK_INTEGRITY_ERROR, 
+					"No block was placed trying to add to the level the block: " + blockType);
+			return;
+		}
 		Block newBlock = newObsBlocks.getGrids().get(0).getBlocks().get(0);
-		Assert.isTrue(newBlock.getDefinitionId().toString().equals("MyObjectBuilder_CubeBlock/" + blockType));
-
+		if(!newBlock.getDefinitionId().toString().equals("MyObjectBuilder_CubeBlock/" + blockType)) {
+			actionVerdict = new Verdict(Verdict.BLOCK_INTEGRITY_ERROR, 
+					"The desired block was not correctly placed to the level." 
+							+ " Expected: " + blockType
+							+ " Observed: " + newBlock.getDefinitionId().toString());
+			return;
+		}
 	}
 
 	protected void aimUp(SUT system) {

@@ -128,6 +128,11 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 			}
 		}
 
+		// Apply an Oracle to check the triggeredBlockConstruction
+		if(lastExecutedAction != null && lastExecutedAction instanceof seActionTriggerBlockConstruction) {
+			functional_verdict = ((seActionTriggerBlockConstruction)lastExecutedAction).getActionVerdict();
+		}
+
 		return super.getVerdict(state).join(functional_verdict);
 	}
 
@@ -166,7 +171,7 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 		Vec3 agentPosition = SVec3.seToLab(state.get(IV4XRtags.agentWidget).get(IV4XRtags.seAgentPosition));
 		Vec3 frontPosition = new Vec3((agentPosition.x + 2.5f), agentPosition.y, agentPosition.z);
 		if(seReachablePositionHelper.calculateIfPositionIsReachable(system, frontPosition)) {
-			labActions.add(new seActionTriggerBlockConstruction(state, system, agentId, "LargeBlockArmorBlock"));
+			labActions.add(new seActionTriggerBlockConstruction(state, system, agentId, "LargeHeavyBlockArmorBlock"));
 		}
 
 		// Now add the set of actions to explore level positions
