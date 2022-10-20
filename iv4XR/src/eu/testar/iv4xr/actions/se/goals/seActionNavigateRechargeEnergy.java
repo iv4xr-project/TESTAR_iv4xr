@@ -43,12 +43,12 @@ import spaceEngineers.model.CharacterObservation;
 import spaceEngineers.model.Vec2F;
 import spaceEngineers.model.Vec3F;
 
-public class seActionNavigateInteract extends seActionNavigateToBlock {
-	private static final long serialVersionUID = 5024994091150159066L;
+public class seActionNavigateRechargeEnergy extends seActionNavigateToBlock {
+	private static final long serialVersionUID = 5400994373292296843L;
 
 	protected Widget targetBlock;
 
-	public seActionNavigateInteract(Widget w, SUT system, String agentId){
+	public seActionNavigateRechargeEnergy(Widget w, SUT system, String agentId){
 		super(w, system, agentId);
 		this.targetBlock = w;
 		this.set(Tags.Desc, toShortString());
@@ -67,21 +67,33 @@ public class seActionNavigateInteract extends seActionNavigateToBlock {
 		CharacterObservation seObsCharacter = seController.getObserver().observe();
 		Boolean isJetpackRunningBefore = seObsCharacter.getJetpackRunning();
 
+		// Check the energy before interacting with the functional block
+		float initialSuitEnergy = seObsCharacter.getSuitEnergy();
+
 		// Go inside the functional block
 		interactWithBlock(system);
 
-		// Wait some seconds
-		Util.pause(1);
+		// Wait 5 seconds to give time to the agent to charge the energy
+		Util.pause(5);
 
 		// Then go outside
 		interactWithBlock(system);
 
-		// Finally, execute a new observation to check the jetpack settings
+		// First, execute a new observation to check the jetpack settings
 		seObsCharacter = seController.getObserver().observe();
 		Boolean isJetpackRunningAfter = seObsCharacter.getJetpackRunning();
 
 		if(!isJetpackRunningBefore.equals(isJetpackRunningAfter)) {
 			actionVerdict = new Verdict(Verdict.JETPACK_SETTINGS_ERROR, "Jetpack settings are incorrect after interacting with block : " + targetBlock.get(IV4XRtags.entityType));
+		}
+
+		// Second, check that the energy has increased
+		float newSuitEnergy = seObsCharacter.getSuitEnergy();
+		if(initialSuitEnergy != 1.0f && newSuitEnergy <= initialSuitEnergy) {
+			actionVerdict = new Verdict(Verdict.ENERGY_ERROR, "Agent Suit Energy did not increase after waiting inside block: " 
+					+ targetBlock.get(IV4XRtags.entityType)
+					+ ", Previous energy: " + initialSuitEnergy
+					+ ", After interaction energy: " + newSuitEnergy);
 		}
 
 		Util.pause(1);

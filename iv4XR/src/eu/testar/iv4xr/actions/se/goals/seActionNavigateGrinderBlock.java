@@ -75,7 +75,7 @@ public class seActionNavigateGrinderBlock extends seActionNavigateToBlock {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		equipGrinder(system);
-		navigateToReachableBlockPosition(system);
+		navigateToReachableBlockPosition(system, state);
 		rotateToBlockDestination(system);
 		useGrinder(system);
 

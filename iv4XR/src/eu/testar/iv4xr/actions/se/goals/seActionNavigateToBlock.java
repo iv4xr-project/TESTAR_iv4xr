@@ -30,7 +30,10 @@
 
 package eu.testar.iv4xr.actions.se.goals;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
@@ -81,7 +84,7 @@ public class seActionNavigateToBlock extends seActionGoal {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		navigateToReachableBlockPosition(system);
+		navigateToReachableBlockPosition(system, state);
 		rotateToBlockDestination(system);
 	}
 
@@ -90,7 +93,7 @@ public class seActionNavigateToBlock extends seActionGoal {
 	 * 
 	 * @param system
 	 */
-	protected void navigateToReachableBlockPosition(SUT system) {
+	protected void navigateToReachableBlockPosition(SUT system, State state) {
 		// Create a navigational graph of the largest grid
 		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 		Observer seObserver = seController.getObserver();
@@ -98,11 +101,18 @@ public class seActionNavigateToBlock extends seActionGoal {
 		NavGraph navGraph = seObserver.navigationGraph(largestGridId);
 		RichNavGraph richNavGraph = RichNavGraphKt.toRichGraph(navGraph);
 
+		Set<Vec3F> notReachablePositions = notReachablePositions(seObserver, state);
+
 		// Check if there is a reachable node in the navigational graph
 		// that allows the agent to reach the target block position
 		int reachableNode = -1;
-		float closestDistance = 3f; // Near the block to be able to interact later
+		//float closestDistance = 3f; // Near the block to be able to interact later
+		float closestDistance = 7f; // Closest distance to a 2 dimensions block is 3.7f approx
 		for (Node node : richNavGraph.getNodeMap().values()) {
+
+			Vec3F nodePosition = new Vec3F(node.getPosition().getX(), 0f, node.getPosition().getZ());
+			if(notReachablePositions.contains(nodePosition)) continue;
+
 			float distance = node.getPosition().distanceTo(targetPosition); // the target position of the widget to interact with
 			if(distance < closestDistance){
 				reachableNode = node.getId();
@@ -119,6 +129,25 @@ public class seActionNavigateToBlock extends seActionGoal {
 				new SEnavigator().moveInLine(system, navigableGraph.node(nodeId).getPosition());
 			}
 		}
+	}
+
+	private Set<Vec3F> notReachablePositions(Observer seObserver, State state)  {
+		Set<Vec3F> forbiddenPositions = new HashSet<>();
+		for(Widget w : state) {
+			if(w.get(IV4XRtags.seSize, null) != null) {
+				// If the size of the block is not 1 dimension unit
+				if(!w.get(IV4XRtags.seSize).similar(new Vec3F(1,1,1), 0.1f)){
+					// Create a list of non reachable action around the block
+					Vec3F maxPosition = w.get(IV4XRtags.seMaxPosition);
+					Vec3F minPosition = w.get(IV4XRtags.seMinPosition);
+					forbiddenPositions.add(new Vec3F(maxPosition.getX(), 0f, maxPosition.getZ()));
+					forbiddenPositions.add(new Vec3F(minPosition.getX(), 0f, minPosition.getZ()));
+					forbiddenPositions.add(new Vec3F(minPosition.getX(), 0f, maxPosition.getZ()));
+					forbiddenPositions.add(new Vec3F(maxPosition.getX(), 0f, minPosition.getZ()));
+				}
+			}
+		}
+		return forbiddenPositions;
 	}
 
 	/**

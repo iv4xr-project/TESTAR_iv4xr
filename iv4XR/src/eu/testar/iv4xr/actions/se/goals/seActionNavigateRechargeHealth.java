@@ -34,6 +34,7 @@ import org.fruit.Util;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
+import org.fruit.alayer.Verdict;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.devices.AWTKeyboard;
 import org.fruit.alayer.devices.KBKeys;
@@ -41,6 +42,7 @@ import org.fruit.alayer.devices.Keyboard;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
+import spaceEngineers.model.CharacterObservation;
 import spaceEngineers.model.Vec2F;
 import spaceEngineers.model.Vec3F;
 
@@ -60,13 +62,42 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		navigateToReachableBlockPosition(system);
-		aimToBlock(system);
-		// TODO: Check if possible to change to SE plugin action
-		Keyboard kb = AWTKeyboard.build();
-		kb.press(KBKeys.VK_F);
-		Util.pause(5);
-		kb.release(KBKeys.VK_F);
+		navigateToReachableBlockPosition(system, state);
+		// If TESTAR was able to reach and aim the health block, interact and validate
+		if(aimToBlock(system)) {
+
+			// Reduce the health of the agent intentionally to be able to verify the health charge
+			boolean isHelmentEnabled = system.get(IV4XRtags.iv4xrSpaceEngineers).getObserver().observe().getHelmetEnabled();
+			spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
+			if(isHelmentEnabled) {
+				seCharacter.switchHelmet();
+				Util.pause(3);
+				seCharacter.switchHelmet();
+			}
+
+			// Check the player health before interacting with the functional block
+			spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+			CharacterObservation seObsCharacter = seController.getObserver().observe();
+			float previousHealth = seObsCharacter.getHealth();
+
+			Keyboard kb = AWTKeyboard.build();
+			kb.press(KBKeys.VK_F);
+			Util.pause(5);
+			kb.release(KBKeys.VK_F);
+			Util.pause(1);
+
+			// Execute a new observation to check if the health increased
+			seObsCharacter = seController.getObserver().observe();
+			float newHealth = seObsCharacter.getHealth();
+			if(previousHealth != 1.0f && newHealth <= previousHealth) {
+				actionVerdict = new Verdict(Verdict.HEALTH_ERROR, 
+						"Agent Health did not increase after interacting with block: " 
+								+ targetBlock.get(IV4XRtags.entityType)
+								+ ", Previous health: " + previousHealth
+								+ ", After interaction health: " + newHealth);
+			}
+		}
+
 		Util.pause(1);
 	}
 
@@ -78,7 +109,7 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 	 * 
 	 * @param system
 	 */
-	protected void aimToBlock(SUT system) {
+	protected boolean aimToBlock(SUT system) {
 		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
 		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 		spaceEngineers.controller.Observer seObserver = seController.getObserver();
@@ -90,6 +121,7 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 			seCharacter.moveAndRotate(new Vec3F(0, 0, 0), new Vec2F(0, DEGREES*0.007f), 0f, 1);
 			tries ++;
 		}
+		return targetBlockFound(seObserver);
 	}
 
 	private boolean targetBlockFound(spaceEngineers.controller.Observer seObserver) {

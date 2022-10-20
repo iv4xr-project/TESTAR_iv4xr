@@ -37,6 +37,7 @@ import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.TaggableBase;
+import org.fruit.alayer.Verdict;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.iv4xr.framework.extensions.pathfinding.AStar;
@@ -48,6 +49,11 @@ public class seActionGoal extends TaggableBase implements Action {
 
 	protected String agentId;
 	protected TestAgent testAgent;
+
+	protected Verdict actionVerdict = Verdict.OK;
+	public Verdict getActionVerdict() {
+		return actionVerdict;
+	}
 
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// It has been decided to execute this action

@@ -56,7 +56,7 @@ public final class Verdict implements Serializable {
 
 	public static final double SEVERITY_OK = 			   SEVERITY_MIN;
 	public static final double SEVERITY_FAIL =	   		   SEVERITY_MAX;
-	
+
 	public static final double SEVERITY_UNREPLAYABLE = 0.1;
 
 	public static final Verdict OK = new Verdict(SEVERITY_OK, "No problem detected.", Util.NullVisualizer);
@@ -65,6 +65,10 @@ public final class Verdict implements Serializable {
 	// SpaceEngineers severities
 	public static final double BLOCK_INTEGRITY_ERROR =  0.2; // error with some block integrity
 	public static final double JETPACK_SETTINGS_ERROR =  0.21; // error with SE jetpack settings
+	public static final double ENERGY_ERROR =  0.22; // error with SE agent suit energy
+	public static final double HEALTH_ERROR =  0.23; // error with SE agent health
+	public static final double BLOCK_SEARCH_ERROR =  0.24; // error trying to search a block in SE
+	public static final double BLOCK_CONSTRUCTION_ERROR =  0.25; // error trying to construct a block in SE
 
 	private final String info;
 	private final double severity;
@@ -112,6 +116,14 @@ public final class Verdict implements Serializable {
 			return "BLOCK_INTEGRITY_ERROR";
 		if(severity == Verdict.JETPACK_SETTINGS_ERROR)
 			return "JETPACK_SETTINGS_ERROR";
+		if(severity == Verdict.ENERGY_ERROR)
+			return "ENERGY_ERROR";
+		if(severity == Verdict.HEALTH_ERROR)
+			return "HEALTH_ERROR";
+		if(severity == Verdict.BLOCK_SEARCH_ERROR)
+			return "BLOCK_SEARCH_ERROR";
+		if(severity == Verdict.BLOCK_CONSTRUCTION_ERROR)
+			return "BLOCK_CONSTRUCTION_ERROR";
 
 		return "ERROR";
 	}

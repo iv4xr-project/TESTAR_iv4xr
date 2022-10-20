@@ -10,7 +10,7 @@
       <MyObjectBuilder_GlobalEventBase>
         <SubtypeName>SpawnCargoShip</SubtypeName>
         <Enabled>true</Enabled>
-        <ActivationTimeMs>588222</ActivationTimeMs>
+        <ActivationTimeMs>346190</ActivationTimeMs>
       </MyObjectBuilder_GlobalEventBase>
     </Events>
   </SectorEvents>
@@ -32,14 +32,14 @@
       <PersistentFlags>CastShadows InScene</PersistentFlags>
       <Name>124168712738897777</Name>
       <PositionAndOrientation>
-        <Position x="39.999999998337692" y="1.2476498894393444" z="29.999998092651367" />
-        <Forward x="0.999791563" y="-1.7738937E-09" z="-0.0204088688" />
-        <Up x="1.77426318E-09" y="1" z="3.88578059E-16" />
+        <Position x="39.711617211393083" y="1.2476285530974565" z="30.67722464370631" />
+        <Forward x="0.9998152" y="-0.0002766638" z="0.0192106962" />
+        <Up x="0.000275847036" y="1" z="4.51665619E-05" />
         <Orientation>
-          <X>-6.20862528E-10</X>
-          <Y>-0.699853957</Y>
-          <Z>-6.336659E-10</Z>
-          <W>0.71428597</W>
+          <X>-8.26443356E-05</X>
+          <Y>-0.7138665</Y>
+          <Z>-0.0001127068</Z>
+          <W>0.7002818</W>
         </Orientation>
       </PositionAndOrientation>
       <LocalPositionAndOrientation xsi:nil="true" />
@@ -210,8 +210,15 @@
             </PhysicalContent>
             <ItemId>6</ItemId>
           </MyObjectBuilder_InventoryItem>
+          <MyObjectBuilder_InventoryItem>
+            <Amount>30</Amount>
+            <PhysicalContent xsi:type="MyObjectBuilder_Component">
+              <SubtypeName>SteelPlate</SubtypeName>
+            </PhysicalContent>
+            <ItemId>7</ItemId>
+          </MyObjectBuilder_InventoryItem>
         </Items>
-        <nextItemId>7</nextItemId>
+        <nextItemId>8</nextItemId>
         <Volume>0.4</Volume>
         <Mass>9223372036854.775807</Mass>
         <MaxItemCount>2147483647</MaxItemCount>
@@ -220,12 +227,12 @@
         <RemoveEntityOnEmpty>false</RemoveEntityOnEmpty>
       </Inventory>
       <Battery>
-        <CurrentCapacity>9.975046E-06</CurrentCapacity>
+        <CurrentCapacity>9.947176E-06</CurrentCapacity>
         <RegenEffects />
       </Battery>
       <LightEnabled>false</LightEnabled>
       <UsingLadder xsi:nil="true" />
-      <HeadAngle x="-10.4562941" y="0" />
+      <HeadAngle x="-5.326425" y="0" />
       <LinearVelocity x="0" y="0" z="0" />
       <AutoenableJetpackDelay>0</AutoenableJetpackDelay>
       <JetpackEnabled>false</JetpackEnabled>
@@ -234,7 +241,7 @@
       <DisplayName>fernandoTESTAR</DisplayName>
       <IsInFirstPersonView>false</IsInFirstPersonView>
       <EnableBroadcasting>true</EnableBroadcasting>
-      <OxygenLevel>0.9984258</OxygenLevel>
+      <OxygenLevel>0.996641755</OxygenLevel>
       <EnvironmentOxygenLevel>0</EnvironmentOxygenLevel>
       <StoredGases>
         <StoredGas>
@@ -243,7 +250,7 @@
         </StoredGas>
         <StoredGas>
           <Id Type="MyObjectBuilder_GasProperties" Subtype="Oxygen" />
-          <FillLevel>0.9984258</FillLevel>
+          <FillLevel>0.996641755</FillLevel>
         </StoredGas>
       </StoredGases>
       <EnabledComponents>
@@ -1084,42 +1091,7 @@
         </MyObjectBuilder_CubeBlock>
         <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
           <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="8" y="0" z="-17" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="8" y="0" z="-18" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="8" y="0" z="-19" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="8" y="0" z="-20" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="8" y="0" z="-21" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="8" y="0" z="-22" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="8" y="0" z="-23" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="8" y="0" z="-24" />
+          <Min x="8" y="1" z="-16" />
           <BuiltBy>144115188075855895</BuiltBy>
         </MyObjectBuilder_CubeBlock>
         <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
@@ -1404,42 +1376,7 @@
         </MyObjectBuilder_CubeBlock>
         <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
           <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="7" y="0" z="-17" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="7" y="0" z="-18" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="7" y="0" z="-19" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="7" y="0" z="-20" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="7" y="0" z="-21" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="7" y="0" z="-22" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="7" y="0" z="-23" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="7" y="0" z="-24" />
+          <Min x="7" y="1" z="-16" />
           <BuiltBy>144115188075855895</BuiltBy>
         </MyObjectBuilder_CubeBlock>
         <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
@@ -1457,85 +1394,27 @@
           <Min x="9" y="0" z="-11" />
           <BuiltBy>144115188075855895</BuiltBy>
         </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="0" z="-17" />
+        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_BatteryBlock">
+          <SubtypeName>LargeBlockBatteryBlock</SubtypeName>
+          <EntityId>81650417576451556</EntityId>
+          <Name>81650417576451556</Name>
+          <Min x="1" y="1" z="-15" />
+          <BlockOrientation Forward="Left" Up="Backward" />
+          <Owner>144115188075855895</Owner>
           <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="0" z="-18" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="0" z="-19" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="0" z="-20" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="0" z="-21" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="0" z="-22" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="0" z="-23" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="0" z="-24" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="1" z="-17" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="1" z="-18" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="1" z="-19" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="1" z="-20" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="1" z="-21" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="1" z="-24" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="1" z="-23" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="6" y="1" z="-22" />
-          <BuiltBy>144115188075855895</BuiltBy>
+          <ShareMode>Faction</ShareMode>
+          <ShowOnHUD>false</ShowOnHUD>
+          <ShowInTerminal>true</ShowInTerminal>
+          <ShowInToolbarConfig>true</ShowInToolbarConfig>
+          <ShowInInventory>true</ShowInInventory>
+          <NumberInGrid>2</NumberInGrid>
+          <Enabled>true</Enabled>
+          <CurrentStoredPower>2.99910355</CurrentStoredPower>
+          <ProducerEnabled>true</ProducerEnabled>
+          <MaxStoredPower>0</MaxStoredPower>
+          <SemiautoEnabled>false</SemiautoEnabled>
+          <OnlyDischargeEnabled>false</OnlyDischargeEnabled>
+          <ChargeMode>0</ChargeMode>
         </MyObjectBuilder_CubeBlock>
         <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
           <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
@@ -1560,61 +1439,6 @@
         <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
           <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
           <Min x="9" y="0" z="-16" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="0" z="-17" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="0" z="-18" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="0" z="-19" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="0" z="-20" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="0" z="-21" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="0" z="-22" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="0" z="-23" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="0" z="-24" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="7" y="1" z="-24" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="8" y="1" z="-24" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="1" z="-24" />
           <BuiltBy>144115188075855895</BuiltBy>
         </MyObjectBuilder_CubeBlock>
         <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
@@ -1645,41 +1469,6 @@
         <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
           <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
           <Min x="9" y="1" z="-16" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="1" z="-17" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="1" z="-18" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="1" z="-19" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="1" z="-20" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="1" z="-21" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="1" z="-22" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeHeavyBlockArmorBlock</SubtypeName>
-          <Min x="9" y="1" z="-23" />
           <BuiltBy>144115188075855895</BuiltBy>
         </MyObjectBuilder_CubeBlock>
         <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
@@ -2302,96 +2091,6 @@
           <SteamId xsi:nil="true" />
           <SerialId xsi:nil="true" />
         </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CryoChamber">
-          <SubtypeName>LargeBlockCryoChamber</SubtypeName>
-          <EntityId>119482961186452781</EntityId>
-          <Name>119482961186452781</Name>
-          <Min x="7" y="1" z="-23" />
-          <BlockOrientation Forward="Backward" Up="Up" />
-          <Owner>144115188075855895</Owner>
-          <BuiltBy>144115188075855895</BuiltBy>
-          <ShareMode>Faction</ShareMode>
-          <ComponentContainer>
-            <Components>
-              <ComponentData>
-                <TypeId>MyInventoryBase</TypeId>
-                <Component xsi:type="MyObjectBuilder_Inventory">
-                  <Items />
-                  <nextItemId>0</nextItemId>
-                  <Volume>1</Volume>
-                  <Mass>9223372036854.775807</Mass>
-                  <MaxItemCount>2147483647</MaxItemCount>
-                  <Size xsi:nil="true" />
-                  <InventoryFlags>CanReceive CanSend</InventoryFlags>
-                  <RemoveEntityOnEmpty>false</RemoveEntityOnEmpty>
-                </Component>
-              </ComponentData>
-            </Components>
-          </ComponentContainer>
-          <CustomName>LargeBlockCryoChamber_7_1_-23</CustomName>
-          <ShowOnHUD>false</ShowOnHUD>
-          <ShowInTerminal>true</ShowInTerminal>
-          <ShowInToolbarConfig>true</ShowInToolbarConfig>
-          <ShowInInventory>true</ShowInInventory>
-          <NumberInGrid>2</NumberInGrid>
-          <UseSingleWeaponMode>false</UseSingleWeaponMode>
-          <Toolbar>
-            <ToolbarType>Character</ToolbarType>
-            <SelectedSlot xsi:nil="true" />
-            <Slots />
-            <SlotsGamepad />
-          </Toolbar>
-          <SelectedGunId xsi:nil="true" />
-          <HorizonIndicatorEnabled>false</HorizonIndicatorEnabled>
-          <BuildToolbar>
-            <ToolbarType>Character</ToolbarType>
-            <SelectedSlot xsi:nil="true" />
-            <Slots />
-            <SlotsGamepad />
-          </BuildToolbar>
-          <OnLockedToolbar>
-            <ToolbarType>Character</ToolbarType>
-            <SelectedSlot xsi:nil="true" />
-            <Slots />
-            <SlotsGamepad />
-          </OnLockedToolbar>
-          <IsTargetLockingEnabled>false</IsTargetLockingEnabled>
-          <PilotRelativeWorld xsi:nil="true" />
-          <PilotGunDefinition xsi:nil="true" />
-          <IsInFirstPersonView>true</IsInFirstPersonView>
-          <OxygenLevel>0</OxygenLevel>
-          <PilotJetpackEnabled xsi:nil="true" />
-          <TargetData>
-            <TargetId>0</TargetId>
-            <IsTargetLocked>false</IsTargetLocked>
-            <LockingProgress>0</LockingProgress>
-          </TargetData>
-          <SteamId xsi:nil="true" />
-          <SerialId xsi:nil="true" />
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_BatteryBlock">
-          <SubtypeName>LargeBlockBatteryBlock</SubtypeName>
-          <EntityId>76898698245528387</EntityId>
-          <Name>76898698245528387</Name>
-          <Min x="8" y="1" z="-23" />
-          <BlockOrientation Forward="Left" Up="Up" />
-          <Owner>144115188075855895</Owner>
-          <BuiltBy>144115188075855895</BuiltBy>
-          <ShareMode>Faction</ShareMode>
-          <CustomName>LargeBlockBatteryBlock_8_1_-23</CustomName>
-          <ShowOnHUD>false</ShowOnHUD>
-          <ShowInTerminal>true</ShowInTerminal>
-          <ShowInToolbarConfig>true</ShowInToolbarConfig>
-          <ShowInInventory>true</ShowInInventory>
-          <NumberInGrid>1</NumberInGrid>
-          <Enabled>true</Enabled>
-          <CurrentStoredPower>2.99956584</CurrentStoredPower>
-          <ProducerEnabled>true</ProducerEnabled>
-          <MaxStoredPower>0</MaxStoredPower>
-          <SemiautoEnabled>false</SemiautoEnabled>
-          <OnlyDischargeEnabled>false</OnlyDischargeEnabled>
-          <ChargeMode>0</ChargeMode>
-        </MyObjectBuilder_CubeBlock>
         <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_SurvivalKit">
           <SubtypeName>SurvivalKitLarge</SubtypeName>
           <EntityId>78482953808129966</EntityId>
@@ -2580,21 +2279,6 @@
         <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
           <SubtypeName>LargeBlockArmorBlock</SubtypeName>
           <Min x="4" y="1" z="11" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeBlockArmorBlock</SubtypeName>
-          <Min x="7" y="1" z="-21" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeBlockArmorBlock</SubtypeName>
-          <Min x="8" y="1" z="-19" />
-          <BuiltBy>144115188075855895</BuiltBy>
-        </MyObjectBuilder_CubeBlock>
-        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
-          <SubtypeName>LargeBlockArmorBlock</SubtypeName>
-          <Min x="7" y="1" z="-17" />
           <BuiltBy>144115188075855895</BuiltBy>
         </MyObjectBuilder_CubeBlock>
         <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_MedicalRoom">
@@ -2794,13 +2478,13 @@
           </OnLockedToolbar>
           <PilotRelativeWorld>
             <Position x="0.065297387540340424" y="-1.2525001764297485" z="-2.4840795993804932" />
-            <Forward x="-0.0442117639" y="-5.73797333E-05" z="0.9990222" />
-            <Up x="-6.27227855E-05" y="1" z="5.46600968E-05" />
+            <Forward x="-0.0442117751" y="-5.737974E-05" z="0.9990222" />
+            <Up x="-6.272279E-05" y="1" z="5.46601E-05" />
             <Orientation>
-              <X>-3.07494265E-05</X>
+              <X>-3.074943E-05</X>
               <Y>0.9997555</Y>
-              <Z>2.801681E-05</Z>
-              <W>0.0221112911</W>
+              <Z>2.80168115E-05</Z>
+              <W>0.0221112967</W>
             </Orientation>
           </PilotRelativeWorld>
           <PilotGunDefinition xsi:nil="true" />
@@ -3148,6 +2832,7 @@
       <IsRespawnGrid>false</IsRespawnGrid>
       <LocalCoordSys>0</LocalCoordSys>
       <TargetingTargets />
+      <GridPresenceTier>Tier1</GridPresenceTier>
     </MyObjectBuilder_EntityBase>
   </SectorObjects>
 </MyObjectBuilder_Sector>

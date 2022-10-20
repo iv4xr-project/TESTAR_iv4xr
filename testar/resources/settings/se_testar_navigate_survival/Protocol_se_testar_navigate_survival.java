@@ -117,20 +117,10 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 			// We consider this OK by default, but more sophisticated oracles can be applied here
 		}
 
-		// Apply an Oracle to check jet-pack settings
-		if(lastExecutedAction != null && lastExecutedAction instanceof seActionNavigateInteract) {
-			Widget previousAgent = getAgentEntityFromState(latestState);
-			Widget currentAgent = getAgentEntityFromState(state);
-
-			if(!previousAgent.get(IV4XRtags.seAgentJetpackRunning).equals(currentAgent.get(IV4XRtags.seAgentJetpackRunning))) {
-				Widget interactedBlock = ((seActionNavigateInteract)lastExecutedAction).get(Tags.OriginWidget);
-				functional_verdict = new Verdict(Verdict.JETPACK_SETTINGS_ERROR, "Jetpack settings are incorrect after interacting with block : " + interactedBlock.get(IV4XRtags.entityType));
-			}
-		}
-
-		// Apply an Oracle to check the triggeredBlockConstruction
-		if(lastExecutedAction != null && lastExecutedAction instanceof seActionTriggerBlockConstruction) {
-			functional_verdict = ((seActionTriggerBlockConstruction)lastExecutedAction).getActionVerdict();
+		// Goal Actions have an oracle associated
+		// Here we check the agent suit energy, agent health, triggeredBlockConstruction, and jetpack settings
+		if(lastExecutedAction != null && lastExecutedAction instanceof seActionGoal) {
+			functional_verdict = ((seActionGoal)lastExecutedAction).getActionVerdict();
 		}
 
 		return super.getVerdict(state).join(functional_verdict);
@@ -146,8 +136,12 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 		// For each block widget (see movementEntities types), rotate and move until the agent is close to the position of the block
 		for(Widget w : state) {
 			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
-				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 4, 1.0));
-				labActions.add(new seActionNavigateWelderBlock(w, system, agentId, 4, 1.0));
+				// Always Grinder by default
+				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 1, 1.0));
+				// But only welder if the integrity is not the maximum
+				if(w.get(IV4XRtags.seIntegrity) < w.get(IV4XRtags.seMaxIntegrity)) {
+					labActions.add(new seActionNavigateWelderBlock(w, system, agentId, 1, 1.0));
+				}
 			}
 
 			// FIXME: Fix Ladder2 is not observed as entityType
@@ -157,19 +151,19 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 
 			// Some interactive entities allow the agent to rest inside and charge the energy
 			if(interactiveEnergyEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
-				labActions.add(new seActionNavigateInteract(w, system, agentId));
+				labActions.add(new seActionNavigateRechargeEnergy(w, system, agentId));
 			}
 
 			// If a Medical Room exists in the level, the agent can use the panel to charge the health and energy
 			// FIXME: Navigate near to medical room is not completely functional yet
-			/*if(w.get(IV4XRtags.entityType, "").contains("MedicalRoom") && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+			if(w.get(IV4XRtags.entityType, "").contains("MedicalRoom") && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
 				labActions.add(new seActionNavigateRechargeHealth(w, system, agentId));
-			}*/
+			}
 		}
 
 		// If the agent has a reachable position in front of him, trigger a place block action
 		Vec3 agentPosition = SVec3.seToLab(state.get(IV4XRtags.agentWidget).get(IV4XRtags.seAgentPosition));
-		Vec3 frontPosition = new Vec3((agentPosition.x + 2.5f), agentPosition.y, agentPosition.z);
+		Vec3 frontPosition = new Vec3((agentPosition.x - 2.5f), agentPosition.y, agentPosition.z);
 		if(seReachablePositionHelper.calculateIfPositionIsReachable(system, frontPosition)) {
 			labActions.add(new seActionTriggerBlockConstruction(state, system, agentId, "LargeHeavyBlockArmorBlock"));
 		}
@@ -208,11 +202,15 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 			retAction = stateModelManager.getAbstractActionToExecute(actions);
 		}
 		if(retAction==null) {
+			// Second, prioritize the construction of blocks
+			retAction = prioritizeBlockConstruction(actions);
+		}
+		if(retAction==null) {
 			// First, prioritize the interaction actions with non-interacted entities
 			retAction = prioritizeInteractiveAction(actions);
 		}
 		if(retAction==null) {
-			// Second, prioritize the exploration of new discovered positions
+			// Third, prioritize the exploration of new discovered positions
 			retAction = prioritizeExploratoryMovement(actions);
 		}
 		if(retAction==null) {
@@ -228,9 +226,23 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 			if(action instanceof seActionNavigateGrinderBlock 
 					|| action instanceof seActionNavigateWelderBlock
 					|| action instanceof seActionNavigateInteract
-					|| action instanceof seActionNavigateRechargeHealth) {
+					|| action instanceof seActionNavigateRechargeHealth
+					|| action instanceof seActionNavigateRechargeEnergy) {
 
 				if(!interactedEntities.contains(action.get(Tags.OriginWidget).get(IV4XRtags.entityId, ""))) {
+					return action;
+				}
+
+			}
+		}
+		return null;
+	}
+
+	private Action prioritizeBlockConstruction(Set<Action> actions) {
+		for(Action action : actions) {
+			if(action instanceof seActionTriggerBlockConstruction) {
+
+				if(!interactedEntities.contains(((seActionTriggerBlockConstruction) action).getBlockType())) {
 					return action;
 				}
 
@@ -269,6 +281,7 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 			Util.pause(waitTime);
 
 			addInteractiveAction(action);
+			addConstructionAction(action);
 			addExploredPosition(action);
 
 			return true;
@@ -284,11 +297,17 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 	private void addInteractiveAction(Action action) {
 		if(action instanceof seActionNavigateGrinderBlock 
 				|| action instanceof seActionNavigateWelderBlock
-				|| action instanceof seActionNavigateInteract) {
+				|| action instanceof seActionNavigateInteract
+				|| action instanceof seActionNavigateRechargeHealth
+				|| action instanceof seActionNavigateRechargeEnergy) {
 			interactedEntities.add(action.get(Tags.OriginWidget).get(IV4XRtags.entityId, ""));
 		}
 	}
-
+	private void addConstructionAction(Action action) {
+		if(action instanceof seActionTriggerBlockConstruction) {
+			interactedEntities.add(((seActionTriggerBlockConstruction) action).getBlockType());
+		}
+	}
 	private void addExploredPosition(Action action) {
 		if(action instanceof seActionExplorePosition) {
 			exploredPositions.add(((seActionExplorePosition) action).getTargetPosition());

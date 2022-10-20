@@ -111,7 +111,15 @@ public class FileHandling {
         else if (sev == Verdict.BLOCK_INTEGRITY_ERROR)
             targetFolder = "block_integrity_error";
         else if (sev == Verdict.JETPACK_SETTINGS_ERROR)
-            targetFolder = "jetpack_settings_error";
+        	targetFolder = "jetpack_settings_error";
+        else if (sev == Verdict.ENERGY_ERROR)
+        	targetFolder = "energy_error";
+        else if (sev == Verdict.HEALTH_ERROR)
+        	targetFolder = "health_error";
+        else if (sev == Verdict.BLOCK_SEARCH_ERROR)
+        	targetFolder = "block_search_error";
+        else if (sev == Verdict.BLOCK_CONSTRUCTION_ERROR)
+        	targetFolder = "block_construction_error";
         else
             targetFolder = "sequences_other";
         LogSerialiser.log("Copying classified sequence (\"" + generatedSequence + "\") to " + targetFolder + " folder...\n", LogSerialiser.LogLevel.Info);

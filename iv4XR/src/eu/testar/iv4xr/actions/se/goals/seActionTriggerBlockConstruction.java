@@ -35,16 +35,15 @@ public class seActionTriggerBlockConstruction extends seActionGoal {
 	protected final float DEGREES = 2416f;
 	protected String blockType;
 
-	private Verdict actionVerdict = Verdict.OK;
-	public Verdict getActionVerdict() {
-		return actionVerdict;
-	}
-
 	public static Map<String, String> blockTypeDescriptionMap;
 	static {
 		blockTypeDescriptionMap = new HashMap<>();
 		blockTypeDescriptionMap.put("LargeBlockArmorBlock", "Light Armor Block");
 		blockTypeDescriptionMap.put("LargeHeavyBlockArmorBlock", "Heavy Armor Block");
+	}
+
+	public String getBlockType() {
+		return blockType;
 	}
 
 	public seActionTriggerBlockConstruction(Widget w, SUT system, String agentId, String blockType){
@@ -71,6 +70,15 @@ public class seActionTriggerBlockConstruction extends seActionGoal {
 		aimBelow(system);
 		placeBlock(system);
 		aimUp(system);
+		equipGrinder(system);
+		useGrinder(system);
+
+		//Reset aim with jetpack
+		resetAimWithJetpack(system);
+
+		// After place block action equip an empty object
+		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
+		seItems.equip(ToolbarLocation.Companion.fromIndex(1, 1));
 	}
 
 	/**
@@ -127,13 +135,13 @@ public class seActionTriggerBlockConstruction extends seActionGoal {
 		// Create a Verdict inside the action to verify
 		// Search works and the search function shows blocks
 		if(tbcData.getGridItems().isEmpty()) {
-			actionVerdict = new Verdict(Verdict.BLOCK_INTEGRITY_ERROR, 
+			actionVerdict = new Verdict(Verdict.BLOCK_SEARCH_ERROR, 
 					"The are not existing block with the name: " + blockTypeDescriptionMap.get(blockType));
 			return;
 		}
 		// Verify that the search returns the desired block as the first element
 		if(!tbcData.getGridItems().get(0).toString().equals("MyObjectBuilder_CubeBlock/" + blockType)) {
-			actionVerdict = new Verdict(Verdict.BLOCK_INTEGRITY_ERROR, 
+			actionVerdict = new Verdict(Verdict.BLOCK_SEARCH_ERROR, 
 					"The block definition Id and the block name does not match: "
 							+ blockTypeDescriptionMap.get(blockType)
 							+ "MyObjectBuilder_CubeBlock/" + blockType);
@@ -173,13 +181,13 @@ public class seActionTriggerBlockConstruction extends seActionGoal {
 		Observation newObsBlocks = seController.getObserver().observeNewBlocks();
 		// Check that one new block exists and that is the placed one
 		if(newObsBlocks.getGrids().isEmpty() || newObsBlocks.getGrids().get(0).getBlocks().isEmpty()) {
-			actionVerdict = new Verdict(Verdict.BLOCK_INTEGRITY_ERROR, 
+			actionVerdict = new Verdict(Verdict.BLOCK_CONSTRUCTION_ERROR, 
 					"No block was placed trying to add to the level the block: " + blockType);
 			return;
 		}
 		Block newBlock = newObsBlocks.getGrids().get(0).getBlocks().get(0);
 		if(!newBlock.getDefinitionId().toString().equals("MyObjectBuilder_CubeBlock/" + blockType)) {
-			actionVerdict = new Verdict(Verdict.BLOCK_INTEGRITY_ERROR, 
+			actionVerdict = new Verdict(Verdict.BLOCK_CONSTRUCTION_ERROR, 
 					"The desired block was not correctly placed to the level." 
 							+ " Expected: " + blockType
 							+ " Observed: " + newBlock.getDefinitionId().toString());
@@ -190,6 +198,40 @@ public class seActionTriggerBlockConstruction extends seActionGoal {
 	protected void aimUp(SUT system) {
 		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
 		seCharacter.moveAndRotate(new Vec3F(0,0,0), new Vec2F(-150f, 0), 0f, 1);
+	}
+
+	/**
+	 * Prepare the Grinder tool in the SE tool bar. 
+	 * 
+	 * @param seItems
+	 */
+	private void equipGrinder(SUT system) {
+		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
+
+		seItems.setToolbarItem(DefinitionId.Companion.physicalGun("AngleGrinderItem"), ToolbarLocation.Companion.fromIndex(5, 6));
+		Util.pause(0.5);
+		seItems.equip(ToolbarLocation.Companion.fromIndex(5, 6));
+		Util.pause(0.5);
+	}
+
+	/**
+	 * Use the Grinder tool the desired amount of time. 
+	 * 
+	 * @param seItems
+	 */
+	private void useGrinder(SUT system) {
+		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
+
+		seCharacter.beginUsingTool();
+		Util.pause(2);
+		seCharacter.endUsingTool();
+	}
+
+	private void resetAimWithJetpack(SUT system) {
+		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
+		seCharacter.turnOnJetpack();
+		Util.pause(0.5);
+		seCharacter.turnOffJetpack();
 	}
 
 	@Override
