@@ -79,12 +79,17 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 			spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 			CharacterObservation seObsCharacter = seController.getObserver().observe();
 			float previousHealth = seObsCharacter.getHealth();
+			float previousEnergy = seObsCharacter.getSuitEnergy();
+			float previousOxygen = seObsCharacter.getOxygen();
+			float previousHydrogen = seObsCharacter.getHydrogen();
 
 			Keyboard kb = AWTKeyboard.build();
 			kb.press(KBKeys.VK_F);
 			Util.pause(5);
 			kb.release(KBKeys.VK_F);
 			Util.pause(1);
+
+			// ALWAYS check health and energy when TESTAR interacts with a MedicalRoom
 
 			// Execute a new observation to check if the health increased
 			seObsCharacter = seController.getObserver().observe();
@@ -95,6 +100,41 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 								+ targetBlock.get(IV4XRtags.entityType)
 								+ ", Previous health: " + previousHealth
 								+ ", After interaction health: " + newHealth);
+				return;
+			}
+			// Second, check that the energy has increased
+			float newSuitEnergy = seObsCharacter.getSuitEnergy();
+			if(previousEnergy != 1.0f && newSuitEnergy <= previousEnergy) {
+				actionVerdict = new Verdict(Verdict.ENERGY_ERROR, 
+						"Agent Suit Energy did not increase after interacting with block: " 
+								+ targetBlock.get(IV4XRtags.entityType)
+								+ ", Previous energy: " + previousEnergy
+								+ ", After interaction energy: " + newSuitEnergy);
+				return;
+			}
+
+			// ONLY when the Medical Room is a construction that provides O2 and H2, check these properties
+			if(targetBlock.get(IV4XRtags.seCustomName, "").contains("O2H2")) {
+				// Third, check that the oxygen increased
+				float newOxygen = seObsCharacter.getOxygen();
+				if(previousOxygen != 1.0f && newOxygen <= previousOxygen) {
+					actionVerdict = new Verdict(Verdict.OXYGEN_ERROR, 
+							"Agent Oxygen did not increase after interacting with block: " 
+									+ targetBlock.get(IV4XRtags.entityType)
+									+ ", Previous oxygen: " + previousOxygen
+									+ ", After interaction oxygen: " + newOxygen);
+					return;
+				}
+				// Fourth, check that the hydrogen has increased
+				float newHydrogen = seObsCharacter.getHydrogen();
+				if(previousHydrogen != 1.0f && newHydrogen <= previousHydrogen) {
+					actionVerdict = new Verdict(Verdict.HYDROGEN_ERROR, 
+							"Agent Hydrogen did not increase after interacting with block: " 
+									+ targetBlock.get(IV4XRtags.entityType)
+									+ ", Previous hydrogen: " + previousHydrogen
+									+ ", After interaction hydrogen: " + newHydrogen);
+					return;
+				}
 			}
 		}
 
@@ -114,11 +154,11 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 		spaceEngineers.controller.Observer seObserver = seController.getObserver();
 
-		int AIMTRIES = 151;
+		int AIMTRIES = 300;
 		int tries = 1;
 		System.out.println("Aiming to find block: " + targetBlock.get(IV4XRtags.entityId));
 		while(!targetBlockFound(seObserver) && tries < AIMTRIES) {		
-			seCharacter.moveAndRotate(new Vec3F(0, 0, 0), new Vec2F(0, DEGREES*0.007f), 0f, 1);
+			seCharacter.moveAndRotate(new Vec3F(0, 0, 0), new Vec2F(0, DEGREES*0.0035f), 0f, 1);
 			tries ++;
 		}
 		return targetBlockFound(seObserver);

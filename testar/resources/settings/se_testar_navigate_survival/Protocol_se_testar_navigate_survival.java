@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -117,6 +117,28 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 			// We consider this OK by default, but more sophisticated oracles can be applied here
 		}
 
+		// Apply an Oracle to check if shooting action worked properly
+		if(lastExecutedAction != null && lastExecutedAction instanceof seActionNavigateShootBlock) {
+			// Check the block attached to the previous executed shooting action
+			Widget previousBlock = ((seActionNavigateShootBlock)lastExecutedAction).get(Tags.OriginWidget);
+			Float previousIntegrity = previousBlock.get(IV4XRtags.seIntegrity);
+			System.out.println("Previous Block Integrity: " + previousIntegrity);
+			// Try to find the same block in the current state using the block id
+			for(Widget w : state) {
+				if(w.get(IV4XRtags.entityId).equals(previousBlock.get(IV4XRtags.entityId))) {
+					Float currentIntegrity = w.get(IV4XRtags.seIntegrity);
+					System.out.println("Current Block Integrity: " + currentIntegrity);
+					// If previous integrity is the same or increased, something went wrong
+					if(currentIntegrity >= previousIntegrity) {
+						String blockType = w.get(IV4XRtags.entityType);
+						functional_verdict = new Verdict(Verdict.BLOCK_INTEGRITY_ERROR, "The integrity of interacted block " + blockType + " didn't decrease after a shooting action");
+					}
+				}
+			}
+			// If the previous block does not exist in the current state, it has been destroyed after the shooting action
+			// We consider this OK by default, but more sophisticated oracles can be applied here
+		}
+
 		// Goal Actions have an oracle associated
 		// Here we check the agent suit energy, agent health, triggeredBlockConstruction, and jetpack settings
 		if(lastExecutedAction != null && lastExecutedAction instanceof seActionGoal) {
@@ -136,8 +158,9 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 		// For each block widget (see movementEntities types), rotate and move until the agent is close to the position of the block
 		for(Widget w : state) {
 			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
-				// Always Grinder by default
+				// Always Grinder and shoot by default
 				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 1, 1.0));
+				labActions.add(new seActionNavigateShootBlock(w, system, agentId));
 				// But only welder if the integrity is not the maximum
 				if(w.get(IV4XRtags.seIntegrity) < w.get(IV4XRtags.seMaxIntegrity)) {
 					labActions.add(new seActionNavigateWelderBlock(w, system, agentId, 1, 1.0));
@@ -209,10 +232,10 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 			// First, prioritize the interaction actions with non-interacted entities
 			retAction = prioritizeInteractiveAction(actions);
 		}
-		if(retAction==null) {
+		/*if(retAction==null) {
 			// Third, prioritize the exploration of new discovered positions
 			retAction = prioritizeExploratoryMovement(actions);
-		}
+		}*/
 		if(retAction==null) {
 			System.out.println("State model based action selection did not find an action. Using default action selection.");
 			// if state model fails, use default:
@@ -224,6 +247,7 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 	private Action prioritizeInteractiveAction(Set<Action> actions) {
 		for(Action action : actions) {
 			if(action instanceof seActionNavigateGrinderBlock 
+					|| action instanceof seActionNavigateShootBlock
 					|| action instanceof seActionNavigateWelderBlock
 					|| action instanceof seActionNavigateInteract
 					|| action instanceof seActionNavigateRechargeHealth
@@ -296,6 +320,7 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 
 	private void addInteractiveAction(Action action) {
 		if(action instanceof seActionNavigateGrinderBlock 
+				|| action instanceof seActionNavigateShootBlock
 				|| action instanceof seActionNavigateWelderBlock
 				|| action instanceof seActionNavigateInteract
 				|| action instanceof seActionNavigateRechargeHealth

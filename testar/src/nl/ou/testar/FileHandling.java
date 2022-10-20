@@ -116,6 +116,10 @@ public class FileHandling {
         	targetFolder = "energy_error";
         else if (sev == Verdict.HEALTH_ERROR)
         	targetFolder = "health_error";
+        else if (sev == Verdict.OXYGEN_ERROR)
+        	targetFolder = "oxygen_error";
+        else if (sev == Verdict.HYDROGEN_ERROR)
+        	targetFolder = "hydrogen_error";
         else if (sev == Verdict.BLOCK_SEARCH_ERROR)
         	targetFolder = "block_search_error";
         else if (sev == Verdict.BLOCK_CONSTRUCTION_ERROR)
