@@ -30,7 +30,9 @@
 
 package eu.testar.iv4xr.actions.se.goals;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
@@ -77,7 +79,7 @@ public class seActionExplorePosition extends seActionGoal {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		navigateToReachablePosition(system);
+		navigateToReachablePosition(system, state);
 	}
 
 	/**
@@ -85,7 +87,7 @@ public class seActionExplorePosition extends seActionGoal {
 	 * 
 	 * @param system
 	 */
-	protected void navigateToReachablePosition(SUT system) {
+	protected void navigateToReachablePosition(SUT system, State state) {
 		Vec3F destinationPosition = SVec3.labToSE(targetPosition);
 
 		// Create a navigational graph of the largest grid
@@ -95,11 +97,17 @@ public class seActionExplorePosition extends seActionGoal {
 		NavGraph navGraph = seObserver.navigationGraph(largestGridId);
 		RichNavGraph richNavGraph = RichNavGraphKt.toRichGraph(navGraph);
 
+		Set<Vec3F> notReachablePositions = notReachablePositions(seObserver, state);
+
 		// Check if there is a reachable node in the navigational graph
 		// that allows the agent to reach the position to explore
 		int reachableNode = -1;
 		float closestDistance = 0.5f; // Not exactly the same position but almost
 		for (Node node : richNavGraph.getNodeMap().values()) {
+
+			Vec3F nodePosition = new Vec3F(node.getPosition().getX(), 0f, node.getPosition().getZ());
+			if(notReachablePositions.contains(nodePosition)) continue;
+
 			float distance = node.getPosition().distanceTo(destinationPosition); // the destination position to explore
 			if(distance < closestDistance){
 				reachableNode = node.getId();
@@ -116,6 +124,26 @@ public class seActionExplorePosition extends seActionGoal {
 				new SEnavigator().moveInLine(system, navigableGraph.node(nodeId).getPosition());
 			}
 		}
+	}
+
+
+	private Set<Vec3F> notReachablePositions(Observer seObserver, State state)  {
+		Set<Vec3F> forbiddenPositions = new HashSet<>();
+		for(Widget w : state) {
+			if(w.get(IV4XRtags.seSize, null) != null) {
+				// If the size of the block is not 1 dimension unit
+				if(!w.get(IV4XRtags.seSize).similar(new Vec3F(1,1,1), 0.1f)){
+					// Create a list of non reachable action around the block
+					Vec3F maxPosition = w.get(IV4XRtags.seMaxPosition);
+					Vec3F minPosition = w.get(IV4XRtags.seMinPosition);
+					forbiddenPositions.add(new Vec3F(maxPosition.getX(), 0f, maxPosition.getZ()));
+					forbiddenPositions.add(new Vec3F(minPosition.getX(), 0f, minPosition.getZ()));
+					forbiddenPositions.add(new Vec3F(minPosition.getX(), 0f, maxPosition.getZ()));
+					forbiddenPositions.add(new Vec3F(maxPosition.getX(), 0f, minPosition.getZ()));
+				}
+			}
+		}
+		return forbiddenPositions;
 	}
 
 	@Override
