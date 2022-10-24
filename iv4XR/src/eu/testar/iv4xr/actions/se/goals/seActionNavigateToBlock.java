@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,7 +30,6 @@
 
 package eu.testar.iv4xr.actions.se.goals;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -110,6 +109,7 @@ public class seActionNavigateToBlock extends seActionGoal {
 		float closestDistance = 7f; // Closest distance to a 2 dimensions block is 3.7f approx
 		for (Node node : richNavGraph.getNodeMap().values()) {
 
+			// Ignore the not reachable positions (due to block size)
 			Vec3F nodePosition = new Vec3F(node.getPosition().getX(), 0f, node.getPosition().getZ());
 			if(notReachablePositions.contains(nodePosition)) continue;
 
@@ -129,25 +129,6 @@ public class seActionNavigateToBlock extends seActionGoal {
 				new SEnavigator().moveInLine(system, navigableGraph.node(nodeId).getPosition());
 			}
 		}
-	}
-
-	private Set<Vec3F> notReachablePositions(Observer seObserver, State state)  {
-		Set<Vec3F> forbiddenPositions = new HashSet<>();
-		for(Widget w : state) {
-			if(w.get(IV4XRtags.seSize, null) != null) {
-				// If the size of the block is not 1 dimension unit
-				if(!w.get(IV4XRtags.seSize).similar(new Vec3F(1,1,1), 0.1f)){
-					// Create a list of non reachable action around the block
-					Vec3F maxPosition = w.get(IV4XRtags.seMaxPosition);
-					Vec3F minPosition = w.get(IV4XRtags.seMinPosition);
-					forbiddenPositions.add(new Vec3F(maxPosition.getX(), 0f, maxPosition.getZ()));
-					forbiddenPositions.add(new Vec3F(minPosition.getX(), 0f, minPosition.getZ()));
-					forbiddenPositions.add(new Vec3F(minPosition.getX(), 0f, maxPosition.getZ()));
-					forbiddenPositions.add(new Vec3F(maxPosition.getX(), 0f, minPosition.getZ()));
-				}
-			}
-		}
-		return forbiddenPositions;
 	}
 
 	/**
@@ -191,6 +172,37 @@ public class seActionNavigateToBlock extends seActionGoal {
 			agentOrientation = agentOrientation.normalized();
 
 			cos_alpha = eu.iv4xr.framework.spatial.Vec3.dot(agentOrientation, directionToGo);
+		}
+	}
+
+	/**
+	 * Rotate until the agent is aiming the target block. 
+	 * For interactive entities (e.g., LargeBlockCryoChamber or LargeBlockCockpit), 
+	 * it is essential that the agent is not using tools (e.g., Grinder or Welder). 
+	 * Then we are able to aim the interactive part of the block and not the block itself. 
+	 * 
+	 * @param system
+	 */
+	protected boolean aimToBlock(SUT system, Widget targetBlock) {
+		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
+		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+		Observer seObserver = seController.getObserver();
+
+		int AIMTRIES = 300;
+		int tries = 1;
+		while(!targetBlockFound(seObserver, targetBlock) && tries < AIMTRIES) {		
+			seCharacter.moveAndRotate(new Vec3F(0, 0, 0), new Vec2F(0, DEGREES*0.0035f), 0f, 1);
+			tries ++;
+		}
+		return targetBlockFound(seObserver, targetBlock);
+	}
+
+	private boolean targetBlockFound(Observer seObserver, Widget targetBlock) {
+		try {
+			if(seObserver.observe().getTargetBlock() == null) return false;
+			return seObserver.observe().getTargetBlock().getId().equals(targetBlock.get(IV4XRtags.entityId));
+		} catch(Exception e) {
+			return false;
 		}
 	}
 

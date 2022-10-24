@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2013, 2014, 2015, 2016, 2017, 2018, 2019 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2018, 2019 Open Universiteit - www.ou.nl
+ * Copyright (c) 2013 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2018 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -64,13 +64,14 @@ public final class Verdict implements Serializable {
 
 	// SpaceEngineers severities
 	public static final double BLOCK_INTEGRITY_ERROR =  0.2; // error with some block integrity
-	public static final double JETPACK_SETTINGS_ERROR =  0.21; // error with SE jetpack settings
-	public static final double ENERGY_ERROR =  0.22; // error with SE agent suit energy
-	public static final double HEALTH_ERROR =  0.23; // error with SE agent health
-	public static final double OXYGEN_ERROR =  0.24; // error with SE agent oxygen
-	public static final double HYDROGEN_ERROR =  0.25; // error with SE agent hydrogen
-	public static final double BLOCK_SEARCH_ERROR =  0.26; // error trying to search a block in SE
-	public static final double BLOCK_CONSTRUCTION_ERROR =  0.27; // error trying to construct a block in SE
+	public static final double BLOCK_SEARCH_ERROR =  0.21; // error trying to search a block in SE
+	public static final double BLOCK_CONSTRUCTION_ERROR =  0.22; // error trying to construct a block in SE
+
+	public static final double AGENT_JETPACK_ERROR =  0.3; // error with SE agent jetpack settings
+	public static final double AGENT_ENERGY_ERROR =  0.31; // error with SE agent suit energy
+	public static final double AGENT_HEALTH_ERROR =  0.32; // error with SE agent health
+	public static final double AGENT_OXYGEN_ERROR =  0.33; // error with SE agent oxygen
+	public static final double AGENT_HYDROGEN_ERROR =  0.34; // error with SE agent hydrogen
 
 	private final String info;
 	private final double severity;
@@ -114,22 +115,25 @@ public final class Verdict implements Serializable {
 			return "NOT_RUNNING";
 		if(severity == Verdict.SEVERITY_UNREPLAYABLE)
 			return "NOT_REPLAYABLE";
+
+		// Space Engineers
 		if(severity == Verdict.BLOCK_INTEGRITY_ERROR)
 			return "BLOCK_INTEGRITY_ERROR";
-		if(severity == Verdict.JETPACK_SETTINGS_ERROR)
-			return "JETPACK_SETTINGS_ERROR";
-		if(severity == Verdict.ENERGY_ERROR)
-			return "ENERGY_ERROR";
-		if(severity == Verdict.HEALTH_ERROR)
-			return "HEALTH_ERROR";
-		if(severity == Verdict.OXYGEN_ERROR)
-			return "OXYGEN_ERROR";
-		if(severity == Verdict.HYDROGEN_ERROR)
-			return "HYDROGEN_ERROR";
 		if(severity == Verdict.BLOCK_SEARCH_ERROR)
 			return "BLOCK_SEARCH_ERROR";
 		if(severity == Verdict.BLOCK_CONSTRUCTION_ERROR)
 			return "BLOCK_CONSTRUCTION_ERROR";
+
+		if(severity == Verdict.AGENT_JETPACK_ERROR)
+			return "AGENT_JETPACK_ERROR";
+		if(severity == Verdict.AGENT_ENERGY_ERROR)
+			return "AGENT_ENERGY_ERROR";
+		if(severity == Verdict.AGENT_HEALTH_ERROR)
+			return "AGENT_HEALTH_ERROR";
+		if(severity == Verdict.AGENT_OXYGEN_ERROR)
+			return "AGENT_OXYGEN_ERROR";
+		if(severity == Verdict.AGENT_HYDROGEN_ERROR)
+			return "AGENT_HYDROGEN_ERROR";
 
 		return "ERROR";
 	}

@@ -101,6 +101,8 @@ public class seReachablePositionHelper {
 		// https://stackoverflow.com/a/5301049
 		Vec3 agentCenter = SVec3.seToLab(state.get(IV4XRtags.agentWidget).get(IV4XRtags.seAgentPosition));
 
+		//TODO: Obtain the observation range and iterate until the max radius
+
 		// 1 block distance positions (near)
 		// For near positions calculate 8 positions in circle
 		int points = 8;
@@ -148,7 +150,7 @@ public class seReachablePositionHelper {
 				actions.add(new seActionExplorePosition(state, farPosition, system, agentId));
 			}
 		}
-		
+
 		// 4 block distance positions (far)
 		// For far positions calculate 16 positions in circle
 		points = 16;

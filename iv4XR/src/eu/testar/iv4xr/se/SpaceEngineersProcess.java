@@ -174,13 +174,13 @@ public class SpaceEngineersProcess extends SUTBase {
 				+ "To launch SpaceEngineers using COMMAND_LINE we need to know:\n" 
 				+ "1.- SpaceEngineers executable path\n"
 				+ "2.- (Optional) Path of the SpaceEngineers level to load\n"
-				+ "Example: \"C:\\\\Program Files (x86)\\\\Steam\\\\steamapps\\\\common\\\\SpaceEngineers\\\\Bin64\\\\SpaceEngineers.exe\" \"suts/se_levels/manual-world\"";
+				+ "Example: \"C:\\\\Program Files (x86)\\\\Steam\\\\steamapps\\\\common\\\\SpaceEngineers\\\\Bin64\\\\SpaceEngineers.exe\" \"suts/se_levels/manual-world-survival\"";
 		if(launchment.equals(Launchment.PROCESS_NAME)) {
 			message = "ERROR: Trying to connect with Space Engineers using SUT_PROCESS_NAME connection \n"
 					+ "To connect with SpaceEngineers process we need to know:\n" 
 					+ "1.- SpaceEngineers.exe process name\n"
 					+ "2.- (Optional) Path of the SpaceEngineers level to load\n"
-					+ "Example: SpaceEngineers.exe \"suts/se_levels/manual-world\"";
+					+ "Example: SpaceEngineers.exe \"suts/se_levels/manual-world-survival\"";
 		}
 		throw new IllegalArgumentException(message);
 	}

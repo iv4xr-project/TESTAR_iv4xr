@@ -78,7 +78,7 @@ public class seActionTriggerBlockConstruction extends seActionGoal {
 
 		// After place block action equip an empty object
 		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
-		seItems.equip(ToolbarLocation.Companion.fromIndex(1, 1));
+		seItems.unEquipWeapon();
 	}
 
 	/**

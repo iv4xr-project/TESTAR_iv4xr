@@ -30,7 +30,6 @@
 
 package eu.testar.iv4xr.actions.se.goals;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -105,6 +104,7 @@ public class seActionExplorePosition extends seActionGoal {
 		float closestDistance = 0.5f; // Not exactly the same position but almost
 		for (Node node : richNavGraph.getNodeMap().values()) {
 
+			// Ignore the not reachable positions (due to block size)
 			Vec3F nodePosition = new Vec3F(node.getPosition().getX(), 0f, node.getPosition().getZ());
 			if(notReachablePositions.contains(nodePosition)) continue;
 
@@ -124,26 +124,6 @@ public class seActionExplorePosition extends seActionGoal {
 				new SEnavigator().moveInLine(system, navigableGraph.node(nodeId).getPosition());
 			}
 		}
-	}
-
-
-	private Set<Vec3F> notReachablePositions(Observer seObserver, State state)  {
-		Set<Vec3F> forbiddenPositions = new HashSet<>();
-		for(Widget w : state) {
-			if(w.get(IV4XRtags.seSize, null) != null) {
-				// If the size of the block is not 1 dimension unit
-				if(!w.get(IV4XRtags.seSize).similar(new Vec3F(1,1,1), 0.1f)){
-					// Create a list of non reachable action around the block
-					Vec3F maxPosition = w.get(IV4XRtags.seMaxPosition);
-					Vec3F minPosition = w.get(IV4XRtags.seMinPosition);
-					forbiddenPositions.add(new Vec3F(maxPosition.getX(), 0f, maxPosition.getZ()));
-					forbiddenPositions.add(new Vec3F(minPosition.getX(), 0f, minPosition.getZ()));
-					forbiddenPositions.add(new Vec3F(minPosition.getX(), 0f, maxPosition.getZ()));
-					forbiddenPositions.add(new Vec3F(maxPosition.getX(), 0f, minPosition.getZ()));
-				}
-			}
-		}
-		return forbiddenPositions;
 	}
 
 	@Override

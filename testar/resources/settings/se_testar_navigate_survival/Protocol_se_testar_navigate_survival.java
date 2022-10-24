@@ -34,6 +34,7 @@ import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
+import org.testar.iv4xr.InteractiveSelectorSE;
 import org.testar.protocols.iv4xr.SEProtocol;
 
 import eu.iv4xr.framework.spatial.Vec3;
@@ -85,8 +86,19 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 		interactiveEnergyEntities.add("LargeBlockCryoChamber");
 	}
 
+	private InteractiveSelectorSE actionSelectorSE = new InteractiveSelectorSE();
+
 	// Oracle example to validate that the block integrity decreases after a Grinder action
 	private Verdict functional_verdict = Verdict.OK;
+
+	/**
+	 * This method is invoked each time the TESTAR starts the SUT to generate a new sequence.
+	 */
+	@Override
+	protected void beginSequence(SUT system, State state) {
+		super.beginSequence(system, state);
+		actionSelectorSE = new InteractiveSelectorSE();
+	}
 
 	/**
 	 * The getVerdict methods implements the online state oracles that
@@ -140,7 +152,7 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 		}
 
 		// Goal Actions have an oracle associated
-		// Here we check the agent suit energy, agent health, triggeredBlockConstruction, and jetpack settings
+		// Here we check the agent properties (energy, health, oxygen, hydrogen, jetpack) and triggeredBlockConstruction oracles
 		if(lastExecutedAction != null && lastExecutedAction instanceof seActionGoal) {
 			functional_verdict = ((seActionGoal)lastExecutedAction).getActionVerdict();
 		}
@@ -219,73 +231,21 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 		//Call the preSelectAction method from the AbstractProtocol so that, if necessary,
 		//unwanted processes are killed and SUT is put into foreground.
 		Action retAction = preSelectAction(state, actions);
-		if (retAction== null) {
+		if (retAction == null) {
 			//if no preSelected actions are needed, then implement your own action selection strategy
 			//using the action selector of the state model:
 			retAction = stateModelManager.getAbstractActionToExecute(actions);
 		}
-		if(retAction==null) {
-			// Second, prioritize the construction of blocks
-			retAction = prioritizeBlockConstruction(actions);
+		if(retAction == null) {
+			// Invoke the SE action selector to prioritize interactive actions
+			retAction = actionSelectorSE.prioritizedAction(state, actions);
 		}
-		if(retAction==null) {
-			// First, prioritize the interaction actions with non-interacted entities
-			retAction = prioritizeInteractiveAction(actions);
-		}
-		/*if(retAction==null) {
-			// Third, prioritize the exploration of new discovered positions
-			retAction = prioritizeExploratoryMovement(actions);
-		}*/
-		if(retAction==null) {
+		if(retAction == null) {
 			System.out.println("State model based action selection did not find an action. Using default action selection.");
 			// if state model fails, use default:
 			retAction = RandomActionSelector.selectAction(actions);
 		}
 		return retAction;
-	}
-
-	private Action prioritizeInteractiveAction(Set<Action> actions) {
-		for(Action action : actions) {
-			if(action instanceof seActionNavigateGrinderBlock 
-					|| action instanceof seActionNavigateShootBlock
-					|| action instanceof seActionNavigateWelderBlock
-					|| action instanceof seActionNavigateInteract
-					|| action instanceof seActionNavigateRechargeHealth
-					|| action instanceof seActionNavigateRechargeEnergy) {
-
-				if(!interactedEntities.contains(action.get(Tags.OriginWidget).get(IV4XRtags.entityId, ""))) {
-					return action;
-				}
-
-			}
-		}
-		return null;
-	}
-
-	private Action prioritizeBlockConstruction(Set<Action> actions) {
-		for(Action action : actions) {
-			if(action instanceof seActionTriggerBlockConstruction) {
-
-				if(!interactedEntities.contains(((seActionTriggerBlockConstruction) action).getBlockType())) {
-					return action;
-				}
-
-			}
-		}
-		return null;
-	}
-
-	private Action prioritizeExploratoryMovement(Set<Action> actions) {
-		for(Action action : actions) {
-			if(action instanceof seActionExplorePosition) {
-
-				if(!exploredPositions.contains(((seActionExplorePosition) action).getTargetPosition())) {
-					return action;
-				}
-
-			}
-		}
-		return null;
 	}
 
 	/**
@@ -304,9 +264,7 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
 
-			addInteractiveAction(action);
-			addConstructionAction(action);
-			addExploredPosition(action);
+			actionSelectorSE.addExecutedAction(action);
 
 			return true;
 
@@ -314,29 +272,4 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 			return false;
 		}
 	}
-
-	private static Set<String> interactedEntities = new HashSet<>();
-	private static Set<Vec3> exploredPositions = new HashSet<>();
-
-	private void addInteractiveAction(Action action) {
-		if(action instanceof seActionNavigateGrinderBlock 
-				|| action instanceof seActionNavigateShootBlock
-				|| action instanceof seActionNavigateWelderBlock
-				|| action instanceof seActionNavigateInteract
-				|| action instanceof seActionNavigateRechargeHealth
-				|| action instanceof seActionNavigateRechargeEnergy) {
-			interactedEntities.add(action.get(Tags.OriginWidget).get(IV4XRtags.entityId, ""));
-		}
-	}
-	private void addConstructionAction(Action action) {
-		if(action instanceof seActionTriggerBlockConstruction) {
-			interactedEntities.add(((seActionTriggerBlockConstruction) action).getBlockType());
-		}
-	}
-	private void addExploredPosition(Action action) {
-		if(action instanceof seActionExplorePosition) {
-			exploredPositions.add(((seActionExplorePosition) action).getTargetPosition());
-		}
-	}
-
 }

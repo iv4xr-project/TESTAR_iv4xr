@@ -40,8 +40,6 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.model.CharacterObservation;
-import spaceEngineers.model.Vec2F;
-import spaceEngineers.model.Vec3F;
 
 public class seActionNavigateRechargeEnergy extends seActionNavigateToBlock {
 	private static final long serialVersionUID = 5400994373292296843L;
@@ -60,7 +58,7 @@ public class seActionNavigateRechargeEnergy extends seActionNavigateToBlock {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		navigateToReachableBlockPosition(system, state);
-		aimToBlock(system);
+		aimToBlock(system, targetBlock);
 
 		// Check the jetpack settings before interacting with the functional block
 		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
@@ -84,51 +82,19 @@ public class seActionNavigateRechargeEnergy extends seActionNavigateToBlock {
 		Boolean isJetpackRunningAfter = seObsCharacter.getJetpackRunning();
 
 		if(!isJetpackRunningBefore.equals(isJetpackRunningAfter)) {
-			actionVerdict = new Verdict(Verdict.JETPACK_SETTINGS_ERROR, "Jetpack settings are incorrect after interacting with block : " + targetBlock.get(IV4XRtags.entityType));
+			actionVerdict = new Verdict(Verdict.AGENT_JETPACK_ERROR, "Jetpack settings are incorrect after interacting with block : " + targetBlock.get(IV4XRtags.entityType));
 		}
 
 		// Second, check that the energy has increased
 		float newSuitEnergy = seObsCharacter.getSuitEnergy();
 		if(initialSuitEnergy != 1.0f && newSuitEnergy <= initialSuitEnergy) {
-			actionVerdict = new Verdict(Verdict.ENERGY_ERROR, "Agent Suit Energy did not increase after waiting inside block: " 
+			actionVerdict = new Verdict(Verdict.AGENT_ENERGY_ERROR, "Agent Suit Energy did not increase after waiting inside block: " 
 					+ targetBlock.get(IV4XRtags.entityType)
 					+ ", Previous energy: " + initialSuitEnergy
 					+ ", After interaction energy: " + newSuitEnergy);
 		}
 
 		Util.pause(1);
-	}
-
-	/**
-	 * Rotate until the agent is aiming the target block. 
-	 * For interactive entities (e.g., LargeBlockCryoChamber or LargeBlockCockpit), 
-	 * it is essential that the agent is not using tools (e.g., Grinder or Welder). 
-	 * Then we are able to aim the interactive part of the block and not the block itself. 
-	 * 
-	 * @param system
-	 */
-	protected void aimToBlock(SUT system) {
-		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
-		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
-		spaceEngineers.controller.Observer seObserver = seController.getObserver();
-
-		int AIMTRIES = 151;
-		int tries = 1;
-		System.out.println("Aiming to find block: " + targetBlock.get(IV4XRtags.entityId));
-		while(!targetBlockFound(seObserver) && tries < AIMTRIES) {		
-			seCharacter.moveAndRotate(new Vec3F(0, 0, 0), new Vec2F(0, DEGREES*0.007f), 0f, 1);
-			tries ++;
-		}
-	}
-
-	private boolean targetBlockFound(spaceEngineers.controller.Observer seObserver) {
-		try {
-			if(seObserver.observe().getTargetBlock() == null) return false;
-			System.out.println(seObserver.observe().getTargetBlock().getId());
-			return seObserver.observe().getTargetBlock().getId().equals(targetBlock.get(IV4XRtags.entityId));
-		} catch(Exception e) {
-			return false;
-		}
 	}
 
 	private void interactWithBlock(SUT system) {

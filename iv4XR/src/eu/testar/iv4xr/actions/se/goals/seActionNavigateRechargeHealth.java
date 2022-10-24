@@ -43,8 +43,6 @@ import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.model.CharacterObservation;
-import spaceEngineers.model.Vec2F;
-import spaceEngineers.model.Vec3F;
 
 public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 	private static final long serialVersionUID = 3493737977558831469L;
@@ -64,7 +62,7 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		navigateToReachableBlockPosition(system, state);
 		// If TESTAR was able to reach and aim the health block, interact and validate
-		if(aimToBlock(system)) {
+		if(aimToBlock(system, targetBlock)) {
 
 			// Reduce the health of the agent intentionally to be able to verify the health charge
 			boolean isHelmentEnabled = system.get(IV4XRtags.iv4xrSpaceEngineers).getObserver().observe().getHelmetEnabled();
@@ -95,7 +93,7 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 			seObsCharacter = seController.getObserver().observe();
 			float newHealth = seObsCharacter.getHealth();
 			if(previousHealth != 1.0f && newHealth <= previousHealth) {
-				actionVerdict = new Verdict(Verdict.HEALTH_ERROR, 
+				actionVerdict = new Verdict(Verdict.AGENT_HEALTH_ERROR, 
 						"Agent Health did not increase after interacting with block: " 
 								+ targetBlock.get(IV4XRtags.entityType)
 								+ ", Previous health: " + previousHealth
@@ -105,7 +103,7 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 			// Second, check that the energy has increased
 			float newSuitEnergy = seObsCharacter.getSuitEnergy();
 			if(previousEnergy != 1.0f && newSuitEnergy <= previousEnergy) {
-				actionVerdict = new Verdict(Verdict.ENERGY_ERROR, 
+				actionVerdict = new Verdict(Verdict.AGENT_ENERGY_ERROR, 
 						"Agent Suit Energy did not increase after interacting with block: " 
 								+ targetBlock.get(IV4XRtags.entityType)
 								+ ", Previous energy: " + previousEnergy
@@ -118,7 +116,7 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 				// Third, check that the oxygen increased
 				float newOxygen = seObsCharacter.getOxygen();
 				if(previousOxygen != 1.0f && newOxygen <= previousOxygen) {
-					actionVerdict = new Verdict(Verdict.OXYGEN_ERROR, 
+					actionVerdict = new Verdict(Verdict.AGENT_OXYGEN_ERROR, 
 							"Agent Oxygen did not increase after interacting with block: " 
 									+ targetBlock.get(IV4XRtags.entityType)
 									+ ", Previous oxygen: " + previousOxygen
@@ -128,7 +126,7 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 				// Fourth, check that the hydrogen has increased
 				float newHydrogen = seObsCharacter.getHydrogen();
 				if(previousHydrogen != 1.0f && newHydrogen <= previousHydrogen) {
-					actionVerdict = new Verdict(Verdict.HYDROGEN_ERROR, 
+					actionVerdict = new Verdict(Verdict.AGENT_HYDROGEN_ERROR, 
 							"Agent Hydrogen did not increase after interacting with block: " 
 									+ targetBlock.get(IV4XRtags.entityType)
 									+ ", Previous hydrogen: " + previousHydrogen
@@ -139,39 +137,6 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 		}
 
 		Util.pause(1);
-	}
-
-	/**
-	 * Rotate until the agent is aiming the target block. 
-	 * For interactive entities (e.g., LargeBlockCryoChamber or LargeBlockCockpit), 
-	 * it is essential that the agent is not using tools (e.g., Grinder or Welder). 
-	 * Then we are able to aim the interactive part of the block and not the block itself. 
-	 * 
-	 * @param system
-	 */
-	protected boolean aimToBlock(SUT system) {
-		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
-		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
-		spaceEngineers.controller.Observer seObserver = seController.getObserver();
-
-		int AIMTRIES = 300;
-		int tries = 1;
-		System.out.println("Aiming to find block: " + targetBlock.get(IV4XRtags.entityId));
-		while(!targetBlockFound(seObserver) && tries < AIMTRIES) {		
-			seCharacter.moveAndRotate(new Vec3F(0, 0, 0), new Vec2F(0, DEGREES*0.0035f), 0f, 1);
-			tries ++;
-		}
-		return targetBlockFound(seObserver);
-	}
-
-	private boolean targetBlockFound(spaceEngineers.controller.Observer seObserver) {
-		try {
-			if(seObserver.observe().getTargetBlock() == null) return false;
-			System.out.println(seObserver.observe().getTargetBlock().getId());
-			return seObserver.observe().getTargetBlock().getId().equals(targetBlock.get(IV4XRtags.entityId));
-		} catch(Exception e) {
-			return false;
-		}
 	}
 
 	@Override
