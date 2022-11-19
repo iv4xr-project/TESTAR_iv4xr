@@ -94,7 +94,7 @@ public class ActionNavigateTest {
 
 		for(Widget w : state) {
 			// Some interactive entities allow the agent to rest inside and charge the energy
-			if(interactiveEnergyEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+			if(interactiveEnergyEntities.contains(w.get(IV4XRtags.entityType)) && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
 				navigate = new seActionNavigateRechargeEnergy(w, system, SpaceEngineersProcess.characterControllerId);
 			}
 		}
@@ -134,7 +134,7 @@ public class ActionNavigateTest {
 
 		for(Widget w : state) {
 			// Some interactive entities allow the agent to rest inside and charge the energy
-			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
 				navigate = new seActionNavigateShootBlock(w, system, SpaceEngineersProcess.characterControllerId);
 			}
 		}
@@ -167,7 +167,7 @@ public class ActionNavigateTest {
 
 		for(Widget w : state) {
 			// Some interactive entities allow the agent to rest inside and charge the energy
-			if(w.get(IV4XRtags.entityType, "").contains("MedicalRoom") && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+			if(w.get(IV4XRtags.entityType, "").contains("MedicalRoom") && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
 				navigate = new seActionNavigateRechargeHealth(w, system, SpaceEngineersProcess.characterControllerId);
 			}
 		}

@@ -49,9 +49,9 @@ import spaceEngineers.navigation.Node;
 import spaceEngineers.navigation.RichNavGraph;
 import spaceEngineers.navigation.RichNavGraphKt;
 
-public class seReachablePositionHelper {
+public class sePositionRotationHelper {
 
-	private seReachablePositionHelper() {}
+	private sePositionRotationHelper() {}
 
 	/**
 	 * Calculate a reachable node position near the desired entity. 
@@ -114,7 +114,7 @@ public class seReachablePositionHelper {
 			float newZ = agentCenter.z + (float)(radius * Math.sin(angle));
 			// New destination on which we need to calculate if it is a reachable position
 			Vec3 nearPosition = new Vec3(newX, agentCenter.y, newZ);
-			if(seReachablePositionHelper.calculateIfPositionIsReachable(system, nearPosition)) {
+			if(sePositionRotationHelper.calculateIfPositionIsReachable(system, nearPosition)) {
 				actions.add(new seActionExplorePosition(state, nearPosition, system, agentId));
 			}
 		}
@@ -130,7 +130,7 @@ public class seReachablePositionHelper {
 			float newZ = agentCenter.z + (float)(radius * Math.sin(angle));
 			// New destination on which we need to calculate if it is a reachable position
 			Vec3 medPosition = new Vec3(newX, agentCenter.y, newZ);
-			if(seReachablePositionHelper.calculateIfPositionIsReachable(system, medPosition)) {
+			if(sePositionRotationHelper.calculateIfPositionIsReachable(system, medPosition)) {
 				actions.add(new seActionExplorePosition(state, medPosition, system, agentId));
 			}
 		}
@@ -146,7 +146,7 @@ public class seReachablePositionHelper {
 			float newZ = agentCenter.z + (float)(radius * Math.sin(angle));
 			// New destination on which we need to calculate if it is a reachable position
 			Vec3 farPosition = new Vec3(newX, agentCenter.y, newZ);
-			if(seReachablePositionHelper.calculateIfPositionIsReachable(system, farPosition)) {
+			if(sePositionRotationHelper.calculateIfPositionIsReachable(system, farPosition)) {
 				actions.add(new seActionExplorePosition(state, farPosition, system, agentId));
 			}
 		}
@@ -162,7 +162,7 @@ public class seReachablePositionHelper {
 			float newZ = agentCenter.z + (float)(radius * Math.sin(angle));
 			// New destination on which we need to calculate if it is a reachable position
 			Vec3 farPosition = new Vec3(newX, agentCenter.y, newZ);
-			if(seReachablePositionHelper.calculateIfPositionIsReachable(system, farPosition)) {
+			if(sePositionRotationHelper.calculateIfPositionIsReachable(system, farPosition)) {
 				actions.add(new seActionExplorePosition(state, farPosition, system, agentId));
 			}
 		}
@@ -200,6 +200,32 @@ public class seReachablePositionHelper {
 		}
 
 		return (reachableNode != -1);
+	}
+
+	/**
+	 * Based on the distance between the agent and the target block, 
+	 * obtain the rotation tolerance. 
+	 * 
+	 * @param distance
+	 * @return
+	 */
+	public static float rotationToleranceByDistance(float distance) {
+		//TODO: This tolerance should be calculated with a formula or with a plugin invocation d:)
+		if(distance < 2.2f) {return 0.2f;}
+		else if(distance < 2.5f) {return 0.18f;}
+		else if(distance < 2.75f) {return 0.14f;}
+		else if(distance < 3f) {return 0.12f;}
+		else if(distance < 3.5f) {return 0.095f;}
+		else if(distance < 4f) {return 0.07f;}
+		else if(distance < 4.5f) {return 0.05f;}
+		else if(distance < 5f) {return 0.04f;}
+		else if(distance < 5.5f) {return 0.035f;}
+		else if(distance < 6f) {return 0.03f;}
+		return 0.025f;
+	}
+
+	public static float dot(Vec3F a, Vec3F b) {
+		return (a.getX() * b.getX() + a.getY() * b.getY() + a.getZ() * b.getZ());
 	}
 
 }

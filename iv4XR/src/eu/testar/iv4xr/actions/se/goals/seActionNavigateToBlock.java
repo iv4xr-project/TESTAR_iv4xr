@@ -132,50 +132,6 @@ public class seActionNavigateToBlock extends seActionGoal {
 	}
 
 	/**
-	 * Rotate tick by tick until the agent aims the block destination. 
-	 * Based on: https://github.com/iv4xr-project/iv4xr-se-plugin/blob/uubranch3D/JvmClient/src/jvmMain/java/uuspaceagent/UUTacticLib.java#L160
-	 * 
-	 * @param system
-	 */
-	protected void rotateToBlockDestination(SUT system) {
-		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
-		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
-		spaceEngineers.controller.Observer seObserver = seController.getObserver();
-
-		eu.iv4xr.framework.spatial.Vec3 agentPosition = SVec3.seToLab(seObserver.observe().getPosition());
-		eu.iv4xr.framework.spatial.Vec3 entityPosition = SVec3.seToLab(targetPosition);
-		eu.iv4xr.framework.spatial.Vec3 directionToGo = eu.iv4xr.framework.spatial.Vec3.sub(agentPosition, entityPosition);
-		eu.iv4xr.framework.spatial.Vec3 agentOrientation = SVec3.seToLab(seObserver.observe().getOrientationForward());
-
-		directionToGo.y = 0;
-		agentOrientation.y = 0;
-
-		directionToGo = directionToGo.normalized();
-		agentOrientation = agentOrientation.normalized();
-
-		float cos_alpha = eu.iv4xr.framework.spatial.Vec3.dot(agentOrientation, directionToGo);
-
-		while(cos_alpha > -0.99f) {
-			// rotate faster until the aiming is close
-			if(cos_alpha > -0.95f) {seCharacter.moveAndRotate(new Vec3F(0,0,0),  new Vec2F(0, DEGREES*0.007f), 0f, 1);}
-			else {seCharacter.moveAndRotate(new Vec3F(0,0,0), Vec2F.Companion.getROTATE_RIGHT(), 0f, 1);}
-
-			agentPosition = SVec3.seToLab(seObserver.observe().getPosition());
-			entityPosition = SVec3.seToLab(targetPosition);
-			directionToGo = eu.iv4xr.framework.spatial.Vec3.sub(agentPosition, entityPosition);
-			agentOrientation = SVec3.seToLab(seObserver.observe().getOrientationForward());
-
-			directionToGo.y = 0;
-			agentOrientation.y = 0;
-
-			directionToGo = directionToGo.normalized();
-			agentOrientation = agentOrientation.normalized();
-
-			cos_alpha = eu.iv4xr.framework.spatial.Vec3.dot(agentOrientation, directionToGo);
-		}
-	}
-
-	/**
 	 * Rotate until the agent is aiming the target block. 
 	 * For interactive entities (e.g., LargeBlockCryoChamber or LargeBlockCockpit), 
 	 * it is essential that the agent is not using tools (e.g., Grinder or Welder). 
@@ -203,6 +159,36 @@ public class seActionNavigateToBlock extends seActionGoal {
 			return seObserver.observe().getTargetBlock().getId().equals(targetBlock.get(IV4XRtags.entityId));
 		} catch(Exception e) {
 			return false;
+		}
+	}
+
+	protected void rotateToBlockDestination(SUT system) {
+		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
+		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+		spaceEngineers.controller.Observer seObserver = seController.getObserver();
+
+		Vec3F agentPosition = seObserver.observe().getPosition();
+		float distance = targetPosition.distanceTo(agentPosition);
+		float tolerance = sePositionRotationHelper.rotationToleranceByDistance(distance);
+
+		Vec3F direction = (targetPosition.minus(agentPosition)).normalized();
+		Vec3F agentOrientation = seObserver.observe().getOrientationForward().normalized();
+		float cos_alpha = sePositionRotationHelper.dot(agentOrientation, direction);
+
+		// Max of 20 seconds trying to rotate
+		long start = System.currentTimeMillis();
+		long end = start + 20 * 1000;
+
+		while(cos_alpha < (1f - tolerance) && System.currentTimeMillis() < end) {
+			// rotate faster until the aiming is close
+			if(cos_alpha < (0.97f - tolerance)) {seCharacter.moveAndRotate(new Vec3F(0,0,0),  new Vec2F(0, DEGREES*0.007f), 0f, 1);}
+			else {seCharacter.moveAndRotate(new Vec3F(0,0,0), Vec2F.Companion.getROTATE_RIGHT(), 0f, 1);}
+
+			agentPosition = seObserver.observe().getPosition();
+			direction = (targetPosition.minus(agentPosition)).normalized();
+			agentOrientation = seObserver.observe().getOrientationForward().normalized();
+
+			cos_alpha = sePositionRotationHelper.dot(agentOrientation, direction);
 		}
 	}
 

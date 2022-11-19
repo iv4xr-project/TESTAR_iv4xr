@@ -169,7 +169,7 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 
 		// For each block widget (see movementEntities types), rotate and move until the agent is close to the position of the block
 		for(Widget w : state) {
-			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
 				// Always Grinder and shoot by default
 				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 1, 1.0));
 				labActions.add(new seActionNavigateShootBlock(w, system, agentId));
@@ -180,18 +180,18 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 			}
 
 			// FIXME: Fix Ladder2 is not observed as entityType
-			if(w.get(IV4XRtags.seDefinitionId, "").contains("Ladder2") && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+			if(w.get(IV4XRtags.seDefinitionId, "").contains("Ladder2") && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
 				labActions.add(new seActionNavigateInteract(w, system, agentId));
 			}
 
 			// Some interactive entities allow the agent to rest inside and charge the energy
-			if(interactiveEnergyEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+			if(interactiveEnergyEntities.contains(w.get(IV4XRtags.entityType)) && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
 				labActions.add(new seActionNavigateRechargeEnergy(w, system, agentId));
 			}
 
 			// If a Medical Room exists in the level, the agent can use the panel to charge the health and energy
 			// FIXME: Navigate near to medical room is not completely functional yet
-			if(w.get(IV4XRtags.entityType, "").contains("MedicalRoom") && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
+			if(w.get(IV4XRtags.entityType, "").contains("MedicalRoom") && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
 				labActions.add(new seActionNavigateRechargeHealth(w, system, agentId));
 			}
 		}
@@ -199,12 +199,12 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 		// If the agent has a reachable position in front of him, trigger a place block action
 		Vec3 agentPosition = SVec3.seToLab(state.get(IV4XRtags.agentWidget).get(IV4XRtags.seAgentPosition));
 		Vec3 frontPosition = new Vec3((agentPosition.x - 2.5f), agentPosition.y, agentPosition.z);
-		if(seReachablePositionHelper.calculateIfPositionIsReachable(system, frontPosition)) {
+		if(sePositionRotationHelper.calculateIfPositionIsReachable(system, frontPosition)) {
 			labActions.add(new seActionTriggerBlockConstruction(state, system, agentId, "LargeHeavyBlockArmorBlock"));
 		}
 
 		// Now add the set of actions to explore level positions
-		labActions = seReachablePositionHelper.calculateExploratoryPositions(system, state, agentId, labActions);
+		labActions = sePositionRotationHelper.calculateExploratoryPositions(system, state, agentId, labActions);
 
 		// If it was not possible to navigate to an entity or realize a smart exploration
 		// prepare a dummy exploration

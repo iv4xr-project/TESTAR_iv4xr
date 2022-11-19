@@ -66,7 +66,7 @@ import spaceEngineers.model.Vec3F;
  * State (Widget-Tree) -> Agent Observation (All Observed Entities)
  * Action              -> SpaceEngineers low level command
  */
-public class Protocol_se_testar_coverage extends SEProtocol {
+public class Protocol_se_testar_reacher extends SEProtocol {
 
 	/*
 	 * Modify agent ObservationRadius in the file: 
@@ -76,24 +76,14 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 	private static Set<String> toolEntities;
 	static {
 		toolEntities = new HashSet<String>();
-		//toolEntities.add("LargeBlockSmallGenerator");
 		toolEntities.add("LargeBlockBatteryBlock");
-		toolEntities.add("SurvivalKitLarge");
-	}
-
-	private static Set<String> interactiveEnergyEntities;
-	static {
-		interactiveEnergyEntities = new HashSet<String>();
-		interactiveEnergyEntities.add("LargeBlockCockpit");
-		interactiveEnergyEntities.add("LargeBlockCockpitSeat");
-		interactiveEnergyEntities.add("CockpitOpen");
-		interactiveEnergyEntities.add("LargeBlockCryoChamber");
+		toolEntities.add("LargeBlockCryoChamber");
 	}
 
 	// Oracle example to validate that the block integrity decreases after a Grinder action
 	private Verdict functional_verdict = Verdict.OK;
 
-	private final String SE_LEVEL_PATH = "suts/se_levels/manual-world-survival";
+	private final String SE_LEVEL_PATH = "suts/se_levels/TESTAR_Map_0";
 
 	private InteractiveSelectorSE actionSelectorSE = new InteractiveSelectorSE();
 
@@ -233,35 +223,7 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
 				// Always Grinder and shoot by default
 				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 1, 1.0));
-				labActions.add(new seActionNavigateShootBlock(w, system, agentId));
-				// But only welder if the integrity is not the maximum
-				if(w.get(IV4XRtags.seIntegrity) < w.get(IV4XRtags.seMaxIntegrity)) {
-					labActions.add(new seActionNavigateWelderBlock(w, system, agentId, 1, 1.0));
-				}
 			}
-
-			// FIXME: Fix Ladder2 is not observed as entityType
-			if(w.get(IV4XRtags.seDefinitionId, "").contains("Ladder2") && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
-				labActions.add(new seActionNavigateInteract(w, system, agentId));
-			}
-
-			// Some interactive entities allow the agent to rest inside and charge the energy
-			if(interactiveEnergyEntities.contains(w.get(IV4XRtags.entityType)) && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
-				labActions.add(new seActionNavigateRechargeEnergy(w, system, agentId));
-			}
-
-			// If a Medical Room exists in the level, the agent can use the panel to charge the health and energy
-			// FIXME: Navigate near to medical room is not completely functional yet
-			if(w.get(IV4XRtags.entityType, "").contains("MedicalRoom") && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
-				labActions.add(new seActionNavigateRechargeHealth(w, system, agentId));
-			}
-		}
-
-		// If the agent has a reachable position in front of him, trigger a place block action
-		Vec3 agentPosition = SVec3.seToLab(state.get(IV4XRtags.agentWidget).get(IV4XRtags.seAgentPosition));
-		Vec3 frontPosition = new Vec3((agentPosition.x - 2.5f), agentPosition.y, agentPosition.z);
-		if(sePositionRotationHelper.calculateIfPositionIsReachable(system, frontPosition)) {
-			labActions.add(new seActionTriggerBlockConstruction(state, system, agentId, "LargeHeavyBlockArmorBlock"));
 		}
 
 		// Now add the set of actions to explore level positions
