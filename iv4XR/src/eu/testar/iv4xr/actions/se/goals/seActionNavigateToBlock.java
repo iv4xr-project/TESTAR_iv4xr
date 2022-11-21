@@ -30,6 +30,7 @@
 
 package eu.testar.iv4xr.actions.se.goals;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -64,6 +65,11 @@ public class seActionNavigateToBlock extends seActionGoal {
 	protected Vec3F targetPosition;
 	protected Vec3 calculatedReachablePosition;
 	protected final float DEGREES = 2416f;
+	private List<Vec3F> navigableNodes = new ArrayList<Vec3F>();
+
+	public List<Vec3F> getNavigableNodes(){
+		return navigableNodes;
+	}
 
 	public seActionNavigateToBlock(Widget w, SUT system, String agentId){
 		this.agentId = agentId;
@@ -125,8 +131,12 @@ public class seActionNavigateToBlock extends seActionGoal {
 			int targetNode = navGraph.getNodes().get(reachableNode).getId();
 			List<Integer> nodePath = getPath(navigableGraph, targetNode);
 
+			// For each calculated node in the navigable path
 			for (Integer nodeId : nodePath) {
+				// Use the navigator to move to the next node position
 				new SEnavigator().moveInLine(system, navigableGraph.node(nodeId).getPosition());
+				// And update the action list of navigableNodes
+				navigableNodes.add(navigableGraph.node(nodeId).getPosition());
 			}
 		}
 	}

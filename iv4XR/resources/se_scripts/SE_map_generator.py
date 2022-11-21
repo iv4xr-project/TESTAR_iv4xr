@@ -376,11 +376,12 @@ turly = BottomUpGenerator(32, 30, 3, 1, 3, 5, 10)
 
 # Define the types of blocks that are generated automatically
 block_types_list = ["MyObjectBuilder_BatteryBlock/LargeBlockBatteryBlock",
-"MyObjectBuilder_CryoChamber/LargeBlockCryoChamber"]
+"MyObjectBuilder_CryoChamber/LargeBlockCryoChamber",
+"MyObjectBuilder_SurvivalKit/SurvivalKitLarge",
+"MyObjectBuilder_Cockpit/LargeBlockCockpitSeat",
+"MyObjectBuilder_ConveyorConnector/ConveyorTubeCurved",
+"MyObjectBuilder_CargoContainer/LargeBlockSmallContainer"]
 
 for i in range(1):
 	turly.make_a_map(name = i, verbose = True)
-
-
-
 

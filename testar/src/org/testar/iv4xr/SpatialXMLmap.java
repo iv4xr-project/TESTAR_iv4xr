@@ -76,6 +76,8 @@ import com.google.gson.Gson;
 
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.enums.SVec3;
+import spaceEngineers.model.Vec3F;
 
 public class SpatialXMLmap {
 
@@ -339,6 +341,30 @@ public class SpatialXMLmap {
 				// do not overwrite the position of interacted functional blocks (5)
 				if(xml_space_blocks[x - minX][z - minZ] < 4) {
 					xml_space_blocks[x - minX][z - minZ] = 4;
+				}
+			}
+		}
+	}
+
+	public static void updateNavigableNodesPath(List<Vec3F> navigableNodes) {
+		// Prepare the relative position to match the relative XML information
+		Vec3 relativePosition = Vec3.sub(initialAgentPosition, initialPlatformPosition);
+
+		if(!navigableNodes.isEmpty()){
+			for(Vec3F node : navigableNodes) {
+				Vec3 nodePosition = Vec3.add(Vec3.sub(SVec3.seToLab(node), initialAgentPosition), relativePosition);
+				int x = Math.round(getPositionCoordinate(nodePosition, agentPlatformOrientation.left()) / largeGameToXML);
+				int z = Math.round(getPositionCoordinate(nodePosition, agentPlatformOrientation.right()) / largeGameToXML);
+
+				// 2 represents the space explored by agent
+				// Because this position is updated every state, 
+				// do not overwrite the position of functional blocks (3,4,5)
+				try {
+					if(xml_space_blocks[x - minX][z - minZ] < 2) {
+						xml_space_blocks[x - minX][z - minZ] = 2;
+					}
+				} catch (Exception e) {
+					System.err.println("SpatialXMLmap updateNavigableNodesPath error adding node to map");
 				}
 			}
 		}

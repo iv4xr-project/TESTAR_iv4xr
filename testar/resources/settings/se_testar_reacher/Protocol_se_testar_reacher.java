@@ -78,12 +78,16 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 		toolEntities = new HashSet<String>();
 		toolEntities.add("LargeBlockBatteryBlock");
 		toolEntities.add("LargeBlockCryoChamber");
+		toolEntities.add("SurvivalKitLarge");
+		toolEntities.add("LargeBlockCockpitSeat");
+		toolEntities.add("ConveyorTubeCurved");
+		toolEntities.add("LargeBlockSmallContainer");
 	}
 
 	// Oracle example to validate that the block integrity decreases after a Grinder action
 	private Verdict functional_verdict = Verdict.OK;
 
-	private final String SE_LEVEL_PATH = "suts/se_levels/TESTAR_Map_0";
+	private final String SE_LEVEL_PATH = "suts/se_levels/TESTAR_Map_1";
 
 	private InteractiveSelectorSE actionSelectorSE = new InteractiveSelectorSE();
 
@@ -222,7 +226,7 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 		for(Widget w : state) {
 			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
 				// Always Grinder and shoot by default
-				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 1, 1.0));
+				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 4, 0.5));
 			}
 		}
 
@@ -287,6 +291,9 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
 
+			if(action instanceof seActionNavigateToBlock) {
+				SpatialXMLmap.updateNavigableNodesPath(((seActionNavigateToBlock) action).getNavigableNodes());
+			}
 			SpatialXMLmap.updateInteractedBlock(action);
 
 			actionSelectorSE.addExecutedAction(action);

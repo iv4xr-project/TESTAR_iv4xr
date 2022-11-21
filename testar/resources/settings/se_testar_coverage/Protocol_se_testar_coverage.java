@@ -325,6 +325,9 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
 
+			if(action instanceof seActionNavigateToBlock) {
+				SpatialXMLmap.updateNavigableNodesPath(((seActionNavigateToBlock) action).getNavigableNodes());
+			}
 			SpatialXMLmap.updateInteractedBlock(action);
 
 			actionSelectorSE.addExecutedAction(action);

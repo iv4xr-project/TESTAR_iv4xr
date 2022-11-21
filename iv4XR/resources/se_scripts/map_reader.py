@@ -34,7 +34,10 @@ def read_map(map_name):
             if letter == '.':
                 ground_positions.append((line_count, column_count))
             elif letter == '0':
-                ground_positions.append((line_count, column_count))
+                # For TESTAR we do not have an objective block.
+                # Use this generated objective to automatically place reactor and gravity blocks.
+                #ground_positions.append((line_count, column_count))
+                blocks_positions.append((line_count, column_count, "gravity"))
             elif letter == '\n':
                 pass
             elif letter == ' ':
@@ -54,6 +57,7 @@ def read_map(map_name):
                 ground_positions.append((line_count, column_count))
             elif letter == "p":
                 ground_positions.append((line_count, column_count))
+            # All other characters are length 1, but maybe improve this checking.
             elif len(letter) > 2:
                 blocks_positions.append((line_count, column_count, letter))
 
@@ -113,10 +117,17 @@ def generate_maze(map_name):
     for x in range(0, width):
         for y in range(0, height):
             if block_matrix[y][x]:
-                block_id = str(block_matrix[y][x]).split("/")[0]
-                block_type = str(block_matrix[y][x]).split("/")[1]
-                block_definition_id = DefinitionId(Id=block_id, Type=block_type)
-                place_in_grid(block_definition_id, gridId, se, x, y, z)
+                # For the generated gravity, place a reactor + gravity blocks
+                if str(block_matrix[y][x]) == "gravity":
+                    block_definition_id = DefinitionId(Id="MyObjectBuilder_Reactor", Type="LargeBlockSmallGenerator")
+                    place_in_grid(block_definition_id, gridId, se, x, y, z)
+                    block_definition_id = DefinitionId(Id="MyObjectBuilder_GravityGenerator", Type="")
+                    place_in_grid(block_definition_id, gridId, se, x, y, z - 1)
+                else:
+                    block_id = str(block_matrix[y][x]).split("/")[0]
+                    block_type = str(block_matrix[y][x]).split("/")[1]
+                    block_definition_id = DefinitionId(Id=block_id, Type=block_type)
+                    place_in_grid(block_definition_id, gridId, se, x, y, z)
 
 
 def place_in_grid(definitionId, gridId, se, x, y, z):
@@ -124,11 +135,11 @@ def place_in_grid(definitionId, gridId, se, x, y, z):
         gridId=gridId,
         blockDefinitionId=definitionId,
         minPosition=Vec3I(X=x, Y=y, Z=z),
-        orientationUp=Vec3I(X=0, Y=1, Z=0),
-        orientationForward=Vec3I(X=0, Y=0, Z=-1),
+        orientationUp=Vec3I(X=0, Y=0, Z=-1),
+        orientationForward=Vec3I(X=0, Y=1, Z=0),
         color=Vec3F(X=0, Y=0, Z=0),
     )
 
 
 if __name__ == '__main__':
-    generate_maze("TESTAR_Map_0")
+    generate_maze("TESTAR_Map_1")

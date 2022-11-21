@@ -39,14 +39,11 @@ import org.fruit.alayer.Tags;
 
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.se.goals.seActionExplorePosition;
-import eu.testar.iv4xr.actions.se.goals.seActionNavigateGrinderBlock;
-import eu.testar.iv4xr.actions.se.goals.seActionNavigateInteract;
-import eu.testar.iv4xr.actions.se.goals.seActionNavigateRechargeEnergy;
-import eu.testar.iv4xr.actions.se.goals.seActionNavigateRechargeHealth;
-import eu.testar.iv4xr.actions.se.goals.seActionNavigateShootBlock;
-import eu.testar.iv4xr.actions.se.goals.seActionNavigateWelderBlock;
+import eu.testar.iv4xr.actions.se.goals.seActionNavigateToBlock;
 import eu.testar.iv4xr.actions.se.goals.seActionTriggerBlockConstruction;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.enums.SVec3;
+import spaceEngineers.model.Vec3F;
 
 public class InteractiveSelectorSE {
 
@@ -61,7 +58,7 @@ public class InteractiveSelectorSE {
 
 		if(prioritizedAction == null) {
 			// Second, prioritize the interaction actions with non-interacted entities
-			prioritizedAction = prioritizeInteractiveAction(actions);
+			prioritizedAction = prioritizeClosestInteractiveAction(state, actions);
 		}
 
 		if(prioritizedAction==null) {
@@ -72,33 +69,35 @@ public class InteractiveSelectorSE {
 		return prioritizedAction;
 	}
 
-	private Action prioritizeInteractiveAction(Set<Action> actions) {
+	private Action prioritizeClosestInteractiveAction(State state, Set<Action> actions) {
+		float distance = 0f;
+		Action closestAction = null;
+
 		for(Action action : actions) {
-			//TODO: Refactor and create an interactive action superclass
-			if(action instanceof seActionNavigateGrinderBlock 
-					|| action instanceof seActionNavigateShootBlock
-					|| action instanceof seActionNavigateWelderBlock
-					|| action instanceof seActionNavigateInteract
-					|| action instanceof seActionNavigateRechargeHealth
-					|| action instanceof seActionNavigateRechargeEnergy) {
-
+			if(action instanceof seActionNavigateToBlock) {
+				// If entity was not interacted previously 
 				if(!interactedEntities.contains(action.get(Tags.OriginWidget).get(IV4XRtags.entityId, ""))) {
-					return action;
+					Vec3F agentPos = state.get(IV4XRtags.agentWidget).get(IV4XRtags.seAgentPosition);
+					Vec3F blockPos = SVec3.labToSE(action.get(Tags.OriginWidget).get(IV4XRtags.entityPosition));
+					float blockDistance = agentPos.distanceTo(blockPos);
+					// If no action selected or the distance is closest, prioritize this action
+					if(closestAction == null || blockDistance < distance) {
+						distance = blockDistance;
+						closestAction = action;
+					}
 				}
-
 			}
 		}
-		return null;
+
+		return closestAction;
 	}
 
 	private Action prioritizeBlockConstruction(Set<Action> actions) {
 		for(Action action : actions) {
 			if(action instanceof seActionTriggerBlockConstruction) {
-
 				if(!interactedEntities.contains(((seActionTriggerBlockConstruction) action).getBlockType())) {
 					return action;
 				}
-
 			}
 		}
 		return null;
@@ -149,13 +148,7 @@ public class InteractiveSelectorSE {
 	}
 
 	private void addInteractiveAction(Action action) {
-		//TODO: Refactor and create an interactive action superclass
-		if(action instanceof seActionNavigateGrinderBlock 
-				|| action instanceof seActionNavigateShootBlock
-				|| action instanceof seActionNavigateWelderBlock
-				|| action instanceof seActionNavigateInteract
-				|| action instanceof seActionNavigateRechargeHealth
-				|| action instanceof seActionNavigateRechargeEnergy) {
+		if(action instanceof seActionNavigateToBlock) {
 			interactedEntities.add(action.get(Tags.OriginWidget).get(IV4XRtags.entityId, ""));
 		}
 	}
