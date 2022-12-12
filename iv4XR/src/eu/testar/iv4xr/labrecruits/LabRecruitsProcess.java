@@ -39,6 +39,7 @@ import org.fruit.alayer.SUTBase;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.exceptions.SystemStartException;
 import org.fruit.alayer.exceptions.SystemStopException;
+import org.fruit.alayer.linux.LinuxProcess;
 import org.fruit.alayer.windows.WinApiException;
 import org.fruit.alayer.windows.WinProcess;
 
@@ -160,6 +161,9 @@ public class LabRecruitsProcess extends SUTBase {
 	}
 
 	public static List<SUT> fromAll(){
+		if(System.getProperty("os.name").contains("Linux")) {
+			return LinuxProcess.fromAll();
+		}
 		return WinProcess.fromAll();
 	}
 

@@ -35,6 +35,7 @@ import org.fruit.Util;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.exceptions.SystemStartException;
 import org.fruit.alayer.exceptions.SystemStopException;
+import org.fruit.alayer.linux.LinuxProcess;
 import org.fruit.alayer.windows.WinProcess;
 
 import environments.LabRecruitsConfig;
@@ -72,8 +73,6 @@ public class LabRecruitsServer extends LabRecruitsProcess {
 		labRecruitsTestServer = new LabRecruitsTestServer(false, labPath);
 		labRecruitsTestServer.waitForGameToLoad();
 
-		win = WinProcess.fromProcName("LabRecruits.exe");
-
 		System.out.println("**** Running LabRecruits in SERVER MODE ****");
 
 		/**
@@ -92,42 +91,52 @@ public class LabRecruitsServer extends LabRecruitsProcess {
 
 			System.out.println("Welcome to the iv4XR test: " + levelName);
 
-			this.set(IV4XRtags.windowsProcess, win);
-			this.set(Tags.PID, win.pid());
+			if(System.getProperty("os.name").contains("Windows")) {
+				win = WinProcess.fromProcName("LabRecruits.exe");
+				this.set(IV4XRtags.windowsProcess, win);
+				this.set(Tags.PID, win.pid());
+			} else {
+				this.set(Tags.PID, (long)0);
+			}
+
 			this.set(IV4XRtags.iv4xrLabRecruitsEnvironment, labRecruitsEnvironment);
 			this.set(IV4XRtags.iv4xrTestAgent, testAgent);
 
 		} catch(Exception e) {
 			System.err.println(String.format("EnvironmentConfig ERROR: Trying to loas LabRecruits level %s - %s ", levelsPath, levelName));
 			System.err.println(e.getMessage());
-			win.stop();
+			stop();
+
 			throw new SystemStartException(e);
 		}
 
 		iv4XR = this;
 	}
 
-	/*public boolean isForeground(){
-		return true;
-	}
-
-	public void toForeground(){
-	}*/
-
 	@Override
 	public void stop() throws SystemStopException {
+		// Close the SUT plugin connection
 		labRecruitsTestServer.close();
-		win.stop();
+		// If OS is windows also stop the process
+		if(System.getProperty("os.name").contains("Windows")) {
+			win.stop();
+		}
 	}
 
 	@Override
 	public boolean isRunning() {
-		return win.isRunning();
+		if(System.getProperty("os.name").contains("Windows")) {
+			return win.isRunning();
+		}
+		return labRecruitsTestServer.isRunning();
 	}
 
 	@Override
 	public String getStatus() {
-		return win.getStatus();
+		if(System.getProperty("os.name").contains("Windows")) {
+			return win.getStatus();
+		}
+		return "labRecruitsTestServer running ? " + labRecruitsTestServer.isRunning();
 	}
 
 }

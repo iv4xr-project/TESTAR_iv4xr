@@ -1,5 +1,6 @@
 dependencies {
     compile project(':core')
+    compile project(':linux')
     compile project(':windows')
     compile files('../testar/lib/gson-2.8.5.jar')
 }

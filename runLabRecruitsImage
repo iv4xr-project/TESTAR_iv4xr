@@ -1,0 +1,8 @@
+#!/bin/sh
+cat /README.Docker
+echo "Start Xvfb"
+/opt/bin/start-xvfb.sh &
+sleep 2
+cd /testar/bin
+./testar sse=labrecruits_docker ShowVisualSettingsDialogOnStartup=false ShowSettingsAfterTest=false VisualizeSelectedAction=false FlashFeedback=false ApplicationName="labrecruits_docker" ApplicationVersion=1 Sequences=1 SequenceLength=10 Mode=Generate LabRecruitsGraphics=false StateModelEnabled=false
+#sh -c "while true; do sleep 1; done"

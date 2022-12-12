@@ -64,7 +64,7 @@ import eu.testar.iv4xr.labrecruits.LabRecruitsProcess;
 public class IV4XRStateFetcher implements Callable<IV4XRState> {
 
 	protected final SUT system;
-	
+
 	// Default agent id
 	public static Set<String> agentsIds = new HashSet<>(Arrays.asList("agent1"));
 
@@ -90,45 +90,47 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 
 	@Override
 	public IV4XRState call() throws Exception {
-	    IV4XRRootElement rootElement = buildVirtualEnvironment(system);
+		IV4XRRootElement rootElement = buildVirtualEnvironment(system);
 
-	    if (rootElement == null) {
-	      system.set(Tags.Desc, " ");
-	      return new IV4XRState(null);
-	    }
+		if (rootElement == null) {
+			system.set(Tags.Desc, " ");
+			return new IV4XRState(null);
+		}
 
-	    system.set(Tags.Desc, "iv4XR system IV4XRStateFetcher Desc");
+		system.set(Tags.Desc, "iv4XR system IV4XRStateFetcher Desc");
 
-	    IV4XRState root = createWidgetTree(rootElement);
-	    root.set(Tags.Role, Roles.Process);
-	    root.set(Tags.NotResponding, false);
+		IV4XRState root = createWidgetTree(rootElement);
+		root.set(Tags.Role, Roles.Process);
+		root.set(Tags.NotResponding, false);
 
-	    for (Widget w : root)
-	    	w.set(Tags.Path, Util.indexString(w));
+		for (Widget w : root)
+			w.set(Tags.Path, Util.indexString(w));
 
-	    return root;
+		return root;
 	}
-	
+
 	protected IV4XRRootElement buildVirtualEnvironment(SUT system) {
 		IV4XRRootElement rootElement = buildRoot(system);
-		
+
 		if(!rootElement.isRunning) {
 			return rootElement;
 		}
-		
+
 		rootElement.pid = system.get(Tags.PID, (long)-1);
-		
-		for(long windowHandle : getVisibleTopLevelWindowHandles()) {
-			if(rootElement.pid == Windows.GetWindowProcessId(windowHandle)) {
-				rootElement.windowsHandle = windowHandle;
-				system.set(Tags.HWND, windowHandle);
-				rootElement.set(Tags.HWND, windowHandle);
+
+		if(System.getProperty("os.name").contains("Windows")) {
+			for(long windowHandle : getVisibleTopLevelWindowHandles()) {
+				if(rootElement.pid == Windows.GetWindowProcessId(windowHandle)) {
+					rootElement.windowsHandle = windowHandle;
+					system.set(Tags.HWND, windowHandle);
+					rootElement.set(Tags.HWND, windowHandle);
+				}
 			}
 		}
-		
+
 		return fetchIV4XRElements(rootElement);
 	}
-	
+
 	/**
 	 * Observation = Objects Agent can observe - Dynamically appearing and disappearing WOM. 
 	 * WorldModel = All Objects from WOM with their properties. 
@@ -214,7 +216,7 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 	protected void createWidgetTree(IV4XRWidgetEntity parent, IV4XRElement element) {
 		IV4XRWidgetEntity w = parent.root().addChild(parent, element);
 		element.backRef = w;
-		
+
 		for (IV4XRElement child : element.children) {
 			createWidgetTree(w, child);
 		}
@@ -246,10 +248,12 @@ public class IV4XRStateFetcher implements Callable<IV4XRState> {
 	 * @param element
 	 */
 	protected void fillRect(IV4XRElement element) {
+		if(!System.getProperty("os.name").contains("Windows")) return;
+
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 		Rectangle screenRectangle = new Rectangle(screenSize);
 		Rect rect = Rect.from(screenRectangle.getX(), screenRectangle.getY(), screenRectangle.getWidth(), screenRectangle.getHeight());
-		
+
 		long r[] = Windows.GetWindowRect(element.root.windowsHandle);
 		if(r[2] - r[0] >= 0 && r[3] - r[1] >= 0) {
 			rect = Rect.fromCoordinates(r[0], r[1], r[2], r[3]);

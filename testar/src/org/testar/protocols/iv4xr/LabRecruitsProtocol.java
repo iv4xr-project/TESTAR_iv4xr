@@ -471,8 +471,10 @@ public class LabRecruitsProtocol extends GenericUtilsProtocol {
 
 	@Override
 	protected Canvas buildCanvas() {
-		// Force TESTAR to return the Windows Canvas implementation
-		return GDIScreenCanvas.fromPrimaryMonitor(Pen.PEN_DEFAULT);
+		if(System.getProperty("os.name").contains("Windows")) {
+			return GDIScreenCanvas.fromPrimaryMonitor(Pen.PEN_DEFAULT);
+		}
+		return NativeLinker.getNativeCanvas(Pen.PEN_DEFAULT);
 	}
 
 	/**
