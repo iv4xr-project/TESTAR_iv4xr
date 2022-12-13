@@ -131,6 +131,9 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 	protected SUT startSystem() throws SystemStartException {
 		SUT system = super.startSystem();
 
+		// Move SpaceEngineers to the foreground
+		system.get(IV4XRtags.windowsProcess).toForeground();
+
 		// Load the desired level to execute TESTAR and obtain the coverage
 		system.get(IV4XRtags.iv4xrSpaceEngineers).getSession().loadScenario(new File(SE_LEVEL_PATH).getAbsolutePath());
 		Util.pause(20);
