@@ -28,13 +28,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
+import org.fruit.alayer.exceptions.SystemStartException;
 import org.fruit.monkey.ConfigTags;
 import org.testar.iv4xr.InteractiveSelectorSE;
+import org.testar.iv4xr.SpatialXMLmap;
 import org.testar.protocols.iv4xr.SEProtocol;
 
 import eu.iv4xr.framework.spatial.Vec3;
@@ -72,9 +75,17 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 	private static Set<String> toolEntities;
 	static {
 		toolEntities = new HashSet<String>();
-		//toolEntities.add("LargeBlockSmallGenerator");
 		toolEntities.add("LargeBlockBatteryBlock");
 		toolEntities.add("SurvivalKitLarge");
+		toolEntities.add("LargeHydrogenEngine");
+	}
+
+	private static Set<String> fragileEntities;
+	static {
+		fragileEntities = new HashSet<String>();
+		fragileEntities.add("LargeBlockSmallGenerator");
+		fragileEntities.add("ConveyorTubeCurved");
+		fragileEntities.add("LargeBlockSmallContainer");
 	}
 
 	private static Set<String> interactiveEnergyEntities;
@@ -83,13 +94,49 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 		interactiveEnergyEntities.add("LargeBlockCockpit");
 		interactiveEnergyEntities.add("LargeBlockCockpitSeat");
 		interactiveEnergyEntities.add("CockpitOpen");
+		interactiveEnergyEntities.add("OpenCockpitLarge");
 		interactiveEnergyEntities.add("LargeBlockCryoChamber");
 	}
 
-	private InteractiveSelectorSE actionSelectorSE = new InteractiveSelectorSE();
-
 	// Oracle example to validate that the block integrity decreases after a Grinder action
 	private Verdict functional_verdict = Verdict.OK;
+
+	private final String SE_LEVEL_PATH = "suts/se_levels/manual-world-survival";
+
+	private InteractiveSelectorSE actionSelectorSE = new InteractiveSelectorSE();
+
+	/**
+	 * This methods is called before each test sequence, allowing for example using external profiling software on the SUT
+	 */
+	@Override
+	protected void preSequencePreparations() {
+		super.preSequencePreparations();
+
+		// Create a XML spatial map based on the desired SpaceEngineers level
+		SpatialXMLmap.prepareSpatialXMLmap(SE_LEVEL_PATH);
+	}
+
+	/**
+	 * This method is called when TESTAR starts the System Under Test (SUT). The method should
+	 * take care of
+	 *   1) starting the SUT (you can use TESTAR's settings obtainable from <code>settings()</code> to find
+	 *      out what executable to run)
+	 *   2) waiting until the system is fully loaded and ready to be tested (with large systems, you might have to wait several
+	 *      seconds until they have finished loading)
+	 *
+	 * @return  a started SUT, ready to be tested.
+	 * @throws SystemStartException
+	 */
+	@Override
+	protected SUT startSystem() throws SystemStartException {
+		SUT system = super.startSystem();
+
+		// Load the desired level to execute TESTAR and obtain the coverage
+		system.get(IV4XRtags.iv4xrSpaceEngineers).getSession().loadScenario(new File(SE_LEVEL_PATH).getAbsolutePath());
+		Util.pause(20);
+
+		return system;
+	}
 
 	/**
 	 * This method is invoked each time the TESTAR starts the SUT to generate a new sequence.
@@ -98,6 +145,24 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 	protected void beginSequence(SUT system, State state) {
 		super.beginSequence(system, state);
 		actionSelectorSE = new InteractiveSelectorSE();
+	}
+
+	/**
+	 * This method is called when the TESTAR requests the state of the SUT.
+	 * Here you can add additional information to the SUT's state or write your
+	 * own state fetching routine.
+	 *
+	 * super.getState(system) puts the state information also to the HTML sequence report
+	 *
+	 * @return  the current state of the SUT with attached oracle.
+	 */
+	@Override
+	protected State getState(SUT system) {
+		State state = super.getState(system);
+
+		SpatialXMLmap.updateAgentObservation(state);
+
+		return state;
 	}
 
 	/**
@@ -172,6 +237,15 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
 				// Always Grinder and shoot by default
 				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 1, 1.0));
+				labActions.add(new seActionNavigateShootBlock(w, system, agentId));
+				// But only welder if the integrity is not the maximum
+				if(w.get(IV4XRtags.seIntegrity) < w.get(IV4XRtags.seMaxIntegrity)) {
+					labActions.add(new seActionNavigateWelderBlock(w, system, agentId, 1, 1.0));
+				}
+			}
+
+			if(fragileEntities.contains(w.get(IV4XRtags.entityType)) && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
+				// Always Grinder and shoot by default
 				labActions.add(new seActionNavigateShootBlock(w, system, agentId));
 				// But only welder if the integrity is not the maximum
 				if(w.get(IV4XRtags.seIntegrity) < w.get(IV4XRtags.seMaxIntegrity)) {
@@ -264,6 +338,11 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
 			Util.pause(waitTime);
 
+			if(action instanceof seActionNavigateToBlock) {
+				SpatialXMLmap.updateNavigableNodesPath(((seActionNavigateToBlock) action).getNavigableNodes());
+			}
+			SpatialXMLmap.updateInteractedBlock(action);
+
 			actionSelectorSE.addExecutedAction(action);
 
 			return true;
@@ -271,5 +350,19 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 		}catch(ActionFailedException afe){
 			return false;
 		}
+	}
+
+
+	/**
+	 * Here you can put graceful shutdown sequence for your SUT
+	 * @param system
+	 */
+	@Override
+	protected void stopSystem(SUT system) {
+		// Create the spatial image based on the explored level
+		SpatialXMLmap.createXMLspatialMap();
+
+		// This stops the plugin but no the SUT
+		super.stopSystem(system);
 	}
 }

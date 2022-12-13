@@ -76,12 +76,9 @@ public class seActionNavigateShootBlock extends seActionNavigateToBlock {
 	private void shootGun(SUT system) {
 		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
 
-		// Five shoots by default
-		for(int i = 0; i < 5; i++) {
-			seCharacter.beginUsingTool();
-			Util.pause(0.5);
-			seCharacter.endUsingTool();
-		}
+		seCharacter.beginUsingTool();
+		Util.pause(0.5);
+		seCharacter.endUsingTool();
 	}
 
 	@Override

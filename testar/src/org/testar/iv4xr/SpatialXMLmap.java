@@ -86,6 +86,7 @@ public class SpatialXMLmap {
 	private static int [][] xml_space_blocks = {{0,0,0}};
 
 	public static int agentObservationRadius = 0; //TODO: Verify 1 to 2,5 game distance relation
+	private static String agentUpOrientation = "";
 	private static Pair<String, String> agentPlatformOrientation = new Pair<String, String>("", "");
 	private static Vec3 initialAgentPosition = new Vec3(0, 0, 0);
 	private static Vec3 initialPlatformPosition = new Vec3(0, 0, 0);
@@ -150,18 +151,28 @@ public class SpatialXMLmap {
 			throw new SystemStartException("SpatialXMLmap loadAgentOrientation: error calculating the agentPlatformOrientation up, multiple frequencies");
 		}
 
-		if(x == 1) agentPlatformOrientation = new Pair<String, String>("y", "z");
-		else if(y == 1) agentPlatformOrientation = new Pair<String, String>("x", "z");
-		else if(z == 1) agentPlatformOrientation = new Pair<String, String>("x", "y");
+		if(x == 1) { 
+			agentUpOrientation = "x";
+			agentPlatformOrientation = new Pair<String, String>("y", "z");
+		}
+		else if(y == 1) { 
+			agentUpOrientation = "y";
+			agentPlatformOrientation = new Pair<String, String>("x", "z");
+
+		}
+		else if(z == 1) { 
+			agentUpOrientation = "z";
+			agentPlatformOrientation = new Pair<String, String>("x", "y");
+		}
 		else throw new SystemStartException("SpatialXMLmap loadAgentOrientation: error calculating the agentPlatformOrientation up, no agentPlatformOrientation Up detected");
 
+		System.out.println("agentUpOrientation: " + agentUpOrientation);
 		System.out.println("agentPlatformOrientation: " + agentPlatformOrientation);
 
 		fileIS.close();
 	}
 
 	private static void loadSpaceBlocks(String levelPath) throws ParserConfigurationException, XPathExpressionException, SAXException, IOException {
-		Set<Node> coordNodesSet = new HashSet<>();
 		// SANDBOX_0_0_0_.sbs is the SE file that contains information about the existing blocks of the level
 		FileInputStream fileIS = new FileInputStream(new File(levelPath + File.separator + "SANDBOX_0_0_0_.sbs"));
 		// MyObjectBuilder_CubeBlock seems to be the XML element that represents each block
@@ -175,9 +186,17 @@ public class SpatialXMLmap {
 
 		NodeList allBlocksCoordinates = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
 
+		Set<Node> coordAllBlocksNodesSet = new HashSet<>();
+		Set<Node> coordWalls = new HashSet<>();
+
 		for (int i = 0; i < allBlocksCoordinates.getLength(); i++) {
 			Node coordElement = allBlocksCoordinates.item(i);
-			coordNodesSet.add(coordElement);
+			coordAllBlocksNodesSet.add(coordElement);
+
+			// If the block is not on the floor, consider it a wall
+			int y = Integer.parseInt(coordElement.getAttributes().getNamedItem(agentUpOrientation).getNodeValue());
+			if(y == 1) coordWalls.add(coordElement);
+
 			// Obtain the x, y, z attributes from the coordinates node
 			int x = Integer.parseInt(coordElement.getAttributes().getNamedItem(agentPlatformOrientation.left()).getNodeValue());
 			int z = Integer.parseInt(coordElement.getAttributes().getNamedItem(agentPlatformOrientation.right()).getNodeValue());
@@ -196,12 +215,21 @@ public class SpatialXMLmap {
 		// Initial always exists
 		xml_space_blocks[0 - minX][0 - minZ] = 1;
 
-		for(Node coordElement : coordNodesSet) {
+		for(Node coordElement : coordAllBlocksNodesSet) {
 			// Obtain the x, y, z attributes from the coordinates node
 			int x = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem(agentPlatformOrientation.left()).getNodeValue()));
 			int z = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem(agentPlatformOrientation.right()).getNodeValue()));
 
 			xml_space_blocks[x - minX][z - minZ] = 1;
+		}
+
+		// We have to delete the positions on which a wall block was detected, because is not 2D navigable
+		for(Node coordElement : coordWalls) {
+			// Obtain the x, y, z attributes from the coordinates node
+			int x = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem(agentPlatformOrientation.left()).getNodeValue()));
+			int z = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem(agentPlatformOrientation.right()).getNodeValue()));
+
+			xml_space_blocks[x - minX][z - minZ] = 0;
 		}
 
 		fileIS.close();
@@ -492,25 +520,28 @@ public class SpatialXMLmap {
 		int existingPositions = linearSearch(xml_space_blocks, 1) + walkedPositions;
 
 		String totalSummary = "Sequence | " + OutputStructure.sequenceInnerLoopCount +
-				" | existingBlocks | " + existingBlocksCount +
+				" | existingFunctionalBlocks | " + existingBlocksCount +
 				// Observed entities number and percentage
-				" | observedBlocks | " + observedBlocksCount +
+				" | observedFunctionalBlocks | " + observedBlocksCount +
 				" | " + String.format("%.2f", (double)observedBlocksCount * 100.0 / (double)existingBlocksCount).replace(".", ",") +
 				// Interacted number and percentage
-				" | interactedBlocks | " + interactedBlocksCount +
+				" | interactedFunctionalBlocks | " + interactedBlocksCount +
 				" | " + String.format("%.2f", (double)interactedBlocksCount * 100.0 / (double)existingBlocksCount).replace(".", ",") +
 
-				" | existingPositions | " + existingPositions +
+				" | existingFloorPositions | " + existingPositions +
 				// Walked number and percentage
-				" | walkedPositions | " + walkedPositions +
-				" | " + String.format("%.2f", (double)walkedPositions * 100.0 / (double)existingPositions).replace(".", ",") +
+				" | walkedFloorPositions | " + walkedPositions +
+				" | " + String.format("%.2f", (double)walkedPositions * 100.0 / (double)existingPositions).replace(".", ",");
+
+		//TODO: Fix observed area calculation
+		/*
 				// Observed position number and percentage
 				" | observedLevelArea | " + observedBlocksPositions +
 				" | " + String.format("%.2f", (double)observedBlocksPositions * 100.0 / (double)existingPositions).replace(".", ",") +
 				// Unexplored position number and percentage
 				" | unexploredLevelArea | " + (existingPositions - observedBlocksPositions) +
 				" | " + String.format("%.2f", (double)(existingPositions - observedBlocksPositions) * 100.0 / (double)existingPositions).replace(".", ",");
-
+		 */
 		try {
 			File metricsFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "summary_spatial_coverage.txt").getAbsoluteFile();
 			metricsFile.createNewFile();

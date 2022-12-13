@@ -22,8 +22,8 @@ Mode = Spy
 # SUTCONNECTOR = SUT_PROCESS_NAME: SUTConnectorValue property must be the process name of the SUT.
 # The SUT must be manually started and closed.
 #################################################################
-SUTConnector = COMMAND_LINE
-SUTConnectorValue = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\SpaceEngineers\\Bin64\\SpaceEngineers.exe" "suts/se_levels/manual-world-survival"
+SUTConnector = SUT_PROCESS_NAME
+SUTConnectorValue = SpaceEngineers.exe
 
 #################################################################
 # Sequences
