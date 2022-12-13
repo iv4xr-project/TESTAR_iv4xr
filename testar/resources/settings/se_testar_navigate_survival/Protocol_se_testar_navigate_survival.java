@@ -315,7 +315,7 @@ public class Protocol_se_testar_navigate_survival extends SEProtocol {
 			retAction = actionSelectorSE.prioritizedAction(state, actions);
 		}
 		if(retAction == null) {
-			System.out.println("State model based action selection did not find an action. Using default action selection.");
+			//System.out.println("State model based action selection did not find an action. Using default action selection.");
 			// if state model fails, use default:
 			retAction = RandomActionSelector.selectAction(actions);
 		}

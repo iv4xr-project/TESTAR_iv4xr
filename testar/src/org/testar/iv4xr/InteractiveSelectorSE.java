@@ -61,10 +61,11 @@ public class InteractiveSelectorSE {
 			prioritizedAction = prioritizeClosestInteractiveAction(state, actions);
 		}
 
-		if(prioritizedAction==null) {
+		//TODO: Improve exploratory positions using the navigated nodes
+		/*if(prioritizedAction==null) {
 			// Third, prioritize the exploration of new discovered positions
 			prioritizedAction = prioritizeExploratoryMovement(state, actions);
-		}
+		}*/
 
 		return prioritizedAction;
 	}

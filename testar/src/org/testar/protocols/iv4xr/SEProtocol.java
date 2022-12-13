@@ -438,6 +438,8 @@ public class SEProtocol extends GenericUtilsProtocol {
 		// Save the level as a result in the output folder (only for generate mode)
 		if(settings.get(ConfigTags.Mode).equals(Modes.Generate)) {
 			saveLevel(system);
+			// Then exit to menu
+			system.get(IV4XRtags.iv4xrSpaceEngineers).getSession().exitToMainMenu();
 		}
 		// Close iv4xr-plugin connection
 		CloseIfCloseableKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));

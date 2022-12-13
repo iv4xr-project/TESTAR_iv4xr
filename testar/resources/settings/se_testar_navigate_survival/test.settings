@@ -32,7 +32,7 @@ SUTConnectorValue = SpaceEngineers.exe
 #################################################################
 
 Sequences = 1
-SequenceLength = 100
+SequenceLength = 50
 
 #################################################################
 # Oracles based on suspicious titles

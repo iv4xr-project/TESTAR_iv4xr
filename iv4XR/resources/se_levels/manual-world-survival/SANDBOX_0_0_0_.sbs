@@ -1885,7 +1885,7 @@
                   <TimerEnabled>true</TimerEnabled>
                   <RemoveEntityOnTimer>false</RemoveEntityOnTimer>
                   <TimerType>Frame10</TimerType>
-                  <FramesFromLastTrigger>40</FramesFromLastTrigger>
+                  <FramesFromLastTrigger>50</FramesFromLastTrigger>
                   <TimerTickInFrames>60</TimerTickInFrames>
                   <IsSessionUpdateEnabled>false</IsSessionUpdateEnabled>
                 </Component>
@@ -3847,16 +3847,16 @@
           <PilotRelativeWorld>
             <Position x="-0.081569276750087738" y="-1.252500057220459" z="2.6279687881469727" />
             <Forward x="0.0772974938" y="-5.88194871E-06" z="-0.9970081" />
-            <Up x="-3.356604E-11" y="1" z="-5.899603E-06" />
+            <Up x="-3.36045428E-11" y="1" z="-5.89960246E-06" />
             <Orientation>
               <X>-2.94759343E-06</X>
               <Y>-0.03867769</Y>
-              <Z>1.14108282E-07</Z>
+              <Z>1.14108289E-07</Z>
               <W>0.9992517</W>
             </Orientation>
           </PilotRelativeWorld>
           <PilotGunDefinition xsi:nil="true" />
-          <IsInFirstPersonView>false</IsInFirstPersonView>
+          <IsInFirstPersonView>true</IsInFirstPersonView>
           <OxygenLevel>0</OxygenLevel>
           <PilotJetpackEnabled xsi:nil="true" />
           <TextPanels>
@@ -4093,8 +4093,8 @@
           </OnLockedToolbar>
           <PilotRelativeWorld>
             <Position x="-0.0025706128217279911" y="2.2593097686767578" z="1.2524938583374023" />
-            <Forward x="0.0185537338" y="-0.999827743" z="-0.000102978942" />
-            <Up x="-5.151378E-09" y="0.000102996579" z="-1" />
+            <Forward x="0.0185537357" y="-0.999827862" z="-0.000102978956" />
+            <Up x="-5.151553E-09" y="0.000102996586" z="-1" />
             <Orientation>
               <X>-0.7070399</X>
               <Y>-0.006560354</Y>
@@ -4409,6 +4409,45 @@
           <Enabled>true</Enabled>
           <Capacity>100000</Capacity>
         </MyObjectBuilder_CubeBlock>
+        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
+          <SubtypeName>LargeBlockArmorBlock</SubtypeName>
+          <Min x="10" y="1" z="5" />
+          <BuiltBy>144115188075855895</BuiltBy>
+        </MyObjectBuilder_CubeBlock>
+        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
+          <SubtypeName>LargeBlockArmorBlock</SubtypeName>
+          <Min x="10" y="1" z="4" />
+          <BuiltBy>144115188075855895</BuiltBy>
+        </MyObjectBuilder_CubeBlock>
+        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_CubeBlock">
+          <SubtypeName>LargeBlockArmorBlock</SubtypeName>
+          <Min x="10" y="1" z="3" />
+          <BuiltBy>144115188075855895</BuiltBy>
+        </MyObjectBuilder_CubeBlock>
+        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_ConveyorConnector">
+          <SubtypeName>ConveyorTubeCurved</SubtypeName>
+          <EntityId>92928344855457568</EntityId>
+          <Name>92928344855457568</Name>
+          <Min x="-5" y="1" z="-8" />
+          <BlockOrientation Forward="Down" Up="Right" />
+          <BuiltBy>144115188075855895</BuiltBy>
+        </MyObjectBuilder_CubeBlock>
+        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_ConveyorConnector">
+          <SubtypeName>ConveyorTube</SubtypeName>
+          <EntityId>105823493123032671</EntityId>
+          <Name>105823493123032671</Name>
+          <Min x="-5" y="1" z="-7" />
+          <BlockOrientation Forward="Down" Up="Backward" />
+          <BuiltBy>144115188075855895</BuiltBy>
+        </MyObjectBuilder_CubeBlock>
+        <MyObjectBuilder_CubeBlock xsi:type="MyObjectBuilder_ConveyorConnector">
+          <SubtypeName>ConveyorTubeCurved</SubtypeName>
+          <EntityId>106641419661228272</EntityId>
+          <Name>106641419661228272</Name>
+          <Min x="-5" y="1" z="-6" />
+          <BlockOrientation Forward="Down" Up="Backward" />
+          <BuiltBy>144115188075855895</BuiltBy>
+        </MyObjectBuilder_CubeBlock>
       </CubeBlocks>
       <IsStatic>true</IsStatic>
       <IsUnsupportedStation>true</IsUnsupportedStation>
@@ -4432,6 +4471,18 @@
           <EndPosition x="9" y="1" z="3" />
           <EndDirection>Backward</EndDirection>
           <Sections />
+          <ConveyorLineType>LARGE_LINE</ConveyorLineType>
+        </MyObjectBuilder_ConveyorLine>
+        <MyObjectBuilder_ConveyorLine>
+          <StartPosition x="-6" y="1" z="-8" />
+          <StartDirection>Right</StartDirection>
+          <EndPosition x="-6" y="1" z="-6" />
+          <EndDirection>Right</EndDirection>
+          <Sections>
+            <Section Direction="Right" Length="1" />
+            <Section Direction="Backward" Length="2" />
+            <Section Direction="Left" Length="1" />
+          </Sections>
           <ConveyorLineType>LARGE_LINE</ConveyorLineType>
         </MyObjectBuilder_ConveyorLine>
       </ConveyorLines>
