@@ -26,15 +26,6 @@ SUTConnector = SUT_PROCESS_NAME
 SUTConnectorValue = SpaceEngineers.exe
 
 #################################################################
-# OpenCover path settings
-#################################################################
-OpenCoverPath = settings\\se_testar_coverage\\OpenCoverTool
-ReportGeneratorPath = settings\\se_testar_coverage\\ReportGeneratorTool
-OpenCoverTarget = C:\\Program Files (x86)\\Steam\\steamapps\\common\\SpaceEngineers\\Bin64\\SpaceEngineers.exe
-OpenCoverTargetArgs = -plugin C:\\PROGRA~2\\Steam\\steamapps\\common\\SpaceEngineers\\Bin64\\Ivxr.PlugIndependentLib.dll C:\\PROGRA~2\\Steam\\steamapps\\common\\SpaceEngineers\\Bin64\\Ivxr.SePlugin.dll C:\\PROGRA~2\\Steam\\steamapps\\common\\SpaceEngineers\\Bin64\\Ivxr.SpaceEngineers.dll
-PdbFilesPath = C:\\PROGRA~2\\Steam\\steamapps\\common\\SpaceEngineers\\Bin64
-
-#################################################################
 # Sequences
 #
 # Number of sequences and the length of these sequences

@@ -111,9 +111,9 @@ public class sePositionRotationHelper {
 		for (int i = 0; i < points; i++) {
 			double angle = slice * i;
 			float newX = agentCenter.x + (float)(radius * Math.cos(angle));
-			float newZ = agentCenter.z + (float)(radius * Math.sin(angle));
+			float newY = agentCenter.y + (float)(radius * Math.sin(angle));
 			// New destination on which we need to calculate if it is a reachable position
-			Vec3 nearPosition = new Vec3(newX, agentCenter.y, newZ);
+			Vec3 nearPosition = new Vec3(newX, newY, agentCenter.z);
 			if(sePositionRotationHelper.calculateIfPositionIsReachable(system, nearPosition)) {
 				actions.add(new seActionExplorePosition(state, nearPosition, system, agentId));
 			}
@@ -127,9 +127,9 @@ public class sePositionRotationHelper {
 		for (int i = 0; i < points; i++) {
 			double angle = slice * i;
 			float newX = agentCenter.x + (float)(radius * Math.cos(angle));
-			float newZ = agentCenter.z + (float)(radius * Math.sin(angle));
+			float newY = agentCenter.y + (float)(radius * Math.sin(angle));
 			// New destination on which we need to calculate if it is a reachable position
-			Vec3 medPosition = new Vec3(newX, agentCenter.y, newZ);
+			Vec3 medPosition = new Vec3(newX, newY, agentCenter.z);
 			if(sePositionRotationHelper.calculateIfPositionIsReachable(system, medPosition)) {
 				actions.add(new seActionExplorePosition(state, medPosition, system, agentId));
 			}
@@ -143,9 +143,9 @@ public class sePositionRotationHelper {
 		for (int i = 0; i < points; i++) {
 			double angle = slice * i;
 			float newX = agentCenter.x + (float)(radius * Math.cos(angle));
-			float newZ = agentCenter.z + (float)(radius * Math.sin(angle));
+			float newY = agentCenter.y + (float)(radius * Math.sin(angle));
 			// New destination on which we need to calculate if it is a reachable position
-			Vec3 farPosition = new Vec3(newX, agentCenter.y, newZ);
+			Vec3 farPosition = new Vec3(newX, newY, agentCenter.z);
 			if(sePositionRotationHelper.calculateIfPositionIsReachable(system, farPosition)) {
 				actions.add(new seActionExplorePosition(state, farPosition, system, agentId));
 			}
@@ -159,9 +159,9 @@ public class sePositionRotationHelper {
 		for (int i = 0; i < points; i++) {
 			double angle = slice * i;
 			float newX = agentCenter.x + (float)(radius * Math.cos(angle));
-			float newZ = agentCenter.z + (float)(radius * Math.sin(angle));
+			float newY = agentCenter.y + (float)(radius * Math.sin(angle));
 			// New destination on which we need to calculate if it is a reachable position
-			Vec3 farPosition = new Vec3(newX, agentCenter.y, newZ);
+			Vec3 farPosition = new Vec3(newX, newY, agentCenter.z);
 			if(sePositionRotationHelper.calculateIfPositionIsReachable(system, farPosition)) {
 				actions.add(new seActionExplorePosition(state, farPosition, system, agentId));
 			}

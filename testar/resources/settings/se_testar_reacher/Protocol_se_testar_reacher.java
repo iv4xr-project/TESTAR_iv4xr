@@ -29,6 +29,10 @@
  *******************************************************************************************************/
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -37,6 +41,7 @@ import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.alayer.exceptions.SystemStartException;
 import org.fruit.monkey.ConfigTags;
+import org.testar.OutputStructure;
 import org.testar.iv4xr.InteractiveSelectorSE;
 import org.testar.iv4xr.OpenCoverage;
 import org.testar.iv4xr.SpatialXMLmap;
@@ -84,12 +89,21 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 		toolEntities.add("LargeBlockSmallContainer");
 	}
 
+	private static Set<String> fragileEntities;
+	static {
+		fragileEntities = new HashSet<String>();
+		fragileEntities.add("LargeBlockSmallGenerator");
+	}
+
 	// Oracle example to validate that the block integrity decreases after a Grinder action
 	private Verdict functional_verdict = Verdict.OK;
 
 	private final String SE_LEVEL_PATH = "suts/se_levels/TESTAR_Map_1";
 
 	private InteractiveSelectorSE actionSelectorSE = new InteractiveSelectorSE();
+
+	private Instant startSequence;
+	private Instant startAction;
 
 	/**
 	 * This methods is called before each test sequence, allowing for example using external profiling software on the SUT
@@ -100,10 +114,6 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 
 		// Create a XML spatial map based on the desired SpaceEngineers level
 		SpatialXMLmap.prepareSpatialXMLmap(SE_LEVEL_PATH);
-
-		// Verify steam, pdb and OpenCover files. 
-		// Then launch SpaceEngineers SUT with OpenCover
-		OpenCoverage.prepareLaunchOpenCoverWithSUT(settings);
 	}
 
 	/**
@@ -121,6 +131,9 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 	protected SUT startSystem() throws SystemStartException {
 		SUT system = super.startSystem();
 
+		// Move SpaceEngineers to the foreground
+		system.get(IV4XRtags.windowsProcess).toForeground();
+
 		// Load the desired level to execute TESTAR and obtain the coverage
 		system.get(IV4XRtags.iv4xrSpaceEngineers).getSession().loadScenario(new File(SE_LEVEL_PATH).getAbsolutePath());
 		Util.pause(20);
@@ -135,6 +148,8 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 	protected void beginSequence(SUT system, State state) {
 		super.beginSequence(system, state);
 		actionSelectorSE = new InteractiveSelectorSE();
+		startSequence = Instant.now();
+		startAction = Instant.now();
 	}
 
 	/**
@@ -228,6 +243,11 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 				// Always Grinder and shoot by default
 				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 4, 0.5));
 			}
+
+			if(fragileEntities.contains(w.get(IV4XRtags.entityType)) && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
+				// Always shoot by default
+				labActions.add(new seActionNavigateShootBlock(w, system, agentId));
+			}
 		}
 
 		// Now add the set of actions to explore level positions
@@ -268,7 +288,7 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 			retAction = actionSelectorSE.prioritizedAction(state, actions);
 		}
 		if(retAction == null) {
-			System.out.println("State model based action selection did not find an action. Using default action selection.");
+			//System.out.println("State model based action selection did not find an action. Using default action selection.");
 			// if state model fails, use default:
 			retAction = RandomActionSelector.selectAction(actions);
 		}
@@ -294,9 +314,27 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 			if(action instanceof seActionNavigateToBlock) {
 				SpatialXMLmap.updateNavigableNodesPath(((seActionNavigateToBlock) action).getNavigableNodes());
 			}
+			else if(action instanceof seActionExplorePosition) {
+				SpatialXMLmap.updateNavigableNodesPath(((seActionExplorePosition) action).getNavigableNodes());
+			}
 			SpatialXMLmap.updateInteractedBlock(action);
 
 			actionSelectorSE.addExecutedAction(action);
+
+			Duration actionTimeElapsed = Duration.between(startAction, Instant.now());
+			String actionTimeText = "actionTimeElapsed: "+ actionTimeElapsed.toSeconds() + " seconds";
+
+			try {
+				File metricsFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "time_execution_coverage.txt").getAbsoluteFile();
+				metricsFile.createNewFile();
+				FileWriter myWriter = new FileWriter(metricsFile, true);
+				myWriter.write(actionTimeText + "\r\n");
+				myWriter.close();
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+			}
+
+			startAction = Instant.now();
 
 			return true;
 
@@ -311,16 +349,24 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 	 */
 	@Override
 	protected void stopSystem(SUT system) {
+		Duration sequenceTimeElapsed = Duration.between(startSequence, Instant.now());
+		String sequenceTimeText = "sequenceTimeElapsed: "+ sequenceTimeElapsed.toSeconds() + " seconds";
+
+		try {
+			File metricsFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "time_execution_coverage.txt").getAbsoluteFile();
+			metricsFile.createNewFile();
+			FileWriter myWriter = new FileWriter(metricsFile, true);
+			myWriter.write(sequenceTimeText + "\r\n");
+			myWriter.close();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+
 		// Create the spatial image based on the explored level
 		SpatialXMLmap.createXMLspatialMap();
 
 		// This stops the plugin but no the SUT
 		super.stopSystem(system);
-
-		// Stop the SUT and extract coverage
-		OpenCoverage.finishOpenCoverSUTandWait("SpaceEngineers.exe", 60);
-		OpenCoverage.extractSummaryCoverage();
-		OpenCoverage.createHTMLCoverageReport(settings);
 	}
 
 }

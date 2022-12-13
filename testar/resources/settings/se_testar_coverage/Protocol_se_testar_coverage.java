@@ -328,6 +328,9 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 			if(action instanceof seActionNavigateToBlock) {
 				SpatialXMLmap.updateNavigableNodesPath(((seActionNavigateToBlock) action).getNavigableNodes());
 			}
+			else if(action instanceof seActionExplorePosition) {
+				SpatialXMLmap.updateNavigableNodesPath(((seActionExplorePosition) action).getNavigableNodes());
+			}
 			SpatialXMLmap.updateInteractedBlock(action);
 
 			actionSelectorSE.addExecutedAction(action);

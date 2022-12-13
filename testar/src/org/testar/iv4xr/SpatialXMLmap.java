@@ -195,7 +195,7 @@ public class SpatialXMLmap {
 
 			// If the block is not on the floor, consider it a wall
 			int y = Integer.parseInt(coordElement.getAttributes().getNamedItem(agentUpOrientation).getNodeValue());
-			if(y == 1) coordWalls.add(coordElement);
+			if(y == 1 || y == -1) coordWalls.add(coordElement);
 
 			// Obtain the x, y, z attributes from the coordinates node
 			int x = Integer.parseInt(coordElement.getAttributes().getNamedItem(agentPlatformOrientation.left()).getNodeValue());

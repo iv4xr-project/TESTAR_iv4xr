@@ -62,10 +62,10 @@ public class InteractiveSelectorSE {
 		}
 
 		//TODO: Improve exploratory positions using the navigated nodes
-		/*if(prioritizedAction==null) {
+		if(prioritizedAction==null) {
 			// Third, prioritize the exploration of new discovered positions
 			prioritizedAction = prioritizeExploratoryMovement(state, actions);
-		}*/
+		}
 
 		return prioritizedAction;
 	}
