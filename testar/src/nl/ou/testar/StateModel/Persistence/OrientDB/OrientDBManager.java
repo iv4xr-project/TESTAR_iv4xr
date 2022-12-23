@@ -1,3 +1,33 @@
+/***************************************************************************************************
+ *
+ * Copyright (c) 2018 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2018 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *******************************************************************************************************/
+
 package nl.ou.testar.StateModel.Persistence.OrientDB;
 
 import com.orientechnologies.orient.core.db.ODatabaseSession;
@@ -5,6 +35,8 @@ import com.orientechnologies.orient.core.sql.executor.OResult;
 import com.orientechnologies.orient.core.sql.executor.OResultSet;
 
 import nl.ou.testar.ReinforcementLearning.RLTags;
+import org.fruit.monkey.Settings;
+
 import nl.ou.testar.StateModel.*;
 import nl.ou.testar.StateModel.Event.StateModelEvent;
 import nl.ou.testar.StateModel.Event.StateModelEventListener;
@@ -33,7 +65,6 @@ import org.fruit.alayer.Tag;
 
 import static java.lang.System.exit;
 
-
 public class OrientDBManager implements PersistenceManager, StateModelEventListener {
 
     /**
@@ -42,9 +73,10 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
     private EventHelper eventHelper;
 
     /**
-     * Manager class that will handle the OrientDB specific communications with the database
+     * Manager class that will handle the OrientDB specific communications with the
+     * database
      */
-    private EntityManager entityManager;
+    public EntityManager entityManager;
 
     /**
      * Is the manager listening to events?
@@ -55,29 +87,32 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
      * A set of orientdb classes that this class needs to operate
      */
     private Set<EntityClassFactory.EntityClassName> entityClassNames = new HashSet<>(Arrays.asList(
-            EntityClassFactory.EntityClassName.AbstractAction,
+            EntityClassFactory.EntityClassName.AbstractAction, 
             EntityClassFactory.EntityClassName.AbstractState,
-            EntityClassFactory.EntityClassName.AbstractStateModel,
+            EntityClassFactory.EntityClassName.AbstractStateModel, 
             EntityClassFactory.EntityClassName.Widget,
-            EntityClassFactory.EntityClassName.ConcreteState,
+            EntityClassFactory.EntityClassName.ConcreteState, 
             EntityClassFactory.EntityClassName.ConcreteAction,
-            EntityClassFactory.EntityClassName.isParentOf,
+            EntityClassFactory.EntityClassName.isParentOf, 
             EntityClassFactory.EntityClassName.isChildOf,
-            EntityClassFactory.EntityClassName.isAbstractedBy,
+            EntityClassFactory.EntityClassName.isAbstractedBy, 
             EntityClassFactory.EntityClassName.BlackHole,
-            EntityClassFactory.EntityClassName.UnvisitedAbstractAction,
+            EntityClassFactory.EntityClassName.UnvisitedAbstractAction, 
             EntityClassFactory.EntityClassName.TestSequence,
-            EntityClassFactory.EntityClassName.SequenceNode,
+            EntityClassFactory.EntityClassName.SequenceNode, 
             EntityClassFactory.EntityClassName.SequenceStep,
-            EntityClassFactory.EntityClassName.Accessed,
-            EntityClassFactory.EntityClassName.FirstNode
-    ));
+            EntityClassFactory.EntityClassName.Accessed, 
+            EntityClassFactory.EntityClassName.FirstNode,
+            EntityClassFactory.EntityClassName.BeingExecuted,
+            EntityClassFactory.EntityClassName.NonDeterministicAction,
+            EntityClassFactory.EntityClassName.NonDeterministicHole));
 
     /**
      * Constructor
+     * 
      * @param eventHelper
      */
-    public OrientDBManager(EventHelper eventHelper, EntityManager entityManager) {
+    public OrientDBManager(EventHelper eventHelper, EntityManager entityManager, Settings settings) {
         this.eventHelper = eventHelper;
         this.entityManager = entityManager;
         init();
@@ -93,10 +128,30 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
             entityClassSet.add(EntityClassFactory.createEntityClass(className));
         }
         // make sure the entityclasses are sorted by dependency on super classes first
+        // TODO: Check sorted order, not always the same
         for (EntityClass entityClass : DependencyHelper.sortDependenciesForDeletion(entityClassSet)) {
             System.out.println("Creating " + entityClass.getClassName() + " - " + entityClass.getSuperClassName());
             entityManager.createClass(entityClass);
         }
+        System.out.println("All EntityClasses created");
+        persistNonDeterministicHole();
+    }
+
+    private void persistNonDeterministicHole() {
+    	// create an entity to persist to the database
+    	EntityClass entityClass = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.NonDeterministicHole);
+    	VertexEntity nonDeterministicHoleEntity = new VertexEntity(entityClass);
+    	try {
+    		EntityHydrator hydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_NON_DETERMINISTIC_HOLE);
+    		hydrator.hydrate(nonDeterministicHoleEntity, null);
+    	} catch (HydrationException | NullPointerException ex) {
+    		System.out.println("ERROR creating the NonDeterministicHole entity in the database");
+    		ex.printStackTrace();
+    		exit(1);
+    	}
+
+    	// save the entity!
+    	entityManager.saveEntity(nonDeterministicHoleEntity);
     }
 
     @Override
@@ -139,8 +194,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
         try {
             EntityHydrator blackHoleHydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_BLACKHOLE);
             blackHoleHydrator.hydrate(blackHole, abstractState);
-        }
-        catch (HydrationException ex) {
+        } catch (HydrationException ex) {
             ex.printStackTrace();
             System.out.println("Encountered a problem while hydrating the black hole class for state " + abstractState.getStateId());
             return;
@@ -155,31 +209,50 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
         // we need to prepare the unique action id's that are used in orientdb, so that we can delete them.
         Set<Object> visitedActionIds = new HashSet<>();
         for (AbstractAction action : visitedActions) {
-            String sourceId = (String)abstractStateEntity.getPropertyValue("uid").getValue();
-            String targetId = (String)blackHole.getPropertyValue("blackHoleId").getValue();
-            String actionId = action.getActionId();
-            String modelIdentifier = abstractState.getModelIdentifier();
-            visitedActionIds.add(HydrationHelper.createOrientDbActionId(sourceId, targetId, actionId, modelIdentifier));
+            try {
+                String sourceId = (String) abstractStateEntity.getPropertyValue("uid").getValue();
+                String targetId = (String) blackHole.getPropertyValue("blackHoleId").getValue();
+                String actionId = action.getActionId();
+                String modelIdentifier = abstractState.getModelIdentifier();
+                String hydrId = HydrationHelper.createOrientDbActionId(sourceId, targetId, actionId, modelIdentifier);
+                //System.out.println("OrientDBManager: HydrationHelper.createOrientDbActionId: " + hydrId);
+                visitedActionIds.add(hydrId);
+            } catch (Exception e) {
+                System.out.println("OrientDBManager: update visited action exception " + e);
+            }
         }
+
         // then do a batch delete from the database
         EntityClass unvisitedActionEntityClass = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.UnvisitedAbstractAction);
         entityManager.deleteEntities(unvisitedActionEntityClass, visitedActionIds);
+
+        // new step 2: check all unvisited actions from this statemodel to check whether
+        // they're really not visited (by asking the database)
 
         // step 2:
         // all unvisited actions go to the black hole vertex!
         try {
             EntityHydrator actionHydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_ABSTRACT_ACTION);
             for (AbstractAction unvisitedAction : abstractState.getUnvisitedActions()) {
-                EdgeEntity actionEntity = new EdgeEntity(unvisitedActionEntityClass, abstractStateEntity, blackHole);
-                actionEntity.enableUpdate(false);
-                actionHydrator.hydrate(actionEntity, unvisitedAction);
-                entityManager.saveEntity(actionEntity);
+
+                if (!visitedActionIds.contains(unvisitedAction.getActionId())) {
+
+                    EdgeEntity actionEntity = new EdgeEntity(unvisitedActionEntityClass, abstractStateEntity, blackHole);
+                    try {
+                        actionEntity.enableUpdate(false);
+                        actionHydrator.hydrate(actionEntity, unvisitedAction);
+                        entityManager.saveEntity(actionEntity);
+                    } catch (Exception e) {
+                        System.out.println("OrientDBManager: update visited action exception " + e);
+                    }
+                } else {
+                    System.out.println("OrientDBManager: " + unvisitedAction.getActionId() + " don't add to unvisited because it has already been visited by someone else");
+                }
             }
-        }
-        catch (HydrationException ex) {
+
+        } catch (HydrationException ex) {
             System.out.println(ex.getMessage());
-        }
-        catch (NullPointerException ex) {
+        } catch (NullPointerException ex) {
             ex.printStackTrace();
             System.out.println(ex.getMessage());
             exit(1);
@@ -188,7 +261,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
 
     @Override
     public void persistAbstractAction(AbstractAction abstractAction) {
-
+        // This is only be used by the QueueManager; not relevant for StateModel
     }
 
     @Override
@@ -202,15 +275,18 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
         try {
             EntityHydrator hydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_CONCRETE_STATE);
             hydrator.hydrate(concreteStateEntity, concreteState);
-        }
-        catch (HydrationException e) {
+        } catch (HydrationException e) {
             e.printStackTrace();
             System.out.println("Encountered a problem while saving concrete state with id " + concreteState.getId() + " to the orient database");
             return;
         }
 
-        // save the entity!
-        entityManager.saveEntity(concreteStateEntity);
+        try {
+            // save the entity!
+            entityManager.saveEntity(concreteStateEntity);
+        } catch (Exception e) {
+            System.out.println("OrientDBManager: Error saving entity " + e);
+        }
 
         // store the widgettree attached to this concrete state
         persistWidgetTree(concreteState, concreteStateEntity);
@@ -243,15 +319,19 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
         try {
             EntityHydrator entityHydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_ABSTRACTED_BY);
             entityHydrator.hydrate(edgeEntity, null);
+        } catch (HydrationException ex) {
+            // @todo add some meaningful logging here as well
         }
-        catch (HydrationException ex) {
-            //@todo add some meaningful logging here as well
+        try {
+            entityManager.saveEntity(edgeEntity);
+        } catch (Exception e) {
+            System.out.println("OrientDBManager: Error saving entity " + e);
         }
-        entityManager.saveEntity(edgeEntity);
     }
 
     /**
      * This method will store a widget tree to the orient database.
+     * 
      * @param widget
      */
     private void persistWidgetTree(Widget widget, VertexEntity widgetEntity) {
@@ -275,8 +355,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
             try {
                 EntityHydrator hydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_WIDGET_RELATION);
                 hydrator.hydrate(isChildEntity, null);
-            }
-            catch (HydrationException e) {
+            } catch (HydrationException e) {
                 e.printStackTrace();
                 System.out.println("Encountered a problem while saving the inter-widget relation to the orient database");
                 return;
@@ -290,6 +369,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
 
     /**
      * This method will persist a single widget to the OrientDB data store.
+     * 
      * @param widget
      * @return
      */
@@ -303,8 +383,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
         try {
             EntityHydrator hydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_WIDGET);
             hydrator.hydrate(vertexEntity, widget);
-        }
-        catch (HydrationException e) {
+        } catch (HydrationException e) {
             e.printStackTrace();
             System.out.println("Encountered a problem while saving a widget to the orient database");
             return null;
@@ -322,6 +401,8 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
             return;
         }
 
+        System.out.println("OrientDBManager: persistAbstractStateTransition abstractState = " + abstractStateTransition);
+
         // persist the source and target states
         persistAbstractState(abstractStateTransition.getSourceState());
         persistAbstractState(abstractStateTransition.getTargetState());
@@ -337,7 +418,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
             stateHydrator.hydrate(sourceVertexEntity, abstractStateTransition.getSourceState());
             stateHydrator.hydrate(targetVertexEntity, abstractStateTransition.getTargetState());
         } catch (HydrationException e) {
-            //@todo add some meaningful logging here
+            // @todo add some meaningful logging here
             return;
         }
 
@@ -352,9 +433,8 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
         try {
             EntityHydrator actionHydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_ABSTRACT_ACTION);
             actionHydrator.hydrate(actionEntity, abstractStateTransition.getAction());
-        }
-        catch (HydrationException ex) {
-            //@todo add some meaningful logging here as well
+        } catch (HydrationException ex) {
+            // @todo add some meaningful logging here as well
         }
         entityManager.saveEntity(actionEntity);
     }
@@ -424,7 +504,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
             stateHydrator.hydrate(sourceVertexEntity, concreteStateTransition.getSourceState());
             stateHydrator.hydrate(targetVertexEntity, concreteStateTransition.getTargetState());
         } catch (HydrationException e) {
-            //@todo add some meaningful logging here
+            // @todo add some meaningful logging here
             return;
         }
 
@@ -439,9 +519,8 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
         try {
             EntityHydrator actionHydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_CONCRETE_ACTION);
             actionHydrator.hydrate(actionEntity, concreteStateTransition.getAction());
-        }
-        catch (HydrationException ex) {
-            //@todo add some meaningful logging here as well
+        } catch (HydrationException ex) {
+            // @todo add some meaningful logging here as well
         }
         actionEntity.enableUpdate(false);
         entityManager.saveEntity(actionEntity);
@@ -474,7 +553,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
             OResult result = resultSet.next();
             long nrOfActions = result.getProperty("totalActionNr");
             resultSet.close();
-            return (int)nrOfActions;
+            return (int) nrOfActions;
         }
     }
 
@@ -492,8 +571,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
         try {
             EntityHydrator stateModelHydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_ABSTRACT_STATE_MODEL);
             stateModelHydrator.hydrate(stateModelEntity, abstractStateModel);
-        }
-        catch (HydrationException ex) {
+        } catch (HydrationException ex) {
             ex.printStackTrace();
         }
 
@@ -502,20 +580,31 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
         entityManager.saveEntity(stateModelEntity);
 
         // step 2: see if there are abstract states present in the data store that are tied to this abstract state model
+        Map<String, PropertyValue> entityProperties = retrieveAbstractStates(abstractStateModel, stateModelClass, stateModelEntity);
+
+        // step 3: fetch the transitions from the database
+        retrieveAbstractActions(abstractStateModel, entityProperties);
+
+        // enable the event listener again
+        setListening(true);
+    }
+
+    private Map<String, PropertyValue> retrieveAbstractStates(AbstractStateModel abstractStateModel, EntityClass stateModelClass, VertexEntity stateModelEntity) {
         EntityClass abstractStateClass = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.AbstractState);
-        if (abstractStateClass == null) throw new RuntimeException("Error occurred: could not retrieve an abstract state entity class.");
+        if (abstractStateClass == null)
+            throw new RuntimeException("Error occurred: could not retrieve an abstract state entity class.");
 
         // in order to retrieve the abstract states, we need to provide the abstract state model identifier to the query
         Map<String, PropertyValue> entityProperties = new HashMap<>();
         Property stateModelClassIdentifier = stateModelClass.getIdentifier();
-        if (stateModelClassIdentifier == null) throw new RuntimeException("Error occurred: abstract state model does not have an id property set.");
+        if (stateModelClassIdentifier == null)
+            throw new RuntimeException("Error occurred: abstract state model does not have an id property set.");
         entityProperties.put("modelIdentifier", stateModelEntity.getPropertyValue(stateModelClassIdentifier.getPropertyName()));
 
         Set<DocumentEntity> retrievedDocuments = entityManager.retrieveAllOfClass(abstractStateClass, entityProperties);
         if (retrievedDocuments.isEmpty()) {
             System.out.println("Could not find abstract states in the model");
-        }
-        else {
+        } else {
             // we need to create the abstract states from the returned document entities
             try {
                 EntityExtractor<AbstractState> abstractStateExtractor = ExtractorFactory.getExtractor(ExtractorFactory.EXTRACTOR_ABSTRACT_STATE);
@@ -527,31 +616,31 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
                 e.printStackTrace();
             }
         }
+        return entityProperties;
+    }
 
-        // step 3: fetch the transitions from the database
+    private void retrieveAbstractActions(AbstractStateModel abstractStateModel, Map<String, PropertyValue> entityProperties) {
+        Set<DocumentEntity> retrievedDocuments;
         EntityClass abstractActionClass = EntityClassFactory.createEntityClass(EntityClassFactory.EntityClassName.AbstractAction);
-        if (abstractActionClass == null) throw new RuntimeException("Error occurred: could not retrieve an abstract action entity class");
+        if (abstractActionClass == null)
+            throw new RuntimeException("Error occurred: could not retrieve an abstract action entity class");
 
         retrievedDocuments = entityManager.retrieveAllOfClass(abstractActionClass, entityProperties);
         if (retrievedDocuments.isEmpty()) {
             System.out.println("Could not find abstract actions in the model");
-        }
-        else {
+        } else {
             System.out.println(retrievedDocuments.size() + " number of abstract actions were returned");
             // we need to create the transitions from the returned document entities
             try {
                 EntityExtractor<AbstractStateTransition> abstractStateTransitionEntityExtractor = ExtractorFactory.getExtractor(ExtractorFactory.EXTRACTOR_ABSTRACT_STATE_TRANSITION);
                 for (DocumentEntity documentEntity : retrievedDocuments) {
                     AbstractStateTransition abstractStateTransition = abstractStateTransitionEntityExtractor.extract(documentEntity, abstractStateModel);
-                    abstractStateModel.addTransition( abstractStateTransition.getSourceState(), abstractStateTransition.getTargetState(), abstractStateTransition.getAction());
+                    abstractStateModel.addTransition(abstractStateTransition.getSourceState(), abstractStateTransition.getTargetState(), abstractStateTransition.getAction());
                 }
             } catch (ExtractionException | StateModelException e) {
                 e.printStackTrace();
             }
         }
-
-        // enable the event listener again
-        setListening(true);
     }
 
     public void persistSequence(Sequence sequence) {
@@ -589,8 +678,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
         try {
             EntityHydrator hydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_CONCRETE_STATE);
             hydrator.hydrate(stateEntity, sequenceNode.getConcreteState());
-        }
-        catch (HydrationException e) {
+        } catch (HydrationException e) {
             e.printStackTrace();
             System.out.println("Encountered a problem while saving concrete state with id " + sequenceNode.getConcreteState().getId() + " to the orient database");
         }
@@ -601,8 +689,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
         try {
             EntityHydrator hydrator = HydratorFactory.getHydrator(HydratorFactory.HYDRATOR_ACCESSED);
             hydrator.hydrate(accessedEdge, null);
-        }
-        catch (HydrationException e) {
+        } catch (HydrationException e) {
             e.printStackTrace();
             System.out.println("Encountered a problem while hydrating the accessed relation for sequence node " + sequenceNode.getNodeId());
         }
@@ -610,7 +697,8 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
         entityManager.saveEntity(accessedEdge);
 
         // if this is the first node in the sequence, we also have to create a relation between the sequence and this node to indicate this
-        if (!sequenceNode.isFirstNode() || sequenceNode.getSequence() == null) return;
+        if (!sequenceNode.isFirstNode() || sequenceNode.getSequence() == null)
+            return;
 
         // no need to update the node again
         nodeEntity.enableUpdate(false);
@@ -646,8 +734,7 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
 
     @Override
     public void persistSequenceStep(SequenceStep sequenceStep) {
-        // the assumption is that the source node has already been saved
-        // so first we save the target node
+        // the assumption is that the source node has already been saved so first we save the target node
         persistSequenceNode(sequenceStep.getTargetNode());
 
         // next, we hydrate the source and target nodes, and then the step
@@ -681,54 +768,60 @@ public class OrientDBManager implements PersistenceManager, StateModelEventListe
 
     @Override
     public void eventReceived(StateModelEvent event) {
-        if (!listening) return;
+    	if (!listening) return;
 
-        try {
-            eventHelper.validateEvent(event);
-        } catch (InvalidEventException e) {
-            // There is something wrong with the event. we do nothing and exit
-            System.out.println("Received wrong payload for event: " + event.getPayload().getClass().toString());
-            return;
-        }
+    	try {
+    		eventHelper.validateEvent(event);
+    	} catch (InvalidEventException e) {
+    		// There is something wrong with the event. we do nothing and exit
+    		System.out.println("Received wrong payload for event: " + event.getPayload().getClass().toString());
+    		return;
+    	}
 
-        switch (event.getEventType()) {
-            case ABSTRACT_STATE_ADDED:
-            case ABSTRACT_STATE_CHANGED:
-                persistAbstractState((AbstractState) (event.getPayload()));
-                break;
+    	try {
 
-            case ABSTRACT_STATE_TRANSITION_ADDED:
-            case ABSTRACT_STATE_TRANSITION_CHANGED:
-                //@todo the abstract action changed event needs to just update the action attributes
-                persistAbstractStateTransition((AbstractStateTransition) (event.getPayload()));
-                break;
-                
-            case ABSTRACT_ACTION_ATTRIBUTE_UPDATED:
-            	persistAbstractActionAttributeUpdated((AbstractStateTransition) (event.getPayload()));
-            	break; 
+    		switch (event.getEventType()) {
+    		case ABSTRACT_STATE_ADDED:
+    		case ABSTRACT_STATE_CHANGED:
+    			persistAbstractState((AbstractState) (event.getPayload()));
+    			break;
 
-            case ABSTRACT_STATE_MODEL_INITIALIZED:
-                initAbstractStateModel((AbstractStateModel) (event.getPayload()));
-                break;
+    		case ABSTRACT_STATE_TRANSITION_ADDED:
+    		case ABSTRACT_STATE_TRANSITION_CHANGED:
+    			//@todo the abstract action changed event needs to just update the action attributes
+    			persistAbstractStateTransition((AbstractStateTransition) (event.getPayload()));
+    			break;
 
-            case SEQUENCE_STARTED:
-            case SEQUENCE_ENDED:
-                persistSequence((Sequence) event.getPayload());
-                break;
+    		case ABSTRACT_ACTION_ATTRIBUTE_UPDATED:
+    			persistAbstractActionAttributeUpdated((AbstractStateTransition) (event.getPayload()));
+    			break; 
 
-            case SEQUENCE_MANAGER_INITIALIZED:
-                initSequenceManager((SequenceManager) event.getPayload());
-                break;
+    		case ABSTRACT_STATE_MODEL_INITIALIZED:
+    			initAbstractStateModel((AbstractStateModel) (event.getPayload()));
+    			break;
 
-            case SEQUENCE_NODE_ADDED:
-            case SEQUENCE_NODE_UPDATED:
-                persistSequenceNode((SequenceNode) event.getPayload());
-                break;
+    		case SEQUENCE_STARTED:
+    		case SEQUENCE_ENDED:
+    			persistSequence((Sequence) event.getPayload());
+    			break;
 
-            case SEQUENCE_STEP_ADDED:
-                persistSequenceStep((SequenceStep) event.getPayload());
+    		case SEQUENCE_MANAGER_INITIALIZED:
+    			initSequenceManager((SequenceManager) event.getPayload());
+    			break;
 
-        }
+    		case SEQUENCE_NODE_ADDED:
+    		case SEQUENCE_NODE_UPDATED:
+    			persistSequenceNode((SequenceNode) event.getPayload());
+    			break;
+
+    		case SEQUENCE_STEP_ADDED:
+    			persistSequenceStep((SequenceStep) event.getPayload());
+
+    		}
+
+    	} catch (Exception e) {
+    		System.out.println("OrientDBManager: Exception during event received: " + e);
+    	}
 
     }
 

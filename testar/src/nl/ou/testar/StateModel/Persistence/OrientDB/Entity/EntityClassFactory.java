@@ -1,16 +1,44 @@
+/***************************************************************************************************
+ *
+ * Copyright (c) 2018 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2018 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *******************************************************************************************************/
+
 package nl.ou.testar.StateModel.Persistence.OrientDB.Entity;
 
 import com.orientechnologies.orient.core.metadata.schema.OType;
-import nl.ou.testar.StateModel.Sequence.SequenceNode;
 
 import java.util.HashMap;
 import java.util.Map;
 
-
 public class EntityClassFactory {
 
     public enum EntityClassName {AbstractState, AbstractAction, AbstractStateModel, Widget, ConcreteState, ConcreteAction, isParentOf, isChildOf, isAbstractedBy,
-        BlackHole, UnvisitedAbstractAction, TestSequence, SequenceNode, SequenceStep, Accessed, FirstNode}
+        BlackHole, UnvisitedAbstractAction, TestSequence, SequenceNode, SequenceStep, Accessed, FirstNode, BeingExecuted, NonDeterministicAction, NonDeterministicHole}
 
     // a repo for generated classes, so we don't execute the same generation code over and over if not needed
     private static Map<EntityClassName, EntityClass> entityClasses = new HashMap<>();
@@ -22,6 +50,9 @@ public class EntityClassFactory {
 
     static {
         classNameMap = new HashMap<>();
+        classNameMap.put("NonDeterministicAction", EntityClassName.NonDeterministicAction);
+        classNameMap.put("NonDeterministicHole", EntityClassName.NonDeterministicHole);
+        classNameMap.put("BeingExecuted", EntityClassName.BeingExecuted);
         classNameMap.put("AbstractState", EntityClassName.AbstractState);
         classNameMap.put("AbstractAction", EntityClassName.AbstractAction);
         classNameMap.put("AbstractStateModel", EntityClassName.AbstractStateModel);
@@ -60,6 +91,15 @@ public class EntityClassFactory {
         }
 
         switch (className) {
+            case NonDeterministicAction:
+                return createNonDeterministicActionClass();
+
+            case NonDeterministicHole:
+                return createNonDeterministicHoleClass();
+
+            case BeingExecuted:
+                return createBeingExecutedClass();
+
             case AbstractState:
                 return createAbstractStateClass();
 
@@ -113,6 +153,18 @@ public class EntityClassFactory {
         }
     }
 
+    private static EntityClass createBeingExecutedClass() {
+        EntityClass beingExecuted = new EntityClass("BeingExecuted", EntityClass.EntityType.Vertex);
+        entityClasses.put(EntityClassName.BeingExecuted, beingExecuted);
+        Property nodeId = new Property("node", OType.STRING);
+
+        nodeId.setIdentifier(true);
+        nodeId.setMandatory(true);
+        nodeId.setNullable(false);
+        beingExecuted.addProperty(nodeId);
+        return beingExecuted;
+    }
+
     private static EntityClass createAbstractStateClass() {
         EntityClass abstractStateClass = new EntityClass("AbstractState", EntityClass.EntityType.Vertex);
         Property uniqueId = new Property("uid", OType.STRING);
@@ -143,7 +195,13 @@ public class EntityClassFactory {
         counter.setNullable(false);
         counter.setAutoIncrement(true);
         abstractStateClass.addProperty(counter);
+        Property nodeId = new Property("discoveredBy", OType.STRING);
+        nodeId.setIdentifier(false);
+        nodeId.setMandatory(false);
+        nodeId.setNullable(true);
+        abstractStateClass.addProperty(nodeId);
         entityClasses.put(EntityClassName.AbstractState, abstractStateClass);
+
         return abstractStateClass;
     }
 
@@ -173,7 +231,19 @@ public class EntityClassFactory {
         counter.setMandatory(true);
         counter.setNullable(false);
         counter.setAutoIncrement(true);
+
+        
         abstractActionClass.addProperty(counter);
+        Property node = new Property("discoveredBy", OType.STRING);
+        node.setMandatory(false);
+        node.setNullable(true);
+        node.setIndexAble(false);
+        abstractActionClass.addProperty(node);
+        Property createdOn = new Property("createOn", OType.DATETIME);
+        createdOn.setMandatory(false);
+        createdOn.setNullable(true);
+        createdOn.setIndexAble(false);
+        abstractActionClass.addProperty(createdOn);
         entityClasses.put(EntityClassName.AbstractAction, abstractActionClass);
         return abstractActionClass;
     }
@@ -356,6 +426,29 @@ public class EntityClassFactory {
         entityClass.addProperty(blackHoleId);
         entityClasses.put(EntityClassName.BlackHole, entityClass);
         return entityClass;
+    }
+
+    private static EntityClass createNonDeterministicHoleClass() {
+    	EntityClass entityClass = new EntityClass("NonDeterministicHole", EntityClass.EntityType.Vertex);
+    	Property nonDeterministicHoleId = new Property("nonDeterministicHoleId", OType.STRING);
+    	nonDeterministicHoleId.setMandatory(true);
+    	nonDeterministicHoleId.setNullable(false);
+    	nonDeterministicHoleId.setIdentifier(true);
+    	nonDeterministicHoleId.setIndexAble(true);
+    	entityClass.addProperty(nonDeterministicHoleId);
+    	entityClasses.put(EntityClassName.NonDeterministicHole, entityClass);
+    	return entityClass;
+    }
+
+    private static EntityClass createNonDeterministicActionClass() {
+    	EntityClass nonDeterministicAction = new EntityClass("NonDeterministicAction", EntityClass.EntityType.Vertex);
+    	entityClasses.put(EntityClassName.NonDeterministicAction, nonDeterministicAction);
+    	Property stateId = new Property("stateId", OType.STRING);
+    	stateId.setIdentifier(true);
+    	stateId.setMandatory(true);
+    	stateId.setNullable(false);
+    	nonDeterministicAction.addProperty(stateId);
+    	return nonDeterministicAction;
     }
 
     private static EntityClass createUnvisitedAbstractActionClass() {

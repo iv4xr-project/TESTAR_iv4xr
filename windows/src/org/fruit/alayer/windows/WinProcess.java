@@ -111,12 +111,14 @@ public final class WinProcess extends SUTBase {
 	
 	// by urueda
 	public static List<SUT> fromAll(){
+		String myPid = java.lang.management.ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
 		List<WinProcHandle> processes = runningProcesses();
 		if (processes == null || processes.isEmpty())
 			return null;
 		List<SUT> suts = new ArrayList<SUT>();
 		for(WinProcHandle wph : processes){
 			try{
+				if(String.valueOf(wph.pid()).equals(myPid)) {System.out.println("Ignoring TESTAR pid..."); continue;}
 				suts.add(fromPID(wph.pid()));
 			} catch(Exception e){} // non interesting process
 		}
@@ -364,7 +366,7 @@ public final class WinProcess extends SUTBase {
 
 	public long pid(){
 		if(!isRunning())
-			throw new IllegalStateException();
+			throw new IllegalStateException("Error trying to get the pid of the SUT windows process!");
 		return Windows.GetProcessId(hProcess);
 	}
 

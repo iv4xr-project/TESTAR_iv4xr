@@ -1,8 +1,43 @@
+/***************************************************************************************************
+ *
+ * Copyright (c) 2018 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2018 - 2021 Universitat Politecnica de Valencia - www.upv.es
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ * this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *******************************************************************************************************/
+
 package nl.ou.testar.StateModel.Persistence.OrientDB.Entity;
 
 import com.orientechnologies.orient.core.db.ODatabaseSession;
 import com.orientechnologies.orient.core.db.OrientDB;
 import com.orientechnologies.orient.core.db.OrientDBConfig;
+import com.orientechnologies.orient.core.exception.OCommandExecutionException;
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
+import com.orientechnologies.orient.core.exception.ODatabaseException;
+import com.orientechnologies.orient.core.exception.OSchemaException;
+import com.orientechnologies.orient.core.exception.OStorageException;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OProperty;
 import com.orientechnologies.orient.core.metadata.schema.OSchema;
@@ -22,6 +57,11 @@ import nl.ou.testar.StateModel.Exception.EntityNotFoundException;
 import nl.ou.testar.StateModel.Persistence.OrientDB.Util.DependencyHelper;
 
 import org.fruit.alayer.Tag;
+import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
+
+import nl.ou.testar.StateModel.Exception.EntityNotFoundException;
+import nl.ou.testar.StateModel.Persistence.OrientDB.Util.DependencyHelper;
+
 import org.fruit.alayer.Visualizer;
 
 import java.util.*;
@@ -31,17 +71,28 @@ public class EntityManager {
 
     // the connection object holding the datastore instance and the connection configuration information
     private Connection connection;
+    private static Config config;
+
+    private int baseSleep = 200;
 
     /**
      * Constructor
      * @param config
      */
     public EntityManager(Config config) {
-        String connectionString = config.getConnectionType() + ":" + (config.getConnectionType().equals("remote") ?
-                config.getServer() : config.getDatabaseDirectory()) + "/";
-        OrientDB orientDB = new OrientDB(connectionString, OrientDBConfig.defaultConfig());
-        connection = new Connection(orientDB, config);
-        init();
+    	EntityManager.config = config;
+    	String connectionString = config.getConnectionType() + ":" + (config.getConnectionType().equals("remote") ?
+    			config.getServer() : config.getDatabaseDirectory()) + "/";
+    	OrientDB orientDB = new OrientDB(connectionString, OrientDBConfig.defaultConfig());
+    	connection = new Connection(orientDB, config);
+    	init();
+    }
+    
+    public static Connection getNewConnection() {
+    	String connectionString = config.getConnectionType() + ":" + (config.getConnectionType().equals("remote") ?
+    			config.getServer() : config.getDatabaseDirectory()) + "/";
+    	OrientDB orientDB = new OrientDB(connectionString, OrientDBConfig.defaultConfig());
+    	return new Connection(orientDB, config);
     }
 
     /**
@@ -56,7 +107,7 @@ public class EntityManager {
      * Initialization method for this entity manager
      */
     private void init() {
-        //init code here
+        // init code here
         // check if the database needs to be reset
         if (connection.getConfig().resetDataStore()) {
             try (ODatabaseSession db = connection.getDatabaseSession()) {
@@ -83,6 +134,7 @@ public class EntityManager {
 
     /**
      * Method returns true if the vertex is already present in the data store.
+     * 
      * @param vertexEntity
      * @param db
      * @return
@@ -91,8 +143,7 @@ public class EntityManager {
         boolean hasVertex = true;
         try {
             retrieveVertex(vertexEntity, db);
-        }
-        catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             hasVertex = false;
         }
         return hasVertex;
@@ -100,6 +151,7 @@ public class EntityManager {
 
     /**
      * Method retrieves a vertex from the data store.
+     * 
      * @param vertexEntity
      * @param db
      * @return
@@ -120,7 +172,7 @@ public class EntityManager {
         // get the id parameter ready
         Map<String, Object> params = new HashMap<>();
         params.put(idField, vertexEntity.getPropertyValue(idField).getValue());
-        //execute the query using statement and parameters
+        // execute the query using statement and parameters
         OResultSet rs = db.query(stmt, params);
 
         // process the results
@@ -139,6 +191,7 @@ public class EntityManager {
 
     /**
      * Method retrieves an edge from the data store.
+     * 
      * @param edgeEntity
      * @param db
      * @return
@@ -152,8 +205,7 @@ public class EntityManager {
         OResultSet rs;
         if (identifier != null) {
             rs = retrieveEdgeWithId(edgeEntity, db);
-        }
-        else {
+        } else {
             rs = retrieveEdgeWithoutId(edgeEntity, db);
         }
 
@@ -172,7 +224,9 @@ public class EntityManager {
     }
 
     /**
-     * Method retrieves an edge from the data store based on the value of a unique id field.
+     * Method retrieves an edge from the data store based on the value of a unique
+     * id field.
+     * 
      * @param edgeEntity
      * @param db
      * @return
@@ -181,7 +235,7 @@ public class EntityManager {
     private OResultSet retrieveEdgeWithId(EdgeEntity edgeEntity, ODatabaseSession db) throws EntityNotFoundException {
         Property identifier = edgeEntity.getEntityClass().getIdentifier();
         if (identifier == null) {
-            throw  new EntityNotFoundException();
+            throw new EntityNotFoundException();
         }
         // first we prepare the statement to execute
         String className = edgeEntity.getEntityClass().getClassName();
@@ -190,13 +244,14 @@ public class EntityManager {
         // get the id parameter ready
         Map<String, Object> params = new HashMap<>();
         params.put(idField, edgeEntity.getPropertyValue(idField).getValue());
-        //execute the query using statement and parameters
+        // execute the query using statement and parameters
         OResultSet rs = db.query(stmt, params);
         return rs;
     }
 
     /**
      * Method retrieves an edge from the data store based on its endpoint vertices.
+     * 
      * @param edgeEntity
      * @param db
      * @return
@@ -218,16 +273,17 @@ public class EntityManager {
         // extract the necessary variables needed in query execution
         String sourceIdName = sourceIdentifier.getPropertyName();
         String targetIdName = targetIdentifier.getPropertyName();
-        String sourceId = (String)edgeEntity.getPropertyValue(sourceIdName).getValue();
-        String targetId = (String)edgeEntity.getPropertyValue(targetIdName).getValue();
+        String sourceId = (String) edgeEntity.getPropertyValue(sourceIdName).getValue();
+        String targetId = (String) edgeEntity.getPropertyValue(targetIdName).getValue();
 
         String sourceClass = edgeEntity.getSourceEntity().getEntityClass().getClassName();
         String targetClass = edgeEntity.getTargetEntity().getEntityClass().getClassName();
         String edgeClass = edgeEntity.getEntityClass().getClassName();
 
         // prepare the statement we need to execute
-        String stmt = "SELECT transition FROM (MATCH {class: " + sourceClass + ", as: source, where: (" + sourceIdName + " = :" + sourceIdName + ")}" +
-                ".outE('" + edgeClass + "') {as: transition}.outV('" + targetClass + "') {as: target, where: (" + targetIdName + " = :" + targetIdName + ")} RETURN action)";
+        String stmt = "SELECT transition FROM (MATCH {class: " + sourceClass + ", as: source, where: (" + sourceIdName
+                + " = :" + sourceIdName + ")}" + ".outE('" + edgeClass + "') {as: transition}.outV('" + targetClass
+                + "') {as: target, where: (" + targetIdName + " = :" + targetIdName + ")} RETURN action)";
         // provide a map with the values
         Map<String, Object> params = new HashMap<>();
         params.put(sourceIdName, sourceId);
@@ -236,134 +292,255 @@ public class EntityManager {
         return rs;
     }
 
-
     /**
      * This method will attempt to create a new class if it is not already present in the database
+     * 
      * @param entityClass
      */
     public void createClass(EntityClass entityClass) {
-        try (ODatabaseSession db = connection.getDatabaseSession()) {
-            // check if the class already exists
-            OClass oClass = db.getClass(entityClass.getClassName());
-            if (oClass != null) return;
+        boolean repeat;
+        do {
+            repeat = false;
+            try (ODatabaseSession db = connection.getDatabaseSession()) {
+                // check if the class already exists
+                OClass oClass = db.getClass(entityClass.getClassName());
+                if (oClass != null) return;
 
-            // no class yet, let's create it
-            String entitySuperClass = entityClass.isVertex() ? "V" : entityClass.isEdge() ? "E" : "";
-            String superClassName = entityClass.getSuperClassName() != null ? entityClass.getSuperClassName() : entitySuperClass;
-            oClass = db.createClass(entityClass.getClassName(), superClassName);
+                // no class yet, let's create it
+                String entitySuperClass = entityClass.isVertex() ? "V" : entityClass.isEdge() ? "E" : "";
+                String superClassName = entityClass.getSuperClassName() != null ? entityClass.getSuperClassName() : entitySuperClass;
+                oClass = db.createClass(entityClass.getClassName(), superClassName);
 
-            Set<String> propertyBlackList = new HashSet<>();
-            // if the entityclass has a super class, we need to filter out the properties that have already been
-            // created in the super class, as OrientDB will throw an error if we try to create it again in the child class
-            if (entityClass.getSuperClassName() != null) {
-                // fetch the superclass
-                EntityClass superClass = EntityClassFactory.createEntityClass(EntityClassFactory.getEntityClassName(superClassName));
-                if (superClass != null) {
-                    propertyBlackList = superClass.getProperties().stream().map(Property::getPropertyName).collect(Collectors.toSet());
+                Set<String> propertyBlackList = new HashSet<>();
+                // if the entityclass has a super class, we need to filter out the properties that have already been
+                // created in the super class, as OrientDB will throw an error if we try to create it again in the child class
+                if (entityClass.getSuperClassName() != null) {
+                    // fetch the superclass
+                    EntityClass superClass = EntityClassFactory.createEntityClass(EntityClassFactory.getEntityClassName(superClassName));
+                    if (superClass != null) {
+                        propertyBlackList = superClass.getProperties().stream().map(Property::getPropertyName).collect(Collectors.toSet());
+                    }
                 }
+
+                // set the properties
+                for (Property property : entityClass.getProperties()) {
+                    // for the auto-increment fields, we need to create a sequence
+                    if (property.isAutoIncrement()) {
+                        String sequenceName = createSequenceId(entityClass, property);
+                        System.out.println("creating sequence: " + sequenceName);
+                        db.getMetadata().getSequenceLibrary().createSequence(sequenceName, OSequence.SEQUENCE_TYPE.ORDERED, null);
+                    }
+
+                    // we might need to skip adding certain properties
+                    // check if this property needs to be skipped
+                    if (propertyBlackList.contains(property.getPropertyName())) {
+                        continue;
+                    }
+
+                    OProperty dbProperty = null;
+                    // binary types we do not create, as they will be stored as separate binary records
+                    if (property.getPropertyType() == OType.BINARY) {
+                        continue;
+                    }
+                    // for linked and embedded type a childtype needs to be specified
+                    else if (property.getPropertyType().isEmbedded() || property.getPropertyType().isLink()) {
+                        dbProperty = oClass.createProperty(property.getPropertyName(), property.getPropertyType(), property.getChildType());
+                    } else {
+                        dbProperty = oClass.createProperty(property.getPropertyName(), property.getPropertyType());
+                    }
+
+                    dbProperty.setReadonly(property.isReadOnly());
+                    dbProperty.setMandatory(property.isMandatory());
+                    dbProperty.setNotNull(!property.isNullable());
+
+                    // we add an index for certain property fields
+                    if (property.isIndexAble()) {
+                        String indexField = entityClass.getClassName() + "." + property.getPropertyName() + "Idx";
+                        OClass.INDEX_TYPE indexType = property.isIdentifier() ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX;
+                        oClass.createIndex(indexField, indexType, property.getPropertyName());
+                    }
+                }
+            } catch (OConcurrentModificationException cme) {
+                System.out.println("EntityManager createClass: Concurrency exception during create class; retry");
+                randomSleep(3000);
+                repeat = true;
+            } catch (OSchemaException se) {
+                System.out.println("EntityManager createClass: Schema exception");
+                randomSleep(3000);
+                repeat = true;
+            } catch (OCommandExecutionException cme) {
+                System.out.println("EntityManager createClass: Command execution exception " + cme);
+                randomSleep(3000);
+                repeat = true;
+            } catch (OStorageException ose) {
+                System.out.println("EntityManager createClass: Storage execution exception " + ose);
+                randomSleep(3000);
+                repeat = true;
+            } catch (ODatabaseException ode) {
+                if(ode.getMessage() != null) System.out.println("EntityManager createClass: ODatabaseException " + ode.getMessage());
+                else System.out.println("EntityManager createClass: ODatabaseException " + ode);
+                randomSleep(3000);
+                repeat = true;
+            } catch (Exception e) {
+                if(e.getMessage() != null) System.out.println("EntityManager createClass: Exception " + e.getMessage());
+                else System.out.println("EntityManager createClass: Exception " + e);
+                e.printStackTrace();
+                randomSleep(3000);
+                repeat = true;
+            } catch (StackOverflowError err) {
+            	if(err.getMessage() != null) System.out.println("EntityManager createClass: StackOverflowError " + err.getMessage());
+            	else System.out.println("EntityManager createClass: StackOverflowError " + err);
+            	err.printStackTrace();
+            	randomSleep(3000);
+            	// Sometimes OrientDB connection throws a StackOverflowError trying to acquire the remote connection
+            	// https://github.com/orientechnologies/orientdb/blob/3.0.x/client/src/main/java/com/orientechnologies/orient/client/remote/ORemoteConnectionManager.java
+            	// try to use same connection does not work, is always throwing same StackOverflowError
+            	// but release and start a new connection seems to fix this java stack error
+            	releaseConnection();
+            	connection = getNewConnection();
+            	repeat = true;
             }
-
-            // set the properties
-            for (Property property : entityClass.getProperties()) {
-                // for the auto-increment fields, we need to create a sequence
-                if (property.isAutoIncrement()) {
-                    String sequenceName = createSequenceId(entityClass, property);
-                    System.out.println("creating sequence: " + sequenceName);
-                    db.getMetadata().getSequenceLibrary().createSequence(sequenceName, OSequence.SEQUENCE_TYPE.ORDERED, null);
-                }
-
-                // we might need to skip adding certain properties
-                // check if this property needs to be skipped
-                if (propertyBlackList.contains(property.getPropertyName())) {
-                    continue;
-                }
-
-                OProperty dbProperty = null;
-                // binary types we do not create, as they will be stored as separate binary records
-                if (property.getPropertyType() == OType.BINARY) {
-                    continue;
-                }
-                // for linked and embedded type a childtype needs to be specified
-                else if (property.getPropertyType().isEmbedded() || property.getPropertyType().isLink()) {
-                    dbProperty = oClass.createProperty(property.getPropertyName(), property.getPropertyType(), property.getChildType());
-                }
-                else {
-                    dbProperty = oClass.createProperty(property.getPropertyName(), property.getPropertyType());
-                }
-
-                dbProperty.setReadonly(property.isReadOnly());
-                dbProperty.setMandatory(property.isMandatory());
-                dbProperty.setNotNull(!property.isNullable());
-
-                // we add an index for certain property fields
-                if (property.isIndexAble()) {
-                    String indexField = entityClass.getClassName() + "." + property.getPropertyName() + "Idx";
-                    OClass.INDEX_TYPE indexType = property.isIdentifier() ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX;
-                    oClass.createIndex(indexField, indexType,property.getPropertyName());
-                }
-            }
-        }
+        } while (repeat);
     }
 
     /**
      * This method saves an entity to the data store.
+     * 
      * @param entity
      */
     public void saveEntity(DocumentEntity entity) {
-        try (ODatabaseSession db = connection.getDatabaseSession()) {
-            if (entity.getEntityClass().isVertex()) {
-                saveVertexEntity((VertexEntity) entity, db);
+        boolean repeat;
+        do {
+            repeat = false;
+            try (ODatabaseSession db = connection.getDatabaseSession()) {
+                if (entity.getEntityClass().isVertex()) {
+                    saveVertexEntity((VertexEntity) entity, db);
+                } else if (entity.getEntityClass().isEdge()) {
+                    saveEdgeEntity((EdgeEntity) entity, db);
+                }
+            } catch (OConcurrentModificationException cme) {
+                repeat = true;
+                System.out.println("EntityManager saveEntity concurrency exception: " + cme);
+                randomSleep(baseSleep);
+            } catch (ORecordDuplicatedException dupl) {
+                System.out.println("EntityManager saveEntity DuplicateException: " + dupl);
             }
-            else if (entity.getEntityClass().isEdge()) {
-                saveEdgeEntity((EdgeEntity) entity, db);
-            }
-        }
+        } while (repeat);
     }
 
     /**
-     * This method saves a vertex entity to the data store.
+     * This method saves a vertex entity to the data store. Updated for concurrency
+     * 
      * @param entity
      * @param db
      */
     private void saveVertexEntity(VertexEntity entity, ODatabaseSession db) {
-        OVertex oVertex;
-        boolean newVertex = false;
-        // check to see if the vertex already exists in the database
-        try {
-            oVertex = retrieveVertex(entity, db);
-        }
-        catch (EntityNotFoundException e) {
-            // vertex doesn't exist yet. No problemo. We'll create one.
-            oVertex = db.newVertex(entity.getEntityClass().getClassName());
-            newVertex = true;
-        }
+        boolean repeat=false;
+        do {
+            try {
+                repeat = false;
+                OVertex oVertex = null;
+                boolean newVertex = false;
+                try {
+                    // check to see if the vertex already exists in the database
+                    oVertex = retrieveVertex(entity, db);
+                } catch (EntityNotFoundException e) {
+                    // vertex doesn't exist yet. No problemo. We'll create one.
+                    oVertex = db.newVertex(entity.getEntityClass().getClassName());
+                    newVertex = true;
+                }
 
-        // check if we should process the properties
-        if (!(newVertex || entity.updateEnabled())) return;
+                // check if we should process the properties
+                if (!(newVertex || entity.updateEnabled()))
+                    return;
 
-        // now we have to add or update properties!
+                // now we have to add or update properties!
+                for (String propertyName : entity.getPropertyNames()) {
+                    setProperty(oVertex, propertyName, entity.getPropertyValue(propertyName).getValue(), db);
+                }
+
+                // check if one of the properties is an auto-increment field.
+                // in that case we need to ask a sequence to provide a value
+                for (Property property : entity.getEntityClass().getProperties()) {
+                    if (property.isAutoIncrement()) {
+                        // make sure the property does not have a value yet
+                        if (oVertex.getProperty(property.getPropertyName()) == null) {
+                            // fetch the sequence
+                            OSequence sequence = db.getMetadata().getSequenceLibrary().getSequence(createSequenceId(entity.getEntityClass(), property));
+                            setProperty(oVertex, property.getPropertyName(), sequence.next(), db);
+                        }
+                    }
+                }
+
+                oVertex.save();
+            } catch (OConcurrentModificationException cme) {
+                System.out.println("EntityManager saveVertexEntity ConcurrencyException: " + cme);
+                randomSleep(baseSleep);
+                repeat = true;
+            } catch (ORecordDuplicatedException dupl) {
+                System.out.println("EntityManager saveVertexEntity DuplicateException: " + dupl);
+            }
+        } while (repeat);
+    }
+
+    private OVertex createOrRetrieveVertex(VertexEntity entity, ODatabaseSession db) {
+        boolean repeat = false;
+        OVertex vertex;
+        do {
+            repeat = false;
+            try {
+                vertex = retrieveVertex(entity, db);
+                if (entity.updateEnabled()) {
+                    try {
+                        storeVertex(vertex, entity, db);
+                    } catch (OConcurrentModificationException cme) {
+                        System.out.println("EntityManager createOrRetrieveVertex Concurrency exception: " + cme);
+                        randomSleep(baseSleep);
+                        repeat = true;
+                    } catch (ORecordDuplicatedException dupl) {
+                        System.out.println("EntityManager createOrRetrieveVertex DuplicateException: " + dupl);
+                    }
+                }
+            } catch (EntityNotFoundException e) {
+                vertex = db.newVertex(entity.getEntityClass().getClassName());
+                try {
+                    storeVertex(vertex, entity, db);
+                } catch (OConcurrentModificationException cme) {
+                    System.out.println("EntityManager createOrRetrieveVertex EntityNotFoundException Concurrency exception: " + cme);
+                    randomSleep(baseSleep);
+                    repeat = true;
+                } catch (ORecordDuplicatedException dupl) {
+                    System.out.println("EntityManager createOrRetrieveVertex EntityNotFoundException DuplicateException: " + dupl);
+                }
+            }
+        } while (repeat);
+
+        return vertex;
+    }
+
+    private void storeVertex(OVertex vertex, VertexEntity entity, ODatabaseSession db) {
         for (String propertyName : entity.getPropertyNames()) {
-            setProperty(oVertex, propertyName, entity.getPropertyValue(propertyName).getValue(), db);
+            setProperty(vertex, propertyName, entity.getPropertyValue(propertyName).getValue(), db);
         }
-
         // check if one of the properties is an auto-increment field.
         // in that case we need to ask a sequence to provide a value
         for (Property property : entity.getEntityClass().getProperties()) {
             if (property.isAutoIncrement()) {
                 // make sure the property does not have a value yet
-                if (oVertex.getProperty(property.getPropertyName()) == null) {
+                if (vertex.getProperty(property.getPropertyName()) == null) {
                     // fetch the sequence
                     OSequence sequence = db.getMetadata().getSequenceLibrary().getSequence(createSequenceId(entity.getEntityClass(), property));
-                    setProperty(oVertex, property.getPropertyName(), sequence.next(), db);
+                    setProperty(vertex, property.getPropertyName(), sequence.next(), db);
                 }
             }
         }
 
-        oVertex.save();
+        vertex.save();
     }
 
     /**
      * This method saves an edge entity to the data store.
+     * 
      * @param entity
      * @param db
      */
@@ -372,115 +549,92 @@ public class EntityManager {
         // an edge has a source and target vertex
         if (entity.getSourceEntity() == null || entity.getTargetEntity() == null) {
             return;
-            //@todo we could at some point implement some error handling here, but for now we simply do not store the edge
+            // @todo we could at some point implement some error handling here, but for now
+            // we simply do not store the edge
         }
 
         // first we check if the edge already exists..this saves a lot of overhead.
+        boolean repeat = false;
         OEdge edge;
-        try {
-            edge = retrieveEdge(entity, db);
-            // the edge exists. Check if we have to update properties
-            if (entity.updateEnabled()) {
-            	for (String propertyName : entity.getPropertyNames()) {
-            		setProperty(edge, propertyName, entity.getPropertyValue(propertyName).getValue(), db);
-            		//We need to update in the database the dynamic State Model Tag Value
-            		if(entity.getEntityClass().getClassName().equals("AbstractAction")) {
-            			updateAbstractActionEntity(edge, entity, db);
-            		}
-            	}
+        do {
+            repeat = false;
+            try {
+                edge = retrieveEdge(entity, db);
+                // the edge exists. Check if we have to update properties
+                if (entity.updateEnabled()) {
+                	for (String propertyName : entity.getPropertyNames()) {
+                		setProperty(edge, propertyName, entity.getPropertyValue(propertyName).getValue(), db);
+                		//We need to update in the database the dynamic State Model Tag Value
+                		if(entity.getEntityClass().getClassName().equals("AbstractAction")) {
+                			updateAbstractActionEntity(edge, entity, db);
+                		}
+                	}
 
+                }
+                // that's all we need to do. An edge has a unique identifier, no need to continue processing.
+                return;
+
+            } catch (EntityNotFoundException e) {
+                // we don't do anything here. If the edge does not exist, we just want to continue with method execution
+            } catch (OConcurrentModificationException cme) {
+                System.out.println("EntityManager saveEdgeEntity ConcurrencyException: " + cme);
+                randomSleep(baseSleep);
+                repeat = true;
+            } catch (ORecordDuplicatedException dupl) {
+                System.out.println("EntityManager saveEdgeEntity DuplicateException: " + dupl);
             }
-            // that's all we need to do. An edge has a unique identifier, no need to continue processing.
-            return;
-
-        } catch (EntityNotFoundException e) {
-            // we don't do anything here. If the edge does not exist, we just want to continue with method execution
-        }
+        } while (repeat);
 
         // retrieve and/or update/save the source vertex
-        OVertex sourceVertex;
-        boolean newSourceVertex = false;
-        try {
-            sourceVertex = retrieveVertex(entity.getSourceEntity(), db);
-        }
-        catch (EntityNotFoundException e) {
-            sourceVertex = db.newVertex(entity.getSourceEntity().getEntityClass().getClassName());
-            newSourceVertex = true;
-        }
+        do {
+            repeat = false;
+            OVertex sourceVertex = createOrRetrieveVertex(entity.getSourceEntity(), db);
 
-        if (newSourceVertex || entity.getSourceEntity().updateEnabled()) {
-            for (String propertyName : entity.getSourceEntity().getPropertyNames()) {
-                setProperty(sourceVertex, propertyName, entity.getSourceEntity().getPropertyValue(propertyName).getValue(), db);
+            // retrieve and/or update/save the target vertex
+            OVertex targetVertex = createOrRetrieveVertex(entity.getTargetEntity(), db);
+
+            // now create the new edge, set the properties and save
+            edge = sourceVertex.addEdge(targetVertex, entity.getEntityClass().getClassName());
+            for (String propertyName : entity.getPropertyNames()) {
+                setProperty(edge, propertyName, entity.getPropertyValue(propertyName).getValue(), db);
             }
 
             // check if one of the properties is an auto-increment field.
             // in that case we need to ask a sequence to provide a value
-            for (Property property : entity.getSourceEntity().getEntityClass().getProperties()) {
+            for (Property property : entity.getEntityClass().getProperties()) {
                 if (property.isAutoIncrement()) {
                     // make sure the property does not have a value yet
-                    if (sourceVertex.getProperty(property.getPropertyName()) == null) {
+                    if (edge.getProperty(property.getPropertyName()) == null) {
                         // fetch the sequence
-                        OSequence sequence = db.getMetadata().getSequenceLibrary().getSequence(createSequenceId(entity.getSourceEntity().getEntityClass(), property));
-                        setProperty(sourceVertex, property.getPropertyName(), sequence.next(), db);
+                        OSequence sequence = db.getMetadata().getSequenceLibrary().getSequence(createSequenceId(entity.getEntityClass(), property));
+                        setProperty(edge, property.getPropertyName(), sequence.next(), db);
                     }
                 }
             }
-
-            sourceVertex.save();
-        }
-
-        // retrieve and/or update/save the target vertex
-        OVertex targetVertex;
-        boolean newTargetVertex = false;
-        try {
-            targetVertex = retrieveVertex(entity.getTargetEntity(), db);
-        }
-        catch (EntityNotFoundException e) {
-            targetVertex = db.newVertex(entity.getTargetEntity().getEntityClass().getClassName());
-            newTargetVertex = true;
-        }
-
-        if (newTargetVertex || entity.getTargetEntity().updateEnabled()) {
-            for (String propertyName : entity.getTargetEntity().getPropertyNames()) {
-                setProperty(targetVertex, propertyName, entity.getTargetEntity().getPropertyValue(propertyName).getValue(), db);
+            try {
+                edge.save();
+            } catch (OConcurrentModificationException cme) {
+                System.out.println("EntityManager saveEdgeEntity Concurrency exception " + cme + " while writing edge; repeat");
+                randomSleep(baseSleep);
+                repeat = true;
+            } catch (ORecordDuplicatedException dupl) {
+                System.out.println("EntityManager saveEdgeEntity DuplicateException: " + dupl);
             }
+        } while (repeat);
+    }
 
-            // check if one of the properties is an auto-increment field.
-            // in that case we need to ask a sequence to provide a value
-            for (Property property : entity.getTargetEntity().getEntityClass().getProperties()) {
-                if (property.isAutoIncrement()) {
-                    // make sure the property does not have a value yet
-                    if (targetVertex.getProperty(property.getPropertyName()) == null) {
-                        // fetch the sequence
-                        OSequence sequence = db.getMetadata().getSequenceLibrary().getSequence(createSequenceId(entity.getTargetEntity().getEntityClass(), property));
-                        setProperty(targetVertex, property.getPropertyName(), sequence.next(), db);
-                    }
-                }
-            }
+    private void randomSleep(int base) {
+    	try {
+    		int r = getRandomNumber(200, 1000);
+    		int sleepTime = base + r;
+    		System.out.println("Sleep random time duration = " + sleepTime);
+    		Thread.sleep(sleepTime);
+    	} catch (Exception e) {
+    	}
+    }
 
-            targetVertex.save();
-        }
-
-        // now create the new edge, set the properties and save
-        edge = sourceVertex.addEdge(targetVertex, entity.getEntityClass().getClassName());
-        for (String propertyName : entity.getPropertyNames()) {
-            setProperty(edge, propertyName, entity.getPropertyValue(propertyName).getValue(), db);
-        }
-
-        // check if one of the properties is an auto-increment field.
-        // in that case we need to ask a sequence to provide a value
-        for (Property property : entity.getEntityClass().getProperties()) {
-            if (property.isAutoIncrement()) {
-                // make sure the property does not have a value yet
-                if (edge.getProperty(property.getPropertyName()) == null) {
-                    // fetch the sequence
-                    OSequence sequence = db.getMetadata().getSequenceLibrary().getSequence(createSequenceId(entity.getEntityClass(), property));
-                    setProperty(edge, property.getPropertyName(), sequence.next(), db);
-                }
-            }
-        }
-
-        edge.save();
+    private int getRandomNumber(int min, int max) {
+    	return (int) ((Math.random() * (max - min)) + min);
     }
     
     private void updateAbstractActionEntity(OEdge edge, DocumentEntity entity, ODatabaseSession db) {
@@ -497,55 +651,64 @@ public class EntityManager {
     }
 
     public void deleteEntity(DocumentEntity entity) {
-            // we delete an entity based on its class and its id
-            EntityClass entityClass = entity.getEntityClass();
+        // we delete an entity based on its class and its id
+        EntityClass entityClass = entity.getEntityClass();
 
-            Property identifier = entityClass.getIdentifier();
-            if (identifier == null) {
-                // cannot delete without an id value
-                return;
-            }
-            Set<Object> idValues = new HashSet<>();
-            idValues.add(entity.getPropertyValue(identifier.getPropertyName()).getValue());
-            deleteEntities(entityClass, idValues);
+        Property identifier = entityClass.getIdentifier();
+        if (identifier == null) {
+            // cannot delete without an id value
+            return;
+        }
+        Set<Object> idValues = new HashSet<>();
+        idValues.add(entity.getPropertyValue(identifier.getPropertyName()).getValue());
+        deleteEntities(entityClass, idValues);
     }
 
     /**
-     * Delete entities in a given entity class, based on a provided set of id values.
+     * Delete entities in a given entity class, based on a provided set of id
+     * values.
+     * 
      * @param entityClass
      * @param idValues
      */
     public void deleteEntities(EntityClass entityClass, Set<Object> idValues) {
-        try (ODatabaseSession db = connection.getDatabaseSession()) {
-            String typeName;
-            if (entityClass.getEntityType() == EntityClass.EntityType.Vertex) {
-                typeName = "VERTEX";
-            }
-            else if (entityClass.getEntityType() == EntityClass.EntityType.Edge) {
-                typeName = "EDGE";
-            }
-            else {
-                // should not happen
-                return;
-            }
+        boolean repeat = false;
+        do {
+            repeat = false;
+            try (ODatabaseSession db = connection.getDatabaseSession()) {
+                String typeName;
+                if (entityClass.getEntityType() == EntityClass.EntityType.Vertex) {
+                    typeName = "VERTEX";
+                } else if (entityClass.getEntityType() == EntityClass.EntityType.Edge) {
+                    typeName = "EDGE";
+                } else {
+                    // should not happen
+                    return;
+                }
 
-            Property identifier = entityClass.getIdentifier();
-            if (identifier == null) {
-                // cannot delete without an id value
-                return;
-            }
+                Property identifier = entityClass.getIdentifier();
+                if (identifier == null) {
+                    // cannot delete without an id value
+                    return;
+                }
 
-            String stmt = "DELETE " + typeName + " " + entityClass.getClassName() + " WHERE " + identifier.getPropertyName() + " IN :" + identifier.getPropertyName();
-            Map<String, Object> params = new HashMap<>();
-            params.put(identifier.getPropertyName(), idValues);
-            db.command(stmt, params);
-        }
+                String stmt = "DELETE " + typeName + " " + entityClass.getClassName() + " WHERE " + identifier.getPropertyName() + " IN :" + identifier.getPropertyName();
+                Map<String, Object> params = new HashMap<>();
+                params.put(identifier.getPropertyName(), idValues);
+                db.command(stmt, params);
+            } catch (OConcurrentModificationException cme) {
+                System.out.println("EntityManager: deleteEntites concurrencyException " + cme);
+                randomSleep(baseSleep);
+                repeat = true;
+            }
+        } while (repeat);
     }
 
     /**
-     * Helper method to format a property before adding it to a map.
-     * This is a bit of a dirty solution to prevent OrientDB from protesting to certain values that are
-     * stored. Will need to investigate further at some point in time.
+     * Helper method to format a property before adding it to a map. This is a bit
+     * of a dirty solution to prevent OrientDB from protesting to certain values
+     * that are stored. Will need to investigate further at some point in time.
+     * 
      * @param element
      * @param propertyName
      * @param propertyValue
@@ -568,27 +731,25 @@ public class EntityManager {
         else if (propertyValue instanceof Short)
             element.setProperty(propertyName, ((Short) propertyValue).shortValue());
         else if (propertyValue instanceof Visualizer) {
-            //skip Don't put visualizer in the graph since it has no meaning for graph.
-            //It will get a meaning when we want to use the data for reply.
-        }
-        else if (propertyValue instanceof byte[]) {
+            // skip Don't put visualizer in the graph since it has no meaning for graph.
+            // It will get a meaning when we want to use the data for reply.
+        } else if (propertyValue instanceof byte[]) {
             // for binary data we add a separate record and connect it to the element
             OBlob record = db.newBlob((byte[]) propertyValue);
             element.setProperty(propertyName, record);
-        }
-        else if (propertyValue instanceof Set) {
+        } else if (propertyValue instanceof Set) {
             element.setProperty(propertyName, propertyValue);
-        }
-        else if (propertyValue instanceof Date) {
+        } else if (propertyValue instanceof Date) {
             element.setProperty(propertyName, propertyValue);
-        }
-        else
+        } else
             element.setProperty(propertyName, propertyValue.toString());
-        //@todo need to make the linked and set types right here
+        // @todo need to make the linked and set types right here
     }
 
     /**
-     * Helper method to set all the properties collected from the datastore onto an entity instance.
+     * Helper method to set all the properties collected from the datastore onto an
+     * entity instance.
+     * 
      * @param entity
      * @param oElement
      */
@@ -604,7 +765,9 @@ public class EntityManager {
     }
 
     /**
-     * Helper method that converts an object value based on a specified OrientDB data type.
+     * Helper method that converts an object value based on a specified OrientDB
+     * data type.
+     * 
      * @param oType
      * @param valueToConvert
      * @return
@@ -640,13 +803,15 @@ public class EntityManager {
                 convertedValue = OType.convert(valueToConvert, Set.class);
                 break;
         }
-        return  convertedValue;
+        return convertedValue;
     }
 
     /**
      * This method retrieves all stored instances of a given class.
+     * 
      * @param entityClass
-     * @param entityProperties a map containing property values to use in selection, with the property name used as a key
+     * @param entityProperties a map containing property values to use in selection,
+     *                         with the property name used as a key
      * @return
      */
     public Set<DocumentEntity> retrieveAllOfClass(EntityClass entityClass, Map<String, PropertyValue> entityProperties) {
@@ -666,8 +831,7 @@ public class EntityManager {
                 }
                 stmt += stringJoiner.toString();
                 rs = db.query(stmt, params);
-            }
-            else {
+            } else {
                 rs = db.query(stmt);
             }
 
@@ -675,8 +839,7 @@ public class EntityManager {
                 OResult result = rs.next();
                 if (result.isVertex()) {
                     documents.add(extractVertexEntity(result, entityClass));
-                }
-                else if (result.isEdge()) {
+                } else if (result.isEdge()) {
                     documents.add(extractEdgeEntity(result));
                 }
                 // should not happen, but we just ignore the result
@@ -686,7 +849,9 @@ public class EntityManager {
     }
 
     /**
-     * THis method retrieves an entity of a given entity class from the data store, for a given id value.
+     * THis method retrieves an entity of a given entity class from the data store,
+     * for a given id value.
+     * 
      * @param entityClass
      * @param idValue
      * @return
@@ -695,7 +860,8 @@ public class EntityManager {
         try (ODatabaseSession db = connection.getDatabaseSession()) {
             // first we have to retrieve the identifying field
             Property identifier = entityClass.getIdentifier();
-            if (identifier == null) return null; // cannot search without an id field
+            if (identifier == null)
+                return null; // cannot search without an id field
 
             String idField = identifier.getPropertyName();
             // convert the id value to the correct type to use in the database query
@@ -706,7 +872,7 @@ public class EntityManager {
             // get the id parameter ready
             Map<String, Object> params = new HashMap<>();
             params.put(idField, idValue);
-            //execute the query using statement and parameters
+            // execute the query using statement and parameters
             OResultSet rs = db.query(stmt, params);
 
             // process the results
@@ -717,26 +883,26 @@ public class EntityManager {
             OResult oResult = rs.next();
             if (oResult.isVertex()) {
                 return extractVertexEntity(oResult, entityClass);
-            }
-            else if (oResult.isEdge()) {
+            } else if (oResult.isEdge()) {
                 return extractEdgeEntity(oResult);
-            }
-            else {
+            } else {
                 return null;
             }
-
         }
     }
 
     /**
-     * Helper method that will extract a retrieved data store object into a vertex entity instance.
+     * Helper method that will extract a retrieved data store object into a vertex
+     * entity instance.
+     * 
      * @param result
      * @param entityClass
      * @return
      */
     private VertexEntity extractVertexEntity(OResult result, EntityClass entityClass) {
         Optional<OVertex> op = result.getVertex();
-        if (!op.isPresent()) return null;
+        if (!op.isPresent())
+            return null;
         OVertex oVertex = op.get();
         // first we set the attributes
         VertexEntity vertexEntity = new VertexEntity(entityClass);
@@ -746,14 +912,16 @@ public class EntityManager {
         for (OEdge edge : oVertex.getEdges(ODirection.OUT)) {
             // look up the entity class for the edge entity
             EdgeEntity edgeEntity = processEdgeEntity(vertexEntity, edge, true);
-            if (edgeEntity == null) continue;
+            if (edgeEntity == null)
+                continue;
             vertexEntity.addOutgoingEdge(edgeEntity);
         }
 
         for (OEdge edge : oVertex.getEdges(ODirection.IN)) {
             // look up the entity class for the edge entity
             EdgeEntity edgeEntity = processEdgeEntity(vertexEntity, edge, false);
-            if (edgeEntity == null) continue;
+            if (edgeEntity == null)
+                continue;
             vertexEntity.addIncomingEdge(edgeEntity);
         }
 
@@ -761,7 +929,9 @@ public class EntityManager {
     }
 
     /**
-     * Helper method that will create an edge entity instance for a retrieved edge object from the data store.
+     * Helper method that will create an edge entity instance for a retrieved edge
+     * object from the data store.
+     * 
      * @param vertexEntity
      * @param edge
      * @param vertexIsSource
@@ -770,17 +940,20 @@ public class EntityManager {
     private EdgeEntity processEdgeEntity(VertexEntity vertexEntity, OEdge edge, boolean vertexIsSource) {
         Optional<OClass> opClass = edge.getSchemaType();
         // if the edge does not have a class for some reason, we cannot process it
-        if (!opClass.isPresent()) return null;
+        if (!opClass.isPresent())
+            return null;
         OClass oEdgeClass = opClass.get();
         EntityClassFactory.EntityClassName edgeClassName = EntityClassFactory.getEntityClassName(oEdgeClass.getName());
         EntityClass edgeEntityClass = EntityClassFactory.createEntityClass(edgeClassName);
-        if (edgeEntityClass == null) return null;
+        if (edgeEntityClass == null)
+            return null;
 
-        //@todo ideally the target entity would have a lazy loading implementation
+        // @todo ideally the target entity would have a lazy loading implementation
         // get the vertex endpoint that we do not have yet
         OVertex targetVertex = vertexIsSource ? edge.getTo() : edge.getFrom();
-        //get the class of the target
-        if (!targetVertex.getSchemaType().isPresent()) return null;
+        // get the class of the target
+        if (!targetVertex.getSchemaType().isPresent())
+            return null;
         OClass oTargetClass = targetVertex.getSchemaType().get();
         EntityClassFactory.EntityClassName targetClassName = EntityClassFactory.getEntityClassName(oTargetClass.getName());
         EntityClass targetEntityClass = EntityClassFactory.createEntityClass(targetClassName);
@@ -791,8 +964,7 @@ public class EntityManager {
         EdgeEntity edgeEntity;
         if (vertexIsSource) {
             edgeEntity = new EdgeEntity(edgeEntityClass, vertexEntity, targetEntity);
-        }
-        else {
+        } else {
             edgeEntity = new EdgeEntity(edgeEntityClass, targetEntity, vertexEntity);
         }
         // set the attributes on the edge
@@ -800,26 +972,30 @@ public class EntityManager {
         return edgeEntity;
     }
 
-
     /**
-     * Helper method that will extract a retrieved data store object into a vertex entity instance.
+     * Helper method that will extract a retrieved data store object into a vertex
+     * entity instance.
+     * 
      * @param result
      * @return
      */
     private EdgeEntity extractEdgeEntity(OResult result) {
         // check if the result contains an edge
-        if (!result.getEdge().isPresent()) return null;
+        if (!result.getEdge().isPresent())
+            return null;
         OEdge oEdge = result.getEdge().get();
 
         // get the source vertex
         OVertex sourceVertex = oEdge.getFrom();
         // check for the presence of a class
-        if (!sourceVertex.getSchemaType().isPresent()) return null;
+        if (!sourceVertex.getSchemaType().isPresent())
+            return null;
 
         OClass sourceVertexClass = sourceVertex.getSchemaType().get();
         EntityClassFactory.EntityClassName sourceClassName = EntityClassFactory.getEntityClassName(sourceVertexClass.getName());
         EntityClass sourceClass = EntityClassFactory.createEntityClass(sourceClassName);
-        if (sourceClass == null) return null;
+        if (sourceClass == null)
+            return null;
 
         VertexEntity sourceVertexEntity = new VertexEntity(sourceClass);
         // set the attributes
@@ -837,6 +1013,7 @@ public class EntityManager {
 
     /**
      * Returns the connection object currently used by the entity manager
+     * 
      * @return Connection
      */
     public Connection getConnection() {

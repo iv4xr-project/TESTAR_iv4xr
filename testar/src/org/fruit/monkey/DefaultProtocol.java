@@ -85,6 +85,7 @@ import org.fruit.alayer.exceptions.SystemStartException;
 import org.fruit.alayer.exceptions.WidgetNotFoundException;
 import org.fruit.alayer.visualizers.ShapeVisualizer;
 import org.fruit.alayer.webdriver.WdProtocolUtil;
+import org.fruit.alayer.windows.StateFetcher;
 import org.fruit.alayer.windows.WinApiException;
 
 import es.upv.staq.testar.managers.DataManager;
@@ -125,7 +126,6 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 	private File currentSeq;
 
 	protected Mouse mouse = AWTMouse.build();
-	protected State lastState = null;
 	protected int nonReactingActionNumber;
 
 	protected ProcessListener processListener = new ProcessListener();
@@ -308,52 +308,43 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 			}
 
 		}catch(WinApiException we) {
-
 			String msg = "Exception: Check if current SUTs path: "+settings.get(ConfigTags.SUTConnectorValue)
 			+" is a correct definition";
 
 			popupMessage(msg);
-
 			System.out.println(msg);
+			we.printStackTrace();
 
 			this.mode = Modes.Quit;
-			
 		}catch(SessionNotCreatedException e) {
-			
-    		if(e.getMessage().contains("Chrome version")) {
-    			
+    		if(e.getMessage()!=null && e.getMessage().contains("Chrome version")) {
+
     			String msg = "*** Unsupported versions exception: Chrome browser and Selenium WebDriver versions *** \n"
     					+ "Please verify your Chrome browser version: chrome://settings/help \n"
     					+ "And download the appropiate ChromeDriver version: https://chromedriver.chromium.org/downloads \n"
     					+ "\n"
     					+ "Surely exists a residual process \"chromedriver.exe\" running. \n"
     					+ "You can use Task Manager to finish it.";
-    			
+
     			popupMessage(msg);
-    			
     			System.out.println(msg);
     			System.out.println(e.getMessage());
-    			
     		}else {
-    			System.out.println("********** ERROR starting Selenium WebDriver ********");
-    			System.out.println(e.getMessage());
+    			System.out.println("ERROR starting Selenium WebDriver");
+    			e.printStackTrace();
     		}
-    		
 		}catch (IllegalStateException e) {
-			if (e.getMessage().contains("driver executable does not exist")) {
+			if (e.getMessage()!=null && e.getMessage().contains("driver executable does not exist")) {
 				
 				String msg = "Exception: Check if chromedriver.exe path: \n"
 				+settings.get(ConfigTags.SUTConnectorValue)
 				+"\n exists or if is a correct definition";
 
 				popupMessage(msg);
-
 				System.out.println(msg);
-			
 			}else {
 				e.printStackTrace();
 			}
-		
 		}catch(SystemStartException SystemStartException) {
 			SystemStartException.printStackTrace();
 			this.mode = Modes.Quit;
@@ -1205,7 +1196,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 	        generatedSequence = getAndStoreGeneratedSequence();
 	        currentSeq = getAndStoreSequenceFile();
 
-	        Canvas canvas = buildCanvas();
+	        this.cv = buildCanvas();
 	        State state = getState(system);
 
 	        setReplayVerdict(getVerdict(state));
@@ -1256,8 +1247,8 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 
 	            while(!success && (Util.time() - start < rrt)){       
 	                tries++;
-	                canvas.begin(); Util.clear(canvas);
-	                canvas.end();
+	                cv.begin(); Util.clear(cv);
+	                cv.end();
 
 	                /**
 	                 * Check if we are replaying the sequence correctly,
@@ -1300,7 +1291,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 	                }
 
 	                // In Replay-mode, we only show the red dot if visualizationOn is true:
-	                if(visualizationOn) SutVisualization.visualizeSelectedAction(settings, canvas, state, actionToReplay);
+	                if(visualizationOn) SutVisualization.visualizeSelectedAction(settings, cv, state, actionToReplay);
 
 	                double actionDuration = settings.get(ConfigTags.UseRecordedActionDurationAndWaitTimeDuringReplay) 
 	                ? replayableFragment.get(Tags.ActionDuration, 0.0) : settings.get(ConfigTags.ActionDuration);
@@ -1342,8 +1333,6 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 	            }
 	        }
 
-	        canvas.release();
-
 	        // notify to state model the last state
 	        Set<Action> actions = deriveActions(system, state);
 	        buildStateActionsIdentifiers(state, actions);
@@ -1352,6 +1341,8 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 	                buildEnvironmentActionIdentifiers(state, a);
 
 	        stateModelManager.notifyNewStateReached(state, actions);
+
+	        cv.release();
 
 	    } catch(IOException ioe){
 	        throw new RuntimeException("Cannot read file.", ioe);
@@ -1467,6 +1458,7 @@ public class DefaultProtocol extends RuntimeControlsProtocol {
 			WindowsWindowTitleSutConnector sutConnector = new WindowsWindowTitleSutConnector(settings().get(ConfigTags.SUTConnectorValue), Math.round(settings().get(ConfigTags.StartupTime).doubleValue() * 1000.0), builder);
 			return sutConnector.startOrConnectSut();
 		}else if (sutConnectorType.startsWith(Settings.SUT_CONNECTOR_PROCESS_NAME)) {
+			if(settings.get(ConfigTags.AccessBridgeEnabled)) {StateFetcher.accessBridgeEnabled = true;}
 			WindowsProcessNameSutConnector sutConnector = new WindowsProcessNameSutConnector(settings().get(ConfigTags.SUTConnectorValue), Math.round(settings().get(ConfigTags.StartupTime) * 1000.0));
 			return sutConnector.startOrConnectSut();
 		}else{

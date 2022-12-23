@@ -1,6 +1,6 @@
 /**
- * Copyright (c) 2018 - 2022 Open Universiteit - www.ou.nl
- * Copyright (c) 2019 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2018 - 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2019 - 2021 Universitat Politecnica de Valencia - www.upv.es
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,44 +30,38 @@
 
 package org.fruit.alayer.actions;
 
-import org.fruit.alayer.*;
-import org.fruit.alayer.exceptions.ActionFailedException;
+import org.fruit.alayer.Action;
+import org.fruit.alayer.Role;
+import org.fruit.alayer.SUT;
+import org.fruit.alayer.State;
+import org.fruit.alayer.TaggableBase;
+import org.fruit.alayer.Tags;
+import org.fruit.alayer.Widget;
 import org.fruit.alayer.webdriver.WdDriver;
 
-public class WdSubmitAction extends TaggableBase implements Action {
-    private String formId;
+public class WdSelectListAction extends TaggableBase implements Action {
+    private static final long serialVersionUID = -5522966388178892530L;
 
-    public WdSubmitAction(String formId) {
-        this.formId = formId;
-        this.set(Tags.Role, WdActionRoles.SubmitScript);
-        this.set(Tags.Desc, "Execute Webdriver script to submit an action into " + formId);
+    private String elementId;
+    private String value;
+
+    public WdSelectListAction(String elementId, String value, Widget widget) {
+        this.elementId = elementId;
+        this.value = value;
+        this.set(Tags.Role, WdActionRoles.SelectListAction);
+        this.set(Tags.Desc, "Set Webdriver select list script to set into " + elementId + " : " + value);
+        this.set(Tags.OriginWidget, widget);
     }
 
     @Override
-    public void run(SUT system, State state, double duration) throws ActionFailedException {
-        String form = String.format("document.getElementById('%s')", formId);
-        try {
-            WdDriver.executeScript(String.format("%s.submit();", form));
-        } catch (Exception wde) {
-            String message = "";
-            if(wde.getMessage() != null) {
-                message = wde.getMessage();
-            }
-            // The form can not be found by id, let's try by name
-            if (message.contains("Cannot read property 'submit' of null") || message.contains("Cannot read properties of null (reading 'submit')")) {
-                form = String.format("document.getElementsByName('%s')[0]", formId);
-                WdDriver.executeScript(String.format("%s.submit();", form));
-            }
-            // Let's try by clicking on the submit button
-            else if (message.contains("submit is not a function")) {
-                WdDriver.executeScript(String.format( "%s.querySelector('input[type=\"submit\"]').click();", form));
-            }
-        }
+    public void run(SUT system, State state, double duration) {
+        WdDriver.executeScript(String.format("document.getElementById('%s').value='%s'", elementId, value));
     }
 
     @Override
     public String toShortString() {
-        return "Submit form : '" + formId + "'";
+        return "Set select list on id '" + elementId +
+                "' to '" + value + "'";
     }
 
     @Override
