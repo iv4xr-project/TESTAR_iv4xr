@@ -87,8 +87,6 @@ public class LabRecruitsSharedProtocol extends LabRecruitsProtocol {
 		}
 
 		System.out.println("Shared protocol constructor");
-		
-		System.out.println(stateModelManager.getClass().getName());
 
 		modelManager = (iv4xrModelManager) stateModelManager;
 		if (modelManager.persistenceManager != null) {
@@ -100,8 +98,20 @@ public class LabRecruitsSharedProtocol extends LabRecruitsProtocol {
 
 			// Open a database connection to create a BeingExecuted vertex for this TESTAR instance
 			Random r = new Random();
-			nodeName = System.getenv("HOSTNAME") + "_" + r.nextInt(10000);
+			// Unix case
+			if(System.getenv("HOSTNAME") != null && !System.getenv("HOSTNAME").equals("null")) {
+				nodeName = System.getenv("HOSTNAME") + "_" + r.nextInt(10000);
+			} 
+			// Windows case
+			else if(System.getenv("COMPUTERNAME") != null && !System.getenv("COMPUTERNAME").equals("null")) {
+				nodeName = System.getenv("COMPUTERNAME") + "_" + r.nextInt(10000);
+			}
+			// Other cases
+			else {
+				nodeName = "unknown" + "_" + r.nextInt(10000);
+			}
 			System.out.println("nodeName = " + nodeName);
+
 			try (ODatabaseSession dbSession = SharedDatabase.createDatabaseConnection(settings, database)) {
 				SharedDatabase.executeCommand(dbSession, "create vertex BeingExecuted set node = '" + nodeName + "'").close();
 			} catch (Exception e) {

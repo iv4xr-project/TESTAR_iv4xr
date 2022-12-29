@@ -85,9 +85,16 @@ public class AbstractStateHydrator implements EntityHydrator<VertexEntity> {
         String uniqueId = HydrationHelper.lowCollisionID(modelIdentifier + "--" + stateId);
         target.addPropertyValue(identifier.getPropertyName(), new PropertyValue(identifier.getPropertyType(), uniqueId));
 
-        String nodeName = "unknown";
+        String nodeName = "unknown"; // Default case
         try {
-            nodeName = System.getenv("HOSTNAME");
+        	// Unix case
+        	if(System.getenv("HOSTNAME") != null && !System.getenv("HOSTNAME").equals("null")) {
+        		nodeName = System.getenv("HOSTNAME");
+        	} 
+        	// Windows case
+        	else if(System.getenv("COMPUTERNAME") != null && !System.getenv("COMPUTERNAME").equals("null")) {
+        		nodeName = System.getenv("COMPUTERNAME");
+        	}
         }
         catch (Exception e){}
         target.addPropertyValue("discoveredBy", new PropertyValue(OType.STRING, nodeName));

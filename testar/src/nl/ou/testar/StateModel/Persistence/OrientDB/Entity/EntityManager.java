@@ -741,8 +741,9 @@ public class EntityManager {
             element.setProperty(propertyName, propertyValue);
         } else if (propertyValue instanceof Date) {
             element.setProperty(propertyName, propertyValue);
-        } else
-            element.setProperty(propertyName, propertyValue.toString());
+        } else {
+        	element.setProperty(propertyName, propertyValue.toString());
+        }
         // @todo need to make the linked and set types right here
     }
 
