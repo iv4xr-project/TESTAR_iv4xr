@@ -28,13 +28,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.monkey.ConfigTags;
-import org.testar.protocols.iv4xr.LabRecruitsProtocol;
+import org.testar.protocols.iv4xr.LabRecruitsSharedProtocol;
 
 import environments.LabRecruitsEnvironment;
 import eu.testar.iv4xr.actions.lab.commands.*;
@@ -60,7 +61,7 @@ import nl.ou.testar.RandomActionSelector;
  * State (Widget-Tree) -> Agent Observation (All Observed Entities)
  * Action              -> LabRecruits low level command
  */
-public class Protocol_labrecruits_docker extends LabRecruitsProtocol {
+public class Protocol_distributed_labrecruits extends LabRecruitsSharedProtocol {
 
 	/**
 	 * Derive all possible actions that TESTAR can execute in each specific LabRecruits state.
@@ -102,22 +103,37 @@ public class Protocol_labrecruits_docker extends LabRecruitsProtocol {
 	 * @return  the selected action (non-null!)
 	 */
 	@Override
-	protected Action selectAction(State state, Set<Action> actions){
-
-		//Call the preSelectAction method from the AbstractProtocol so that, if necessary,
-		//unwanted processes are killed and SUT is put into foreground.
+	protected Action selectAction(State state, Set<Action> actions) {
+		// Call the preSelectAction method from the AbstractProtocol so that, if necessary,
+		// unwanted processes are killed and SUT is put into foreground.
 		Action retAction = preSelectAction(state, actions);
-		if (retAction== null) {
-			//if no preSelected actions are needed, then implement your own action selection strategy
-			//using the action selector of the state model:
-			retAction = stateModelManager.getAbstractActionToExecute(actions);
+		if (retAction != null) { return retAction; }
+
+		// targetSharedAction is an unvisited action
+		// First check whether we do have a target shared action marked to execute; if not select one
+		if (targetSharedAction == null) {
+			targetSharedAction = getNewTargetSharedAction(state, actions);
 		}
-		if(retAction==null) {
-			System.out.println("State model based action selection did not find an action. Using random action selection.");
-			// if state model fails, use random (default would call preSelectAction() again, causing double actions HTML report):
-			retAction = RandomActionSelector.selectAction(actions);
+
+		if (targetSharedAction != null) {
+			HashMap<String, Action> actionMap = ConvertActionSetToDictionary(actions);
+
+			// Check if the target shared action to execute is in the current state
+			if (actionMap.containsKey(targetSharedAction)) {
+				Action targetAction = getTargetActionFound(actionMap);
+				System.out.println("TargetSharedAction is in the current state, just select it : " + targetAction.get(Tags.AbstractIDCustom) + " , " + targetAction.get(Tags.Desc));
+				return targetAction;
+			} 
+			// Target shared action to execute is not in the current state, calculate the path to reach our desired target action
+			else {
+				Action nextStepAction = traversePath(state, actions);
+				System.out.println("Unavailable TargetSharedAction, select from path to be followed : " + nextStepAction.get(Tags.AbstractIDCustom) + " , " + nextStepAction.get(Tags.Desc));
+				return nextStepAction;
+			}
 		}
-		return retAction;
+
+		System.out.println("**** Shared State Model Protocol did not find an action to select, return a random action ****");
+		return RandomActionSelector.selectAction(actions);
 	}
 
 	/**
@@ -141,5 +157,22 @@ public class Protocol_labrecruits_docker extends LabRecruitsProtocol {
 		}catch(ActionFailedException afe){
 			return false;
 		}
+	}
+
+	@Override
+	protected boolean moreActions(State state) {
+		// Check if last traverse action leads TESTAR to the expected traverse destination state
+		verifyTraversePathDeterminism(state);
+		System.out.println("MoreSharedActions ? " + moreSharedActions);
+		// For time budget experiments also check max time setting
+		return moreSharedActions && (timeElapsed() < settings().get(ConfigTags.MaxTime));
+	}
+
+	@Override
+	protected boolean moreSequences() {
+		// For time budget experiments also check max time setting
+		boolean result = ((countInDb("UnvisitedAbstractAction") > 0) || !stopSharedProtocol) && (timeElapsed() < settings().get(ConfigTags.MaxTime));
+		System.out.println("moreSharedSequences ? " + result);
+		return result;
 	}
 }

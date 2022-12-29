@@ -4,7 +4,7 @@
 # Set the mode you want TESTAR to start in: Spy, Generate, Replay
 #################################################################
 
-Mode = Spy
+Mode = Generate
 
 #################################################################
 # Connect to the System Under Test (SUT)
@@ -32,7 +32,7 @@ SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "bu
 #################################################################
 
 Sequences = 1
-SequenceLength = 100
+SequenceLength = 10
 
 #################################################################
 # Oracles based on suspicious titles
@@ -95,7 +95,7 @@ SUTProcesses =
 # Indicate the location of the protocol class for your specific SUT.
 #################################################################
 
-ProtocolClass = labrecruits_commands_testar_agent_dummy_explorer/Protocol_labrecruits_commands_testar_agent_dummy_explorer
+ProtocolClass = distributed_labrecruits/Protocol_distributed_labrecruits
 
 #################################################################
 # State model inference settings
@@ -108,7 +108,8 @@ DataStoreDB = testar
 DataStoreUser = testar
 DataStorePassword = testar
 DataStoreMode = instant
-ActionSelectionAlgorithm = unvisited
+ApplicationName = distributed
+ApplicationVersion = 1
 StateModelStoreWidgets = false
 iv4XRAgentListener = false
 
@@ -136,20 +137,24 @@ FaultThreshold = 0.000000001
 DrawWidgetUnderCursor = true
 MyClassPath = ./settings
 OnlySaveFaultySequences = false
-ActionDuration = 2
+ActionDuration = 0.1
 ShowVisualSettingsDialogOnStartup = true
 ReplayRetryTime = 30.0
 Delete =
-MaxTime = 3.1536E7
-ShowSettingsAfterTest = true
-TimeToWaitAfterAction = 2
+MaxTime = 20
+ShowSettingsAfterTest = false
+TimeToWaitAfterAction = 0.1
 StartupTime = 10.0
 DrawWidgetInfo = false
 TimeToFreeze = 30.0
 StopGenerationOnFault = true
 CopyFromTo =
 VisualizeActions = false
-VisualizeSelectedAction = true
+VisualizeSelectedAction = false
 TestGenerator = random
 MaxReward = 9999999
 Discount = .95
+FlashFeedback = false
+ProtocolCompileDirectory = /tmp
+UnattendedTests = true
+LabRecruitsGraphics = false
