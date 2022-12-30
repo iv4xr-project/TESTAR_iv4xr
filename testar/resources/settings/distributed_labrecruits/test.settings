@@ -23,7 +23,7 @@ Mode = Generate
 # The SUT must be manually started and closed.
 #################################################################
 SUTConnector = COMMAND_LINE
-SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "buttons_doors_1"
+SUTConnectorValue = "/testar/bin/suts/labrecruits_linux/labrecruits_linux.x86_64" "suts/levels" "buttons_doors_1"
 
 #################################################################
 # Sequences
@@ -32,7 +32,7 @@ SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "bu
 #################################################################
 
 Sequences = 1
-SequenceLength = 10
+SequenceLength = 1
 
 #################################################################
 # Oracles based on suspicious titles
@@ -103,12 +103,12 @@ ProtocolClass = distributed_labrecruits/Protocol_distributed_labrecruits
 StateModelEnabled = true
 DataStore = OrientDB
 DataStoreType = remote
-DataStoreServer = localhost
+DataStoreServer = host.docker.internal
 DataStoreDB = testar
 DataStoreUser = testar
 DataStorePassword = testar
 DataStoreMode = instant
-ApplicationName = distributed
+ApplicationName = distributed_labrecruits
 ApplicationVersion = 1
 StateModelStoreWidgets = false
 iv4XRAgentListener = false
@@ -138,10 +138,10 @@ DrawWidgetUnderCursor = true
 MyClassPath = ./settings
 OnlySaveFaultySequences = false
 ActionDuration = 0.1
-ShowVisualSettingsDialogOnStartup = true
+ShowVisualSettingsDialogOnStartup = false
 ReplayRetryTime = 30.0
 Delete =
-MaxTime = 20
+MaxTime = 300
 ShowSettingsAfterTest = false
 TimeToWaitAfterAction = 0.1
 StartupTime = 10.0

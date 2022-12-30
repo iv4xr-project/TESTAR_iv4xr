@@ -39,7 +39,6 @@ import java.util.Vector;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
-import org.fruit.alayer.actions.WdHistoryBackAction;
 import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.distributed.SharedDatabase;
@@ -260,16 +259,14 @@ public class LabRecruitsSharedProtocol extends LabRecruitsProtocol {
 				System.out.println("traversePath: way to final destination state " + destinationStateId);
 				destinationStatResultSet.close();
 			} else {
-				System.out.println("traversePath: State is stuck because no unvisited action found; set targetSharedAction to null; run historyback now");
+				System.out.println("traversePath: State is stuck because no unvisited action found; set targetSharedAction to null; run random action");
 				destinationStatResultSet.close();
 				// Because we were not able to follow the path to execute the targetSharedAction
 				// We need to return the targetSharedAction that is beingExecuted to the NonDeterministicHole or BlackHole vertex
 				returnActionToVertex();
 				targetSharedAction = null;
-				Action histBackAction = new WdHistoryBackAction();
-				buildEnvironmentActionIdentifiers(state, histBackAction);
 				db.close();
-				return histBackAction;
+				return super.selectAction(state, actions);
 			}
 
 			// get stateId from destStateQuery

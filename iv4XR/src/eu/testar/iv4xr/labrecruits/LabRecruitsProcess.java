@@ -151,11 +151,11 @@ public class LabRecruitsProcess extends SUTBase {
 	}
 
 	public static LabRecruitsProcess fromExecutable(String path) throws SystemStartException {
-		if (iv4XR != null) {
-			win.stop();
-		}
 		if(!labRecruitsGraphics) {
 			return new LabRecruitsServer(path);
+		}
+		if (iv4XR != null) {
+			win.stop();
 		}
 		return new LabRecruitsProcess(path);
 	}

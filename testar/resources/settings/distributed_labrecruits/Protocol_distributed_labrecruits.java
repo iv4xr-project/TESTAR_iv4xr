@@ -64,6 +64,18 @@ import nl.ou.testar.RandomActionSelector;
 public class Protocol_distributed_labrecruits extends LabRecruitsSharedProtocol {
 
 	/**
+	 * This method is invoked each time the TESTAR starts the SUT to generate a new sequence.
+	 * This can be used for example for bypassing a login screen by filling the username and password
+	 * or bringing the system into a specific start state which is identical on each start (e.g. one has to delete or restore
+	 * the SUT's configuration files etc.)
+	 */
+	@Override
+	protected void beginSequence(SUT system, State state) {
+		super.beginSequence(system, state);
+		moreSharedActions = true;
+	}
+
+	/**
 	 * Derive all possible actions that TESTAR can execute in each specific LabRecruits state.
 	 */
 	@Override
