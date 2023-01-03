@@ -50,3 +50,10 @@ jobs:
       with:
         name: runTestLabrecruitsCommandExplore-artifact
         path: D:/a/TESTAR_iv4xr/TESTAR_iv4xr/testar/target/install/testar/bin/command_explore
+    - name: Run test_workflow_labrecruits_testar_explore protocol with TESTAR iv4xr and infer a state model
+      run: ./gradlew runTestLabrecruitsStateModel
+    - name: Save runTestLabrecruitsStateModel HTML report artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: runTestLabrecruitsStateModel-artifact
+        path: D:/a/TESTAR_iv4xr/TESTAR_iv4xr/testar/target/install/testar/bin/command_explore_state_model

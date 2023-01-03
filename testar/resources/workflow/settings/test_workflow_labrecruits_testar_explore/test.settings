@@ -100,14 +100,17 @@ ProtocolClass = test_workflow_labrecruits_testar_explore/Protocol_test_workflow_
 #################################################################
 StateModelEnabled = false
 DataStore = OrientDB
-DataStoreType = remote
+DataStoreType = plocal
 DataStoreServer = localhost
+DataStoreDirectory = orientdb-3.0.34\\databases
 DataStoreDB = testar
-DataStoreUser = testar
-DataStorePassword = testar
+DataStoreUser = admin
+DataStorePassword = admin
 DataStoreMode = instant
+ApplicationName = labrecruits
+ApplicationVersion = 1
 ActionSelectionAlgorithm = unvisited
-StateModelStoreWidgets = false
+StateModelStoreWidgets = true
 iv4XRAgentListener = false
 
 #################################################################

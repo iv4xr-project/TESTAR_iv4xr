@@ -1,0 +1,148 @@
+/**
+ * Tasks to test TESTAR iv4xr using gradle
+ */
+
+// Copy test protocols for CI
+task init_workflow_test(type: Copy) {
+    group = 'test_testar_iv4xr_workflow'
+    description ='init_workflow_test'
+    from 'resources/workflow/settings'
+    into 'target/scripts/settings'
+}
+
+// Test labrecruits commands agent listener
+task runTestLabrecruitsCommandAgentListener(type: Exec, dependsOn:'iv4xrDefaultDistribution') {
+    // Read command line output
+    standardOutput = new ByteArrayOutputStream()
+    group = 'test_testar_iv4xr_workflow'
+    description ='runTestLabrecruitsCommandAgentListener'
+    workingDir 'target/install/testar/bin'
+    commandLine 'cmd', '/c', 'testar sse=test_workflow_labrecruits_commands_agent_listener AlwaysCompile=true ApplicationName="command_listener" ShowVisualSettingsDialogOnStartup=false Mode=Generate StateModelEnabled=false'
+    doLast {
+        String output = standardOutput.toString()
+
+        // Check that output contains No problem detected. message to verify the correct execution
+        if(output.readLines().any{line->line.contains("No problem detected.")}) {
+            println "\n${output} \nTESTAR has been executed sucessfully"
+        } else {
+            throw new GradleException("\n${output} \nERROR: Executing TESTAR")
+        }
+    }
+}
+
+// Test labrecruits goal agent listener
+task runTestLabrecruitsGoalAgentListener(type: Exec, dependsOn:'iv4xrDefaultDistribution') {
+    // Read command line output
+    standardOutput = new ByteArrayOutputStream()
+    group = 'test_testar_iv4xr_workflow'
+    description ='runTestLabrecruitsGoalAgentListener'
+    workingDir 'target/install/testar/bin'
+    commandLine 'cmd', '/c', 'testar sse=test_workflow_labrecruits_goal_agent_listener_complete AlwaysCompile=true ApplicationName="goal_listener" ShowVisualSettingsDialogOnStartup=false Mode=Generate StateModelEnabled=false'
+    doLast {
+        String output = standardOutput.toString()
+
+        // Check that output contains No problem detected. message to verify the correct execution
+        if(output.readLines().any{line->line.contains("No problem detected.")}) {
+            println "\n${output} \nTESTAR has been executed sucessfully"
+        } else {
+            throw new GradleException("\n${output} \nERROR: Executing TESTAR")
+        }
+    }
+}
+
+// Test labrecruits commands testar as agent explorer
+task runTestLabrecruitsCommandExplore(type: Exec, dependsOn:'iv4xrDefaultDistribution') {
+    // Read command line output
+    standardOutput = new ByteArrayOutputStream()
+    group = 'test_testar_iv4xr_workflow'
+    description ='runTestLabrecruitsCommandExplore'
+    workingDir 'target/install/testar/bin'
+    commandLine 'cmd', '/c', 'testar sse=test_workflow_labrecruits_testar_explore AlwaysCompile=true ApplicationName="command_explore" ShowVisualSettingsDialogOnStartup=false Mode=Generate StateModelEnabled=false'
+    doLast {
+        String output = standardOutput.toString()
+
+        // Check that output contains No problem detected. message to verify the correct execution
+        if(output.readLines().any{line->line.contains("No problem detected.")}) {
+            println "\n${output} \nTESTAR has been executed sucessfully"
+        } else {
+            throw new GradleException("\n${output} \nERROR: Executing TESTAR")
+        }
+    }
+}
+
+// Download OrientDB 3.0.34 from the official wep page
+task downloadOrientDB(type: Download, dependsOn: installDist) {
+    src 'https://s3.us-east-2.amazonaws.com/orientdb3/releases/3.0.34/orientdb-3.0.34.zip'
+    dest 'target/install/testar/bin'
+    overwrite false
+}
+// Verify that we downloaded the correct OrientDB file
+task verifyOrientDB(type: Verify, dependsOn: downloadOrientDB) {
+    src new File(downloadOrientDB.dest, 'orientdb-3.0.34.zip')
+    algorithm 'MD5'
+    checksum 'a0619e5522e7d849d4f1067bf08e3857'
+}
+// Extract OrientDB binary files
+task downloadAndUnzipOrientDB(type: Copy, dependsOn: verifyOrientDB) {
+    group = 'test_testar_iv4xr_workflow'
+    description ='downloadAndUnzipOrientDB'
+    
+    // Disable for non-Windows environments (Linux, osx)
+    if (!System.getProperty('os.name').toLowerCase().contains('windows')) {
+        return;
+    }
+    
+    from zipTree(new File(downloadOrientDB.dest, 'orientdb-3.0.34.zip'))
+    into downloadOrientDB.dest
+}
+// Execute a command line to create a testar OrientDB database with admin admin credentials
+task createDatabaseOrientDB(type: Exec, dependsOn: downloadAndUnzipOrientDB){
+    group = 'test_testar_iv4xr_workflow'
+    description ='createDatabaseOrientDB'
+    
+    // Disable for non-Windows environments (Linux, osx)
+    if (!System.getProperty('os.name').toLowerCase().contains('windows')) {
+        return;
+    }
+    // Read command line output
+    standardOutput = new ByteArrayOutputStream()
+    errorOutput = new ByteArrayOutputStream()
+    workingDir 'target/install/testar/bin/orientdb-3.0.34/bin'
+    commandLine 'cmd', '/c', 'console.bat CREATE DATABASE plocal:../databases/testar admin admin'
+    // Ignore errors creating the database because we check the output buffer message
+    ignoreExitValue true
+    doLast {
+        String output = standardOutput.toString()
+        
+        // If error creating database because already exists is ok
+        if (execResult.getExitValue()==1 && errorOutput.toString().contains("Cannot create new database 'testar' because it already exists")) {
+            println "\n${output} \ntestar OrientDB database already exists"
+        }
+        // Check if testar database created sucessfully
+        else if(output.readLines().any{line->line.contains("Database created successfully.")}) {
+            println "\n${output} \ntestar OrientDB database created successfully"
+        } else {
+            throw new GradleException("\n${output} \nERROR: Creating testar OrientDB database")
+        }
+    }
+}
+
+// Verify that TESTAR infers a State Model with LabRecruits
+task runTestLabrecruitsStateModel(type: Exec, dependsOn: createDatabaseOrientDB) {
+    // Read command line output
+    standardOutput = new ByteArrayOutputStream()
+    group = 'test_testar_iv4xr_workflow'
+    description ='runTestLabrecruitsStateModel'
+    workingDir 'target/install/testar/bin'
+    commandLine 'cmd', '/c', 'testar sse=test_workflow_labrecruits_testar_explore AlwaysCompile=true ApplicationName="command_explore_state_model" ShowVisualSettingsDialogOnStartup=false Mode=Generate StateModelEnabled=true DataStoreDB=testar DataStoreUser=admin DataStorePassword=admin'
+    doLast {
+        String output = standardOutput.toString()
+
+        // Check that output contains abstract states in the State Model inference
+        if(output.readLines().any{line->line.contains("abstract states in the model")}) {
+            println "\n${output} \nTESTAR State Model has been inferred sucessfully"
+        } else {
+            throw new GradleException("\n${output} \nERROR: Inferring TESTAR State Model")
+        }
+    }
+}
