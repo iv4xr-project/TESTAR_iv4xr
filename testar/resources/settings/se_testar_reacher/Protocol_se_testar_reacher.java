@@ -28,29 +28,16 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.fruit.Util;
 import org.fruit.alayer.*;
-import org.fruit.alayer.exceptions.ActionFailedException;
-import org.fruit.alayer.exceptions.SystemStartException;
-import org.fruit.monkey.ConfigTags;
-import org.testar.OutputStructure;
-import org.testar.iv4xr.InteractiveSelectorSE;
-import org.testar.iv4xr.OpenCoverage;
-import org.testar.iv4xr.SpatialXMLmap;
+import org.fruit.monkey.Settings;
 import org.testar.protocols.iv4xr.SEProtocol;
-import eu.iv4xr.framework.spatial.Vec3;
+
 import eu.testar.iv4xr.actions.se.commands.*;
 import eu.testar.iv4xr.actions.se.goals.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.testar.iv4xr.enums.SVec3;
 import nl.ou.testar.RandomActionSelector;
 import spaceEngineers.model.Vec3F;
 
@@ -95,79 +82,16 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 		fragileEntities.add("LargeBlockSmallGenerator");
 	}
 
-	// Oracle example to validate that the block integrity decreases after a Grinder action
-	private Verdict functional_verdict = Verdict.OK;
-
-	private final String SE_LEVEL_PATH = "suts/se_levels/TESTAR_Map_1";
-
-	private InteractiveSelectorSE actionSelectorSE = new InteractiveSelectorSE();
-
-	private Instant startSequence;
-	private Instant startAction;
-
 	/**
-	 * This methods is called before each test sequence, allowing for example using external profiling software on the SUT
+	 * Called once during the life time of TESTAR
+	 * This method can be used to perform initial setup work
+	 * @param settings the current TESTAR settings as specified by the user.
 	 */
 	@Override
-	protected void preSequencePreparations() {
-		super.preSequencePreparations();
-
-		// Create a XML spatial map based on the desired SpaceEngineers level
-		SpatialXMLmap.prepareSpatialXMLmap(SE_LEVEL_PATH);
-	}
-
-	/**
-	 * This method is called when TESTAR starts the System Under Test (SUT). The method should
-	 * take care of
-	 *   1) starting the SUT (you can use TESTAR's settings obtainable from <code>settings()</code> to find
-	 *      out what executable to run)
-	 *   2) waiting until the system is fully loaded and ready to be tested (with large systems, you might have to wait several
-	 *      seconds until they have finished loading)
-	 *
-	 * @return  a started SUT, ready to be tested.
-	 * @throws SystemStartException
-	 */
-	@Override
-	protected SUT startSystem() throws SystemStartException {
-		SUT system = super.startSystem();
-
-		// Move SpaceEngineers to the foreground
-		system.get(IV4XRtags.windowsProcess).toForeground();
-
-		// Load the desired level to execute TESTAR and obtain the coverage
-		system.get(IV4XRtags.iv4xrSpaceEngineers).getSession().loadScenario(new File(SE_LEVEL_PATH).getAbsolutePath());
-		Util.pause(20);
-
-		return system;
-	}
-
-	/**
-	 * This method is invoked each time the TESTAR starts the SUT to generate a new sequence.
-	 */
-	@Override
-	protected void beginSequence(SUT system, State state) {
-		super.beginSequence(system, state);
-		actionSelectorSE = new InteractiveSelectorSE();
-		startSequence = Instant.now();
-		startAction = Instant.now();
-	}
-
-	/**
-	 * This method is called when the TESTAR requests the state of the SUT.
-	 * Here you can add additional information to the SUT's state or write your
-	 * own state fetching routine.
-	 *
-	 * super.getState(system) puts the state information also to the HTML sequence report
-	 *
-	 * @return  the current state of the SUT with attached oracle.
-	 */
-	@Override
-	protected State getState(SUT system) {
-		State state = super.getState(system);
-
-		SpatialXMLmap.updateAgentObservation(state);
-
-		return state;
+	protected void initialize(Settings settings) {
+		super.initialize(settings);
+		// The SE level that TESTAR is going to explore
+		SE_LEVEL_PATH = "suts/se_levels/TESTAR_Map_1";
 	}
 
 	/**
@@ -251,7 +175,7 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 		}
 
 		// Now add the set of actions to explore level positions
-		labActions = sePositionRotationHelper.calculateExploratoryPositions(system, state, agentId, labActions);
+		labActions = sePositionRotationHelper.calculateExploratoryNodeMap(system, state, agentId, labActions, 7f);
 
 		// If it was not possible to navigate to an entity or realize a smart exploration
 		// prepare a dummy exploration
@@ -288,85 +212,25 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 			retAction = actionSelectorSE.prioritizedAction(state, actions);
 		}
 		if(retAction == null) {
-			//System.out.println("State model based action selection did not find an action. Using default action selection.");
-			// if state model fails, use default:
+			System.out.println("State model and prioritized based action selection did not find an action. Using default action selection.");
+			// if state model and prioritize interaction fails, use default:
 			retAction = RandomActionSelector.selectAction(actions);
 		}
 		return retAction;
 	}
 
 	/**
-	 * Execute TESTAR as agent command Action
+	 * Execute the selected action.
+	 * @param system the SUT
+	 * @param state the SUT's current state
+	 * @param action the action to execute
+	 * @return whether or not the execution succeeded
 	 */
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
-		try {
-			// adding the action that is going to be executed into HTML report:
-			htmlReport.addSelectedAction(state, action);
-
-			System.out.println(action.toShortString());
-			// execute selected action in the current state
-			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
-
-			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
-			Util.pause(waitTime);
-
-			if(action instanceof seActionNavigateToBlock) {
-				SpatialXMLmap.updateNavigableNodesPath(((seActionNavigateToBlock) action).getNavigableNodes());
-			}
-			else if(action instanceof seActionExplorePosition) {
-				SpatialXMLmap.updateNavigableNodesPath(((seActionExplorePosition) action).getNavigableNodes());
-			}
-			SpatialXMLmap.updateInteractedBlock(action);
-
-			actionSelectorSE.addExecutedAction(action);
-
-			Duration actionTimeElapsed = Duration.between(startAction, Instant.now());
-			String actionTimeText = "actionTimeElapsed: "+ actionTimeElapsed.toSeconds() + " seconds";
-
-			try {
-				File metricsFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "time_execution_coverage.txt").getAbsoluteFile();
-				metricsFile.createNewFile();
-				FileWriter myWriter = new FileWriter(metricsFile, true);
-				myWriter.write(actionTimeText + "\r\n");
-				myWriter.close();
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-			}
-
-			startAction = Instant.now();
-
-			return true;
-
-		}catch(ActionFailedException afe){
-			return false;
-		}
-	}
-
-	/**
-	 * Here you can put graceful shutdown sequence for your SUT
-	 * @param system
-	 */
-	@Override
-	protected void stopSystem(SUT system) {
-		Duration sequenceTimeElapsed = Duration.between(startSequence, Instant.now());
-		String sequenceTimeText = "sequenceTimeElapsed: "+ sequenceTimeElapsed.toSeconds() + " seconds";
-
-		try {
-			File metricsFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "time_execution_coverage.txt").getAbsoluteFile();
-			metricsFile.createNewFile();
-			FileWriter myWriter = new FileWriter(metricsFile, true);
-			myWriter.write(sequenceTimeText + "\r\n");
-			myWriter.close();
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
-
-		// Create the spatial image based on the explored level
-		SpatialXMLmap.createXMLspatialMap();
-
-		// This stops the plugin but no the SUT
-		super.stopSystem(system);
+		boolean actionExecuted = super.executeAction(system, state, action);
+		if(actionExecuted) actionSelectorSE.addExecutedAction(action);
+		return actionExecuted;
 	}
 
 }

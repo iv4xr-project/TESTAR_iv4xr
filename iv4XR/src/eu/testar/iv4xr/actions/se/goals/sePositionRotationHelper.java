@@ -37,7 +37,6 @@ import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Widget;
 
-import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
 import spaceEngineers.controller.Observer;
@@ -85,85 +84,28 @@ public class sePositionRotationHelper {
 		return (reachableNode != -1);
 	}
 
-	/**
-	 * SE - Platform
-	 * X and Z axes are the 2D to calculate the navigation movements. 
-	 * Calculate the navigable position by adding circular coordinates to the current agent position. 
-	 * 
-	 * @param system
-	 * @param state
-	 * @param agentId
-	 * @param actions
-	 * @return actions
-	 */
-	public static Set<Action> calculateExploratoryPositions(SUT system, State state, String agentId, Set<Action> actions) {
-		// Circular positions relative to the agent center
-		// https://stackoverflow.com/a/5301049
-		Vec3 agentCenter = SVec3.seToLab(state.get(IV4XRtags.agentWidget).get(IV4XRtags.seAgentPosition));
+	public static Set<Action> calculateExploratoryNodeMap(SUT system, State state, String agentId, Set<Action> actions, float maxDistance) {
+		// Agent position
+		Vec3F agentPosition = state.get(IV4XRtags.agentWidget).get(IV4XRtags.seAgentPosition);
 
-		//TODO: Obtain the observation range and iterate until the max radius
+		// Create a navigational graph of the largest grid
+		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+		Observer seObserver = seController.getObserver();
+		String largestGridId = ObservationExtensionsKt.largestGrid(seObserver.observeBlocks()).getId();
+		NavGraph navGraph = seObserver.navigationGraph(largestGridId);
+		RichNavGraph richNavGraph = RichNavGraphKt.toRichGraph(navGraph);
 
-		// 1 block distance positions (near)
-		// For near positions calculate 8 positions in circle
-		int points = 8;
-		double slice = 2 * Math.PI / points;
-		double radius = 2.5;
-		for (int i = 0; i < points; i++) {
-			double angle = slice * i;
-			float newX = agentCenter.x + (float)(radius * Math.cos(angle));
-			float newY = agentCenter.y + (float)(radius * Math.sin(angle));
-			// New destination on which we need to calculate if it is a reachable position
-			Vec3 nearPosition = new Vec3(newX, newY, agentCenter.z);
-			if(sePositionRotationHelper.calculateIfPositionIsReachable(system, nearPosition)) {
-				actions.add(new seActionExplorePosition(state, nearPosition, system, agentId));
-			}
-		}
-
-		// 2 block distance positions (medium)
-		// For medium positions calculate 16 positions in circle
-		points = 16;
-		slice = 2 * Math.PI / points;
-		radius = 5.0;
-		for (int i = 0; i < points; i++) {
-			double angle = slice * i;
-			float newX = agentCenter.x + (float)(radius * Math.cos(angle));
-			float newY = agentCenter.y + (float)(radius * Math.sin(angle));
-			// New destination on which we need to calculate if it is a reachable position
-			Vec3 medPosition = new Vec3(newX, newY, agentCenter.z);
-			if(sePositionRotationHelper.calculateIfPositionIsReachable(system, medPosition)) {
-				actions.add(new seActionExplorePosition(state, medPosition, system, agentId));
-			}
-		}
-
-		// 3 block distance positions (far)
-		// For far positions calculate 16 positions in circle
-		points = 16;
-		slice = 2 * Math.PI / points;
-		radius = 7.5;
-		for (int i = 0; i < points; i++) {
-			double angle = slice * i;
-			float newX = agentCenter.x + (float)(radius * Math.cos(angle));
-			float newY = agentCenter.y + (float)(radius * Math.sin(angle));
-			// New destination on which we need to calculate if it is a reachable position
-			Vec3 farPosition = new Vec3(newX, newY, agentCenter.z);
-			if(sePositionRotationHelper.calculateIfPositionIsReachable(system, farPosition)) {
-				actions.add(new seActionExplorePosition(state, farPosition, system, agentId));
-			}
-		}
-
-		// 4 block distance positions (far)
-		// For far positions calculate 16 positions in circle
-		points = 16;
-		slice = 2 * Math.PI / points;
-		radius = 10;
-		for (int i = 0; i < points; i++) {
-			double angle = slice * i;
-			float newX = agentCenter.x + (float)(radius * Math.cos(angle));
-			float newY = agentCenter.y + (float)(radius * Math.sin(angle));
-			// New destination on which we need to calculate if it is a reachable position
-			Vec3 farPosition = new Vec3(newX, newY, agentCenter.z);
-			if(sePositionRotationHelper.calculateIfPositionIsReachable(system, farPosition)) {
-				actions.add(new seActionExplorePosition(state, farPosition, system, agentId));
+		// Based on a maximum distance, derive the exploratory node movements
+		for (Node node : richNavGraph.getNodeMap().values()) {
+			Vec3F nodePosition = node.getPosition();
+			float nodeDistance = nodePosition.distanceTo(agentPosition); // the target position of the widget to interact with
+			// If the node is inside the max distance radio
+			if(nodeDistance < maxDistance){
+				// And the position of the node is reachable
+				if(sePositionRotationHelper.calculateIfPositionIsReachable(system, nodePosition)) {
+					// Add an exploratory movement to the node
+					actions.add(new seActionExplorePosition(state, SVec3.seToLab(nodePosition), system, agentId));
+				}
 			}
 		}
 
@@ -177,9 +119,7 @@ public class sePositionRotationHelper {
 	 * @param position
 	 * @return true or false
 	 */
-	public static boolean calculateIfPositionIsReachable(SUT system, Vec3 position) {
-		Vec3F destinationPosition = SVec3.labToSE(position);
-
+	public static boolean calculateIfPositionIsReachable(SUT system, Vec3F position) {
 		// Create a navigational graph of the largest grid
 		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 		Observer seObserver = seController.getObserver();
@@ -192,7 +132,7 @@ public class sePositionRotationHelper {
 		int reachableNode = -1;
 		float closestDistance = 0.5f; // Not exactly the same position but almost
 		for (Node node : richNavGraph.getNodeMap().values()) {
-			float distance = node.getPosition().distanceTo(destinationPosition); // the destination position to explore
+			float distance = node.getPosition().distanceTo(position); // the destination position to explore
 			if(distance < closestDistance){
 				reachableNode = node.getId();
 				closestDistance = distance;
