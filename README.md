@@ -1,289 +1,97 @@
-## iv4xr project
+## TESTAR-iv4xr project
 
-This project contains the first version of the integration of the TESTAR tool with the iv4xr framework.
+This project contains the first version of the integration of the TESTAR tool within the iv4xr framework.
 
-TESTARtool development repository: https://github.com/TESTARtool/TESTAR_dev
+**Detailed and updated information can be found in the wiki section:**  
+https://github.com/iv4xr-project/TESTAR_iv4xr/wiki
 
-### TESTAR-iv4xr distributed binaries
+#### Recommended Environment
 
-Release version 3.0: https://github.com/iv4xr-project/TESTAR_iv4xr/releases/tag/v3.0
+- Windows 10, 11, Server 2016, Server 2019 OS
+- Java 11 to Java 14 (With Java > 15 it is not possible to edit and modify the protocol from the GUI)
+- OrientDB 3.0.XX to infer the State Model (more details in the wiki section)
 
-Requirements for distributed version:
-- Windows 10 OS
-- Java 11 to Java 14 (With Java 15 it is not possible to modify the protocol at the moment)
-- OrientDB 3.0.34 to infer the State Model (more info about State Model below)
+#### Distributed binaries
 
-TESTAR current execution and functional modes:
-- Generate to launch and test iv4xr SUTs
-- View to open the HTML report for visualization
-- Spy, Record and Replay works with desktop and web applications, but not yet with iv4xr systems (so TESTAR will throw an exception :D)
+Follow the latest distribution version of TESTAR here:  
+https://github.com/iv4xr-project/TESTAR_iv4xr/releases
 
-### LabRecruits SUT
+### Supported iv4XR applications
 
-LabRecruits SUT:
-- ``testar\bin\suts\gym\Windows\bin`` contains LabRecruits demo game
-- ``testar\bin\suts\levels`` contains LabRecruits demo levels
+#### LabRecruits
 
-TESTAR SUT specific protocols allow users to define how the tool connects and interacts with the SUT. 
+[LabRecruits](https://github.com/iv4xr-project/labrecruits) is a 3D demo game created to test the integration of intelligent agents by using the [iv4XRDemo framework](https://github.com/iv4xr-project/iv4xrDemo).  
+
+LabRecruits files:  
+- ``testar\bin\suts\gym\Windows\bin`` LabRecruits demo game is downloaded automatically when TESTAR compiles.  
+- ``testar\bin\suts\levels`` contains LabRecruits demo levels.  
+
+TESTAR protocols allow users to define how the tool connects and interacts with LabRecruits. 
 These protocols are a set of directories inside ``testar\bin\settings`` that contain a java protocol and test.setting file, 
 on which it is possible to add new directories (with java + test.setting) to create additional protocols.
 
-By default there are 7 protocols with 7 different implementations, 
-which can be modified or used to create additional protocols:
-- ``labrecruits_commands_agent_listener``
-TESTAR is listening the Goal agents primitive commands to infer a StateModel
-- ``labrecruits_commands_testar_agent_dummy_explorer``
-TESTAR is an agent that randomly explores (without a navigational map) the environment using primitive commands.
-- ``labrecruits_commands_testar_agent_navmesh_explorer``
-TESTAR is an agent that randomly explores the environment using primitive commands and the intenral navigational map.
-- ``labrecruits_emotional_agent``
-Demo protocol to integrate the emotional agent properties inside the TESTAR State Model
-- ``labrecruits_goal_agent_listener_complete``
-TESTAR is listening the complete Goal agents tactics to infer a StateModel
-- ``labrecruits_goal_agent_listener_tick``
-TESTAR is listening the deliberation ticks Goal agents tactics to infer a StateModel
-- ``labrecruits_goal_testar_agent``
-TESTAR is an agent that randomly explores the environment using the LabRecruits Goals.
+Additional information regarding the configuration of these protocols can be found in the 
+[TESTAR LabRecruits instructions](https://github.com/iv4xr-project/TESTAR_iv4xr/wiki/LabRecruits-instructions) wiki section.
 
-With TESTAR GUI (SUTConnectorValue test.setting) we need to indicate to the tool:
-- Where the LabRecruits executable is located
-- Where the LabRecruits levels are located
-- Which level we want to test
+#### SpaceEngineers
 
-Inside TESTAR Java Protocol (Edit protocol) we can modify the behaviour of the tool,
-and the LabRecruits agent goals (Example: labrecruits_goal_agent_listener_complete):
-- Imagine we changed the LabRecruits level we want to test
-- Click Edit protocol
-- Go to beginSequence method
-- Change the goal testing-task
-- Compile and close
+[Space Engineers](https://www.spaceengineersgame.com/) is an industrial 3D game developed by Keen Software and GoodAI. The iv4xr framework contains a [SE plugin](https://github.com/iv4xr-project/iv4xr-se-plugin) that allows the observation and execution of actions in the virtual environment.  
 
-### SpaceEngineers SUT
+Before executing TESTAR the user needs to:
+- Install SpaceEngineers game from Steam.
+- Follow the [SE plugin](https://github.com/iv4xr-project/iv4xr-se-plugin) instructions to enable the iv4xr game-framework communication.
+- Prepare the SE level we want to test with TESTAR in the ``testar\bin\suts\se_levels`` directory. 
 
-Before execute TESTAR the user has to:
-- Install SpaceEngineers game from Steam
-- Follow the dll plugins instructions to enable the iv4xr game-framework communication
-https://github.com/iv4xr-project/iv4xr-se-plugin
-- Start the level on which we want to execute TESTAR tool
+Additional information regarding the configuration of these protocols can be found in the 
+[TESTAR Space Engineers instructions](https://github.com/iv4xr-project/TESTAR_iv4xr/wiki/Space-Engineers-instructions) wiki section.
 
-At the moment we only have 1 protocol by default:
-- ``se_commands_testar_dummy``
-TESTAR is an agent that randomly explores (without a navigational map) the environment using primitive commands.
-
-With TESTAR GUI (SUTConnectorValue test.setting) we need to indicate to the tool:
-- The SpaceEngineers process name (SpaceEngineers.exe)
-
-The internal framework-game plugin communication is integrated by default.
-
-## State Model / Graph database support
-TESTAR uses orientdb graph database https://www.orientdb.org/ , to create TESTAR GUI State Models.
-Detected Widget's, Actions, States and their respective relations are recorded to this graph database.
-
-### Download OrientDB 3.0.34 GA Community Edition (August 31st, 2020)
-https://www.orientdb.org/download
-
-https://s3.us-east-2.amazonaws.com/orientdb3/releases/3.0.34/orientdb-3.0.34.zip
-
-``Warning: Since August 2020 there is version 3.1.X of OrientDB, however TESTAR currently requires the use of versions 3.0.X``
-
-### TESTAR remote connection issue
-
-Due to an issue with the remote connection to OrientDB (https://github.com/iv4xr-project/TESTAR_iv4xr/issues/1), it is necessary to use the **plocal** connection to infer the State Model.
-
-### Install and configure OrientDB Server
-In order to use the State Model feature it's advised to install a graph database on your machine or in a remote server.
-
-Follow the installation instructions about how to configure TESTAR State Model on slide 28:
-
-https://testar.org/images/development/TESTAR_webdriver_state_model.pdf 
-
-Also TESTAR HandsOn (Section 6) contains more information about State Model settings:
-
-https://testar.org/images/development/Hands_on_TESTAR_Training_Manual_2020_October_14.pdf
-
-When orientdb is started the first time. The root password needs to be configured. Make sure you remember this password.
-
-In order to use the graphdb feature. A database must be created in OrientDB. To do this follow the following procedure:
-- Start the database server (ORIENTDB_HOME/bin/server.bat)
-- Start orientdb studio in a webbrowser [http://localhost:2480](http://localhost:2480)
-- Choose "New DB" and provide the name, root user and password. (The database will also get a default admin/admin  user/password).
-- Go to Security tab and create a new user (testar/testar) with an active status and the admin role
-
-### Using OrientDB graphdb on the local filesystem
-OrientDB graph database can be used remotely or locally.
-Default TESTAR settings are predefined to connect with remote mode to a local OrientDB server:
-
-		StateModelEnabled = true
-		DataStore = OrientDB
-		DataStoreType = remote
-		DataStoreServer = localhost
-		DataStoreDB = testar
-		DataStoreUser = testar
-		DataStorePassword = testar
-
-Also is possible to connect at file level without deploy the OrientDB locally:
-
-		StateModelEnabled = true
-		DataStore = OrientDB
-		DataStoreType = plocal
-		DataStoreDirectory = C:\\Users\\testar\\Desktop\\orientdb-3.0.34\\databases
-		DataStoreDB = testar
-		DataStoreUser = testar
-		DataStorePassword = testar
-
-
-## TESTAR-iv4xr development
-
-This is the github development root folder for TESTAR development. 
-The software can be build with gradle.
-
-### Import Gradle project into Eclipse (similar for other IDEs with Gradle)
-
-1. Create a new empty workspace for Eclipse in a folder which is not the folder that contains the source
-code.
-2. Select File -> Import to open the import dialog
-3. Select Gradle -> Existing Gradle project to open te import dialog 
-4. Select the folder that contains the root of the source code and start the import
-
-It should be possible to build the project using the instructions provided in the next section
-
-### windows.dll (Allows TESTAR execution on Windows)
-
-TESTAR uses the ``windows.dll`` library to make calls to the Windows 10 systems.
-
-By default there is a ``windows.dll`` inside ``\testar\resources\windows10\`` directory, 
-which is copied when we create a default distributed versions avoiding creating a new windows.dll in each compilation.
-
-If we add or modify functionality on the interaction with Windows 10 environments, 
-we will need to compile a new windows.dll instead of use the copy of the current version.
-
-### Gradle tasks
-
-`gradlew` is the instruction to use the gradle wrapper. 
-
-This basically means that TESTAR will download in the system, and will use to compile, 
-the gradle version indicated inside `TESTAR_dev\gradle\wrapper\gradle-wrapper.properties`
-
-`gradle` uses the environment variables to use the gradle version of the system.
-
-#### gradle build (Files Compilation)
-``gradle build`` task : is configured to compile TESTAR project at Java level for error and warning checking.
-
-NOTE: This task also automatically downloads the labrecruits game
-
-
-#### gradle iv4xrDefaultDistribution (copy default windows.dll)
-``gradle iv4xrDefaultDistribution`` task : uses the default ``windows.dll`` to prepare the distributed version.
-
-NOTE: Use this task to create a distributed TESTAR version without the need of Visual Studio.
-
-This task will also execute ``downloadAndUnzipLabRecruits`` task : to download LabRecruits game from [github LabRecruits](https://github.com/iv4xr-project/TESTAR_iv4xr/releases/download/v3.0/labrecruits_2.2.1_windows_30fps.zip).
-
-Distributed files created inside:
-- ``testar\target\install\testar\bin``
-- ``testar\target\distributions\testar.zip``
-
-
-#### gradle iv4xrWindowsDistribution (creates a new windows.dll)
-``gradle iv4xrWindowsDistribution`` task : uses the ``Required tools to create a new TESTAR windows.dll`` (see below) to create a new file `windows.dll`, which has preference over the default one.
-
-
-### Required tools to create a new TESTAR windows.dll
-
-In order to build the native code, a view manual steps need to be executed;
-
-1. In order to build the windows native code, Nmake and the compile for Microsoft visual studio are required.
-These tools can be downloaded using the following [link](https://www.visualstudio.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=15#).
-2. Install the Visual Studio tools on your machine (remember the path where the tools are installed)
-3. Download [compile_w10.bat](https://github.com/florendg/testar_floren/releases/download/PERFORMANCE/compile_w10.bat) 
-and [clean_w10.bat](https://github.com/florendg/testar_floren/releases/download/PERFORMANCE/clean_w10.bat)
-4. Copy clean.bat and compile.bat to the folder windows/native_src within the TESTAR project
-5. Adapt compile.bat and clean.bat. Set *PATH* to the installation folder used in step 2.
-CALL "C:<*PATH*>\2017\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=x64
-
-
-#### gradle windowsDistribution (Allows TESTAR execution on Windows)
-`gradle windowsDistribution` task : uses the `Required tools to build the software` (see above) to create a new file `windows.dll`, which has preference over the default one.
-
-NOTE: TESTAR requires Visual Redistributable which can be downloaded from the following
- [link]( https://go.microsoft.com/fwlink/?LinkId=746572 ). Also a JAVA 1.8 JDK is required.
-
-#### gradle installDist (Create TESTAR Distribution)
-`gradle installDist` task : creates a runnable TESTAR distribution in the `\testar\target\install\testar\bin\` directory.
-By default, `windows.dll` should be copied from `\testar\resources\windows10\` directory and overwritten by the new dll file if the `gradle windowsDistribution` task was executed.
-
-1. Run `.\gradle installDist` in the root of the project, or `TESTAR_dev -> distribution -> installDist` with the IDE
-2. Change directory to `\testar\target\install\testar\bin\`
-3. Run testar.bat
-
-#### gradle distZip (Creates a TESTAR Distribution)
-It is also possible to generate a zip file containing TESTAR. This zip can be extracted on any other machine
-that has a 64-bit Windows operating system and Visual Studio redistributable installed. A proper way of using
-TESTAR is to run the tool in a virtual-machine.
-To build the zip execute the following command.
-
-1. Run `.\gradle distZip` in the root of the project. 
-2. Extract the zip on the machine where TESTAR is used.
-
-NOTE: TESTAR requires Visual Redistributable which can be downloaded from the following
- [link](https://go.microsoft.com/fwlink/?LinkId=746572) .Also a JAVA 1.8 JDK is required.
-
-#### Running Gradle in Eclipse
-The following procedure has been performed
-
-1. Create a new empty workspace for Eclipse in a folder which is not the folder that contains the source
-code.
-2. Select File -> Import to open the import dialog
-3. Select Gradle -> Existing Gradle project to open te import dialog 
-4. Select the folder that contains the root of the source code and start the import
-
-#### Running TESTAR from Gradle
-`gradle runTestar` task : creates a TESTAR distribution with `gradle installDist` task, and executes TESTAR from the runnable file `\testar\target\install\testar\bin\testar.bat`
-
-TESTAR can be started using a gradle command from the root of the project.
-1. .\gradle runTestar
-
-##### In Eclipse
-Within Eclipse, TESTAR can be executed by running the task runTestar which is available in the map custom_testar.
-To debug the application with the runTestar task, provide your onw run configuration in which the option -DDEBUG is set.
-
-#### Debug TESTAR from Gradle
-In order to debug the TESTAR code, you must run;
-1. .\gradle -DDEBUG=true runTestar.  
-
-Optionally you can build TESTAR (.\gradle -DDBEBUG=true distZip ), copy the result to 
-the machine where you want to run TESTAR and run TESTAR on the target machine. This allows
-the user to debug TESTAR from a different machine. 
-
-### How to execute TESTAR from command line
-
-TESTAR allow its execution and settings configuration from the command line. By default is executed with the selected protocol (.sse file) and the test.settings values of that protocol.
-
-From the command line it is also possible to select the desired protocol to execute TESTAR and change the values of the test.settings.
-
-The protocol to be executed can be selected using the "sse" parameter next to the name of the desired protocol. Ex: testar sse=desktop_generic
-
-Other settings are input using the pairs "parameterX=valueX" separated by space. Ex: testar ShowVisualSettingsDialogOnStartup=false Mode=Generate
-
-Certain characters such the slashes or the quotation marks must be entered in a double way to respect the treaty of special characters.
-
-Some of the most interesting parameters that can help to integrate TESTAR as an CI tool are:
-
-		sse -> to change the protocol
-
-		ShowVisualSettingsDialogOnStartup -> To run TESTAR without the GUI
-
-		Mode -> TESTAR execution Mode (Spy, Generate, Record, Replay, View)
-
-		SUTConnector & SUTConnectorValue -> The way to link with the desired application to be tested
-
-		Sequences & SequenceLength -> The number of iterations and actions that TESTAR will execute
-
-		SuspiciousTitles -> The errors that TESTAR will search in the execution
-
-Example: 
-
-``testar sse=desktop_generic ShowVisualSettingsDialogOnStartup=false Sequences=5 SequenceLength=100 Mode=Generate SUTConnectorValue=" ""C:\\Program Files\\VideoLAN\\VLC\\vlc.exe"" " SuspiciousTitles=".*[eE]rror.*|.*[eE]xcep[ct]ion.*"``
+### Known Issues
 
 https://github.com/iv4xr-project/TESTAR_iv4xr/issues
 
+## Development
+
+TESTAR_iv4XR software can be built with Gradle.  
+It is possible to use Gradle tasks outside an IDE to compile and launch TESTAR or to use an IDE such as Eclipse or IntelliJ to import, develop, compile and execute TESTAR.
+
+[TESTAR_iv4xr project installation video](https://www.youtube.com/watch?v=WxMFVnh5Uso)
+
+### Gradle tasks
+
+`gradlew` is the instruction to use the Gradle wrapper. 
+
+TESTAR downloads Gradle wrapper dependencies into the system and uses it to compile the project. The Gradle version is indicated inside the file `TESTAR_dev\gradle\wrapper\gradle-wrapper.properties`
+
+#### Gradle build
+`gradlew build` task: is configured to compile TESTAR project at Java level for error and warning checking.
+
+#### Gradle distZip
+`gradlew distZip` task: prepares a distributed zip version of TESTAR inside ``testar\target\distributions\testar.zip``
+
+#### Gradle installDist
+`gradlew installDist` task: prepares a compiled version of TESTAR ready for launching inside ``testar\target\install\testar\bin``
+
+These tasks will also execute `downloadAndUnzipLabRecruits` task: to automatically download the LabRecruits game.
+
+### Import Gradle project into Eclipse (similar to other IDEs with Gradle)
+
+1. Create a new empty workspace for Eclipse in a folder that is not the folder that contains the source
+code.  
+2. Select File -> Import to open the import dialog
+3. Select Gradle -> Existing Gradle project to open the import dialog 
+4. Select the folder that contains the root of the source code and start the import
+
+#### Running TESTAR within IDE
+
+After importing the project into the desired IDE, it is possible to execute TESTAR from the IDE.
+1. Execute the `debuggingDistribution` task from the group **distribution_iv4XR**  
+2a. Launch the `testar\org\fruit\monkey\Main.java` class as a Java application  
+2b. For IntelliJ (not Eclipse), the user needs to change the launching directory to `TESTAR_iv4xr\testar`  
+
+## Contact
+
+For any suggestions or errors found, please open an issue or send an email to _tanja@testar.org_ and _fernando@testar.org_ .
+
+### TESTAR for desktop, web and mobile applications
+
+TESTARtool development repository: https://github.com/TESTARtool/TESTAR_dev
