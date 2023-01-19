@@ -44,7 +44,6 @@ import org.fruit.monkey.Settings;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import agents.tactics.GoalLib;
-import agents.tactics.GoalLibExtended;
 import environments.LabRecruitsEnvironment;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.mainConcepts.WorldEntity;
@@ -52,7 +51,6 @@ import eu.testar.iv4xr.actions.lab.commands.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
-import world.BeliefStateExtended;
 
 /**
  * iv4xr EU H2020 project - LabRecruits Demo
@@ -105,68 +103,35 @@ public class Protocol_labrecruits_commands_agent_listener extends LabRecruitsPro
 
 		// iv4xr Agent : define the testing-task
 		// goal for "buttons_doors_1" level
-//		goal = SEQ(
-//				GoalLib.entityInteracted("button1"),
-//				GoalLib.entityStateRefreshed("door1"),
-//				GoalLib.entityInvariantChecked(testAgent,
-//						"door1", 
-//						"door1 should be open", 
-//						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-//
-//				GoalLib.entityInteracted("button3"),
-//				GoalLib.entityStateRefreshed("door2"),
-//				GoalLib.entityInvariantChecked(testAgent,
-//						"door2", 
-//						"door2 should be open", 
-//						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-//
-//				GoalLib.entityInteracted("button4"),
-//				GoalLib.entityStateRefreshed("door1"),
-//				GoalLib.entityInvariantChecked(testAgent,
-//						"door1", 
-//						"door1 should be open", 
-//						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-//
-//				GoalLib.entityStateRefreshed("door3"),
-//				GoalLib.entityInvariantChecked(testAgent,
-//						"door3", 
-//						"door3 should be open", 
-//						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
-//				GoalLib.entityInCloseRange("door3")
-//				);
-
-		// Generic goal with a unique treasureDoor to search
-		BeliefStateExtended beliefState = (BeliefStateExtended) testAgent.getState();
-		String treasureDoor = "door1";
 		goal = SEQ(
-        		GoalLibExtended.NEWREPEAT(
-        				(BeliefStateExtended b) -> GoalLibExtended.openDoorPredicate(b, treasureDoor), 
-        				 SEQ(
-	    	        		FIRSTof(
-	    	        				GoalLibExtended.neighborsObjects(testAgent),
-	    	        				GoalLibExtended.NEWREPEAT(
-	    	        						(BeliefStateExtended b) -> GoalLibExtended.checkExplore(b),
-	    	        						SEQ(
-	    	        								GoalLibExtended.findNeighbors(testAgent, beliefState)
-	    	        						))
-	    	        				),		
-	    	        		FIRSTof(
-	    	        				//if during the exploration to find a new entity, agent sees the goal, we check that it is open or not
-	    	        				GoalLibExtended.finalGoal(treasureDoor),
-	    	        				// if the goal is not achieved yet, we select an entity to navigate to it based on some specific policies
-	    	        				//if the all neighbors of the current position has seen before
-	    	        				GoalLibExtended.ExtendedAStar(treasureDoor)
-	    	        				),		    	        		
-	    	        		IFELSE(
-	    	        				(BeliefStateExtended b) -> GoalLibExtended.entityTypePredicate(beliefState),
-	    	        				GoalLibExtended.navigateToDoor(beliefState),
-	    	        				GoalLibExtended.navigateToButton(beliefState)),
-	    	        		IFELSE(
-	    	        				(BeliefStateExtended b) -> GoalLibExtended.checkEntityStatePredicate(beliefState),GoalLibExtended.findingAButton(beliefState, testAgent), FAIL()),
-	    	        		GoalLibExtended.removeDynamicGoal(testAgent, null),			    	        		
-	    	        		GoalLibExtended.finalGoal(treasureDoor)
-        				))		        		
-        		);
+				GoalLib.entityInteracted("button1"),
+				GoalLib.entityStateRefreshed("door1"),
+				GoalLib.entityInvariantChecked(testAgent,
+						"door1", 
+						"door1 should be open", 
+						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
+
+				GoalLib.entityInteracted("button3"),
+				GoalLib.entityStateRefreshed("door2"),
+				GoalLib.entityInvariantChecked(testAgent,
+						"door2", 
+						"door2 should be open", 
+						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
+
+				GoalLib.entityInteracted("button4"),
+				GoalLib.entityStateRefreshed("door1"),
+				GoalLib.entityInvariantChecked(testAgent,
+						"door1", 
+						"door1 should be open", 
+						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
+
+				GoalLib.entityStateRefreshed("door3"),
+				GoalLib.entityInvariantChecked(testAgent,
+						"door3", 
+						"door3 should be open", 
+						(WorldEntity e) -> e.getBooleanProperty("isOpen")),
+				GoalLib.entityInCloseRange("door3")
+				);
 
 		// attaching the goal and testdata-collector
 		var dataCollector = new TestDataCollector();

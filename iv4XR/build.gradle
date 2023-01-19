@@ -2,5 +2,4 @@ dependencies {
     compile project(':core')
     compile project(':windows')
     compile files('../testar/lib/gson-2.8.5.jar')
-    compile files('../testar/lib/searchbased-0.0.1.jar')
 }

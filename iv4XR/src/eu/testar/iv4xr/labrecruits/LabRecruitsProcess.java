@@ -47,7 +47,6 @@ import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.listener.LabRecruitsEnvironmentListener;
 import world.BeliefState;
-import world.BeliefStateExtended;
 
 /**
  * This class represents the IV4XR process, is creating the OS process and the IV4XR Environment
@@ -125,7 +124,7 @@ public class LabRecruitsProcess extends SUTBase {
 			LabRecruitsEnvironmentListener labRecruitsEnvironment = new LabRecruitsEnvironmentListener(environment);
 
 			//TestAgent testAgent = new LabRecruitsAgentTESTAR(agentId).attachState(new BeliefState()).attachEnvironment(labRecruitsEnvironment);
-			TestAgent testAgent = new LabRecruitsAgentTESTAR(agentId).attachState(new BeliefStateExtended()).attachEnvironment(labRecruitsEnvironment);
+			TestAgent testAgent = new LabRecruitsAgentTESTAR(agentId).attachState(new BeliefState()).attachEnvironment(labRecruitsEnvironment);
 
 			Util.pause(5);
 
