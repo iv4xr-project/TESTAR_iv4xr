@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,24 +30,36 @@
 
 package eu.testar.iv4xr.actions.se.goals;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.fruit.alayer.Action;
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.TaggableBase;
+import org.fruit.alayer.Verdict;
+import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.iv4xr.framework.extensions.pathfinding.AStar;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
+import eu.testar.iv4xr.enums.IV4XRtags;
+import spaceEngineers.controller.Observer;
 import spaceEngineers.iv4xr.navigation.NavigableGraph;
+import spaceEngineers.model.Vec3F;
 
 public class seActionGoal extends TaggableBase implements Action {
 	private static final long serialVersionUID = -146033320741674607L;
 
 	protected String agentId;
 	protected TestAgent testAgent;
+
+	protected Verdict actionVerdict = Verdict.OK;
+	public Verdict getActionVerdict() {
+		return actionVerdict;
+	}
 
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// It has been decided to execute this action
@@ -60,6 +72,26 @@ public class seActionGoal extends TaggableBase implements Action {
 		int startNodeId = 0;
 		AStar<Integer> pathfinder = new AStar<>();
 		return pathfinder.findPath(navigableGraph, startNodeId, targetNodeId);
+	}
+
+	//TODO: Improve this not reachable detection using the size and coordinates
+	protected Set<Vec3F> notReachablePositions(Observer seObserver, State state)  {
+		Set<Vec3F> forbiddenPositions = new HashSet<>();
+		for(Widget w : state) {
+			if(w.get(IV4XRtags.seSize, null) != null) {
+				// If the size of the block is not 1 dimension unit
+				if(!w.get(IV4XRtags.seSize).similar(new Vec3F(1,1,1), 0.1f)){
+					// Create a list of non reachable action around the block
+					Vec3F maxPosition = w.get(IV4XRtags.seMaxPosition);
+					Vec3F minPosition = w.get(IV4XRtags.seMinPosition);
+					forbiddenPositions.add(new Vec3F(maxPosition.getX(), 0f, maxPosition.getZ()));
+					forbiddenPositions.add(new Vec3F(minPosition.getX(), 0f, minPosition.getZ()));
+					forbiddenPositions.add(new Vec3F(minPosition.getX(), 0f, maxPosition.getZ()));
+					forbiddenPositions.add(new Vec3F(maxPosition.getX(), 0f, minPosition.getZ()));
+				}
+			}
+		}
+		return forbiddenPositions;
 	}
 
 	@Override

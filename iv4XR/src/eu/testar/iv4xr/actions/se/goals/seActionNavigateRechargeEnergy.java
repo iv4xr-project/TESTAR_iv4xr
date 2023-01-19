@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -34,38 +34,21 @@ import org.fruit.Util;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
+import org.fruit.alayer.Verdict;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.model.DefinitionId;
-import spaceEngineers.model.ToolbarLocation;
+import spaceEngineers.model.CharacterObservation;
 
-public class seActionNavigateGrinderBlock extends seActionNavigateToBlock {
-	private static final long serialVersionUID = -3243457429249448007L;
+public class seActionNavigateRechargeEnergy extends seActionNavigateToBlock {
+	private static final long serialVersionUID = 5400994373292296843L;
 
-	// TODO: Research the impact of the grinderType and toolUsage in the inference of the state model
-	private String grinderType;
-	private double toolUsageTime;
+	protected Widget targetBlock;
 
-	/**
-	 * Types: AngleGrinderItem, AngleGrinder2Item, AngleGrinder3Item, AngleGrinder4Item
-	 * 
-	 * @param grinderType
-	 */
-	private void setGrinderType(int grinderType) {
-		String type = (grinderType >= 2 && grinderType <= 4) ? String.valueOf(grinderType) : "" ; 
-		this.grinderType = "AngleGrinder".concat(type).concat("Item");
-	}
-
-	public seActionNavigateGrinderBlock(Widget w, SUT system, String agentId){
-		this(w, system, agentId, 1, 1);
-	}
-
-	public seActionNavigateGrinderBlock(Widget w, SUT system, String agentId, int grinderType, double toolUsageTime){
+	public seActionNavigateRechargeEnergy(Widget w, SUT system, String agentId){
 		super(w, system, agentId);
-		setGrinderType(grinderType);
-		this.toolUsageTime = toolUsageTime;
+		this.targetBlock = w;
 		this.set(Tags.Desc, toShortString());
 		// TODO: Update with Goal Solving agents
 		this.set(IV4XRtags.agentAction, false);
@@ -74,44 +57,53 @@ public class seActionNavigateGrinderBlock extends seActionNavigateToBlock {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		equipGrinder(system);
 		navigateToReachableBlockPosition(system, state);
-		rotateToBlockDestination(system);
-		useGrinder(system);
+		aimToBlock(system, targetBlock);
 
-		// After Grinder action equip an empty object
-		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
-		seItems.unEquipWeapon();
+		// Check the jetpack settings before interacting with the functional block
+		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+		CharacterObservation seObsCharacter = seController.getObserver().observe();
+		Boolean isJetpackRunningBefore = seObsCharacter.getJetpackRunning();
+
+		// Check the energy before interacting with the functional block
+		float initialSuitEnergy = seObsCharacter.getSuitEnergy();
+
+		// Go inside the functional block
+		interactWithBlock(system);
+
+		// Wait 5 seconds to give time to the agent to charge the energy
+		Util.pause(5);
+
+		// Then go outside
+		interactWithBlock(system);
+
+		// First, execute a new observation to check the jetpack settings
+		seObsCharacter = seController.getObserver().observe();
+		Boolean isJetpackRunningAfter = seObsCharacter.getJetpackRunning();
+
+		if(!isJetpackRunningBefore.equals(isJetpackRunningAfter)) {
+			actionVerdict = new Verdict(Verdict.AGENT_JETPACK_ERROR, "Jetpack settings are incorrect after interacting with block : " + targetBlock.get(IV4XRtags.entityType));
+		}
+
+		// Second, check that the energy has increased
+		float newSuitEnergy = seObsCharacter.getSuitEnergy();
+		if(initialSuitEnergy != 1.0f && newSuitEnergy <= initialSuitEnergy) {
+			actionVerdict = new Verdict(Verdict.AGENT_ENERGY_ERROR, "Agent Suit Energy did not increase after waiting inside block: " 
+					+ targetBlock.get(IV4XRtags.entityType)
+					+ ", Previous energy: " + initialSuitEnergy
+					+ ", After interaction energy: " + newSuitEnergy);
+		}
+
+		Util.pause(1);
 	}
 
-	/**
-	 * Prepare the Grinder tool in the SE tool bar. 
-	 * 
-	 * @param seItems
-	 */
-	private void equipGrinder(SUT system) {
-		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
-
-		seItems.setToolbarItem(DefinitionId.Companion.physicalGun(grinderType), ToolbarLocation.Companion.fromIndex(5, 6));
-		Util.pause(0.5);
-		seItems.equip(ToolbarLocation.Companion.fromIndex(5, 6));
-	}
-
-	/**
-	 * Use the Grinder tool the desired amount of time. 
-	 * 
-	 * @param seItems
-	 */
-	private void useGrinder(SUT system) {
+	private void interactWithBlock(SUT system) {
 		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
-
-		seCharacter.beginUsingTool();
-		Util.pause(toolUsageTime);
-		seCharacter.endUsingTool();
+		seCharacter.use();
 	}
 
 	@Override
 	public String toShortString() {
-		return "Navigate to block: " + widgetType + ", id: " + widgetId + " and use " + grinderType + " seconds " + toolUsageTime + " by agent: " + agentId;
+		return "Navigate and interact with block: " + widgetType + ", id: " + widgetId + " using agent: " + agentId;
 	}
 }

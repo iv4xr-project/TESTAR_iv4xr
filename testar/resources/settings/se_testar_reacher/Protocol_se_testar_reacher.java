@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,17 +30,14 @@
 
 import java.util.HashSet;
 import java.util.Set;
-import org.fruit.Util;
+
 import org.fruit.alayer.*;
-import org.fruit.alayer.exceptions.ActionFailedException;
-import org.fruit.monkey.ConfigTags;
+import org.fruit.monkey.Settings;
 import org.testar.protocols.iv4xr.SEProtocol;
 
-import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.se.commands.*;
 import eu.testar.iv4xr.actions.se.goals.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import eu.testar.iv4xr.enums.SVec3;
 import nl.ou.testar.RandomActionSelector;
 import spaceEngineers.model.Vec3F;
 
@@ -61,7 +58,7 @@ import spaceEngineers.model.Vec3F;
  * State (Widget-Tree) -> Agent Observation (All Observed Entities)
  * Action              -> SpaceEngineers low level command
  */
-public class Protocol_se_commands_testar_navigate extends SEProtocol {
+public class Protocol_se_testar_reacher extends SEProtocol {
 
 	/*
 	 * Modify agent ObservationRadius in the file: 
@@ -71,22 +68,31 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 	private static Set<String> toolEntities;
 	static {
 		toolEntities = new HashSet<String>();
-		//toolEntities.add("LargeBlockSmallGenerator");
 		toolEntities.add("LargeBlockBatteryBlock");
+		toolEntities.add("LargeBlockCryoChamber");
 		toolEntities.add("SurvivalKitLarge");
+		toolEntities.add("LargeBlockCockpitSeat");
+		toolEntities.add("ConveyorTubeCurved");
+		toolEntities.add("LargeBlockSmallContainer");
 	}
 
-	private static Set<String> interactiveEntities;
+	private static Set<String> fragileEntities;
 	static {
-		interactiveEntities = new HashSet<String>();
-		interactiveEntities.add("Ladder2");
-		interactiveEntities.add("LargeBlockCockpit");
-		interactiveEntities.add("CockpitOpen");
-		interactiveEntities.add("LargeBlockCryoChamber");
+		fragileEntities = new HashSet<String>();
+		fragileEntities.add("LargeBlockSmallGenerator");
 	}
 
-	// Oracle example to validate that the block integrity decreases after a Grinder action
-	private Verdict functional_verdict = Verdict.OK;
+	/**
+	 * Called once during the life time of TESTAR
+	 * This method can be used to perform initial setup work
+	 * @param settings the current TESTAR settings as specified by the user.
+	 */
+	@Override
+	protected void initialize(Settings settings) {
+		super.initialize(settings);
+		// The SE level that TESTAR is going to explore
+		SE_LEVEL_PATH = "suts/se_levels/TESTAR_Map_1";
+	}
 
 	/**
 	 * The getVerdict methods implements the online state oracles that
@@ -117,15 +123,32 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 			// We consider this OK by default, but more sophisticated oracles can be applied here
 		}
 
-		// Apply an Oracle to check jet-pack settings
-		if(lastExecutedAction != null && lastExecutedAction instanceof seActionNavigateInteract) {
-			Widget previousAgent = getAgentEntityFromState(latestState);
-			Widget currentAgent = getAgentEntityFromState(state);
-
-			if(!previousAgent.get(IV4XRtags.seAgentJetpackRunning).equals(currentAgent.get(IV4XRtags.seAgentJetpackRunning))) {
-				Widget interactedBlock = ((seActionNavigateInteract)lastExecutedAction).get(Tags.OriginWidget);
-				functional_verdict = new Verdict(Verdict.JETPACK_SETTINGS_ERROR, "Jetpack settings are incorrect after interacting with block : " + interactedBlock.get(IV4XRtags.entityType));
+		// Apply an Oracle to check if shooting action worked properly
+		if(lastExecutedAction != null && lastExecutedAction instanceof seActionNavigateShootBlock) {
+			// Check the block attached to the previous executed shooting action
+			Widget previousBlock = ((seActionNavigateShootBlock)lastExecutedAction).get(Tags.OriginWidget);
+			Float previousIntegrity = previousBlock.get(IV4XRtags.seIntegrity);
+			System.out.println("Previous Block Integrity: " + previousIntegrity);
+			// Try to find the same block in the current state using the block id
+			for(Widget w : state) {
+				if(w.get(IV4XRtags.entityId).equals(previousBlock.get(IV4XRtags.entityId))) {
+					Float currentIntegrity = w.get(IV4XRtags.seIntegrity);
+					System.out.println("Current Block Integrity: " + currentIntegrity);
+					// If previous integrity is the same or increased, something went wrong
+					if(currentIntegrity >= previousIntegrity) {
+						String blockType = w.get(IV4XRtags.entityType);
+						functional_verdict = new Verdict(Verdict.BLOCK_INTEGRITY_ERROR, "The integrity of interacted block " + blockType + " didn't decrease after a shooting action");
+					}
+				}
 			}
+			// If the previous block does not exist in the current state, it has been destroyed after the shooting action
+			// We consider this OK by default, but more sophisticated oracles can be applied here
+		}
+
+		// Goal Actions have an oracle associated
+		// Here we check the agent properties (energy, health, oxygen, hydrogen, jetpack) and triggeredBlockConstruction oracles
+		if(lastExecutedAction != null && lastExecutedAction instanceof seActionGoal) {
+			functional_verdict = ((seActionGoal)lastExecutedAction).getActionVerdict();
 		}
 
 		return super.getVerdict(state).join(functional_verdict);
@@ -140,20 +163,19 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 
 		// For each block widget (see movementEntities types), rotate and move until the agent is close to the position of the block
 		for(Widget w : state) {
-			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
-				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 4, 1.0));
-				labActions.add(new seActionNavigateWelderBlock(w, system, agentId, 4, 1.0));
+			if(toolEntities.contains(w.get(IV4XRtags.entityType)) && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
+				// Always Grinder and shoot by default
+				labActions.add(new seActionNavigateGrinderBlock(w, system, agentId, 4, 0.5));
 			}
 
-			// FIXME: Fix Ladder2 is not observed as entityType
-			if((interactiveEntities.contains(w.get(IV4XRtags.entityType)) || w.get(IV4XRtags.seDefinitionId, "").contains("Ladder2"))
-					&& seReachablePositionHelper.calculateIfEntityReachable(system, w)) {
-				labActions.add(new seActionNavigateInteract(w, system, agentId));
+			if(fragileEntities.contains(w.get(IV4XRtags.entityType)) && sePositionRotationHelper.calculateIfEntityReachable(system, w)) {
+				// Always shoot by default
+				labActions.add(new seActionNavigateShootBlock(w, system, agentId));
 			}
 		}
 
 		// Now add the set of actions to explore level positions
-		labActions = seReachablePositionHelper.calculateExploratoryPositions(system, state, agentId, labActions);
+		labActions = sePositionRotationHelper.calculateExploratoryNodeMap(system, state, agentId, labActions, 7f);
 
 		// If it was not possible to navigate to an entity or realize a smart exploration
 		// prepare a dummy exploration
@@ -180,40 +202,35 @@ public class Protocol_se_commands_testar_navigate extends SEProtocol {
 		//Call the preSelectAction method from the AbstractProtocol so that, if necessary,
 		//unwanted processes are killed and SUT is put into foreground.
 		Action retAction = preSelectAction(state, actions);
-		if (retAction== null) {
+		if (retAction == null) {
 			//if no preSelected actions are needed, then implement your own action selection strategy
 			//using the action selector of the state model:
 			retAction = stateModelManager.getAbstractActionToExecute(actions);
 		}
-		if(retAction==null) {
-			System.out.println("State model based action selection did not find an action. Using default action selection.");
-			// if state model fails, use default:
+		if(retAction == null) {
+			// Invoke the SE action selector to prioritize interactive actions
+			retAction = actionSelectorSE.prioritizedAction(state, actions);
+		}
+		if(retAction == null) {
+			System.out.println("State model and prioritized based action selection did not find an action. Using default action selection.");
+			// if state model and prioritize interaction fails, use default:
 			retAction = RandomActionSelector.selectAction(actions);
 		}
 		return retAction;
 	}
 
 	/**
-	 * Execute TESTAR as agent command Action
+	 * Execute the selected action.
+	 * @param system the SUT
+	 * @param state the SUT's current state
+	 * @param action the action to execute
+	 * @return whether or not the execution succeeded
 	 */
 	@Override
 	protected boolean executeAction(SUT system, State state, Action action){
-		try {
-			// adding the action that is going to be executed into HTML report:
-			htmlReport.addSelectedAction(state, action);
-
-			System.out.println(action.toShortString());
-			// execute selected action in the current state
-			action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
-
-			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
-			Util.pause(waitTime);
-
-			return true;
-
-		}catch(ActionFailedException afe){
-			return false;
-		}
+		boolean actionExecuted = super.executeAction(system, state, action);
+		if(actionExecuted) actionSelectorSE.addExecutedAction(action);
+		return actionExecuted;
 	}
 
 }

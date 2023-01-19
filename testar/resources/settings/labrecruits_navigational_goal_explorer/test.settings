@@ -22,8 +22,13 @@ Mode = Spy
 # SUTCONNECTOR = SUT_PROCESS_NAME: SUTConnectorValue property must be the process name of the SUT.
 # The SUT must be manually started and closed.
 #################################################################
+<<<<<<<< HEAD:testar/resources/settings/labrecruits_navigational_goal_explorer/test.settings
 SUTConnector = COMMAND_LINE
 SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "TESTARempty"
+========
+SUTConnector = SUT_PROCESS_NAME
+SUTConnectorValue = SpaceEngineers.exe
+>>>>>>>> master:testar/resources/settings/se_testar_reacher/test.settings
 
 #################################################################
 # Sequences
@@ -40,7 +45,11 @@ SequenceLength = 15
 # Regular expression
 #################################################################
 
+<<<<<<<< HEAD:testar/resources/settings/labrecruits_navigational_goal_explorer/test.settings
 SuspiciousTitles = 
+========
+SuspiciousTitles = .*[eE]rror.*|.*[eE]xcepti[o?]n.*
+>>>>>>>> master:testar/resources/settings/se_testar_reacher/test.settings
 
 #################################################################
 # Oracles based on Suspicious Outputs detected by Process Listeners
@@ -67,7 +76,8 @@ SuspiciousProcessOutput = .*[eE]rror.*|.*[eE]xcep[ct]i[o?]n.*
 # process.
 #################################################################
 
-ProcessLogs = .*.*
+ProcessLogsEnabled = true
+ProcessLogs = .*[eE]rror.*|.*[eE]xcep[ct]i[o?]n.*
 
 #################################################################
 # Actionfilter
@@ -76,7 +86,11 @@ ProcessLogs = .*.*
 # these will be added to the protocol_filter.xml file.
 #################################################################
 
+<<<<<<<< HEAD:testar/resources/settings/labrecruits_navigational_goal_explorer/test.settings
 ClickFilter = 
+========
+ClickFilter = .*[sS]istema.*|.*[sS]ystem.*|.*[cC]errar.*|.*[cC]lose.*|.*[sS]alir.*|.*[eE]xit.*|.*[mM]inimizar.*|.*[mM]inimi[zs]e.*|.*[gG]uardar.*|.*[sS]ave.*|.*[iI]mprimir.*|.*[pP]rint.*
+>>>>>>>> master:testar/resources/settings/se_testar_reacher/test.settings
 
 #################################################################
 # Processfilter
@@ -93,12 +107,16 @@ SUTProcesses =
 # Indicate the location of the protocol class for your specific SUT.
 #################################################################
 
+<<<<<<<< HEAD:testar/resources/settings/labrecruits_navigational_goal_explorer/test.settings
 ProtocolClass = labrecruits_navigational_goal_explorer/Protocol_labrecruits_navigational_goal_explorer
+========
+ProtocolClass = se_testar_reacher/Protocol_se_testar_reacher
+>>>>>>>> master:testar/resources/settings/se_testar_reacher/test.settings
 
 #################################################################
 # State model inference settings
 #################################################################
-StateModelEnabled = true
+StateModelEnabled = false
 DataStore = OrientDB
 DataStoreType = plocal
 DataStoreServer = localhost
@@ -130,6 +148,7 @@ AbstractActionAttributes = iv4xrActionEntityId,iv4xrActionEntityIsActive,iv4xrAc
 # Other more advanced settings
 #################################################################
 
+AgentId = you
 ProcessesToKillDuringTest =
 OutputDir = ./output
 PathToReplaySequence = ./output/temp
@@ -149,7 +168,11 @@ Delete =
 MaxTime = 3.1536E7
 ShowSettingsAfterTest = true
 TimeToWaitAfterAction = 0.1
+<<<<<<<< HEAD:testar/resources/settings/labrecruits_navigational_goal_explorer/test.settings
 StartupTime = 10.0
+========
+StartupTime = 30.0
+>>>>>>>> master:testar/resources/settings/se_testar_reacher/test.settings
 DrawWidgetInfo = false
 TimeToFreeze = 30.0
 StopGenerationOnFault = true

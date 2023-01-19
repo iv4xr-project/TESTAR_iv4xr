@@ -22,8 +22,13 @@ Mode = Spy
 # SUTCONNECTOR = SUT_PROCESS_NAME: SUTConnectorValue property must be the process name of the SUT.
 # The SUT must be manually started and closed.
 #################################################################
+<<<<<<<< HEAD:testar/resources/settings/labrecruits_navigational_goal_explorer/test.settings
 SUTConnector = COMMAND_LINE
-SUTConnectorValue = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\SpaceEngineers\\Bin64\\SpaceEngineers.exe" "suts/se_levels/manual-world"
+SUTConnectorValue = "suts\\gym\\Windows\\bin\\LabRecruits.exe" "suts/levels" "TESTARempty"
+========
+SUTConnector = SUT_PROCESS_NAME
+SUTConnectorValue = SpaceEngineers.exe
+>>>>>>>> master:testar/resources/settings/se_testar_reacher/test.settings
 
 #################################################################
 # Sequences
@@ -32,7 +37,7 @@ SUTConnectorValue = "C:\\Program Files (x86)\\Steam\\steamapps\\common\\SpaceEng
 #################################################################
 
 Sequences = 1
-SequenceLength = 100
+SequenceLength = 15
 
 #################################################################
 # Oracles based on suspicious titles
@@ -40,8 +45,11 @@ SequenceLength = 100
 # Regular expression
 #################################################################
 
+<<<<<<<< HEAD:testar/resources/settings/labrecruits_navigational_goal_explorer/test.settings
+SuspiciousTitles = 
+========
 SuspiciousTitles = .*[eE]rror.*|.*[eE]xcepti[o?]n.*
-TagsForSuspiciousOracle = Title
+>>>>>>>> master:testar/resources/settings/se_testar_reacher/test.settings
 
 #################################################################
 # Oracles based on Suspicious Outputs detected by Process Listeners
@@ -78,8 +86,11 @@ ProcessLogs = .*[eE]rror.*|.*[eE]xcep[ct]i[o?]n.*
 # these will be added to the protocol_filter.xml file.
 #################################################################
 
+<<<<<<<< HEAD:testar/resources/settings/labrecruits_navigational_goal_explorer/test.settings
+ClickFilter = 
+========
 ClickFilter = .*[sS]istema.*|.*[sS]ystem.*|.*[cC]errar.*|.*[cC]lose.*|.*[sS]alir.*|.*[eE]xit.*|.*[mM]inimizar.*|.*[mM]inimi[zs]e.*|.*[gG]uardar.*|.*[sS]ave.*|.*[iI]mprimir.*|.*[pP]rint.*
-TagsToFilter = Title
+>>>>>>>> master:testar/resources/settings/se_testar_reacher/test.settings
 
 #################################################################
 # Processfilter
@@ -96,21 +107,28 @@ SUTProcesses =
 # Indicate the location of the protocol class for your specific SUT.
 #################################################################
 
-ProtocolClass = se_commands_testar_dummy/Protocol_se_commands_testar_dummy
+<<<<<<<< HEAD:testar/resources/settings/labrecruits_navigational_goal_explorer/test.settings
+ProtocolClass = labrecruits_navigational_goal_explorer/Protocol_labrecruits_navigational_goal_explorer
+========
+ProtocolClass = se_testar_reacher/Protocol_se_testar_reacher
+>>>>>>>> master:testar/resources/settings/se_testar_reacher/test.settings
 
 #################################################################
 # State model inference settings
 #################################################################
 StateModelEnabled = false
 DataStore = OrientDB
-DataStoreType = remote
+DataStoreType = plocal
 DataStoreServer = localhost
+DataStoreDirectory = C:\\Users\\Fernando\\Desktop\\iv4xr\\orientdb-3.0.34\\databases
 DataStoreDB = testar
 DataStoreUser = testar
 DataStorePassword = testar
 DataStoreMode = instant
-ActionSelectionAlgorithm = unvisited
-StateModelStoreWidgets = false
+ApplicationName = explore
+ApplicationVersion = 1
+ActionSelectionAlgorithm = explore
+StateModelStoreWidgets = true
 iv4XRAgentListener = false
 
 #################################################################
@@ -119,7 +137,12 @@ iv4XRAgentListener = false
 # Specify the widget attributes that you wish to use in constructing
 # the widget and state hash strings. Use a comma separated list.
 #################################################################
-AbstractStateAttributes = iv4xrEntityId, iv4xrEntityIsActive
+AbstractStateAttributes = iv4xrEntityId,iv4xrEntityIsActive
+
+#################################################################
+# Action identifier attributes
+#################################################################
+AbstractActionAttributes = iv4xrActionEntityId,iv4xrActionEntityIsActive,iv4xrActionTargetAbsPos
 
 #################################################################
 # Other more advanced settings
@@ -145,7 +168,11 @@ Delete =
 MaxTime = 3.1536E7
 ShowSettingsAfterTest = true
 TimeToWaitAfterAction = 0.1
+<<<<<<<< HEAD:testar/resources/settings/labrecruits_navigational_goal_explorer/test.settings
+StartupTime = 10.0
+========
 StartupTime = 30.0
+>>>>>>>> master:testar/resources/settings/se_testar_reacher/test.settings
 DrawWidgetInfo = false
 TimeToFreeze = 30.0
 StopGenerationOnFault = true
@@ -155,3 +182,4 @@ VisualizeSelectedAction = true
 TestGenerator = random
 MaxReward = 9999999
 Discount = .95
+LabRecruitsGraphics = false

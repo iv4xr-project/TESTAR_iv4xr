@@ -32,6 +32,9 @@ package eu.testar.iv4xr.enums;
 
 import java.util.Objects;
 
+import eu.iv4xr.framework.spatial.Vec3;
+import spaceEngineers.model.Vec3F;
+
 public class SVec3 implements java.io.Serializable {
 	private static final long serialVersionUID = 639048627994203600L;
 
@@ -60,20 +63,20 @@ public class SVec3 implements java.io.Serializable {
 		return Objects.hash(x, y, z);
 	}
 
-	public static SVec3 labToSVec3(eu.iv4xr.framework.spatial.Vec3 vec3) {
+	public static SVec3 labToSVec3(Vec3 vec3) {
 		return new SVec3(vec3.x, vec3.y, vec3.z);
 	}
 
-	public static spaceEngineers.model.Vec3F labToSE(eu.iv4xr.framework.spatial.Vec3 vec3) {
-		return new spaceEngineers.model.Vec3F(vec3.x, vec3.y, vec3.z);
+	public static Vec3F labToSE(Vec3 vec3) {
+		return new Vec3F(vec3.x, vec3.y, vec3.z);
 	}
 
-	public static SVec3 seToSVec3(spaceEngineers.model.Vec3F vec3) {
+	public static SVec3 seToSVec3(Vec3F vec3) {
 		return new SVec3(vec3.getX(), vec3.getY(), vec3.getZ());
 	}
 
-	public static eu.iv4xr.framework.spatial.Vec3 seToLab(spaceEngineers.model.Vec3F vec3) {
-		return new eu.iv4xr.framework.spatial.Vec3(vec3.getX(), vec3.getY(), vec3.getZ());
+	public static Vec3 seToLab(Vec3F vec3) {
+		return new Vec3(vec3.getX(), vec3.getY(), vec3.getZ());
 	}
 
 }

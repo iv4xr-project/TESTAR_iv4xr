@@ -108,10 +108,27 @@ public class FileHandling {
             targetFolder = "sequences_fail";
         else if (sev == Verdict.SEVERITY_UNREPLAYABLE)
             targetFolder = "sequences_unreplayable";
+
+        // Space Engineers
         else if (sev == Verdict.BLOCK_INTEGRITY_ERROR)
-            targetFolder = "block_integrity_error";
-        else if (sev == Verdict.JETPACK_SETTINGS_ERROR)
-            targetFolder = "jetpack_settings_error";
+        	targetFolder = "block_integrity_error";
+        else if (sev == Verdict.BLOCK_SEARCH_ERROR)
+        	targetFolder = "block_search_error";
+        else if (sev == Verdict.BLOCK_CONSTRUCTION_ERROR)
+        	targetFolder = "block_construction_error";
+
+        else if (sev == Verdict.AGENT_JETPACK_ERROR)
+        	targetFolder = "agent_jetpack_error";
+        else if (sev == Verdict.AGENT_ENERGY_ERROR)
+        	targetFolder = "agent_energy_error";
+        else if (sev == Verdict.AGENT_HEALTH_ERROR)
+        	targetFolder = "agent_health_error";
+        else if (sev == Verdict.AGENT_OXYGEN_ERROR)
+        	targetFolder = "agent_oxygen_error";
+        else if (sev == Verdict.AGENT_HYDROGEN_ERROR)
+        	targetFolder = "agent_hydrogen_error";
+
+
         else
             targetFolder = "sequences_other";
         LogSerialiser.log("Copying classified sequence (\"" + generatedSequence + "\") to " + targetFolder + " folder...\n", LogSerialiser.LogLevel.Info);

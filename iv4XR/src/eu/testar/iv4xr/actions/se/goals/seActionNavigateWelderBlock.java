@@ -75,13 +75,13 @@ public class seActionNavigateWelderBlock extends seActionNavigateToBlock {
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		equipWelder(system);
-		navigateToReachableBlockPosition(system);
+		navigateToReachableBlockPosition(system, state);
 		rotateToBlockDestination(system);
 		useWelder(system);
 
 		// After Welder action equip an empty object
 		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
-		seItems.equip(ToolbarLocation.Companion.fromIndex(1, 1));
+		seItems.unEquipWeapon();
 	}
 
 	/**

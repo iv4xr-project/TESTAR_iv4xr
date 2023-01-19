@@ -133,6 +133,32 @@ public class ActionCommandTest {
 	}
 
 	@Test
+	public void rotate_below() {
+		Observer obs = system.get(IV4XRtags.iv4xrSpaceEngineers).getObserver();
+		Vec3F originalOrientation = obs.observe().getOrientationForward();
+
+		Action rotate = new seActionCommandRotate(new StdWidget(), "you", new Vec2F(400f, 0)); // Rotate below
+		rotate.run(system, new StdState(), 0);
+
+		Vec3F newOrientation = obs.observe().getOrientationForward();
+
+		assertTrue(originalOrientation != newOrientation);
+	}
+
+	@Test
+	public void rotate_up() {
+		Observer obs = system.get(IV4XRtags.iv4xrSpaceEngineers).getObserver();
+		Vec3F originalOrientation = obs.observe().getOrientationForward();
+
+		Action rotate = new seActionCommandRotate(new StdWidget(), "you", new Vec2F(-400f, 0)); // Rotate to Up
+		rotate.run(system, new StdState(), 0);
+
+		Vec3F newOrientation = obs.observe().getOrientationForward();
+
+		assertTrue(originalOrientation != newOrientation);
+	}
+
+	@Test
 	public void open_helmet() {
 		Observer obs = system.get(IV4XRtags.iv4xrSpaceEngineers).getObserver();
 

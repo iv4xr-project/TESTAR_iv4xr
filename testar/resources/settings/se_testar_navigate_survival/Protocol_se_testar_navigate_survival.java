@@ -30,11 +30,10 @@
 
 import java.util.HashSet;
 import java.util.Set;
-
 import org.fruit.alayer.*;
 import org.fruit.monkey.Settings;
-import org.testar.iv4xr.OpenCoverage;
 import org.testar.protocols.iv4xr.SEProtocol;
+
 import eu.testar.iv4xr.actions.se.commands.*;
 import eu.testar.iv4xr.actions.se.goals.*;
 import eu.testar.iv4xr.enums.IV4XRtags;
@@ -58,7 +57,7 @@ import spaceEngineers.model.Vec3F;
  * State (Widget-Tree) -> Agent Observation (All Observed Entities)
  * Action              -> SpaceEngineers low level command
  */
-public class Protocol_se_testar_coverage extends SEProtocol {
+public class Protocol_se_testar_navigate_survival extends SEProtocol {
 
 	/*
 	 * Modify agent ObservationRadius in the file: 
@@ -101,18 +100,6 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 		super.initialize(settings);
 		// The SE level that TESTAR is going to explore
 		SE_LEVEL_PATH = "suts/se_levels/manual-world-survival";
-	}
-
-	/**
-	 * This methods is called before each test sequence, allowing for example using external profiling software on the SUT
-	 */
-	@Override
-	protected void preSequencePreparations() {
-		super.preSequencePreparations();
-
-		// Verify steam, pdb and OpenCover files. 
-		// Then launch SpaceEngineers SUT with OpenCover
-		OpenCoverage.prepareLaunchOpenCoverWithSUT(settings);
 	}
 
 	/**
@@ -284,21 +271,6 @@ public class Protocol_se_testar_coverage extends SEProtocol {
 		boolean actionExecuted = super.executeAction(system, state, action);
 		if(actionExecuted) actionSelectorSE.addExecutedAction(action);
 		return actionExecuted;
-	}
-
-	/**
-	 * Here you can put graceful shutdown sequence for your SUT
-	 * @param system
-	 */
-	@Override
-	protected void stopSystem(SUT system) {
-		// This stops the plugin but no the SUT
-		super.stopSystem(system);
-
-		// Stop the SUT and extract coverage
-		OpenCoverage.finishOpenCoverSUTandWait("SpaceEngineers.exe", 60);
-		OpenCoverage.extractSummaryCoverage();
-		OpenCoverage.createHTMLCoverageReport(settings);
 	}
 
 }

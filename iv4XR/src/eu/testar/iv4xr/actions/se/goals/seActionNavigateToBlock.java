@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 - 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 - 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,7 +30,10 @@
 
 package eu.testar.iv4xr.actions.se.goals;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
 import org.fruit.alayer.Role;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
@@ -62,6 +65,11 @@ public class seActionNavigateToBlock extends seActionGoal {
 	protected Vec3F targetPosition;
 	protected Vec3 calculatedReachablePosition;
 	protected final float DEGREES = 2416f;
+	private List<Vec3F> navigableNodes = new ArrayList<Vec3F>();
+
+	public List<Vec3F> getNavigableNodes(){
+		return navigableNodes;
+	}
 
 	public seActionNavigateToBlock(Widget w, SUT system, String agentId){
 		this.agentId = agentId;
@@ -81,7 +89,7 @@ public class seActionNavigateToBlock extends seActionGoal {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		navigateToReachableBlockPosition(system);
+		navigateToReachableBlockPosition(system, state);
 		rotateToBlockDestination(system);
 	}
 
@@ -90,7 +98,7 @@ public class seActionNavigateToBlock extends seActionGoal {
 	 * 
 	 * @param system
 	 */
-	protected void navigateToReachableBlockPosition(SUT system) {
+	protected void navigateToReachableBlockPosition(SUT system, State state) {
 		// Create a navigational graph of the largest grid
 		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 		Observer seObserver = seController.getObserver();
@@ -98,11 +106,19 @@ public class seActionNavigateToBlock extends seActionGoal {
 		NavGraph navGraph = seObserver.navigationGraph(largestGridId);
 		RichNavGraph richNavGraph = RichNavGraphKt.toRichGraph(navGraph);
 
+		Set<Vec3F> notReachablePositions = notReachablePositions(seObserver, state);
+
 		// Check if there is a reachable node in the navigational graph
 		// that allows the agent to reach the target block position
 		int reachableNode = -1;
-		float closestDistance = 3f; // Near the block to be able to interact later
+		//float closestDistance = 3f; // Near the block to be able to interact later
+		float closestDistance = 7f; // Closest distance to a 2 dimensions block is 3.7f approx
 		for (Node node : richNavGraph.getNodeMap().values()) {
+
+			// Ignore the not reachable positions (due to block size)
+			Vec3F nodePosition = new Vec3F(node.getPosition().getX(), 0f, node.getPosition().getZ());
+			if(notReachablePositions.contains(nodePosition)) continue;
+
 			float distance = node.getPosition().distanceTo(targetPosition); // the target position of the widget to interact with
 			if(distance < closestDistance){
 				reachableNode = node.getId();
@@ -115,53 +131,74 @@ public class seActionNavigateToBlock extends seActionGoal {
 			int targetNode = navGraph.getNodes().get(reachableNode).getId();
 			List<Integer> nodePath = getPath(navigableGraph, targetNode);
 
+			// For each calculated node in the navigable path
 			for (Integer nodeId : nodePath) {
+				// Use the navigator to move to the next node position
 				new SEnavigator().moveInLine(system, navigableGraph.node(nodeId).getPosition());
+				// And update the action list of navigableNodes
+				navigableNodes.add(navigableGraph.node(nodeId).getPosition());
 			}
 		}
 	}
 
 	/**
-	 * Rotate tick by tick until the agent aims the block destination. 
-	 * Based on: https://github.com/iv4xr-project/iv4xr-se-plugin/blob/uubranch3D/JvmClient/src/jvmMain/java/uuspaceagent/UUTacticLib.java#L160
+	 * Rotate until the agent is aiming the target block. 
+	 * For interactive entities (e.g., LargeBlockCryoChamber or LargeBlockCockpit), 
+	 * it is essential that the agent is not using tools (e.g., Grinder or Welder). 
+	 * Then we are able to aim the interactive part of the block and not the block itself. 
 	 * 
 	 * @param system
 	 */
+	protected boolean aimToBlock(SUT system, Widget targetBlock) {
+		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
+		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
+		Observer seObserver = seController.getObserver();
+
+		int AIMTRIES = 300;
+		int tries = 1;
+		while(!targetBlockFound(seObserver, targetBlock) && tries < AIMTRIES) {		
+			seCharacter.moveAndRotate(new Vec3F(0, 0, 0), new Vec2F(0, DEGREES*0.0035f), 0f, 1);
+			tries ++;
+		}
+		return targetBlockFound(seObserver, targetBlock);
+	}
+
+	private boolean targetBlockFound(Observer seObserver, Widget targetBlock) {
+		try {
+			if(seObserver.observe().getTargetBlock() == null) return false;
+			return seObserver.observe().getTargetBlock().getId().equals(targetBlock.get(IV4XRtags.entityId));
+		} catch(Exception e) {
+			return false;
+		}
+	}
+
 	protected void rotateToBlockDestination(SUT system) {
 		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
 		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 		spaceEngineers.controller.Observer seObserver = seController.getObserver();
 
-		eu.iv4xr.framework.spatial.Vec3 agentPosition = SVec3.seToLab(seObserver.observe().getPosition());
-		eu.iv4xr.framework.spatial.Vec3 entityPosition = SVec3.seToLab(targetPosition);
-		eu.iv4xr.framework.spatial.Vec3 directionToGo = eu.iv4xr.framework.spatial.Vec3.sub(agentPosition, entityPosition);
-		eu.iv4xr.framework.spatial.Vec3 agentOrientation = SVec3.seToLab(seObserver.observe().getOrientationForward());
+		Vec3F agentPosition = seObserver.observe().getPosition();
+		float distance = targetPosition.distanceTo(agentPosition);
+		float tolerance = sePositionRotationHelper.rotationToleranceByDistance(distance);
 
-		directionToGo.y = 0;
-		agentOrientation.y = 0;
+		Vec3F direction = (targetPosition.minus(agentPosition)).normalized();
+		Vec3F agentOrientation = seObserver.observe().getOrientationForward().normalized();
+		float cos_alpha = sePositionRotationHelper.dot(agentOrientation, direction);
 
-		directionToGo = directionToGo.normalized();
-		agentOrientation = agentOrientation.normalized();
+		// Max of 20 seconds trying to rotate
+		long start = System.currentTimeMillis();
+		long end = start + 20 * 1000;
 
-		float cos_alpha = eu.iv4xr.framework.spatial.Vec3.dot(agentOrientation, directionToGo);
-
-		while(cos_alpha > -0.99f) {
+		while(cos_alpha < (1f - tolerance) && System.currentTimeMillis() < end) {
 			// rotate faster until the aiming is close
-			if(cos_alpha > -0.95f) {seCharacter.moveAndRotate(new Vec3F(0,0,0),  new Vec2F(0, DEGREES*0.007f), 0f, 1);}
+			if(cos_alpha < (0.97f - tolerance)) {seCharacter.moveAndRotate(new Vec3F(0,0,0),  new Vec2F(0, DEGREES*0.007f), 0f, 1);}
 			else {seCharacter.moveAndRotate(new Vec3F(0,0,0), Vec2F.Companion.getROTATE_RIGHT(), 0f, 1);}
 
-			agentPosition = SVec3.seToLab(seObserver.observe().getPosition());
-			entityPosition = SVec3.seToLab(targetPosition);
-			directionToGo = eu.iv4xr.framework.spatial.Vec3.sub(agentPosition, entityPosition);
-			agentOrientation = SVec3.seToLab(seObserver.observe().getOrientationForward());
+			agentPosition = seObserver.observe().getPosition();
+			direction = (targetPosition.minus(agentPosition)).normalized();
+			agentOrientation = seObserver.observe().getOrientationForward().normalized();
 
-			directionToGo.y = 0;
-			agentOrientation.y = 0;
-
-			directionToGo = directionToGo.normalized();
-			agentOrientation = agentOrientation.normalized();
-
-			cos_alpha = eu.iv4xr.framework.spatial.Vec3.dot(agentOrientation, directionToGo);
+			cos_alpha = sePositionRotationHelper.dot(agentOrientation, direction);
 		}
 	}
 

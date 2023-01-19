@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2022 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2022 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -41,31 +41,11 @@ import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.model.DefinitionId;
 import spaceEngineers.model.ToolbarLocation;
 
-public class seActionNavigateGrinderBlock extends seActionNavigateToBlock {
-	private static final long serialVersionUID = -3243457429249448007L;
+public class seActionNavigateShootBlock extends seActionNavigateToBlock {
+	private static final long serialVersionUID = 7169057402175438L;
 
-	// TODO: Research the impact of the grinderType and toolUsage in the inference of the state model
-	private String grinderType;
-	private double toolUsageTime;
-
-	/**
-	 * Types: AngleGrinderItem, AngleGrinder2Item, AngleGrinder3Item, AngleGrinder4Item
-	 * 
-	 * @param grinderType
-	 */
-	private void setGrinderType(int grinderType) {
-		String type = (grinderType >= 2 && grinderType <= 4) ? String.valueOf(grinderType) : "" ; 
-		this.grinderType = "AngleGrinder".concat(type).concat("Item");
-	}
-
-	public seActionNavigateGrinderBlock(Widget w, SUT system, String agentId){
-		this(w, system, agentId, 1, 1);
-	}
-
-	public seActionNavigateGrinderBlock(Widget w, SUT system, String agentId, int grinderType, double toolUsageTime){
+	public seActionNavigateShootBlock(Widget w, SUT system, String agentId){
 		super(w, system, agentId);
-		setGrinderType(grinderType);
-		this.toolUsageTime = toolUsageTime;
 		this.set(Tags.Desc, toShortString());
 		// TODO: Update with Goal Solving agents
 		this.set(IV4XRtags.agentAction, false);
@@ -74,44 +54,35 @@ public class seActionNavigateGrinderBlock extends seActionNavigateToBlock {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		equipGrinder(system);
+		equipGun(system);
+		Util.pause(2);
 		navigateToReachableBlockPosition(system, state);
 		rotateToBlockDestination(system);
-		useGrinder(system);
+		shootGun(system);
 
-		// After Grinder action equip an empty object
+		// After shoot action equip an empty object
 		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
 		seItems.unEquipWeapon();
 	}
 
-	/**
-	 * Prepare the Grinder tool in the SE tool bar. 
-	 * 
-	 * @param seItems
-	 */
-	private void equipGrinder(SUT system) {
+	private void equipGun(SUT system) {
 		spaceEngineers.controller.Items seItems = system.get(IV4XRtags.iv4xrSpaceEngItems);
 
-		seItems.setToolbarItem(DefinitionId.Companion.physicalGun(grinderType), ToolbarLocation.Companion.fromIndex(5, 6));
+		seItems.setToolbarItem(DefinitionId.Companion.physicalGun("AutomaticRifleItem"), ToolbarLocation.Companion.fromIndex(5, 6));
 		Util.pause(0.5);
 		seItems.equip(ToolbarLocation.Companion.fromIndex(5, 6));
 	}
 
-	/**
-	 * Use the Grinder tool the desired amount of time. 
-	 * 
-	 * @param seItems
-	 */
-	private void useGrinder(SUT system) {
+	private void shootGun(SUT system) {
 		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
 
 		seCharacter.beginUsingTool();
-		Util.pause(toolUsageTime);
+		Util.pause(0.5);
 		seCharacter.endUsingTool();
 	}
 
 	@Override
 	public String toShortString() {
-		return "Navigate to block: " + widgetType + ", id: " + widgetId + " and use " + grinderType + " seconds " + toolUsageTime + " by agent: " + agentId;
+		return "Navigate to block: " + widgetType + ", id: " + widgetId + " and shoot it by agent: " + agentId;
 	}
 }

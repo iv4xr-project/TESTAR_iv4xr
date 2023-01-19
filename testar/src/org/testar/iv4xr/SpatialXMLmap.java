@@ -44,6 +44,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.fruit.Assert;
+import org.fruit.Pair;
 import org.fruit.alayer.Action;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
@@ -74,6 +76,8 @@ import com.google.gson.Gson;
 
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.enums.IV4XRtags;
+import eu.testar.iv4xr.enums.SVec3;
+import spaceEngineers.model.Vec3F;
 
 public class SpatialXMLmap {
 
@@ -81,13 +85,18 @@ public class SpatialXMLmap {
 
 	private static int [][] xml_space_blocks = {{0,0,0}};
 
-	private static int agentObservationRadius = 0; //TODO: Verify 1 to 2,5 game distance relation
+	public static int agentObservationRadius = 0; //TODO: Verify 1 to 2,5 game distance relation
+	private static String agentUpOrientation = "";
+	private static Pair<String, String> agentPlatformOrientation = new Pair<String, String>("", "");
 	private static Vec3 initialAgentPosition = new Vec3(0, 0, 0);
 	private static Vec3 initialPlatformPosition = new Vec3(0, 0, 0);
 	private static int minX = 0, maxX = 0, minZ = 0, maxZ = 0;
 	private static int WIDTH = 0;
 	private static int HEIGHT = 0;
 	private static int reSizeMap = 10; // This is to have a picture with a bigger scale
+
+	private static float largeGameToXML = 2.5f;
+	private static float smallGameToXML = 0.5f;
 
 	public static void prepareSpatialXMLmap(String levelPath) {
 		// First, clear and load the initial XML blocks information
@@ -96,6 +105,7 @@ public class SpatialXMLmap {
 		try {
 			obtainObservationRadius();
 			// First load the space blocks to calculate the max and min axis
+			loadAgentOrientation(levelPath);
 			loadSpaceBlocks(levelPath);
 			loadInitialInteractiveBlocks(levelPath);
 			loadInitialAgentPosition(levelPath);
@@ -115,8 +125,54 @@ public class SpatialXMLmap {
 		reader.close();
 	}
 
+	private static void loadAgentOrientation(String levelPath) throws ParserConfigurationException, XPathExpressionException, SAXException, IOException {
+		// SANDBOX_0_0_0_.sbs is the SE file that contains information about the existing blocks of the level
+		FileInputStream fileIS = new FileInputStream(new File(levelPath + File.separator + "SANDBOX_0_0_0_.sbs"));
+		// Prepare a xPath expression to obtain the character initial orientation up
+		String expression = "/MyObjectBuilder_Sector/SectorObjects/MyObjectBuilder_EntityBase[@type='MyObjectBuilder_Character']/PositionAndOrientation/Up";
+
+		DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = builderFactory.newDocumentBuilder();
+		Document xmlDocument = builder.parse(fileIS);
+		XPath xPath = XPathFactory.newInstance().newXPath();
+
+		// It should exist only one MyObjectBuilder_Character node with this character orientation up
+		NodeList characterCoordinatesList = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
+		Assert.isTrue(characterCoordinatesList.getLength() == 1);
+		Node characterCoordinates = characterCoordinatesList.item(0);
+
+		// Obtain the x, y, z attributes from the orientation up node
+		int x = Math.abs((int) Math.round(Double.parseDouble(characterCoordinates.getAttributes().getNamedItem("x").getNodeValue())));
+		int y = Math.abs((int) Math.round(Double.parseDouble(characterCoordinates.getAttributes().getNamedItem("y").getNodeValue())));
+		int z = Math.abs((int) Math.round(Double.parseDouble(characterCoordinates.getAttributes().getNamedItem("z").getNodeValue())));
+
+		List<Integer> orientationUpList = Arrays.asList(x, y, z);
+		if(Collections.frequency(orientationUpList, 1) != 1) {
+			throw new SystemStartException("SpatialXMLmap loadAgentOrientation: error calculating the agentPlatformOrientation up, multiple frequencies");
+		}
+
+		if(x == 1) { 
+			agentUpOrientation = "x";
+			agentPlatformOrientation = new Pair<String, String>("y", "z");
+		}
+		else if(y == 1) { 
+			agentUpOrientation = "y";
+			agentPlatformOrientation = new Pair<String, String>("x", "z");
+
+		}
+		else if(z == 1) { 
+			agentUpOrientation = "z";
+			agentPlatformOrientation = new Pair<String, String>("x", "y");
+		}
+		else throw new SystemStartException("SpatialXMLmap loadAgentOrientation: error calculating the agentPlatformOrientation up, no agentPlatformOrientation Up detected");
+
+		System.out.println("agentUpOrientation: " + agentUpOrientation);
+		System.out.println("agentPlatformOrientation: " + agentPlatformOrientation);
+
+		fileIS.close();
+	}
+
 	private static void loadSpaceBlocks(String levelPath) throws ParserConfigurationException, XPathExpressionException, SAXException, IOException {
-		Set<Node> coordNodesSet = new HashSet<>();
 		// SANDBOX_0_0_0_.sbs is the SE file that contains information about the existing blocks of the level
 		FileInputStream fileIS = new FileInputStream(new File(levelPath + File.separator + "SANDBOX_0_0_0_.sbs"));
 		// MyObjectBuilder_CubeBlock seems to be the XML element that represents each block
@@ -130,13 +186,20 @@ public class SpatialXMLmap {
 
 		NodeList allBlocksCoordinates = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
 
+		Set<Node> coordAllBlocksNodesSet = new HashSet<>();
+		Set<Node> coordWalls = new HashSet<>();
+
 		for (int i = 0; i < allBlocksCoordinates.getLength(); i++) {
 			Node coordElement = allBlocksCoordinates.item(i);
-			coordNodesSet.add(coordElement);
+			coordAllBlocksNodesSet.add(coordElement);
+
+			// If the block is not on the floor, consider it a wall
+			int y = Integer.parseInt(coordElement.getAttributes().getNamedItem(agentUpOrientation).getNodeValue());
+			if(y == 1 || y == -1) coordWalls.add(coordElement);
+
 			// Obtain the x, y, z attributes from the coordinates node
-			int x = Integer.parseInt(coordElement.getAttributes().getNamedItem("x").getNodeValue());
-			//int y = Integer.parseInt(coordElement.getAttributes().getNamedItem("y").getNodeValue());
-			int z = Integer.parseInt(coordElement.getAttributes().getNamedItem("z").getNodeValue());
+			int x = Integer.parseInt(coordElement.getAttributes().getNamedItem(agentPlatformOrientation.left()).getNodeValue());
+			int z = Integer.parseInt(coordElement.getAttributes().getNamedItem(agentPlatformOrientation.right()).getNodeValue());
 
 			if(x < minX) minX = x;
 			if(x > maxX) maxX = x;
@@ -152,13 +215,21 @@ public class SpatialXMLmap {
 		// Initial always exists
 		xml_space_blocks[0 - minX][0 - minZ] = 1;
 
-		for(Node coordElement : coordNodesSet) {
+		for(Node coordElement : coordAllBlocksNodesSet) {
 			// Obtain the x, y, z attributes from the coordinates node
-			int x = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem("x").getNodeValue()));
-			//int y = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem("y").getNodeValue()));
-			int z = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem("z").getNodeValue()));
+			int x = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem(agentPlatformOrientation.left()).getNodeValue()));
+			int z = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem(agentPlatformOrientation.right()).getNodeValue()));
 
 			xml_space_blocks[x - minX][z - minZ] = 1;
+		}
+
+		// We have to delete the positions on which a wall block was detected, because is not 2D navigable
+		for(Node coordElement : coordWalls) {
+			// Obtain the x, y, z attributes from the coordinates node
+			int x = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem(agentPlatformOrientation.left()).getNodeValue()));
+			int z = (int) Math.round(Double.parseDouble(coordElement.getAttributes().getNamedItem(agentPlatformOrientation.right()).getNodeValue()));
+
+			xml_space_blocks[x - minX][z - minZ] = 0;
 		}
 
 		fileIS.close();
@@ -168,7 +239,7 @@ public class SpatialXMLmap {
 		// SANDBOX_0_0_0_.sbs is the SE file that contains information about the existing blocks of the level
 		FileInputStream fileIS = new FileInputStream(new File(levelPath + File.separator + "SANDBOX_0_0_0_.sbs"));
 		// MyObjectBuilder_CubeBlock seems to be the XML element that represents each block
-		// Prepare a xPath expression to obtain all the functional blocsk that contains the entity id property
+		// Prepare a xPath expression to obtain all the functional blocks that contains the entity id property
 		String expression = "/MyObjectBuilder_Sector/SectorObjects/MyObjectBuilder_EntityBase/CubeBlocks/MyObjectBuilder_CubeBlock/EntityId";
 
 		DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
@@ -186,9 +257,8 @@ public class SpatialXMLmap {
 				// Search for the Min property that represents the block coordinates
 				if(allBlockProperties.item(j).getNodeName().equals("Min")) {
 					// Obtain the x, y, z attributes from the Min property
-					int x = Integer.parseInt(allBlockProperties.item(j).getAttributes().getNamedItem("x").getNodeValue());
-					//int y = Integer.parseInt(allBlockProperties.item(j).getAttributes().getNamedItem("y").getNodeValue());
-					int z = Integer.parseInt(allBlockProperties.item(j).getAttributes().getNamedItem("z").getNodeValue());
+					int x = Integer.parseInt(allBlockProperties.item(j).getAttributes().getNamedItem(agentPlatformOrientation.left()).getNodeValue());
+					int z = Integer.parseInt(allBlockProperties.item(j).getAttributes().getNamedItem(agentPlatformOrientation.right()).getNodeValue());
 
 					xml_space_blocks[x - minX][z - minZ] = 3;
 				}
@@ -236,9 +306,12 @@ public class SpatialXMLmap {
 		Document xmlDocument = builder.parse(fileIS);
 		XPath xPath = XPathFactory.newInstance().newXPath();
 
-		// For now, we need to work with a level on which it should exist only one platform node
+		// For now, we need to work with a level on which the main platform should be the first entity base object
 		NodeList platformCoordinatesList = (NodeList) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODESET);
-		Assert.isTrue(platformCoordinatesList.getLength() == 1);
+		if(platformCoordinatesList.getLength() != 1) {
+			System.out.println("WARNING! More that one MyObjectBuilder_EntityBase Grid detected");
+			System.out.println("WARNING! Only the first one will be used to calculate the spatial XML map");
+		}
 		Node platformCoordinates = platformCoordinatesList.item(0);
 
 		// Obtain the x, y, z attributes from the coordinates node
@@ -260,14 +333,19 @@ public class SpatialXMLmap {
 		updateObservedEntities(state, relativePosition);
 	}
 
+	private static float getPositionCoordinate(Vec3 position, String coordinate) {
+		if(coordinate.equals("x")) {return position.x;}
+		else if(coordinate.equals("y")) {return position.y;}
+		else if(coordinate.equals("z")) {return position.z;}
+		else throw new SystemStartException("SpatialXMLmap getAgentPositionCoordinate: error obtaining the desired position coordinate");
+	}
+
 	private static void updateAgentPosition(State state, Vec3 relativePosition) {
 		Vec3 agentPosition = state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition);
 		agentPosition = Vec3.add(Vec3.sub(agentPosition, initialAgentPosition), relativePosition);
 
-		float gameToXML = 2.5f;
-		int x = Math.round(agentPosition.x / gameToXML);
-		//int y = Math.round(agentPosition.y / gameToXML);
-		int z = Math.round(agentPosition.z / gameToXML);
+		int x = Math.round(getPositionCoordinate(agentPosition, agentPlatformOrientation.left()) / largeGameToXML);
+		int z = Math.round(getPositionCoordinate(agentPosition, agentPlatformOrientation.right()) / largeGameToXML);
 
 		// 2 represents the space explored by agent
 		// Because this position is updated every state, 
@@ -283,16 +361,38 @@ public class SpatialXMLmap {
 				Vec3 widgetBlockPosition = w.get(IV4XRtags.entityPosition);
 				widgetBlockPosition = Vec3.add(Vec3.sub(widgetBlockPosition, initialAgentPosition), relativePosition);
 
-				float gameToXML = 2.5f;
-				int x = Math.round(widgetBlockPosition.x / gameToXML);
-				//int y = Math.round(agentPosition.y / gameToXML);
-				int z = Math.round(widgetBlockPosition.z / gameToXML);
+				int x = Math.round(getPositionCoordinate(widgetBlockPosition, agentPlatformOrientation.left()) / largeGameToXML);
+				int z = Math.round(getPositionCoordinate(widgetBlockPosition, agentPlatformOrientation.right()) / largeGameToXML);
 
 				// 4 represents an observed functional entity
 				// Because this position is updated every state, 
 				// do not overwrite the position of interacted functional blocks (5)
 				if(xml_space_blocks[x - minX][z - minZ] < 4) {
 					xml_space_blocks[x - minX][z - minZ] = 4;
+				}
+			}
+		}
+	}
+
+	public static void updateNavigableNodesPath(List<Vec3F> navigableNodes) {
+		// Prepare the relative position to match the relative XML information
+		Vec3 relativePosition = Vec3.sub(initialAgentPosition, initialPlatformPosition);
+
+		if(!navigableNodes.isEmpty()){
+			for(Vec3F node : navigableNodes) {
+				Vec3 nodePosition = Vec3.add(Vec3.sub(SVec3.seToLab(node), initialAgentPosition), relativePosition);
+				int x = Math.round(getPositionCoordinate(nodePosition, agentPlatformOrientation.left()) / largeGameToXML);
+				int z = Math.round(getPositionCoordinate(nodePosition, agentPlatformOrientation.right()) / largeGameToXML);
+
+				// 2 represents the space explored by agent
+				// Because this position is updated every state, 
+				// do not overwrite the position of functional blocks (3,4,5)
+				try {
+					if(xml_space_blocks[x - minX][z - minZ] < 2) {
+						xml_space_blocks[x - minX][z - minZ] = 2;
+					}
+				} catch (Exception e) {
+					System.err.println("SpatialXMLmap updateNavigableNodesPath error adding node to map");
 				}
 			}
 		}
@@ -307,10 +407,8 @@ public class SpatialXMLmap {
 			Vec3 widgetBlockPosition = interactedWidget.get(IV4XRtags.entityPosition);
 			widgetBlockPosition = Vec3.add(Vec3.sub(widgetBlockPosition, initialAgentPosition), relativePosition);
 
-			float gameToXML = 2.5f;
-			int x = Math.round(widgetBlockPosition.x / gameToXML);
-			//int y = Math.round(agentPosition.y / gameToXML);
-			int z = Math.round(widgetBlockPosition.z / gameToXML);
+			int x = Math.round(getPositionCoordinate(widgetBlockPosition, agentPlatformOrientation.left()) / largeGameToXML);
+			int z = Math.round(getPositionCoordinate(widgetBlockPosition, agentPlatformOrientation.right()) / largeGameToXML);
 
 			// 5 represents an interacted functional entity
 			xml_space_blocks[x - minX][z - minZ] = 5;
@@ -422,25 +520,28 @@ public class SpatialXMLmap {
 		int existingPositions = linearSearch(xml_space_blocks, 1) + walkedPositions;
 
 		String totalSummary = "Sequence | " + OutputStructure.sequenceInnerLoopCount +
-				" | existingBlocks | " + existingBlocksCount +
+				" | existingFunctionalBlocks | " + existingBlocksCount +
 				// Observed entities number and percentage
-				" | observedBlocks | " + observedBlocksCount +
+				" | observedFunctionalBlocks | " + observedBlocksCount +
 				" | " + String.format("%.2f", (double)observedBlocksCount * 100.0 / (double)existingBlocksCount).replace(".", ",") +
 				// Interacted number and percentage
-				" | interactedBlocks | " + interactedBlocksCount +
+				" | interactedFunctionalBlocks | " + interactedBlocksCount +
 				" | " + String.format("%.2f", (double)interactedBlocksCount * 100.0 / (double)existingBlocksCount).replace(".", ",") +
 
-				" | existingPositions | " + existingPositions +
+				" | existingFloorPositions | " + existingPositions +
 				// Walked number and percentage
-				" | walkedPositions | " + walkedPositions +
-				" | " + String.format("%.2f", (double)walkedPositions * 100.0 / (double)existingPositions).replace(".", ",") +
+				" | walkedFloorPositions | " + walkedPositions +
+				" | " + String.format("%.2f", (double)walkedPositions * 100.0 / (double)existingPositions).replace(".", ",");
+
+		//TODO: Fix observed area calculation
+		/*
 				// Observed position number and percentage
 				" | observedLevelArea | " + observedBlocksPositions +
 				" | " + String.format("%.2f", (double)observedBlocksPositions * 100.0 / (double)existingPositions).replace(".", ",") +
 				// Unexplored position number and percentage
 				" | unexploredLevelArea | " + (existingPositions - observedBlocksPositions) +
 				" | " + String.format("%.2f", (double)(existingPositions - observedBlocksPositions) * 100.0 / (double)existingPositions).replace(".", ",");
-
+		 */
 		try {
 			File metricsFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "summary_spatial_coverage.txt").getAbsoluteFile();
 			metricsFile.createNewFile();

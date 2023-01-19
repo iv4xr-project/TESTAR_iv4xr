@@ -34,12 +34,12 @@ import org.fruit.Util;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
+import org.fruit.alayer.Verdict;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.model.Vec2F;
-import spaceEngineers.model.Vec3F;
+import spaceEngineers.model.CharacterObservation;
 
 public class seActionNavigateInteract extends seActionNavigateToBlock {
 	private static final long serialVersionUID = 5024994091150159066L;
@@ -57,45 +57,32 @@ public class seActionNavigateInteract extends seActionNavigateToBlock {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		navigateToReachableBlockPosition(system);
-		//rotateToBlockDestination(system);
-		aimToBlock(system);
-		interactWithBlock(system);
-		Util.pause(1);
-		interactWithBlock(system);
-		Util.pause(1);
-	}
+		navigateToReachableBlockPosition(system, state);
+		aimToBlock(system, targetBlock);
 
-	/**
-	 * Rotate until the agent is aiming the target block. 
-	 * For interactive entities (e.g., LargeBlockCryoChamber or LargeBlockCockpit), 
-	 * it is essential that the agent is not using tools (e.g., Grinder or Welder). 
-	 * Then we are able to aim the interactive part of the block and not the block itself. 
-	 * 
-	 * @param system
-	 */
-	protected void aimToBlock(SUT system) {
-		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
+		// Check the jetpack settings before interacting with the functional block
 		spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
-		spaceEngineers.controller.Observer seObserver = seController.getObserver();
+		CharacterObservation seObsCharacter = seController.getObserver().observe();
+		Boolean isJetpackRunningBefore = seObsCharacter.getJetpackRunning();
 
-		int AIMTRIES = 151;
-		int tries = 1;
-		System.out.println("Aiming to find block: " + targetBlock.get(IV4XRtags.entityId));
-		while(!targetBlockFound(seObserver) && tries < AIMTRIES) {		
-			seCharacter.moveAndRotate(new Vec3F(0, 0, 0), new Vec2F(0, DEGREES*0.007f), 0f, 1);
-			tries ++;
-		}
-	}
+		// Go inside the functional block
+		interactWithBlock(system);
 
-	private boolean targetBlockFound(spaceEngineers.controller.Observer seObserver) {
-		try {
-			if(seObserver.observe().getTargetBlock() == null) return false;
-			System.out.println(seObserver.observe().getTargetBlock().getId());
-			return seObserver.observe().getTargetBlock().getId().equals(targetBlock.get(IV4XRtags.entityId));
-		} catch(Exception e) {
-			return false;
+		// Wait some seconds
+		Util.pause(1);
+
+		// Then go outside
+		interactWithBlock(system);
+
+		// Finally, execute a new observation to check the jetpack settings
+		seObsCharacter = seController.getObserver().observe();
+		Boolean isJetpackRunningAfter = seObsCharacter.getJetpackRunning();
+
+		if(!isJetpackRunningBefore.equals(isJetpackRunningAfter)) {
+			actionVerdict = new Verdict(Verdict.AGENT_JETPACK_ERROR, "Jetpack settings are incorrect after interacting with block : " + targetBlock.get(IV4XRtags.entityType));
 		}
+
+		Util.pause(1);
 	}
 
 	private void interactWithBlock(SUT system) {
