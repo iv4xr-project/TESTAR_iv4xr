@@ -140,11 +140,11 @@ public class seActionTriggerBlockConstruction extends seActionGoal {
 			return;
 		}
 		// Verify that the search returns the desired block as the first element
-		if(!tbcData.getGridItems().get(0).toString().equals("MyObjectBuilder_CubeBlock/" + blockType)) {
+		if(!tbcData.getGridItems().get(0).toString().equals("CubeBlock/" + blockType)) {
 			actionVerdict = new Verdict(Verdict.BLOCK_SEARCH_ERROR, 
 					"The block definition Id and the block name does not match: "
 							+ blockTypeDescriptionMap.get(blockType)
-							+ "MyObjectBuilder_CubeBlock/" + blockType);
+							+ "CubeBlock/" + blockType);
 			return;
 		}
 		Util.pause(1);
@@ -186,7 +186,7 @@ public class seActionTriggerBlockConstruction extends seActionGoal {
 			return;
 		}
 		Block newBlock = newObsBlocks.getGrids().get(0).getBlocks().get(0);
-		if(!newBlock.getDefinitionId().toString().equals("MyObjectBuilder_CubeBlock/" + blockType)) {
+		if(!newBlock.getDefinitionId().toString().equals("CubeBlock/" + blockType)) {
 			actionVerdict = new Verdict(Verdict.BLOCK_CONSTRUCTION_ERROR, 
 					"The desired block was not correctly placed to the level." 
 							+ " Expected: " + blockType

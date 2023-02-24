@@ -17,7 +17,6 @@ import spaceEngineers.controller.SpaceEngineersJavaProxyBuilder;
 import spaceEngineers.controller.SpaceEngineersTestContext;
 import spaceEngineers.model.CharacterObservation;
 import spaceEngineers.model.Observation;
-import spaceEngineers.transport.CloseIfCloseableKt;
 
 /**
  * JUnit tests ignored by default, 
@@ -68,7 +67,7 @@ public class ConnectSpaceEngineersTest {
 	@AfterClass
 	public static void close() {
 		// Close Space Engineers plugin session
-		CloseIfCloseableKt.closeIfCloseable(seController);
+		seController.close();
 	}
 
 }

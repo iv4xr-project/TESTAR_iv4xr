@@ -16,7 +16,6 @@ import org.junit.Test;
 
 import eu.testar.iv4xr.IV4XRStateBuilder;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import spaceEngineers.transport.CloseIfCloseableKt;
 
 /**
  * JUnit tests ignored by default, 
@@ -112,7 +111,7 @@ public class SeStateFetcherTest {
 	@AfterClass
 	public static void close() {
 		// Close Space Engineers plugin session
-		CloseIfCloseableKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));
+		system.get(IV4XRtags.iv4xrSpaceEngineers).close();
 	}
 
 }

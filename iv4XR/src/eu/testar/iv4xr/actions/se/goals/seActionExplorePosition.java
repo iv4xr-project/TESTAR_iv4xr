@@ -31,7 +31,9 @@
 package eu.testar.iv4xr.actions.se.goals;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.fruit.alayer.Role;
@@ -41,17 +43,18 @@ import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
+import eu.iv4xr.framework.extensions.pathfinding.Navigatable;
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
 import spaceEngineers.controller.Observer;
 import spaceEngineers.controller.SpaceEngineers;
+import spaceEngineers.graph.DataNode;
 import spaceEngineers.iv4xr.navigation.NavigableGraph;
 import spaceEngineers.model.Vec3F;
 import spaceEngineers.model.extensions.ObservationExtensionsKt;
 import spaceEngineers.navigation.NavGraph;
-import spaceEngineers.navigation.Node;
 import spaceEngineers.navigation.RichNavGraph;
 import spaceEngineers.navigation.RichNavGraphKt;
 
@@ -63,7 +66,7 @@ public class seActionExplorePosition extends seActionGoal {
 	public Vec3 getTargetPosition() {
 		return targetPosition;
 	}
-	
+
 	private List<Vec3F> navigableNodes = new ArrayList<Vec3F>();
 
 	public List<Vec3F> getNavigableNodes(){
@@ -107,32 +110,39 @@ public class seActionExplorePosition extends seActionGoal {
 
 		// Check if there is a reachable node in the navigational graph
 		// that allows the agent to reach the position to explore
-		int reachableNode = -1;
+		String reachableNode = "";
 		float closestDistance = 0.5f; // Not exactly the same position but almost
-		for (Node node : richNavGraph.getNodeMap().values()) {
+		for (DataNode<String, Vec3F> node : richNavGraph.getNodeMap().values()) {
 
 			// Ignore the not reachable positions (due to block size)
-			Vec3F nodePosition = new Vec3F(node.getPosition().getX(), 0f, node.getPosition().getZ());
+			Vec3F nodePosition = new Vec3F(node.getData().getX(), 0f, node.getData().getZ());
 			if(notReachablePositions.contains(nodePosition)) continue;
 
-			float distance = node.getPosition().distanceTo(destinationPosition); // the destination position to explore
+			float distance = node.getData().distanceTo(destinationPosition); // the destination position to explore
 			if(distance < closestDistance){
 				reachableNode = node.getId();
 				closestDistance = distance;
 			}
 		}
 
-		if(reachableNode != -1) {
+		Vec3F characterPosition = seObserver.observeBlocks().getCharacter().getPosition();
+
+		String startNode = richNavGraph.getNodeMap().entrySet()
+				.stream()
+				.min(Comparator.comparingDouble(entry -> entry.getValue().getData().distanceTo(characterPosition)))
+				.map(Map.Entry::getKey)
+				.orElse("");
+
+		if(!reachableNode.isEmpty() && !startNode.isEmpty()) {
 			NavigableGraph navigableGraph = new NavigableGraph(navGraph);
-			int targetNode = navGraph.getNodes().get(reachableNode).getId();
-			List<Integer> nodePath = getPath(navigableGraph, targetNode);
+			List<String> nodePath = getPath((Navigatable<String>) navigableGraph, startNode, reachableNode);
 
 			// For each calculated node in the navigable path
-			for (Integer nodeId : nodePath) {
+			for (String nodeId : nodePath) {
 				// Use the navigator to move to the next node position
-				new SEnavigator().moveInLine(system, navigableGraph.node(nodeId).getPosition());
+				new SEnavigator().moveInLine(system, navigableGraph.node(nodeId).getData());
 				// And update the action list of navigableNodes
-				navigableNodes.add(navigableGraph.node(nodeId).getPosition());
+				navigableNodes.add(navigableGraph.node(nodeId).getData());
 			}
 		}
 	}

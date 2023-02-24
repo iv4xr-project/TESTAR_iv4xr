@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2022 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2022 Open Universiteit - www.ou.nl
+ * Copyright (c) 2022 - 2023 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2022 - 2023 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -66,7 +66,7 @@ public class seActionNavigateRechargeEnergy extends seActionNavigateToBlock {
 		Boolean isJetpackRunningBefore = seObsCharacter.getJetpackRunning();
 
 		// Check the energy before interacting with the functional block
-		float initialSuitEnergy = seObsCharacter.getSuitEnergy();
+		float initialSuitEnergy = seObsCharacter.getEnergy();
 
 		// Go inside the functional block
 		interactWithBlock(system);
@@ -86,7 +86,7 @@ public class seActionNavigateRechargeEnergy extends seActionNavigateToBlock {
 		}
 
 		// Second, check that the energy has increased
-		float newSuitEnergy = seObsCharacter.getSuitEnergy();
+		float newSuitEnergy = seObsCharacter.getEnergy();
 		if(initialSuitEnergy != 1.0f && newSuitEnergy <= initialSuitEnergy) {
 			actionVerdict = new Verdict(Verdict.AGENT_ENERGY_ERROR, "Agent Suit Energy did not increase after waiting inside block: " 
 					+ targetBlock.get(IV4XRtags.entityType)

@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 - 2023 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 - 2023 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -55,10 +55,7 @@ public class seActionCommandHelmetOpen extends seActionCommand {
 
 	@Override
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
-		boolean isHelmentEnabled = system.get(IV4XRtags.iv4xrSpaceEngineers).getObserver().observe().getHelmetEnabled();
-		spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
-
-		if(isHelmentEnabled) {seCharacter.switchHelmet();} else {return;}
+		system.get(IV4XRtags.iv4xrSpaceEngCharacter).setHelmet(false);
 	}
 
 	@Override

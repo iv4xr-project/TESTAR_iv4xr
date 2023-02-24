@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2022 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2022 Open Universiteit - www.ou.nl
+ * Copyright (c) 2022 - 2023 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2022 - 2023 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -68,16 +68,16 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 			boolean isHelmentEnabled = system.get(IV4XRtags.iv4xrSpaceEngineers).getObserver().observe().getHelmetEnabled();
 			spaceEngineers.controller.Character seCharacter = system.get(IV4XRtags.iv4xrSpaceEngCharacter);
 			if(isHelmentEnabled) {
-				seCharacter.switchHelmet();
+				seCharacter.setHelmet(false);
 				Util.pause(3);
-				seCharacter.switchHelmet();
+				seCharacter.setHelmet(true);
 			}
 
 			// Check the player health before interacting with the functional block
 			spaceEngineers.controller.SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 			CharacterObservation seObsCharacter = seController.getObserver().observe();
 			float previousHealth = seObsCharacter.getHealth();
-			float previousEnergy = seObsCharacter.getSuitEnergy();
+			float previousEnergy = seObsCharacter.getEnergy();
 			float previousOxygen = seObsCharacter.getOxygen();
 			float previousHydrogen = seObsCharacter.getHydrogen();
 
@@ -101,7 +101,7 @@ public class seActionNavigateRechargeHealth extends seActionNavigateToBlock {
 				return;
 			}
 			// Second, check that the energy has increased
-			float newSuitEnergy = seObsCharacter.getSuitEnergy();
+			float newSuitEnergy = seObsCharacter.getEnergy();
 			if(previousEnergy != 1.0f && newSuitEnergy <= previousEnergy) {
 				actionVerdict = new Verdict(Verdict.AGENT_ENERGY_ERROR, 
 						"Agent Suit Energy did not increase after interacting with block: " 

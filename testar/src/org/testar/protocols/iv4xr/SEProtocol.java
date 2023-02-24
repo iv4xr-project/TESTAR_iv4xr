@@ -75,7 +75,6 @@ import eu.testar.iv4xr.actions.se.goals.seActionNavigateToBlock;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.se.SpaceEngineersProcess;
 import nl.ou.testar.SystemProcessHandling;
-import spaceEngineers.transport.CloseIfCloseableKt;
 
 public class SEProtocol extends iv4xrProtocol {
 
@@ -143,7 +142,8 @@ public class SEProtocol extends iv4xrProtocol {
 
 		// Load the desired level to execute TESTAR and obtain the coverage
 		system.get(IV4XRtags.iv4xrSpaceEngineers).getSession().loadScenario(new File(SE_LEVEL_PATH).getAbsolutePath());
-		Util.pause(20);
+		system.get(IV4XRtags.iv4xrSpaceEngineers).getScreens().waitUntilTheGameLoaded();
+		Util.pause(5);
 
 		return system;
 	}
@@ -359,7 +359,7 @@ public class SEProtocol extends iv4xrProtocol {
 			system.get(IV4XRtags.iv4xrSpaceEngineers).getSession().exitToMainMenu();
 		}
 		// Close iv4xr-plugin connection
-		CloseIfCloseableKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));
+		system.get(IV4XRtags.iv4xrSpaceEngineers).close();
 		// If we use SUTConnector command line, we want to kill the process and start a new one next sequence
 		if(settings.get(ConfigTags.SUTConnector).equals(Settings.SUT_CONNECTOR_CMDLINE)) {
 			// super.finishSequence();

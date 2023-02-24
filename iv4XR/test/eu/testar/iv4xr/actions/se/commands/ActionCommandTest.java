@@ -20,7 +20,6 @@ import spaceEngineers.controller.SpaceEngineers;
 import spaceEngineers.controller.SpaceEngineersJavaProxyBuilder;
 import spaceEngineers.model.Vec2F;
 import spaceEngineers.model.Vec3F;
-import spaceEngineers.transport.CloseIfCloseableKt;
 
 /**
  * JUnit tests ignored by default, 
@@ -199,7 +198,7 @@ public class ActionCommandTest {
 	@AfterClass
 	public static void close() {
 		// Close Space Engineers plugin session
-		CloseIfCloseableKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));
+		system.get(IV4XRtags.iv4xrSpaceEngineers).close();
 	}
 
 }

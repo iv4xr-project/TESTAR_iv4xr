@@ -41,10 +41,10 @@ import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
 import spaceEngineers.controller.Observer;
 import spaceEngineers.controller.SpaceEngineers;
+import spaceEngineers.graph.DataNode;
 import spaceEngineers.model.Vec3F;
 import spaceEngineers.model.extensions.ObservationExtensionsKt;
 import spaceEngineers.navigation.NavGraph;
-import spaceEngineers.navigation.Node;
 import spaceEngineers.navigation.RichNavGraph;
 import spaceEngineers.navigation.RichNavGraphKt;
 
@@ -71,17 +71,17 @@ public class sePositionRotationHelper {
 
 		// Check if there is a reachable node in the navigational graph
 		// that allows the agent to reach the target block position
-		int reachableNode = -1;
+		String reachableNode = "";
 		float closestDistance = 3f; // Near the block to be able to interact later
-		for (Node node : richNavGraph.getNodeMap().values()) {
-			float distance = node.getPosition().distanceTo(targetPosition); // the target position of the widget to interact with
+		for (DataNode<String, Vec3F> node : richNavGraph.getNodeMap().values()) {
+			float distance = node.getData().distanceTo(targetPosition); // the target position of the widget to interact with
 			if(distance < closestDistance){
 				reachableNode = node.getId();
 				closestDistance = distance;
 			}
 		}
 
-		return (reachableNode != -1);
+		return !reachableNode.isEmpty();
 	}
 
 	public static Set<Action> calculateExploratoryNodeMap(SUT system, State state, String agentId, Set<Action> actions, float maxDistance) {
@@ -96,8 +96,8 @@ public class sePositionRotationHelper {
 		RichNavGraph richNavGraph = RichNavGraphKt.toRichGraph(navGraph);
 
 		// Based on a maximum distance, derive the exploratory node movements
-		for (Node node : richNavGraph.getNodeMap().values()) {
-			Vec3F nodePosition = node.getPosition();
+		for (DataNode<String, Vec3F> node : richNavGraph.getNodeMap().values()) {
+			Vec3F nodePosition = node.getData();
 			float nodeDistance = nodePosition.distanceTo(agentPosition); // the target position of the widget to interact with
 			// If the node is inside the max distance radio
 			if(nodeDistance < maxDistance){
@@ -129,17 +129,17 @@ public class sePositionRotationHelper {
 
 		// Check if there is a reachable node in the navigational graph
 		// that allows the agent to reach the position to explore
-		int reachableNode = -1;
+		String reachableNode = "";
 		float closestDistance = 0.5f; // Not exactly the same position but almost
-		for (Node node : richNavGraph.getNodeMap().values()) {
-			float distance = node.getPosition().distanceTo(position); // the destination position to explore
+		for (DataNode<String, Vec3F> node : richNavGraph.getNodeMap().values()) {
+			float distance = node.getData().distanceTo(position); // the destination position to explore
 			if(distance < closestDistance){
 				reachableNode = node.getId();
 				closestDistance = distance;
 			}
 		}
 
-		return (reachableNode != -1);
+		return !reachableNode.isEmpty();
 	}
 
 	/**

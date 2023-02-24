@@ -44,10 +44,10 @@ import org.fruit.alayer.Widget;
 import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.iv4xr.framework.extensions.pathfinding.AStar;
+import eu.iv4xr.framework.extensions.pathfinding.Navigatable;
 import eu.iv4xr.framework.mainConcepts.TestAgent;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.controller.Observer;
-import spaceEngineers.iv4xr.navigation.NavigableGraph;
 import spaceEngineers.model.Vec3F;
 
 public class seActionGoal extends TaggableBase implements Action {
@@ -67,10 +67,8 @@ public class seActionGoal extends TaggableBase implements Action {
 
 	}
 
-	protected List<Integer> getPath(NavigableGraph navigableGraph, int targetNodeId) { 
-		// Should be 0 if the nav graph was generated at the current character position
-		int startNodeId = 0;
-		AStar<Integer> pathfinder = new AStar<>();
+	protected List<String> getPath(Navigatable<String> navigableGraph, String startNodeId, String targetNodeId) { 
+		AStar<String> pathfinder = new AStar<String>();
 		return pathfinder.findPath(navigableGraph, startNodeId, targetNodeId);
 	}
 

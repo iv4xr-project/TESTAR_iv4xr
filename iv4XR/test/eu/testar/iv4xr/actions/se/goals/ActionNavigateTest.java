@@ -26,7 +26,6 @@ import spaceEngineers.controller.SpaceEngineersJavaProxyBuilder;
 import spaceEngineers.model.Block;
 import spaceEngineers.model.CharacterObservation;
 import spaceEngineers.model.Observation;
-import spaceEngineers.transport.CloseIfCloseableKt;
 
 /**
  * JUnit tests ignored by default, 
@@ -226,7 +225,7 @@ public class ActionNavigateTest {
 		System.out.println("CharacterObservation orientationForward: " + seObsCharacter.getOrientationForward());
 		System.out.println("CharacterObservation health: " + seObsCharacter.getHealth());
 		System.out.println("CharacterObservation oxygen: " + seObsCharacter.getOxygen());
-		System.out.println("CharacterObservation suitEnergy: " + seObsCharacter.getSuitEnergy());
+		System.out.println("CharacterObservation suitEnergy: " + seObsCharacter.getEnergy());
 		System.out.println("CharacterObservation hydrogen: " + seObsCharacter.getHydrogen());
 		System.out.println("CharacterObservation jetpackRunning: " + seObsCharacter.getJetpackRunning());
 		System.out.println("CharacterObservation dampenersOn: " + seObsCharacter.getDampenersOn());
@@ -249,7 +248,7 @@ public class ActionNavigateTest {
 	@AfterClass
 	public static void close() {
 		// Close Space Engineers plugin session
-		CloseIfCloseableKt.closeIfCloseable(system.get(IV4XRtags.iv4xrSpaceEngineers));
+		system.get(IV4XRtags.iv4xrSpaceEngineers).close();
 	}
 
 }

@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2020 - 2022 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2020 - 2022 Open Universiteit - www.ou.nl
+ * Copyright (c) 2020 - 2023 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2020 - 2023 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -141,7 +141,7 @@ public class SeStateFetcher extends IV4XRStateFetcher {
 		childElement.seAgentOrientationUp = seObsCharacter.getOrientationUp();
 		childElement.seAgentHealth = seObsCharacter.getHealth();
 		childElement.seAgentOxygen = seObsCharacter.getOxygen();
-		childElement.seAgentEnergy = seObsCharacter.getSuitEnergy();
+		childElement.seAgentEnergy = seObsCharacter.getEnergy();
 		childElement.seAgentHydrogen = seObsCharacter.getHydrogen();
 		childElement.seAgentJetpackRunning = seObsCharacter.getJetpackRunning();
 		childElement.seAgentDampenersOn = seObsCharacter.getDampenersOn();
