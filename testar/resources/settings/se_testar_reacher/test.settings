@@ -22,8 +22,8 @@ Mode = Spy
 # SUTCONNECTOR = SUT_PROCESS_NAME: SUTConnectorValue property must be the process name of the SUT.
 # The SUT must be manually started and closed.
 #################################################################
-SUTConnector = SUT_PROCESS_NAME
-SUTConnectorValue = SpaceEngineers.exe
+SUTConnector = COMMAND_LINE
+SUTConnectorValue = "C:/PROGRA~2/Steam/steamapps/common/SpaceEngineers/Bin64/SpaceEngineers.exe" "suts/se_levels/TESTAR_Map_1"
 
 #################################################################
 # Sequences
@@ -31,7 +31,7 @@ SUTConnectorValue = SpaceEngineers.exe
 # Number of sequences and the length of these sequences
 #################################################################
 
-Sequences = 1
+Sequences = 30
 SequenceLength = 100
 
 #################################################################

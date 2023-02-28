@@ -138,7 +138,8 @@ public class SpaceEngineersProcess extends SUTBase {
 			// Load Space Engineers Level
 			if(!levelPath.isEmpty()) {
 				seBuilder.getSession().loadScenario(new File(levelPath).getAbsolutePath());
-				Util.pause(10);
+				seBuilder.getScreens().waitUntilTheGameLoaded();
+				Util.pause(5);
 				System.out.println("Loaded level: " + levelPath);
 			}
 

@@ -140,10 +140,13 @@ public class SEProtocol extends iv4xrProtocol {
 		// Move SpaceEngineers to the foreground
 		system.get(IV4XRtags.windowsProcess).toForeground();
 
-		// Load the desired level to execute TESTAR and obtain the coverage
-		system.get(IV4XRtags.iv4xrSpaceEngineers).getSession().loadScenario(new File(SE_LEVEL_PATH).getAbsolutePath());
-		system.get(IV4XRtags.iv4xrSpaceEngineers).getScreens().waitUntilTheGameLoaded();
-		Util.pause(5);
+		// If SpaceEngineers was not launched with command line, and no level is running
+		if(!system.get(IV4XRtags.iv4xrSpaceEngineers).getScreens().getFocusedScreen().data().getName().equals("GamePlay")) {
+			// Load the desired level to execute TESTAR
+			system.get(IV4XRtags.iv4xrSpaceEngineers).getSession().loadScenario(new File(SE_LEVEL_PATH).getAbsolutePath());
+			system.get(IV4XRtags.iv4xrSpaceEngineers).getScreens().waitUntilTheGameLoaded();
+			Util.pause(5);
+		}
 
 		return system;
 	}

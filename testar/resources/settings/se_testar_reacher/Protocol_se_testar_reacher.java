@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 - 2022 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 - 2022 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 - 2023 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 - 2023 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.fruit.alayer.*;
+import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Settings;
 import org.testar.protocols.iv4xr.SEProtocol;
 
@@ -42,21 +43,23 @@ import nl.ou.testar.RandomActionSelector;
 import spaceEngineers.model.Vec3F;
 
 /**
- * iv4xr EU H2020 project - SpaceEngineers Use Case
+ * Spatial coverage: Navigate and interact with the different functional blocks that exist in a random generated level.
+ * Spatial metrics:
+ * - Existing vs Observed entities (% Observed)
+ * - Existing Functional vs Interacted entities (% Interacted)
+ * - Existing floor vs Walked floor positions (% Space navigated)
  * 
- * In this protocol SpaceEngineers game will act as SUT.
+ * Compare ASM:
+ * - Random
+ * - Prioritize interaction with NEW closest entity + explore far away position
  * 
- * se_commands_testar_teleport / test.setting file contains the:
- * - COMMAND_LINE definition to launch the SUT and the level
- * - SUT_PROCESS_NAME to connect with running SUT (and optionally launch a level)
- * - State model inference settings to connect and create the State Model inside OrientDB
+ * Observation:
+ * - Partial "ObservationRadius":10
+ * - Complete "ObservationRadius":200
  * 
- * TESTAR is the Agent itself, derives is own knowledge about the observed entities,
- * and takes decisions about the command actions to execute (move, rotate, interact)
- * 
- * Widget              -> Virtual Entity (Blocks)
- * State (Widget-Tree) -> Agent Observation (All Observed Entities)
- * Action              -> SpaceEngineers low level command
+ * Level size:
+ * - 100 x 100
+ * - 500 x 500
  */
 public class Protocol_se_testar_reacher extends SEProtocol {
 
@@ -90,8 +93,9 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 	@Override
 	protected void initialize(Settings settings) {
 		super.initialize(settings);
+
 		// The SE level that TESTAR is going to explore
-		SE_LEVEL_PATH = "suts/se_levels/TESTAR_Map_1";
+		SE_LEVEL_PATH = settings.get(ConfigTags.SUTConnectorValue, "").split(" (?!.* )")[1].replace("\"", "");
 	}
 
 	/**
