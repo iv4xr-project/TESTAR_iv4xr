@@ -417,9 +417,17 @@ public class SpatialXMLmap {
 
 	private static int observedBlocksPositions = 0;
 
-	public static void createXMLspatialMap() {
+	public static void extractActionStepSpatialCoverage(int actionCount) {
+		String sequenceActionRun = "Sequence | " + OutputStructure.sequenceInnerLoopCount + " | Action " + actionCount;
+		String sequenceActionFilename = OutputStructure.outerLoopOutputDir + File.separator + "sequence_" + OutputStructure.sequenceInnerLoopCount + "_coverage.txt";
+		calculateSpatialMetrics(sequenceActionRun, sequenceActionFilename);
+	}
+
+	public static void createFinalSpatialMap() {
 		printSpaceBlocks();
-		extractSummarySpatial();
+		String sequenceRun = "Sequence | " + OutputStructure.sequenceInnerLoopCount;
+		String sequenceFilename = OutputStructure.outerLoopOutputDir + File.separator + "summary_spatial_coverage.txt";
+		calculateSpatialMetrics(sequenceRun, sequenceFilename);
 	}
 
 	private static void printSpaceBlocks() {
@@ -511,7 +519,7 @@ public class SpatialXMLmap {
 		return new Ellipse2D.Double(x, y, r, r);
 	}
 
-	private static void extractSummarySpatial() {
+	private static void calculateSpatialMetrics(String infoSeq, String outputFilename) {
 		int interactedBlocksCount = linearSearch(xml_space_blocks, 5);
 		int observedBlocksCount = linearSearch(xml_space_blocks, 4) + interactedBlocksCount;
 		int existingBlocksCount = linearSearch(xml_space_blocks, 3) + observedBlocksCount;
@@ -519,7 +527,7 @@ public class SpatialXMLmap {
 		int walkedPositions = linearSearch(xml_space_blocks, 2);
 		int existingPositions = linearSearch(xml_space_blocks, 1) + walkedPositions;
 
-		String totalSummary = "Sequence | " + OutputStructure.sequenceInnerLoopCount +
+		String totalSummary = infoSeq + 
 				" | existingFunctionalBlocks | " + existingBlocksCount +
 				// Observed entities number and percentage
 				" | observedFunctionalBlocks | " + observedBlocksCount +
@@ -529,21 +537,14 @@ public class SpatialXMLmap {
 				" | " + String.format("%.2f", (double)interactedBlocksCount * 100.0 / (double)existingBlocksCount).replace(".", ",") +
 
 				" | existingFloorPositions | " + existingPositions +
+				//TODO: Fix observed area calculation
+				//" | observedFloorPositions | " + observedBlocksPositions +
+				//" | " + String.format("%.2f", (double)observedBlocksPositions * 100.0 / (double)existingPositions).replace(".", ",") +
 				// Walked number and percentage
 				" | walkedFloorPositions | " + walkedPositions +
 				" | " + String.format("%.2f", (double)walkedPositions * 100.0 / (double)existingPositions).replace(".", ",");
-
-		//TODO: Fix observed area calculation
-		/*
-				// Observed position number and percentage
-				" | observedLevelArea | " + observedBlocksPositions +
-				" | " + String.format("%.2f", (double)observedBlocksPositions * 100.0 / (double)existingPositions).replace(".", ",") +
-				// Unexplored position number and percentage
-				" | unexploredLevelArea | " + (existingPositions - observedBlocksPositions) +
-				" | " + String.format("%.2f", (double)(existingPositions - observedBlocksPositions) * 100.0 / (double)existingPositions).replace(".", ",");
-		 */
 		try {
-			File metricsFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "summary_spatial_coverage.txt").getAbsoluteFile();
+			File metricsFile = new File(outputFilename).getAbsoluteFile();
 			metricsFile.createNewFile();
 			FileWriter myWriter = new FileWriter(metricsFile, true);
 			myWriter.write(totalSummary + "\r\n");

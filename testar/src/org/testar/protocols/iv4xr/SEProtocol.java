@@ -269,6 +269,10 @@ public class SEProtocol extends iv4xrProtocol {
 			}
 			SpatialXMLmap.updateInteractedBlock(action);
 
+			// After executing the action and updating the Spatial information
+			// Print the spatial action coverage
+			SpatialXMLmap.extractActionStepSpatialCoverage(actionCount);
+
 			return true;
 
 		} catch(ActionFailedException afe) {
@@ -366,13 +370,13 @@ public class SEProtocol extends iv4xrProtocol {
 		// If we use SUTConnector command line, we want to kill the process and start a new one next sequence
 		if(settings.get(ConfigTags.SUTConnector).equals(Settings.SUT_CONNECTOR_CMDLINE)) {
 			// super.finishSequence();
-			SystemProcessHandling.killTestLaunchedProcesses(this.contextRunningProcesses);
+			SystemProcessHandling.windowsTaskPolitelyFinishProcess("SpaceEngineers.exe", 60);
 		}
 
 		super.stopSystem(system);
 
 		// Create the spatial image based on the explored level
-		SpatialXMLmap.createXMLspatialMap();
+		SpatialXMLmap.createFinalSpatialMap();
 	}
 
 	private void saveLevel(SUT system) {

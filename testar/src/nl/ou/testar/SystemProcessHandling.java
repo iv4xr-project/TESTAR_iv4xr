@@ -1,12 +1,15 @@
 package nl.ou.testar;
 
 import es.upv.staq.testar.NativeLinker;
+import es.upv.staq.testar.OperatingSystems;
+
 import org.fruit.Util;
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.devices.ProcessHandle;
 import org.fruit.alayer.exceptions.SystemStopException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -105,5 +108,26 @@ public class SystemProcessHandling {
             System.out.println("Did not kill process as it is not running: " + pi.toString());
             return true;
         }
+    }
+
+    /**
+     * For Windows OS, execute the taskkill command to close the SUT process politely. 
+     * 
+     * @param sut
+     * @param secondsToWait
+     */
+    public static void windowsTaskPolitelyFinishProcess(String sutProcessNameToFinish, int secondsToWait) {
+    	String command = "taskkill /im " + sutProcessNameToFinish;
+    	if(NativeLinker.getPLATFORM_OS().contains(OperatingSystems.WINDOWS)) {
+    		try {
+    			System.out.println("Running command to close the SUT: " + command);
+    			Runtime.getRuntime().exec(command);
+    		} catch (IOException e) {
+    			System.err.println("Exception trying to windowsTaskPolitelyFinishProcess for: " + command);
+    		}
+    		Util.pause(secondsToWait);
+    	} else {
+    		System.out.println("We can not run windowsTaskPolitelyFinishProcess because OS is not windows: " + command);
+    	}
     }
 }

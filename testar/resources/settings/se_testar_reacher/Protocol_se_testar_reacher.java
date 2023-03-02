@@ -43,6 +43,10 @@ import nl.ou.testar.RandomActionSelector;
 import spaceEngineers.model.Vec3F;
 
 /**
+ * Recommendations:
+ * - Add "-skipintro" variable to steam launch parameters
+ * - Disable auto-save for multiple clean re-executions "Sandbox.sbc - AutoSaveInMinutes 0"
+ * 
  * Spatial coverage: Navigate and interact with the different functional blocks that exist in a random generated level.
  * Spatial metrics:
  * - Existing vs Observed entities (% Observed)
