@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2021 - 2022 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2021 - 2022 Open Universiteit - www.ou.nl
+ * Copyright (c) 2021 - 2023 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2021 - 2023 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -167,6 +167,20 @@ public class SEProtocol extends iv4xrProtocol {
 		SpatialXMLmap.updateAgentObservation(state);
 
 		return state;
+	}
+
+	/**
+	 * This method is invoked each time the TESTAR starts the SUT to generate a new sequence.
+	 * This can be used for example for bypassing a login screen by filling the username and password
+	 * or bringing the system into a specific start state which is identical on each start (e.g. one has to delete or restore
+	 * the SUT's configuration files etc.)
+	 */
+	@Override
+	protected void beginSequence(SUT system, State state) {
+		super.beginSequence(system, state);
+		// This is the initial Spatial Coverage
+		// After observing the first State without executing any action
+		SpatialXMLmap.extractActionStepSpatialCoverage(0);
 	}
 
 	/**

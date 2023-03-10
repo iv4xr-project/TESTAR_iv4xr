@@ -1,0 +1,169 @@
+<!doctype html>
+<body>
+<input type="file" id="fileInput" name="filefield" multiple="multiple">
+
+maxObservedBlocks:<textarea id="maxObservedBlocks">100</textarea>
+maxInteractedBlocks:<textarea id="maxInteractedBlocks">100</textarea>
+maxObservedPositions :<textarea id="maxObservedPositions">100</textarea>
+maxWalkedPositions :<textarea id="maxWalkedPositions">100</textarea>
+
+<div id="fileDisplayArea" style="width: 400px; height: 50px;"></div>
+
+<div style="display: flex;">
+<div id="ObservedBlocksContainer" style="width: 500px; height: 400px;"></div>
+<div id="InteractedBlocksContainer" style="width: 500px; height: 400px;"></div>
+</div>
+
+<div style="display: flex;">
+<div id="ObservedPositionsContainer" style="width: 500px; height: 400px;"></div>
+<div id="WalkedPositionsContainer" style="width: 500px; height: 400px;"></div>
+</div>
+
+<script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js" type="text/javascript"></script>
+<script>
+// https://jsfiddle.net/b1ynb405/
+var fileInput = document.getElementById('fileInput');
+var fileDisplayArea = document.getElementById('fileDisplayArea');
+
+fileInput.addEventListener('change', function(e) {
+    const spatialFiles = fileInput.files;
+
+    // Validate we are reading txt files
+    for (var i = 0; i < spatialFiles.length; i++){
+        var textType = /text.*/;
+        if(!spatialFiles[i].type.match(textType)){
+            fileDisplayArea.innerText = "Some text coverageFile is not supported!"
+            throw new Error('Some text coverageFile is not supported!');
+        }
+    }
+	
+    myfunction(spatialFiles);
+});
+
+async function myfunction(spatialFiles) {
+	const allDataObservedBlocks = [];
+	const allDataInteractedBlocks = [];
+	const allDataObservedPositions = [];
+	const allDataWalkedPositions = [];
+	
+	//create a line chart
+	var chartObservedBlocks = anychart.line();
+	var chartInteractedBlocks = anychart.line();
+	var chartObservedPositions = anychart.line();
+	var chartWalkedPositions = anychart.line();
+	
+	// set y axis max value if user indicates
+	var maxObservedBlocks = document.getElementById("maxObservedBlocks") === null ? "" : document.getElementById("maxObservedBlocks").value;
+	if(!isEmpty(maxObservedBlocks) && !isNaN(parseInt(maxObservedBlocks))) chartObservedBlocks.yScale().maximum(parseInt(maxObservedBlocks));
+
+	var maxInteractedBlocks = document.getElementById("maxInteractedBlocks") === null ? "" : document.getElementById("maxInteractedBlocks").value;
+	if(!isEmpty(maxInteractedBlocks) && !isNaN(parseInt(maxInteractedBlocks))) chartInteractedBlocks.yScale().maximum(parseInt(maxInteractedBlocks));
+	
+	var maxObservedPositions = document.getElementById("maxObservedPositions") === null ? "" : document.getElementById("maxObservedPositions").value;
+	if(!isEmpty(maxObservedPositions) && !isNaN(parseInt(maxObservedPositions))) chartObservedPositions.yScale().maximum(parseInt(maxObservedPositions));
+	
+	var maxWalkedPositions = document.getElementById("maxWalkedPositions") === null ? "" : document.getElementById("maxWalkedPositions").value;
+	if(!isEmpty(maxWalkedPositions) && !isNaN(parseInt(maxWalkedPositions))) chartWalkedPositions.yScale().maximum(parseInt(maxWalkedPositions));
+    
+	chartObservedBlocks.title("Observed Blocks Coverage");
+	chartInteractedBlocks.title("Interacted Blocks Coverage");
+	chartObservedPositions.title("Observed Positions Coverage");
+	chartWalkedPositions.title("Walked Positions Coverage");
+
+    for (var i = 0; i < spatialFiles.length; i++){
+	    console.log(spatialFiles[i]);
+		
+		const singleDataObservedBlocks = [];
+        const singleDataInteractedBlocks = [];
+		const singleDataObservedPositions = [];
+        const singleDataWalkedPositions = [];
+		
+        const fileReader = new SyncFileReader(spatialFiles[i]);
+        const arrayBuffer = await fileReader.readAsText();
+		// Coverage metrics created with Windows CR LF
+        var arrLines = arrayBuffer.split("\r\n");
+		
+		for (var line = 0; line < arrLines.length; line++) {
+		    // Skip empty line, usually at the end of the file
+			if(isEmpty(arrLines[line])) continue;
+			// Sequence | 5 | Action | 3 | existingFunctionalBlocks | 23 | observedFunctionalBlocks | 0 | 0,00 | interactedFunctionalBlocks | 0 | 0,00 | existingFloorPositions | 837 | observedFloorPositions | 30 | 9,84 | walkedFloorPositions | 7 | 0,84
+			
+			singleDataObservedBlocks.push( parseFloat( arrLines[line].split(" | ")[8].replace(",",".") ) );
+			singleDataInteractedBlocks.push( parseFloat( arrLines[line].split(" | ")[11].replace(",",".") ) );
+			singleDataObservedPositions.push( parseFloat( arrLines[line].split(" | ")[16].replace(",",".") ) );
+			singleDataWalkedPositions.push( parseFloat( arrLines[line].split(" | ")[19].replace(",",".") ) );
+        }
+		
+        allDataObservedBlocks.push(singleDataObservedBlocks)
+		allDataInteractedBlocks.push(singleDataInteractedBlocks)
+		allDataObservedPositions.push(singleDataObservedPositions)
+		allDataWalkedPositions.push(singleDataWalkedPositions)
+
+		console.log(spatialFiles[i].name);
+		
+		chartObservedBlocks.line(allDataObservedBlocks[i]).name(spatialFiles[i].name);
+        chartInteractedBlocks.line(allDataInteractedBlocks[i]).name(spatialFiles[i].name);
+		chartObservedPositions.line(allDataObservedPositions[i]).name(spatialFiles[i].name);
+        chartWalkedPositions.line(allDataWalkedPositions[i]).name(spatialFiles[i].name);
+	}
+
+	//set the container where chart will be drawn
+	chartObservedBlocks.container("ObservedBlocksContainer");
+	chartInteractedBlocks.container("InteractedBlocksContainer");
+	chartObservedPositions.container("ObservedPositionsContainer");
+	chartWalkedPositions.container("WalkedPositionsContainer");
+
+	// Enable legend colours
+	chartObservedBlocks.legend().enabled(true)
+	chartInteractedBlocks.legend().enabled(true)
+	chartObservedPositions.legend().enabled(true)
+	chartWalkedPositions.legend().enabled(true)
+	
+	chartObservedBlocks.xAxis().labels().format(function() { return(parseInt(this.value)); });
+	chartInteractedBlocks.xAxis().labels().format(function() { return(parseInt(this.value)); });
+	chartObservedPositions.xAxis().labels().format(function() { return(parseInt(this.value)); });
+	chartWalkedPositions.xAxis().labels().format(function() { return(parseInt(this.value)); });
+	
+	chartObservedBlocks.xAxis().title("Actions");
+	chartInteractedBlocks.xAxis().title("Actions");
+	chartObservedPositions.xAxis().title("Actions");
+	chartWalkedPositions.xAxis().title("Actions");
+
+	//draw the chart on the page
+	chartObservedBlocks.draw();
+	chartInteractedBlocks.draw();
+	chartObservedPositions.draw();
+	chartWalkedPositions.draw();
+	console.log('finish drawing');
+}
+
+function SyncFileReader(file) {
+    let self = this;
+    let ready = false;
+    let result = '';
+
+    const sleep = function (ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    self.readAsText = async function() {
+        while (ready === false) {
+          await sleep(100);
+        }
+        return result;
+    }    
+
+    const reader = new FileReader();
+    reader.onloadend = function(evt) {
+        result = evt.target.result;
+        ready = true;
+    };
+    reader.readAsText(file);
+}
+
+function isEmpty(str) {
+    return (!str || str.length === 0 );
+}
+</script>
+</body>
+</html>

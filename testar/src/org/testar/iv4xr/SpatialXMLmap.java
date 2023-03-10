@@ -415,19 +415,58 @@ public class SpatialXMLmap {
 		}
 	}
 
-	private static int observedBlocksPositions = 0;
+	private static HashSet<Rectangle> observedFloorPositions = new HashSet<>();
 
 	public static void extractActionStepSpatialCoverage(int actionCount) {
-		String sequenceActionRun = "Sequence | " + OutputStructure.sequenceInnerLoopCount + " | Action " + actionCount;
+		updateObservedFloorPositions();
+		String sequenceActionRun = "Sequence | " + OutputStructure.sequenceInnerLoopCount + " | Action | " + actionCount;
 		String sequenceActionFilename = OutputStructure.outerLoopOutputDir + File.separator + "sequence_" + OutputStructure.sequenceInnerLoopCount + "_coverage.txt";
 		calculateSpatialMetrics(sequenceActionRun, sequenceActionFilename);
 	}
 
 	public static void createFinalSpatialMap() {
+		updateObservedFloorPositions();
 		printSpaceBlocks();
 		String sequenceRun = "Sequence | " + OutputStructure.sequenceInnerLoopCount;
 		String sequenceFilename = OutputStructure.outerLoopOutputDir + File.separator + "summary_spatial_coverage.txt";
 		calculateSpatialMetrics(sequenceRun, sequenceFilename);
+	}
+
+	private static void updateObservedFloorPositions() {
+		Area observedLevelArea = new Area();
+		BufferedImage image = new BufferedImage(WIDTH * reSizeMap + 1, HEIGHT * reSizeMap + 1, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = image.createGraphics();
+
+		// We use the area of the explored positions, compared with all existing positions
+		List<Rectangle> existingFloorPositionsList = new ArrayList<>();
+		List<Rectangle> exploredFloorPositionsList = new ArrayList<>();
+
+		// Prepare the existing and explored positions list
+		for(int i = 0; i < WIDTH; i++) {
+			for(int j = 0; j < HEIGHT; j++) {
+				// 1 represents an existing floor position in the XML level file
+				if(xml_space_blocks[i][j] == 1) {
+					existingFloorPositionsList.add(new Rectangle(i * reSizeMap, j * reSizeMap, reSizeMap, reSizeMap));
+				}
+				// 2 represents a point explored by the agent
+				else if(xml_space_blocks[i][j] == 2) {
+					exploredFloorPositionsList.add(new Rectangle(i * reSizeMap, j * reSizeMap, reSizeMap, reSizeMap));
+				}
+			}
+		}
+
+		// Add the observed position ellipse to the observed level area
+		for(Rectangle r : exploredFloorPositionsList) {
+			Ellipse2D observationEllipse = drawCenteredCircle(g, r.x, r.y, agentObservationRadius * reSizeMap);
+			observedLevelArea.add(new Area(observationEllipse));
+		}
+
+		// Count the observed floor positions
+		for(Rectangle r : existingFloorPositionsList) {
+			if(observedLevelArea.contains(r)) {
+				observedFloorPositions.add(r);
+			}
+		}
 	}
 
 	private static void printSpaceBlocks() {
@@ -441,8 +480,8 @@ public class SpatialXMLmap {
 			g.setBackground(java.awt.Color.white);
 
 			List<Rectangle> emptySpaceList = new ArrayList<>();
-			List<Rectangle> existingBlockList = new ArrayList<>();
-			List<Rectangle> exploredBlockList = new ArrayList<>();
+			List<Rectangle> existingFloorPositionsList = new ArrayList<>();
+			List<Rectangle> exploredFloorPositionsList = new ArrayList<>();
 			List<Rectangle> existingFunctional = new ArrayList<>();
 			List<Rectangle> observedFunctional = new ArrayList<>();
 			List<Rectangle> interactedFunctional = new ArrayList<>();
@@ -454,13 +493,13 @@ public class SpatialXMLmap {
 					if(xml_space_blocks[i][j] == 0) {
 						emptySpaceList.add(new Rectangle(i * reSizeMap, j * reSizeMap, reSizeMap, reSizeMap));
 					}
-					// 1 represents an existing floor block in the XML level file
+					// 1 represents an existing floor position in the XML level file
 					else if(xml_space_blocks[i][j] == 1) {
-						existingBlockList.add(new Rectangle(i * reSizeMap, j * reSizeMap, reSizeMap, reSizeMap));
+						existingFloorPositionsList.add(new Rectangle(i * reSizeMap, j * reSizeMap, reSizeMap, reSizeMap));
 					}
 					// 2 represents a point explored by the agent
 					else if(xml_space_blocks[i][j] == 2) {
-						exploredBlockList.add(new Rectangle(i * reSizeMap, j * reSizeMap, reSizeMap, reSizeMap));
+						exploredFloorPositionsList.add(new Rectangle(i * reSizeMap, j * reSizeMap, reSizeMap, reSizeMap));
 					}
 					// 3 represents an existing functional block
 					else if(xml_space_blocks[i][j] == 3) {
@@ -482,8 +521,8 @@ public class SpatialXMLmap {
 
 			// Now draw the map in order
 			for(Rectangle r : emptySpaceList) {g.setColor(java.awt.Color.red); g.drawRect(r.x, r.y, r.width, r.height);}
-			for(Rectangle r : existingBlockList) {g.setColor(java.awt.Color.yellow); g.drawRect(r.x, r.y, r.width, r.height);}
-			for(Rectangle r : exploredBlockList) {
+			for(Rectangle r : existingFloorPositionsList) {g.setColor(java.awt.Color.yellow); g.drawRect(r.x, r.y, r.width, r.height);}
+			for(Rectangle r : exploredFloorPositionsList) {
 				// draw the agent observation
 				g.setColor(java.awt.Color.blue);
 				Ellipse2D observationEllipse = drawCenteredCircle(g, r.x, r.y, agentObservationRadius * reSizeMap);
@@ -498,14 +537,22 @@ public class SpatialXMLmap {
 			for(Rectangle r : observedFunctional) {g.setColor(java.awt.Color.pink); g.fillOval(r.x, r.y, r.width, r.height);}
 			for(Rectangle r : interactedFunctional) {g.setColor(java.awt.Color.orange); g.fillOval(r.x, r.y, r.width, r.height);}
 
+			// Draw the 2D image that contains the positions and functional blocks spatial information
 			ImageIO.write(image, "png", new File(OutputStructure.outerLoopOutputDir + File.separator + "xml_map" + OutputStructure.sequenceInnerLoopCount + ".png"));
 
-			// Count the observed blocks
-			for(Rectangle r : existingBlockList) {
+			// Count the observed floor positions
+			for(Rectangle r : existingFloorPositionsList) {
 				if(observedLevelArea.contains(r)) {
-					observedBlocksPositions ++;
+					observedFloorPositions.add(r);
 				}
 			}
+
+			// Draw a debugging 2D image to check the observedFloorPositions area
+			for(Rectangle r : observedFloorPositions) {
+				g.setColor(java.awt.Color.blue); 
+				g.fillOval(r.x, r.y, r.width, r.height);
+			}
+			ImageIO.write(image, "png", new File(OutputStructure.outerLoopOutputDir + File.separator + "xml_map" + OutputStructure.sequenceInnerLoopCount + "_debug_observed_floor_positions.png"));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -537,9 +584,8 @@ public class SpatialXMLmap {
 				" | " + String.format("%.2f", (double)interactedBlocksCount * 100.0 / (double)existingBlocksCount).replace(".", ",") +
 
 				" | existingFloorPositions | " + existingPositions +
-				//TODO: Fix observed area calculation
-				//" | observedFloorPositions | " + observedBlocksPositions +
-				//" | " + String.format("%.2f", (double)observedBlocksPositions * 100.0 / (double)existingPositions).replace(".", ",") +
+				" | observedFloorPositions | " + observedFloorPositions.size() +
+				" | " + String.format("%.2f", (double)observedFloorPositions.size() * 100.0 / (double)existingPositions).replace(".", ",") +
 				// Walked number and percentage
 				" | walkedFloorPositions | " + walkedPositions +
 				" | " + String.format("%.2f", (double)walkedPositions * 100.0 / (double)existingPositions).replace(".", ",");
