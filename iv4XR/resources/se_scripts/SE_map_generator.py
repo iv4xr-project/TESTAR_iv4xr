@@ -36,18 +36,20 @@ class BottomUpGenerator(object):
 	empty_char = '_'
 	wall_char = 'x'
 	player_char = 'p'
+	gravity_char = 'g'
 	block_char = 'b'
 	objective_char = '0'
 
 	save_folder = "./GeneratedMaps/"
 
-	def __init__(self, canvas_size, dungeon_density, num_loops, neighbour_depth, neighbour_number_threshold, block_density, minimum_tile_distance_player_flower):
+	def __init__(self, canvas_size, dungeon_density, num_loops, neighbour_depth, neighbour_number_threshold, gravity_density, block_density, minimum_tile_distance_player_flower):
 		self.map = []
 		self.canvas_size = canvas_size
 		self.dungeon_density = dungeon_density
 		self.num_loops = num_loops
 		self.neighbour_depth = neighbour_depth
 		self.neighbour_number_threshold = neighbour_number_threshold
+		self.gravity_density = gravity_density
 		self.block_density = block_density
 		self.minimum_distance_player_flower = minimum_tile_distance_player_flower
 		self.small_col_matrix = None
@@ -101,11 +103,13 @@ class BottomUpGenerator(object):
 			path_between_player_and_flower = self.AStar((int(player_pos[0]/2), int(player_pos[1]/2)), (int(flower_pos[0]/2), int(flower_pos[1]/2)))
 
 
+		self.place_gravity_randomly()
 		self.place_blocks_randomly()
 
 		if verbose:
 			self.print_map("BLOCKS")
 
+		self.replace_gravity()
 		self.replace_blocks()
 
 		if verbose:
@@ -225,6 +229,21 @@ class BottomUpGenerator(object):
 
 		print("Too many attempts at placing flower. The map generator quit...")
 		return False
+
+	def place_gravity_randomly(self):
+		for _ in range(self.canvas_size*self.canvas_size):
+			i = random.randint(1, self.canvas_size-2)
+			j = random.randint(1, self.canvas_size-2)
+			if self.map[i][j] == self.floor_char and len(self.get_position_floored_neighbours(i,j)[0]) == 8:
+				if random.uniform(0.0, 100.0) < self.gravity_density:
+					self.map[i][j] = self.gravity_char
+
+
+	def replace_gravity(self):
+		for i in range(self.canvas_size):
+			for j in range(self.canvas_size):
+				if self.map[i][j] == self.gravity_char:
+					self.map[i][j] = "gravity"
 
 
 	def place_blocks_randomly(self):
@@ -371,10 +390,11 @@ class BottomUpGenerator(object):
 			f.write("\n")
 
 
-# canvas_size, dungeon_density, num_loops, neighbour_depth, neighbour_number_threshold, block_density, minimum_tile_distance_player_flower
-turly = BottomUpGenerator(32, 30, 3, 1, 3, 5, 10)
+# canvas_size, dungeon_density, num_loops, neighbour_depth, neighbour_number_threshold, gravity_density, block_density, minimum_tile_distance_player_flower
+turly = BottomUpGenerator(102, 30, 3, 1, 3, 2, 5, 10)
 
 # Define the types of blocks that are generated automatically
+# gravity will be interpreted such as a combination of LargeBlockSmallGenerator + GravityGenerator
 block_types_list = ["MyObjectBuilder_BatteryBlock/LargeBlockBatteryBlock",
 "MyObjectBuilder_CryoChamber/LargeBlockCryoChamber",
 "MyObjectBuilder_SurvivalKit/SurvivalKitLarge",

@@ -98,9 +98,13 @@ public class SpatialXMLmap {
 	private static float largeGameToXML = 2.5f;
 	private static float smallGameToXML = 0.5f;
 
+	private static HashSet<Rectangle> observedFloorPositions = new HashSet<>();
+
 	public static void prepareSpatialXMLmap(String levelPath) {
 		// First, clear and load the initial XML blocks information
 		xml_space_blocks = new int[][]{{0,0,0}};
+		// Also, re-initialize the observed floor positions
+		observedFloorPositions = new HashSet<>();
 
 		try {
 			obtainObservationRadius();
@@ -414,8 +418,6 @@ public class SpatialXMLmap {
 			xml_space_blocks[x - minX][z - minZ] = 5;
 		}
 	}
-
-	private static HashSet<Rectangle> observedFloorPositions = new HashSet<>();
 
 	public static void extractActionStepSpatialCoverage(int actionCount) {
 		updateObservedFloorPositions();

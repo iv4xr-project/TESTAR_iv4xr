@@ -105,7 +105,8 @@ def generate_maze(map_name):
                     color=Vec3F(X=0, Y=0, Z=0),
                 )
 
-                gridId = se.Observer.ObserveNewBlocks().Grids[0]["Id"]
+                # The iv4xr ObservationRadius affects this observation
+                gridId = se.Observer.ObserveBlocks().Grids[0]["Id"]
             else:
                 place_in_grid(definitionId, gridId, se, x, y, z)
     z = -1
@@ -142,4 +143,4 @@ def place_in_grid(definitionId, gridId, se, x, y, z):
 
 
 if __name__ == '__main__':
-    generate_maze("TESTAR_Map_1")
+    generate_maze("TESTAR_100x100")
