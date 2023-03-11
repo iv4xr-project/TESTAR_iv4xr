@@ -38,6 +38,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -89,6 +91,9 @@ public class SEProtocol extends iv4xrProtocol {
 	protected Verdict functional_verdict = Verdict.OK;
 
 	protected InteractiveSelectorSE actionSelectorSE = new InteractiveSelectorSE();
+
+	// Timing variables
+	protected Instant accumulativeActionTimePerSequence;
 
 	/**
 	 * Called once during the life time of TESTAR
@@ -179,8 +184,9 @@ public class SEProtocol extends iv4xrProtocol {
 	protected void beginSequence(SUT system, State state) {
 		super.beginSequence(system, state);
 		// This is the initial Spatial Coverage
-		// After observing the first State without executing any action
-		SpatialXMLmap.extractActionStepSpatialCoverage(0);
+		// After observing the first State without executing any action in the second 0
+		SpatialXMLmap.extractActionStepSpatialCoverage(0, 0);
+		accumulativeActionTimePerSequence = Instant.now();
 	}
 
 	/**
@@ -283,9 +289,11 @@ public class SEProtocol extends iv4xrProtocol {
 			}
 			SpatialXMLmap.updateInteractedBlock(action);
 
+			Duration accumulativeActionTime = Duration.between(accumulativeActionTimePerSequence, Instant.now());
+
 			// After executing the action and updating the Spatial information
 			// Print the spatial action coverage
-			SpatialXMLmap.extractActionStepSpatialCoverage(actionCount);
+			SpatialXMLmap.extractActionStepSpatialCoverage(actionCount, accumulativeActionTime.toSeconds());
 
 			return true;
 
@@ -389,8 +397,10 @@ public class SEProtocol extends iv4xrProtocol {
 
 		super.stopSystem(system);
 
+		Duration finalAccumulativeActionTime = Duration.between(accumulativeActionTimePerSequence, Instant.now());
+
 		// Create the spatial image based on the explored level
-		SpatialXMLmap.createFinalSpatialMap();
+		SpatialXMLmap.createFinalSpatialMap(finalAccumulativeActionTime.toSeconds());
 	}
 
 	private void saveLevel(SUT system) {

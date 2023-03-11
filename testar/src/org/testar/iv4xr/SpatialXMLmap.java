@@ -419,19 +419,19 @@ public class SpatialXMLmap {
 		}
 	}
 
-	public static void extractActionStepSpatialCoverage(int actionCount) {
+	public static void extractActionStepSpatialCoverage(int actionCount, long seconds) {
 		updateObservedFloorPositions();
 		String sequenceActionRun = "Sequence | " + OutputStructure.sequenceInnerLoopCount + " | Action | " + actionCount;
 		String sequenceActionFilename = OutputStructure.outerLoopOutputDir + File.separator + "sequence_" + OutputStructure.sequenceInnerLoopCount + "_coverage.txt";
-		calculateSpatialMetrics(sequenceActionRun, sequenceActionFilename);
+		calculateSpatialMetrics(sequenceActionRun, sequenceActionFilename, seconds);
 	}
 
-	public static void createFinalSpatialMap() {
+	public static void createFinalSpatialMap(long seconds) {
 		updateObservedFloorPositions();
 		printSpaceBlocks();
 		String sequenceRun = "Sequence | " + OutputStructure.sequenceInnerLoopCount;
 		String sequenceFilename = OutputStructure.outerLoopOutputDir + File.separator + "summary_spatial_coverage.txt";
-		calculateSpatialMetrics(sequenceRun, sequenceFilename);
+		calculateSpatialMetrics(sequenceRun, sequenceFilename, seconds);
 	}
 
 	private static void updateObservedFloorPositions() {
@@ -568,7 +568,7 @@ public class SpatialXMLmap {
 		return new Ellipse2D.Double(x, y, r, r);
 	}
 
-	private static void calculateSpatialMetrics(String infoSeq, String outputFilename) {
+	private static void calculateSpatialMetrics(String infoSeq, String outputFilename, long seconds) {
 		int interactedBlocksCount = linearSearch(xml_space_blocks, 5);
 		int observedBlocksCount = linearSearch(xml_space_blocks, 4) + interactedBlocksCount;
 		int existingBlocksCount = linearSearch(xml_space_blocks, 3) + observedBlocksCount;
@@ -586,11 +586,15 @@ public class SpatialXMLmap {
 				" | " + String.format("%.2f", (double)interactedBlocksCount * 100.0 / (double)existingBlocksCount).replace(".", ",") +
 
 				" | existingFloorPositions | " + existingPositions +
+				// Observed floor position rectangles
 				" | observedFloorPositions | " + observedFloorPositions.size() +
 				" | " + String.format("%.2f", (double)observedFloorPositions.size() * 100.0 / (double)existingPositions).replace(".", ",") +
 				// Walked number and percentage
 				" | walkedFloorPositions | " + walkedPositions +
-				" | " + String.format("%.2f", (double)walkedPositions * 100.0 / (double)existingPositions).replace(".", ",");
+				" | " + String.format("%.2f", (double)walkedPositions * 100.0 / (double)existingPositions).replace(".", ",") + 
+
+				// Action or sequence time in seconds
+				" | seconds | " + seconds;
 		try {
 			File metricsFile = new File(outputFilename).getAbsoluteFile();
 			metricsFile.createNewFile();

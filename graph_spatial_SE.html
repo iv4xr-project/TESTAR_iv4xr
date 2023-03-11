@@ -7,6 +7,8 @@ maxInteractedBlocks:<textarea id="maxInteractedBlocks">100</textarea>
 maxObservedPositions :<textarea id="maxObservedPositions">100</textarea>
 maxWalkedPositions :<textarea id="maxWalkedPositions">100</textarea>
 
+totalSeconds :<textarea id="totalSeconds">3600</textarea>
+
 <div id="fileDisplayArea" style="width: 400px; height: 50px;"></div>
 
 <div style="display: flex;">
@@ -17,6 +19,10 @@ maxWalkedPositions :<textarea id="maxWalkedPositions">100</textarea>
 <div style="display: flex;">
 <div id="ObservedPositionsContainer" style="width: 500px; height: 400px;"></div>
 <div id="WalkedPositionsContainer" style="width: 500px; height: 400px;"></div>
+</div>
+
+<div style="display: flex;">
+<div id="SecondsContainer" style="width: 500px; height: 400px;"></div>
 </div>
 
 <script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js" type="text/javascript"></script>
@@ -45,12 +51,14 @@ async function myfunction(spatialFiles) {
 	const allDataInteractedBlocks = [];
 	const allDataObservedPositions = [];
 	const allDataWalkedPositions = [];
+	const allDataSeconds = [];
 	
 	//create a line chart
 	var chartObservedBlocks = anychart.line();
 	var chartInteractedBlocks = anychart.line();
 	var chartObservedPositions = anychart.line();
 	var chartWalkedPositions = anychart.line();
+	var chartSeconds = anychart.line();
 	
 	// set y axis max value if user indicates
 	var maxObservedBlocks = document.getElementById("maxObservedBlocks") === null ? "" : document.getElementById("maxObservedBlocks").value;
@@ -64,11 +72,15 @@ async function myfunction(spatialFiles) {
 	
 	var maxWalkedPositions = document.getElementById("maxWalkedPositions") === null ? "" : document.getElementById("maxWalkedPositions").value;
 	if(!isEmpty(maxWalkedPositions) && !isNaN(parseInt(maxWalkedPositions))) chartWalkedPositions.yScale().maximum(parseInt(maxWalkedPositions));
+	
+	var totalSeconds = document.getElementById("totalSeconds") === null ? "" : document.getElementById("totalSeconds").value;
+	if(!isEmpty(totalSeconds) && !isNaN(parseInt(totalSeconds))) chartSeconds.yScale().maximum(parseInt(totalSeconds));
     
-	chartObservedBlocks.title("Observed Blocks Coverage");
-	chartInteractedBlocks.title("Interacted Blocks Coverage");
-	chartObservedPositions.title("Observed Positions Coverage");
-	chartWalkedPositions.title("Walked Positions Coverage");
+	chartObservedBlocks.title("Observed Blocks Coverage Percentage");
+	chartInteractedBlocks.title("Interacted Blocks Coverage Percentage");
+	chartObservedPositions.title("Observed Positions Coverage Percentage");
+	chartWalkedPositions.title("Walked Positions Coverage Percentage");
+	chartSeconds.title("Total Seconds");
 
     for (var i = 0; i < spatialFiles.length; i++){
 	    console.log(spatialFiles[i]);
@@ -77,6 +89,7 @@ async function myfunction(spatialFiles) {
         const singleDataInteractedBlocks = [];
 		const singleDataObservedPositions = [];
         const singleDataWalkedPositions = [];
+		const singleDataSeconds = [];
 		
         const fileReader = new SyncFileReader(spatialFiles[i]);
         const arrayBuffer = await fileReader.readAsText();
@@ -86,18 +99,20 @@ async function myfunction(spatialFiles) {
 		for (var line = 0; line < arrLines.length; line++) {
 		    // Skip empty line, usually at the end of the file
 			if(isEmpty(arrLines[line])) continue;
-			// Sequence | 5 | Action | 3 | existingFunctionalBlocks | 23 | observedFunctionalBlocks | 0 | 0,00 | interactedFunctionalBlocks | 0 | 0,00 | existingFloorPositions | 837 | observedFloorPositions | 30 | 9,84 | walkedFloorPositions | 7 | 0,84
+			// Sequence | 5 | Action | 3 | existingFunctionalBlocks | 23 | observedFunctionalBlocks | 0 | 0,00 | interactedFunctionalBlocks | 0 | 0,00 | existingFloorPositions | 837 | observedFloorPositions | 30 | 9,84 | walkedFloorPositions | 7 | 0,84 | seconds | 15 
 			
 			singleDataObservedBlocks.push( parseFloat( arrLines[line].split(" | ")[8].replace(",",".") ) );
 			singleDataInteractedBlocks.push( parseFloat( arrLines[line].split(" | ")[11].replace(",",".") ) );
 			singleDataObservedPositions.push( parseFloat( arrLines[line].split(" | ")[16].replace(",",".") ) );
 			singleDataWalkedPositions.push( parseFloat( arrLines[line].split(" | ")[19].replace(",",".") ) );
+			singleDataSeconds.push( parseFloat( arrLines[line].split(" | ")[21].replace(",",".") ) );
         }
 		
         allDataObservedBlocks.push(singleDataObservedBlocks)
 		allDataInteractedBlocks.push(singleDataInteractedBlocks)
 		allDataObservedPositions.push(singleDataObservedPositions)
 		allDataWalkedPositions.push(singleDataWalkedPositions)
+		allDataSeconds.push(singleDataSeconds)
 
 		console.log(spatialFiles[i].name);
 		
@@ -105,6 +120,7 @@ async function myfunction(spatialFiles) {
         chartInteractedBlocks.line(allDataInteractedBlocks[i]).name(spatialFiles[i].name);
 		chartObservedPositions.line(allDataObservedPositions[i]).name(spatialFiles[i].name);
         chartWalkedPositions.line(allDataWalkedPositions[i]).name(spatialFiles[i].name);
+		chartSeconds.line(allDataSeconds[i]).name(spatialFiles[i].name);
 	}
 
 	//set the container where chart will be drawn
@@ -112,28 +128,33 @@ async function myfunction(spatialFiles) {
 	chartInteractedBlocks.container("InteractedBlocksContainer");
 	chartObservedPositions.container("ObservedPositionsContainer");
 	chartWalkedPositions.container("WalkedPositionsContainer");
+	chartSeconds.container("SecondsContainer");
 
 	// Enable legend colours
 	chartObservedBlocks.legend().enabled(true)
 	chartInteractedBlocks.legend().enabled(true)
 	chartObservedPositions.legend().enabled(true)
 	chartWalkedPositions.legend().enabled(true)
+	chartSeconds.legend().enabled(true)
 	
 	chartObservedBlocks.xAxis().labels().format(function() { return(parseInt(this.value)); });
 	chartInteractedBlocks.xAxis().labels().format(function() { return(parseInt(this.value)); });
 	chartObservedPositions.xAxis().labels().format(function() { return(parseInt(this.value)); });
 	chartWalkedPositions.xAxis().labels().format(function() { return(parseInt(this.value)); });
+	chartSeconds.xAxis().labels().format(function() { return(parseInt(this.value)); });
 	
 	chartObservedBlocks.xAxis().title("Actions");
 	chartInteractedBlocks.xAxis().title("Actions");
 	chartObservedPositions.xAxis().title("Actions");
 	chartWalkedPositions.xAxis().title("Actions");
+	chartSeconds.xAxis().title("Actions");
 
 	//draw the chart on the page
 	chartObservedBlocks.draw();
 	chartInteractedBlocks.draw();
 	chartObservedPositions.draw();
 	chartWalkedPositions.draw();
+	chartSeconds.draw();
 	console.log('finish drawing');
 }
 
