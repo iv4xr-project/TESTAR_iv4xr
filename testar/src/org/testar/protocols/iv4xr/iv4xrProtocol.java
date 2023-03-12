@@ -31,10 +31,6 @@
 package org.testar.protocols.iv4xr;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Set;
 
 import org.fruit.alayer.Action;
@@ -65,10 +61,6 @@ public class iv4xrProtocol extends GenericUtilsProtocol {
 	// Agent point of view that will Observe and extract Widgets information
 	protected String agentId = "you";
 
-	// Timing variables
-	private Instant sequenceTimeInstant;
-	private Instant actionTimeInstant;
-
 	/**
 	 * Called once during the life time of TESTAR
 	 * This method can be used to perform initial setup work
@@ -97,18 +89,6 @@ public class iv4xrProtocol extends GenericUtilsProtocol {
 	protected void preSequencePreparations() {
 		//initializing the HTML sequence report:
 		htmlReport = new HtmlSequenceReport();
-	}
-
-	/**
-	 * This method is invoked each time the TESTAR starts the SUT to generate a new sequence.
-	 * This can be used for example for bypassing a login screen by filling the username and password
-	 * or bringing the system into a specific start state which is identical on each start (e.g. one has to delete or restore
-	 * the SUT's configuration files etc.)
-	 */
-	@Override
-	protected void beginSequence(SUT system, State state) {
-		sequenceTimeInstant = Instant.now();
-		actionTimeInstant = Instant.now();
 	}
 
 	/**
@@ -248,34 +228,6 @@ public class iv4xrProtocol extends GenericUtilsProtocol {
 	}
 
 	/**
-	 * TESTAR uses this method to determine when to stop the generation of actions for the
-	 * current sequence. You can stop deriving more actions after:
-	 * - a specified amount of executed actions, which is specified through the SequenceLength setting, or
-	 * - after a specific time, that is set in the MaxTime setting
-	 * @return  if <code>true</code> continue generation, else stop
-	 */
-	@Override
-	protected boolean moreActions(State state) {
-		Duration actionTimeElapsed = Duration.between(actionTimeInstant, Instant.now());
-		String actionTimeText = "actionTimeElapsed: "+ actionTimeElapsed.toSeconds() + " seconds";
-
-		try {
-			File metricsFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "time_execution_coverage.txt").getAbsoluteFile();
-			metricsFile.createNewFile();
-			FileWriter myWriter = new FileWriter(metricsFile, true);
-			myWriter.write(actionTimeText + "\r\n");
-			myWriter.close();
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
-
-		actionTimeInstant = Instant.now();
-
-		// Execute many actions as indicated in SequenceLength setting
-		return super.moreActions(state);
-	}
-
-	/**
 	 * This method is invoked each time the TESTAR has reached the stop criteria for generating a sequence.
 	 * This can be used for example for graceful shutdown of the SUT, maybe pressing "Close" or "Exit" button
 	 */
@@ -308,28 +260,6 @@ public class iv4xrProtocol extends GenericUtilsProtocol {
 				+ " " + status + " \"" + statusInfo + "\"" );
 
 		htmlReport.close();
-	}
-
-	/**
-	 * Here you can put graceful shutdown sequence for your SUT
-	 * @param system
-	 */
-	@Override
-	protected void stopSystem(SUT system) {
-		Duration sequenceTimeElapsed = Duration.between(sequenceTimeInstant, Instant.now());
-		String sequenceTimeText = "sequenceTimeElapsed: "+ sequenceTimeElapsed.toSeconds() + " seconds";
-
-		try {
-			File metricsFile = new File(OutputStructure.outerLoopOutputDir + File.separator + "time_execution_coverage.txt").getAbsoluteFile();
-			metricsFile.createNewFile();
-			FileWriter myWriter = new FileWriter(metricsFile, true);
-			myWriter.write(sequenceTimeText + "\r\n");
-			myWriter.close();
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
-
-		super.stopSystem(system);
 	}
 
 	/**

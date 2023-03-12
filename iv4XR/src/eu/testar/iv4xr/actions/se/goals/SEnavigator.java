@@ -1,7 +1,11 @@
 package eu.testar.iv4xr.actions.se.goals;
 
+import java.time.Duration;
+import java.time.Instant;
+
 import org.fruit.Util;
 import org.fruit.alayer.SUT;
+import org.fruit.alayer.exceptions.ActionFailedException;
 
 import eu.testar.iv4xr.enums.IV4XRtags;
 import spaceEngineers.controller.Observer;
@@ -16,7 +20,7 @@ import spaceEngineers.movement.VectorMovement;
 public class SEnavigator {
 
 	private float lastDistance = Float.MAX_VALUE;
-	
+
 	public void moveInLine(SUT system, Vec3F nodePosition) {
 		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);
 		Observer seObserver = seController.getObserver();
@@ -32,11 +36,16 @@ public class SEnavigator {
 	}
 
 	private void goForwardToLocation(SpaceEngineers seController, Observer seObserver, Vec3F nodePosition, CharacterMovementType movementType, int stepTicks, float tolerance) {
+		Instant startMovementInstant = Instant.now();
 		while (isNotYetThereButProgressing(seObserver, nodePosition, tolerance)) {
 			// TODO("Correct the course from time to time")
 			VectorMovement movement = new VectorMovement(seController, 9f);
 			movement.move(CompositeDirection3d.FORWARD, movementType, stepTicks);
 			Util.pause(0.5);
+			// If there is a problem in the movement, stop the loop
+			if(Duration.between(startMovementInstant, Instant.now()).toSeconds() > 60) {
+				throw new ActionFailedException("ERROR: Trying to goForwardToLocation: " + nodePosition);
+			}
 		}
 	}
 

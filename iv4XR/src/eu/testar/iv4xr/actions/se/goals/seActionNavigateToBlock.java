@@ -96,11 +96,6 @@ public class seActionNavigateToBlock extends seActionGoal {
 		rotateToBlockDestination(system);
 	}
 
-	/**
-	 * Use UU approach to create a state grid and navigate until the desired block.  
-	 * 
-	 * @param system
-	 */
 	protected void navigateToReachableBlockPosition(SUT system, State state) {
 		// Create a navigational graph of the largest grid
 		SpaceEngineers seController = system.get(IV4XRtags.iv4xrSpaceEngineers);

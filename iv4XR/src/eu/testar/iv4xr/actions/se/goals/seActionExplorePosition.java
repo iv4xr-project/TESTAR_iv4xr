@@ -91,11 +91,6 @@ public class seActionExplorePosition extends seActionGoal {
 		navigateToReachablePosition(system, state);
 	}
 
-	/**
-	 * Use UU approach to create a state grid and navigate until the desired block.  
-	 * 
-	 * @param system
-	 */
 	protected void navigateToReachablePosition(SUT system, State state) {
 		Vec3F destinationPosition = SVec3.labToSE(targetPosition);
 

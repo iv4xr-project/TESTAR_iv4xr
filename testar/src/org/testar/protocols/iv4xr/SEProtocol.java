@@ -169,7 +169,9 @@ public class SEProtocol extends iv4xrProtocol {
 	protected State getState(SUT system) {
 		State state = super.getState(system);
 
-		SpatialXMLmap.updateAgentObservation(state);
+		if(this.mode == Modes.Generate) {
+			SpatialXMLmap.updateAgentObservation(state);
+		}
 
 		return state;
 	}
@@ -182,7 +184,6 @@ public class SEProtocol extends iv4xrProtocol {
 	 */
 	@Override
 	protected void beginSequence(SUT system, State state) {
-		super.beginSequence(system, state);
 		// This is the initial Spatial Coverage
 		// After observing the first State without executing any action in the second 0
 		SpatialXMLmap.extractActionStepSpatialCoverage(0, 0);
@@ -386,6 +387,10 @@ public class SEProtocol extends iv4xrProtocol {
 			saveLevel(system);
 			// Then exit to menu
 			system.get(IV4XRtags.iv4xrSpaceEngineers).getSession().exitToMainMenu();
+
+			// Create the spatial image based on the explored level
+			Duration finalAccumulativeActionTime = Duration.between(accumulativeActionTimePerSequence, Instant.now());
+			SpatialXMLmap.createFinalSpatialMap(finalAccumulativeActionTime.toSeconds());
 		}
 		// Close iv4xr-plugin connection
 		system.get(IV4XRtags.iv4xrSpaceEngineers).close();
@@ -396,11 +401,6 @@ public class SEProtocol extends iv4xrProtocol {
 		}
 
 		super.stopSystem(system);
-
-		Duration finalAccumulativeActionTime = Duration.between(accumulativeActionTimePerSequence, Instant.now());
-
-		// Create the spatial image based on the explored level
-		SpatialXMLmap.createFinalSpatialMap(finalAccumulativeActionTime.toSeconds());
 	}
 
 	private void saveLevel(SUT system) {
