@@ -255,11 +255,21 @@ class BottomUpGenerator(object):
 					self.map[i][j] = self.block_char
 
 
+	def get_random_block_type(self):
+		remaining_blocks = [block for block in block_types_list if block not in selected_blocks]
+		if remaining_blocks:
+			return random.choice(remaining_blocks)
+		else:
+			return random.choice(block_types_list)
+
+
 	def replace_blocks(self):
 		for i in range(self.canvas_size):
 			for j in range(self.canvas_size):
 				if self.map[i][j] == self.block_char:
-					self.map[i][j] = random.choice(block_types_list)
+					random_block_type = self.get_random_block_type()
+					selected_blocks.append(random_block_type)
+					self.map[i][j] = random_block_type
 
 
 	def makeCollisionMatrix(self):
@@ -391,16 +401,43 @@ class BottomUpGenerator(object):
 
 
 # canvas_size, dungeon_density, num_loops, neighbour_depth, neighbour_number_threshold, gravity_density, block_density, minimum_tile_distance_player_flower
-turly = BottomUpGenerator(102, 30, 3, 1, 3, 2, 5, 10)
+turly = BottomUpGenerator(52, 30, 3, 1, 3, 2, 5, 10)
 
 # Define the types of blocks that are generated automatically
 # gravity will be interpreted such as a combination of LargeBlockSmallGenerator + GravityGenerator
 block_types_list = ["MyObjectBuilder_BatteryBlock/LargeBlockBatteryBlock",
 "MyObjectBuilder_CryoChamber/LargeBlockCryoChamber",
 "MyObjectBuilder_SurvivalKit/SurvivalKitLarge",
+"MyObjectBuilder_Assembler/BasicAssembler",
+"MyObjectBuilder_VirtualMass/VirtualMassLarge",
 "MyObjectBuilder_Cockpit/LargeBlockCockpitSeat",
+"MyObjectBuilder_Collector/Collector",
+"MyObjectBuilder_ShipConnector/Connector",
+"MyObjectBuilder_Gyro/LargeBlockGyro",
+"MyObjectBuilder_MergeBlock/LargeShipMergeBlock",
+"MyObjectBuilder_RemoteControl/LargeBlockRemoteControl",
+"MyObjectBuilder_ReflectorLight/LargeBlockFrontLight",
+"MyObjectBuilder_TimerBlock/TimerBlockLarge",
+"MyObjectBuilder_Warhead/LargeWarhead",
 "MyObjectBuilder_ConveyorConnector/ConveyorTubeCurved",
 "MyObjectBuilder_CargoContainer/LargeBlockSmallContainer"]
+
+small_blocks_types_list = ["MyObjectBuilder_Cockpit/LargeBlockCockpit",
+"MyObjectBuilder_Cockpit/CockpitOpen",
+"MyObjectBuilder_Cockpit/OpenCockpitLarge"]
+
+large_blocks_types_list = ["MyObjectBuilder_HydrogenEngine/LargeHydrogenEngine",
+"MyObjectBuilder_OxygenTank/LargeHydrogenTankSmall",
+"MyObjectBuilder_OxygenGenerator/",
+"MyObjectBuilder_OxygenTank/",
+"MyObjectBuilder_OxygenFarm/LargeBlockOxygenFarm",
+"MyObjectBuilder_Refinery/Blast Furnace",
+"MyObjectBuilder_Beacon/LargeBlockBeacon",
+"MyObjectBuilder_MotorStator/LargeStator",
+"MyObjectBuilder_ExtendedPistonBase/LargePistonBase"]
+
+# Temp List to include selected blocks and prioritize include all of them randomly
+selected_blocks = []
 
 for i in range(1):
 	turly.make_a_map(name = i, verbose = True)

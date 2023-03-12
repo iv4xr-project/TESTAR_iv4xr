@@ -81,6 +81,16 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 		toolEntities.add("LargeBlockCockpitSeat");
 		toolEntities.add("ConveyorTubeCurved");
 		toolEntities.add("LargeBlockSmallContainer");
+		toolEntities.add("BasicAssembler");
+		toolEntities.add("VirtualMassLarge");
+		toolEntities.add("Collector");
+		toolEntities.add("Connector");
+		toolEntities.add("LargeBlockGyro");
+		toolEntities.add("LargeShipMergeBlock");
+		toolEntities.add("LargeBlockRemoteControl");
+		toolEntities.add("LargeBlockFrontLight");
+		toolEntities.add("TimerBlockLarge");
+		toolEntities.add("LargeWarhead");
 	}
 
 	private static Set<String> fragileEntities;
