@@ -44,6 +44,8 @@ public class SEnavigator {
 			Util.pause(0.5);
 			// If there is a problem in the movement, stop the loop
 			if(Duration.between(startMovementInstant, Instant.now()).toSeconds() > 60) {
+				System.out.println("ERROR: Trying to goForwardToLocation: " + nodePosition);
+				System.err.println("ERROR: Trying to goForwardToLocation: " + nodePosition);
 				throw new ActionFailedException("ERROR: Trying to goForwardToLocation: " + nodePosition);
 			}
 		}

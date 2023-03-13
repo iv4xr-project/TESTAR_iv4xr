@@ -65,6 +65,7 @@ import org.fruit.monkey.ConfigTags;
 import org.fruit.monkey.Main;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
+import org.testar.iv4xr.InteractiveExplorerSE;
 import org.testar.iv4xr.InteractiveSelectorSE;
 import org.testar.iv4xr.SpatialXMLmap;
 import org.testar.visualization.iv4xr.Iv4xrSeVisualization;
@@ -90,7 +91,7 @@ public class SEProtocol extends iv4xrProtocol {
 	// Oracle example to validate that the block integrity decreases after a Grinder action
 	protected Verdict functional_verdict = Verdict.OK;
 
-	protected InteractiveSelectorSE actionSelectorSE = new InteractiveSelectorSE();
+	protected InteractiveExplorerSE actionSelectorSE = new InteractiveExplorerSE();
 
 	// Timing variables
 	protected Instant accumulativeActionTimePerSequence;
@@ -124,7 +125,7 @@ public class SEProtocol extends iv4xrProtocol {
 		// reset the functional verdict for the new sequence
 		functional_verdict = Verdict.OK;
 		// Initialize the interactive selector
-		actionSelectorSE = new InteractiveSelectorSE();
+		actionSelectorSE = new InteractiveExplorerSE();
 	}
 
 	/**

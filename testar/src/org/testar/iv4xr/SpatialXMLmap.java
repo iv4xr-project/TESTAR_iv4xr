@@ -100,6 +100,10 @@ public class SpatialXMLmap {
 
 	private static HashSet<Rectangle> observedFloorPositions = new HashSet<>();
 
+	public static Pair<String, String> getAgentPlatformOrientation() {
+		return agentPlatformOrientation;
+	}
+
 	public static void prepareSpatialXMLmap(String levelPath) {
 		// First, clear and load the initial XML blocks information
 		xml_space_blocks = new int[][]{{0,0,0}};
