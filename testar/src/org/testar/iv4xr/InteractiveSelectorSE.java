@@ -45,6 +45,7 @@ import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
 import spaceEngineers.model.Vec3F;
 
+@Deprecated
 public class InteractiveSelectorSE {
 
 	private static Set<String> interactedEntities = new HashSet<>();

@@ -100,7 +100,7 @@ public class sePositionRotationHelper {
 			Vec3F nodePosition = node.getData();
 			float nodeDistance = nodePosition.distanceTo(agentPosition); // the target position of the widget to interact with
 			// If the node is inside the max distance radio
-			if(nodeDistance < maxDistance){
+			if(nodeDistance <= maxDistance){
 				// And the position of the node is reachable
 				if(sePositionRotationHelper.calculateIfPositionIsReachable(system, nodePosition)) {
 					// Add an exploratory movement to the node

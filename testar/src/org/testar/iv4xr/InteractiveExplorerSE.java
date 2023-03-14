@@ -42,7 +42,6 @@ import org.fruit.alayer.Action;
 import org.fruit.alayer.State;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.exceptions.SystemStartException;
-
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.se.goals.seActionExplorePosition;
 import eu.testar.iv4xr.actions.se.goals.seActionNavigateToBlock;
@@ -133,10 +132,10 @@ public class InteractiveExplorerSE {
 					}
 					// Else, calculate if the next action is moving far from the already explored area
 					else {
-						// Calculate the distance between the center of farExploratoryRect and the edge of the exploredArea
+						// Calculate the distance between the center of farExploratoryRect and the exploredArea
 						double savedRectDistance = distanceToPoint(farExploratoryRect.getCenterX(), farExploratoryRect.getCenterY());
 
-						// Calculate the distance between the center of rectToExplore and the edge of the exploredArea
+						// Calculate the distance between the center of rectToExplore and the exploredArea
 						double newRectDistance = distanceToPoint(rectToExplore.getCenterX(), rectToExplore.getCenterY());
 
 						// If the new rectangle is farthest away, update saved action and rect
@@ -151,74 +150,118 @@ public class InteractiveExplorerSE {
 		return farExploratoryAction;
 	}
 
-	// ChatGPT:
+	/** 
+	 * ChatGPT: 
+	 * Calculates the minimum distance between a point (x,y) and the exploredArea path.
+	 */ 
 	private double distanceToPoint(double x, double y) {
+		// An array to store the coordinates of the path segments
 		double[] coords = new double[6];
+		// A PathIterator object to iterate through the path segments
 		PathIterator path = exploredArea.getPathIterator(null);
 
+		// Set the initial distance to the maximum value, as a distance cannot be greater than that
 		double distance = Double.MAX_VALUE;
+		// Set the initial coordinates for the last point in the segment
 		double lastX = 0, lastY = 0;
+		// An array to store the coordinates of the first point in the path
 		double[] firstCoords = new double[2];
 
+		// Iterate through the path segments
 		while (!path.isDone()) {
+			// Get the type of the current segment and its coordinates
 			int segType = path.currentSegment(coords);
 
 			switch (segType) {
 			case PathIterator.SEG_MOVETO:
+				// If the segment type is MOVE_TO, store the coordinates of the first point in the path
 				firstCoords[0] = coords[0];
 				firstCoords[1] = coords[1];
+				// Set the last point coordinates to the same as the first point
 				lastX = coords[0];
 				lastY = coords[1];
 				break;
 			case PathIterator.SEG_LINETO:
+				// If the segment type is LINE_TO, calculate the distance from the last point to the current point
+				// using the lineToPointDistance method
 				double segmentDistance = lineToPointDistance(lastX, lastY, coords[0], coords[1], x, y);
+				// If the distance is less than the current minimum distance, set it as the new minimum distance
 				if (segmentDistance < distance) {
 					distance = segmentDistance;
 				}
+				// Set the last point coordinates to the current point coordinates
 				lastX = coords[0];
 				lastY = coords[1];
 				break;
 			case PathIterator.SEG_CLOSE:
+				// If the segment type is CLOSE, calculate the distance from the last point to the first point
+				// using the lineToPointDistance method
 				double segmentDistanceClose = lineToPointDistance(lastX, lastY, firstCoords[0], firstCoords[1], x, y);
+				// If the distance is less than the current minimum distance, set it as the new minimum distance
 				if (segmentDistanceClose < distance) {
 					distance = segmentDistanceClose;
 				}
+				// Set the last point coordinates to the first point coordinates
 				lastX = firstCoords[0];
 				lastY = firstCoords[1];
 				break;
 			default:
+				// Throw an error if the segment type is not recognized
 				throw new AssertionError("Unknown segment type: " + segType);
 			}
 
+			// Move to the next segment
 			path.next();
 		}
 
+		// Return the minimum distance
 		return distance;
 	}
 
+	/**
+	 * Calculates the shortest distance between a line and a point in two-dimensional space. 
+	 * 
+	 * @param x1 the x-coordinate of the start point of the line.
+	 * @param y1 the y-coordinate of the start point of the line.
+	 * @param x2 the x-coordinate of the end point of the line.
+	 * @param y2 the y-coordinate of the end point of the line.
+	 * @param px the x-coordinate of the point.
+	 * @param py the y-coordinate of the point.
+	 * @return the shortest distance between the line and the point.
+	 */
 	private double lineToPointDistance(double x1, double y1, double x2, double y2, double px, double py) {
+		// Calculate the vector components for the line and point.
 		double A = px - x1;
 		double B = py - y1;
 		double C = x2 - x1;
 		double D = y2 - y1;
 
+		// Calculate the dot product and length squared for the line vector.
 		double dot = A * C + B * D;
 		double len_sq = C * C + D * D;
+
+		// Calculate the parameter for the closest point on the line to the given point.
 		double param = dot / len_sq;
 
 		double xx, yy;
 
+		// If the parameter is less than zero, the closest point is the start point of the line.
 		if (param < 0) {
 			xx = x1;
 			yy = y1;
-		} else if (param > 1) {
+		}
+		// If the parameter is greater than one, the closest point is the end point of the line.
+		else if (param > 1) {
 			xx = x2;
 			yy = y2;
-		} else {
+		}
+		// Otherwise, the closest point is on the line segment between the start and end points.
+		else {
 			xx = x1 + param * C;
 			yy = y1 + param * D;
 		}
 
+		// Calculate the distance between the closest point on the line and the given point.
 		return Math.sqrt(Math.pow(xx - px, 2) + Math.pow(yy - py, 2));
 	}
 

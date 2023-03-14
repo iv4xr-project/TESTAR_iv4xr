@@ -401,7 +401,7 @@ class BottomUpGenerator(object):
 
 
 # canvas_size, dungeon_density, num_loops, neighbour_depth, neighbour_number_threshold, gravity_density, block_density, minimum_tile_distance_player_flower
-turly = BottomUpGenerator(52, 30, 3, 1, 3, 2, 5, 10)
+turly = BottomUpGenerator(102, 30, 3, 1, 3, 2, 5, 10)
 
 # Define the types of blocks that are generated automatically
 # gravity will be interpreted such as a combination of LargeBlockSmallGenerator + GravityGenerator

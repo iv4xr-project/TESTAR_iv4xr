@@ -66,7 +66,6 @@ import org.fruit.monkey.Main;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
 import org.testar.iv4xr.InteractiveExplorerSE;
-import org.testar.iv4xr.InteractiveSelectorSE;
 import org.testar.iv4xr.SpatialXMLmap;
 import org.testar.visualization.iv4xr.Iv4xrSeVisualization;
 

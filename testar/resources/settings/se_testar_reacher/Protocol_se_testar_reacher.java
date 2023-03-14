@@ -193,7 +193,7 @@ public class Protocol_se_testar_reacher extends SEProtocol {
 		}
 
 		// Now add the set of actions to explore level positions
-		labActions = sePositionRotationHelper.calculateExploratoryNodeMap(system, state, agentId, labActions, 7f);
+		labActions = sePositionRotationHelper.calculateExploratoryNodeMap(system, state, agentId, labActions, 10f);
 
 		// If it was not possible to navigate to an entity or realize a smart exploration
 		// prepare a dummy exploration
