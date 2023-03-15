@@ -66,6 +66,7 @@ import org.fruit.monkey.Main;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
 import org.testar.iv4xr.InteractiveExplorerSE;
+import org.testar.iv4xr.SpatialAccumulativeMap;
 import org.testar.iv4xr.SpatialSequentialMap;
 import org.testar.visualization.iv4xr.Iv4xrSeVisualization;
 
@@ -114,12 +115,24 @@ public class SEProtocol extends iv4xrProtocol {
 	}
 
 	/**
+	 * This method is called before the first test sequence, allowing for example setting up the test environment
+	 */
+	@Override
+	protected void initTestSession() {
+		super.initTestSession();
+		// Create an Accumulative XML spatial map based on the desired SpaceEngineers level
+		// One map for all sequences
+		SpatialAccumulativeMap.prepareSpatialAccumulativeMap(SE_LEVEL_PATH);
+	}
+
+	/**
 	 * This methods is called before each test sequence, allowing for example using external profiling software on the SUT
 	 */
 	@Override
 	protected void preSequencePreparations() {
 		super.preSequencePreparations();
 		// Create a XML spatial map based on the desired SpaceEngineers level
+		// Reset map for each sequence
 		SpatialSequentialMap.prepareSpatialSequentialMap(SE_LEVEL_PATH);
 		// reset the functional verdict for the new sequence
 		functional_verdict = Verdict.OK;
@@ -171,6 +184,7 @@ public class SEProtocol extends iv4xrProtocol {
 
 		if(this.mode == Modes.Generate) {
 			SpatialSequentialMap.updateAgentObservation(state);
+			SpatialAccumulativeMap.updateAgentObservation(state);
 		}
 
 		return state;
@@ -187,6 +201,7 @@ public class SEProtocol extends iv4xrProtocol {
 		// This is the initial Spatial Coverage
 		// After observing the first State without executing any action in the second 0
 		SpatialSequentialMap.extractActionStepSpatialCoverage(0, 0);
+		SpatialAccumulativeMap.extractAccumulativeActionStepSpatialCoverage(0);
 		accumulativeActionTimePerSequence = Instant.now();
 	}
 
@@ -284,16 +299,20 @@ public class SEProtocol extends iv4xrProtocol {
 
 			if(action instanceof seActionNavigateToBlock) {
 				SpatialSequentialMap.updateNavigableNodesPath(((seActionNavigateToBlock) action).getNavigableNodes());
+				SpatialAccumulativeMap.updateNavigableNodesPath(((seActionNavigateToBlock) action).getNavigableNodes());
 			}
 			else if(action instanceof seActionExplorePosition) {
 				SpatialSequentialMap.updateNavigableNodesPath(((seActionExplorePosition) action).getNavigableNodes());
+				SpatialAccumulativeMap.updateNavigableNodesPath(((seActionExplorePosition) action).getNavigableNodes());
 			}
 			SpatialSequentialMap.updateInteractedBlock(action);
+			SpatialAccumulativeMap.updateInteractedBlock(action);
 
 			// After executing the action and updating the Spatial information
 			// Print the spatial action coverage
 			Duration accumulativeActionTime = Duration.between(accumulativeActionTimePerSequence, Instant.now());
 			SpatialSequentialMap.extractActionStepSpatialCoverage(actionCount, accumulativeActionTime.toSeconds());
+			SpatialAccumulativeMap.extractAccumulativeActionStepSpatialCoverage(actionCount);
 
 			return true;
 
@@ -302,6 +321,8 @@ public class SEProtocol extends iv4xrProtocol {
 			// Save the next action spatial coverage without updating any interaction or navigation information
 			Duration accumulativeActionTime = Duration.between(accumulativeActionTimePerSequence, Instant.now());
 			SpatialSequentialMap.extractActionStepSpatialCoverage(actionCount, accumulativeActionTime.toSeconds());
+			SpatialAccumulativeMap.extractAccumulativeActionStepSpatialCoverage(actionCount);
+
 			return false;
 		}
 	}
@@ -394,6 +415,7 @@ public class SEProtocol extends iv4xrProtocol {
 			// Create the spatial image based on the explored level
 			Duration finalAccumulativeActionTime = Duration.between(accumulativeActionTimePerSequence, Instant.now());
 			SpatialSequentialMap.createFinalSpatialMap(finalAccumulativeActionTime.toSeconds());
+			SpatialAccumulativeMap.createFinalSpatialMap();
 		}
 		// Close iv4xr-plugin connection
 		system.get(IV4XRtags.iv4xrSpaceEngineers).close();
