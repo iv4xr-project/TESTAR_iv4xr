@@ -316,7 +316,7 @@ public class InteractiveExplorerSE {
 	}
 
 	private Rectangle2D.Double obtainRectangleFromPosition(Vec3F exploredPosition) {
-		Pair<String, String> agentPlatformOrientation = SpatialXMLmap.getAgentPlatformOrientation();
+		Pair<String, String> agentPlatformOrientation = SpatialSequentialMap.getAgentPlatformOrientation();
 		if(!agentPlatformOrientation.right().isEmpty()) {
 			// Obtain the x and y values, taking into consideration the agent up orientation in the platform
 			int x = Math.round(getPositionCoordinate(exploredPosition, agentPlatformOrientation.left()));

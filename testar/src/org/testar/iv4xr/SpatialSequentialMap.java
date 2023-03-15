@@ -79,9 +79,9 @@ import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
 import spaceEngineers.model.Vec3F;
 
-public class SpatialXMLmap {
+public class SpatialSequentialMap {
 
-	private SpatialXMLmap() {}
+	private SpatialSequentialMap() {}
 
 	private static int [][] xml_space_blocks = {{0,0,0}};
 
@@ -104,7 +104,7 @@ public class SpatialXMLmap {
 		return agentPlatformOrientation;
 	}
 
-	public static void prepareSpatialXMLmap(String levelPath) {
+	public static void prepareSpatialSequentialMap(String levelPath) {
 		// First, clear and load the initial XML blocks information
 		xml_space_blocks = new int[][]{{0,0,0}};
 		// Also, re-initialize the observed floor positions

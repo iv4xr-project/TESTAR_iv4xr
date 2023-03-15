@@ -66,7 +66,7 @@ import org.fruit.monkey.Main;
 import org.fruit.monkey.Settings;
 import org.testar.OutputStructure;
 import org.testar.iv4xr.InteractiveExplorerSE;
-import org.testar.iv4xr.SpatialXMLmap;
+import org.testar.iv4xr.SpatialSequentialMap;
 import org.testar.visualization.iv4xr.Iv4xrSeVisualization;
 
 import es.upv.staq.testar.NativeLinker;
@@ -120,7 +120,7 @@ public class SEProtocol extends iv4xrProtocol {
 	protected void preSequencePreparations() {
 		super.preSequencePreparations();
 		// Create a XML spatial map based on the desired SpaceEngineers level
-		SpatialXMLmap.prepareSpatialXMLmap(SE_LEVEL_PATH);
+		SpatialSequentialMap.prepareSpatialSequentialMap(SE_LEVEL_PATH);
 		// reset the functional verdict for the new sequence
 		functional_verdict = Verdict.OK;
 		// Initialize the interactive selector
@@ -170,7 +170,7 @@ public class SEProtocol extends iv4xrProtocol {
 		State state = super.getState(system);
 
 		if(this.mode == Modes.Generate) {
-			SpatialXMLmap.updateAgentObservation(state);
+			SpatialSequentialMap.updateAgentObservation(state);
 		}
 
 		return state;
@@ -186,7 +186,7 @@ public class SEProtocol extends iv4xrProtocol {
 	protected void beginSequence(SUT system, State state) {
 		// This is the initial Spatial Coverage
 		// After observing the first State without executing any action in the second 0
-		SpatialXMLmap.extractActionStepSpatialCoverage(0, 0);
+		SpatialSequentialMap.extractActionStepSpatialCoverage(0, 0);
 		accumulativeActionTimePerSequence = Instant.now();
 	}
 
@@ -283,22 +283,25 @@ public class SEProtocol extends iv4xrProtocol {
 			Util.pause(waitTime);
 
 			if(action instanceof seActionNavigateToBlock) {
-				SpatialXMLmap.updateNavigableNodesPath(((seActionNavigateToBlock) action).getNavigableNodes());
+				SpatialSequentialMap.updateNavigableNodesPath(((seActionNavigateToBlock) action).getNavigableNodes());
 			}
 			else if(action instanceof seActionExplorePosition) {
-				SpatialXMLmap.updateNavigableNodesPath(((seActionExplorePosition) action).getNavigableNodes());
+				SpatialSequentialMap.updateNavigableNodesPath(((seActionExplorePosition) action).getNavigableNodes());
 			}
-			SpatialXMLmap.updateInteractedBlock(action);
-
-			Duration accumulativeActionTime = Duration.between(accumulativeActionTimePerSequence, Instant.now());
+			SpatialSequentialMap.updateInteractedBlock(action);
 
 			// After executing the action and updating the Spatial information
 			// Print the spatial action coverage
-			SpatialXMLmap.extractActionStepSpatialCoverage(actionCount, accumulativeActionTime.toSeconds());
+			Duration accumulativeActionTime = Duration.between(accumulativeActionTimePerSequence, Instant.now());
+			SpatialSequentialMap.extractActionStepSpatialCoverage(actionCount, accumulativeActionTime.toSeconds());
 
 			return true;
 
 		} catch(ActionFailedException afe) {
+			// If the action fails due to a problem in the navigable path
+			// Save the next action spatial coverage without updating any interaction or navigation information
+			Duration accumulativeActionTime = Duration.between(accumulativeActionTimePerSequence, Instant.now());
+			SpatialSequentialMap.extractActionStepSpatialCoverage(actionCount, accumulativeActionTime.toSeconds());
 			return false;
 		}
 	}
@@ -390,7 +393,7 @@ public class SEProtocol extends iv4xrProtocol {
 
 			// Create the spatial image based on the explored level
 			Duration finalAccumulativeActionTime = Duration.between(accumulativeActionTimePerSequence, Instant.now());
-			SpatialXMLmap.createFinalSpatialMap(finalAccumulativeActionTime.toSeconds());
+			SpatialSequentialMap.createFinalSpatialMap(finalAccumulativeActionTime.toSeconds());
 		}
 		// Close iv4xr-plugin connection
 		system.get(IV4XRtags.iv4xrSpaceEngineers).close();
