@@ -477,8 +477,6 @@ public class SpatialSequentialMap {
 
 	private static void printSpaceBlocks() {
 		try {
-			System.out.println(Arrays.deepToString(xml_space_blocks));
-
 			Area observedLevelArea = new Area();
 
 			BufferedImage image = new BufferedImage(WIDTH * reSizeMap + 1, HEIGHT * reSizeMap + 1, BufferedImage.TYPE_INT_ARGB);

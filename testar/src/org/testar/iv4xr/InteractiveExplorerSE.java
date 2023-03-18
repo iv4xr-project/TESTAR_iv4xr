@@ -52,9 +52,9 @@ import spaceEngineers.model.Vec3F;
 
 public class InteractiveExplorerSE {
 
-	private static Set<String> interactedEntities = new HashSet<>();
-	private static Area exploredArea = new Area();
-	private static Set<Vec3> exploredPositions = new HashSet<>();
+	private Set<String> interactedEntities = new HashSet<>();
+	private Area exploredArea = new Area();
+	private Set<Vec3> exploredPositions = new HashSet<>();
 
 	public Action prioritizedAction(State state, Set<Action> actions) {
 		Action prioritizedAction = null;
@@ -67,15 +67,17 @@ public class InteractiveExplorerSE {
 			prioritizedAction = prioritizeClosestInteractiveAction(state, actions);
 		}
 
-		if(prioritizedAction==null) {
+		if(prioritizedAction == null) {
 			// Third, prioritize the exploration of new discovered positions areas
 			prioritizedAction = prioritizeExploratoryArea(state, actions);
 		}
 
-		if(prioritizedAction==null) {
+		if(prioritizedAction == null) {
 			// Fourth, prioritize the exploration of new discovered positions points
 			prioritizedAction = prioritizeExploratoryMovement(state, actions);
 		}
+
+		System.out.println("DEBUG: exploredArea size: " + exploredArea.getBounds().getSize());
 
 		return prioritizedAction;
 	}
@@ -115,7 +117,7 @@ public class InteractiveExplorerSE {
 	}
 
 	private Action prioritizeExploratoryArea(State state, Set<Action> actions) {
-		Action farExploratoryAction = null;
+		Action farExploratoryAreaAction = null;
 		Rectangle2D.Double farExploratoryRect = null;
 		for(Action action : actions) {
 			if(action instanceof seActionExplorePosition) {
@@ -126,8 +128,8 @@ public class InteractiveExplorerSE {
 				// If this area was not explored previously
 				if(!exploredArea.intersects(rectToExplore)) {
 					// If we do not have any exploratory action yet, just assign
-					if(farExploratoryAction == null) {
-						farExploratoryAction = action;
+					if(farExploratoryAreaAction == null) {
+						farExploratoryAreaAction = action;
 						farExploratoryRect = rectToExplore;
 					}
 					// Else, calculate if the next action is moving far from the already explored area
@@ -140,14 +142,19 @@ public class InteractiveExplorerSE {
 
 						// If the new rectangle is farthest away, update saved action and rect
 						if(newRectDistance > savedRectDistance) {
-							farExploratoryAction = action;
+							farExploratoryAreaAction = action;
 							farExploratoryRect = rectToExplore;
 						}
 					}
 				}
 			}
 		}
-		return farExploratoryAction;
+
+		if(farExploratoryAreaAction != null) {
+			System.out.println("DEBUG: prioritizeExploratoryArea action");
+		}
+
+		return farExploratoryAreaAction;
 	}
 
 	/** 
@@ -266,25 +273,30 @@ public class InteractiveExplorerSE {
 	}
 
 	private Action prioritizeExploratoryMovement(State state, Set<Action> actions) {
-		Action farExploratoryAction = null;
+		Action farExploratoryPositionAction = null;
 		for(Action action : actions) {
 			if(action instanceof seActionExplorePosition) {
 				// If this position was not explored previously
 				if(!exploredPositions.contains(((seActionExplorePosition) action).getTargetPosition())) {
 					// If we do not have any exploratory action yet, just assign
-					if(farExploratoryAction == null) {farExploratoryAction = action;}
+					if(farExploratoryPositionAction == null) {farExploratoryPositionAction = action;}
 					// Else, calculate if the next action is moving the agent to a far position
 					else {
 						Vec3 agentPosition = state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition);
-						float savedActionDist = Vec3.dist(agentPosition, ((seActionExplorePosition) farExploratoryAction).getTargetPosition());
+						float savedActionDist = Vec3.dist(agentPosition, ((seActionExplorePosition) farExploratoryPositionAction).getTargetPosition());
 						float newActionDist = Vec3.dist(agentPosition, ((seActionExplorePosition) action).getTargetPosition());
 
-						if(newActionDist > savedActionDist) {farExploratoryAction = action;}
+						if(newActionDist > savedActionDist) {farExploratoryPositionAction = action;}
 					}
 				}
 			}
 		}
-		return farExploratoryAction;
+
+		if(farExploratoryPositionAction != null) {
+			System.out.println("DEBUG: prioritizeExploratoryMovement action");
+		}
+
+		return farExploratoryPositionAction;
 	}
 
 	public void addExecutedAction(Action action) {
