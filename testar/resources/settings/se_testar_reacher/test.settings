@@ -31,8 +31,8 @@ SUTConnectorValue = "C:/PROGRA~2/Steam/steamapps/common/SpaceEngineers/Bin64/Spa
 # Number of sequences and the length of these sequences
 #################################################################
 
-Sequences = 30
-SequenceLength = 500
+Sequences = 3
+SequenceLength = 50
 
 #################################################################
 # Oracles based on suspicious titles

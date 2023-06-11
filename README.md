@@ -35,6 +35,10 @@ Additional information regarding the configuration of these protocols can be fou
 
 #### SpaceEngineers
 
+`INFO:` [SE plugin main branch](https://github.com/iv4xr-project/iv4xr-se-plugin) contains at least two known bugs that affect the TESTAR exploration (related to the observed SE entities).  
+`INFO:` We recommend using the [SE plugin navgraph_entity branch](https://github.com/iv4xr-project/iv4xr-se-plugin/tree/navgraph_entity), which reverts these bugs.  
+`INFO:` Space Engineers DLLs related to navgraph_entity branch can be found here [TESTAR_iv4xr release v3.6](https://github.com/iv4xr-project/TESTAR_iv4xr/releases/tag/v3.6)  
+
 [Space Engineers](https://www.spaceengineersgame.com/) is an industrial 3D game developed by Keen Software and GoodAI. The iv4xr framework contains a [SE plugin](https://github.com/iv4xr-project/iv4xr-se-plugin) that allows the observation and execution of actions in the virtual environment.  
 
 Before executing TESTAR the user needs to:

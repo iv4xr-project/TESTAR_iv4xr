@@ -59,7 +59,7 @@ public class InteractiveExplorerSE {
 	public Action prioritizedAction(State state, Set<Action> actions) {
 		Action prioritizedAction = null;
 
-		// First, prioritize the construction of blocks
+		// First, prioritize the construction of blocks (if any)
 		prioritizedAction = prioritizeBlockConstruction(actions);
 
 		if(prioritizedAction == null) {
@@ -150,17 +150,16 @@ public class InteractiveExplorerSE {
 			}
 		}
 
-		if(farExploratoryAreaAction != null) {
-			System.out.println("DEBUG: prioritizeExploratoryArea action");
-		}
-
 		return farExploratoryAreaAction;
 	}
 
-	/** 
-	 * ChatGPT: 
+	/**
 	 * Calculates the minimum distance between a point (x,y) and the exploredArea path.
-	 */ 
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
 	private double distanceToPoint(double x, double y) {
 		// An array to store the coordinates of the path segments
 		double[] coords = new double[6];
@@ -290,10 +289,6 @@ public class InteractiveExplorerSE {
 					}
 				}
 			}
-		}
-
-		if(farExploratoryPositionAction != null) {
-			System.out.println("DEBUG: prioritizeExploratoryMovement action");
 		}
 
 		return farExploratoryPositionAction;
