@@ -37,6 +37,8 @@ import world.BeliefState;
 
 public class LabRecruitsAgentTESTAR extends LabRecruitsTestAgent {
 	
+	private GoalStructure currentGoal = null;
+	
     /**
      * The constructor for the test agent.
      */
@@ -65,21 +67,21 @@ public class LabRecruitsAgentTESTAR extends LabRecruitsTestAgent {
     
     @Override
     public LabRecruitsAgentTESTAR setGoal(GoalStructure g) {
-    	this.goal = g;
+    	this.currentGoal = g;
     	super.setGoal(g) ;
     	return this ;
     }
 
     public boolean isGoalInProgress() {
     	try {
-    		return goal.getStatus().inProgress();
+    		return currentGoal.getStatus().inProgress();
     	} catch(Exception e) {
     		System.out.println(e.getMessage());
     		return false;
     	}
     }
     
-    public nl.uu.cs.aplib.mainConcepts.GoalStructure.PrimitiveGoal getCurrentGoal() {
+    public GoalStructure getCurrentGoal() {
     	return currentGoal;
     }
 

@@ -59,12 +59,12 @@ import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import eu.testar.iv4xr.labrecruits.LabRecruitsProcess;
 import eu.iv4xr.framework.extensions.pathfinding.SurfaceNavGraph;
 import eu.iv4xr.framework.spatial.Vec3;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure.PrimitiveGoal;
+import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import world.LabWorldModel;
 
 public class LabRecruitsProtocol extends iv4xrProtocol {
 
-	private PrimitiveGoal previousGoal;
+	private GoalStructure previousGoal;
 	private int triesGoalInExecution = 0;
 
 	protected SurfaceNavGraph navGraph;
@@ -253,7 +253,7 @@ public class LabRecruitsProtocol extends iv4xrProtocol {
 	 * @param agentId
 	 * @return explore navmesh actions
 	 */
-	protected Set<Action> exploreVisibleNodesActions(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
+	protected Set<Action> exploreVisibleNodesActionCommands(Set<Action> actions, State state, LabRecruitsEnvironment labRecruitsEnvironment, String agentId) {
 		if(state.get(IV4XRtags.labRecruitsNavMesh, null) != null && !state.get(IV4XRtags.labRecruitsNavMesh).isEmpty() /*&& navGraph != null*/) {
 			for(SVec3 nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {
 				actions.add(new labActionExplorePosition(state, labRecruitsEnvironment, agentId, new Vec3(nodeNavMesh.x, nodeNavMesh.y, nodeNavMesh.z), false, false));

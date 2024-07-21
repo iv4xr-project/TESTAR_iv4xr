@@ -46,6 +46,10 @@ public class labActionGoalPositionInCloseRange extends labActionGoal {
 
 	private Vec3 goalPosition;
 
+	public Vec3 getGoalPosition() {
+		return goalPosition;
+	}
+
 	public labActionGoalPositionInCloseRange(Widget w, SUT system, GoalStructure goalStructure, Vec3 goalPosition) {
 		this.goalStructure = goalStructure;
 		this.set(Tags.OriginWidget, w);

@@ -49,6 +49,10 @@ public class labActionGoal extends TaggableBase implements Action {
 	protected GoalStructure goalStructure;
 	protected LabRecruitsAgentTESTAR agentTESTAR;
 
+	public String getEntityId() {
+		return entityId;
+	}
+
 	public GoalStructure getActionGoal() {
 		return goalStructure;
 	}
@@ -56,7 +60,7 @@ public class labActionGoal extends TaggableBase implements Action {
 	public void run(SUT system, State state, double duration) throws ActionFailedException {
 		// It has been decided to execute this action
 		// Send the instructions to achieve the goal
-
+		agentTESTAR.update();
 	}
 
 	@Override

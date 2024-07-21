@@ -93,7 +93,7 @@ public class Protocol_test_workflow_labrecruits_testar_explore extends LabRecrui
 		LabRecruitsEnvironment labRecruitsEnv = system.get(IV4XRtags.iv4xrLabRecruitsEnvironment);
 		
 		// NavMesh Exploration : Add one exploration movement for each visible node
-		labActions = exploreVisibleNodesActions(labActions, state, labRecruitsEnv, agentId);
+		labActions = exploreVisibleNodesActionCommands(labActions, state, labRecruitsEnv, agentId);
 
 		// For every interactive entity agents have the possibility to move and interact with
 		for(Widget w : state) {
