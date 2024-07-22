@@ -28,24 +28,21 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.awt.geom.Area;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.fruit.Pair;
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
 import org.fruit.alayer.exceptions.SystemStartException;
 import org.fruit.monkey.ConfigTags;
+import org.testar.OutputStructure;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
 import agents.tactics.GoalLib;
@@ -58,26 +55,134 @@ import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import nl.ou.testar.RandomActionSelector;
-import nl.uu.cs.aplib.exampleUsages.fiveGame.FiveGame_withAgent.MyState;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
+import nl.uu.cs.aplib.utils.Pair;
+import world.BeliefState;
 
 public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 
 	private LabRecruitsExplorer labRecruitsExplorer;
+	private LabRecruitsCoverage labRecruitsCoverage;
 
 	@Override
 	protected void preSequencePreparations() {
 		super.preSequencePreparations();
 		labRecruitsExplorer = new LabRecruitsExplorer();
 	}
-	
+
 	@Override
 	protected SUT startSystem() throws SystemStartException {
 		SUT system = super.startSystem();
 		LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
 		testAgent.setTestDataCollector(new TestDataCollector());
-		testAgent.withScalarInstrumenter(null);
+
+		// Initialize positions coverage
+		int walkableCount = countWalkableFloors(testAgent);
+		int[] levelDimensions = getLevelDimensions(testAgent);		
+		labRecruitsCoverage = new LabRecruitsCoverage(levelDimensions[0], levelDimensions[1]);
+
+		// Initialize entities coverage
+		int entitiesCount = countExistingButtons(testAgent);
+
+		testAgent.withScalarInstrumenter(state -> instrumenter((BeliefState) state, 
+				walkableCount, 
+				entitiesCount, 
+				labRecruitsCoverage)) ;
 		return system;
+	}
+
+	private int countWalkableFloors(LabRecruitsAgentTESTAR testAgent) {
+		String level_path = testAgent.env().gameConfig().level_path;
+		int walkableCount = 0;
+
+		try (BufferedReader br = new BufferedReader(new FileReader(level_path))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] elements = line.split(",");
+				for (String element : elements) {
+					if (element.trim().startsWith("f")) {
+						walkableCount++;
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return walkableCount;
+	}
+
+	private int countExistingButtons(LabRecruitsAgentTESTAR testAgent) {
+		String level_path = testAgent.env().gameConfig().level_path;
+		int buttonCount = 0;
+
+		try (BufferedReader br = new BufferedReader(new FileReader(level_path))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] elements = line.split(",");
+				for (String element : elements) {
+					if (element.trim().startsWith("f:b")) {
+						buttonCount++;
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return buttonCount;
+	}
+
+	public static int[] getLevelDimensions(LabRecruitsAgentTESTAR testAgent) {
+		String level_path = testAgent.env().gameConfig().level_path;
+
+		int width = 0;
+		int height = 0;
+		boolean foundMap = false;
+
+		try (BufferedReader br = new BufferedReader(new FileReader(level_path))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				if (line.startsWith("|")) {
+					// Remove the pipe character and split the line
+					String[] elements = line.substring(1).split(",");
+					width = elements.length;
+					height++;
+					foundMap = true;
+				} else if (foundMap) {
+					String[] elements = line.split(",");
+					if (width == 0) {
+						// If width hasn't been set, set it based on the first map line after '|'
+						width = elements.length;
+					}
+					height++;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return new int[]{width, height};
+	}
+
+	/**
+	 * Convert the state of the program under test into a list of name-value pairs.
+	 */
+	private Pair<String,Number>[] instrumenter(BeliefState labState, int walkableCount, int entitiesCount, LabRecruitsCoverage labRecruitsCoverage) {
+		Pair<String,Number>[] out = new Pair[8] ;
+		// Heatmap only works with x,y 2D values, which is x,z in 3D LabRecruits
+		out[0] = new Pair<String,Number>("x", Math.round(labState.worldmodel().position.x));
+		out[1] = new Pair<String,Number>("y", Math.round(labState.worldmodel().position.z));
+
+		out[2] = new Pair<String,Number>("positionsExisting", walkableCount);
+		out[3] = new Pair<String,Number>("positionsObserved", labRecruitsCoverage.getNumberObservedPositions());
+		out[4] = new Pair<String,Number>("positionsWalked", labRecruitsCoverage.getNumberWalkedPositions());
+
+		out[5] = new Pair<String,Number>("entitiesExisting", entitiesCount);
+		out[6] = new Pair<String,Number>("entitiesObserved", labRecruitsCoverage.getNumberObservedEntities());
+		out[7] = new Pair<String,Number>("entitiesReached", labRecruitsCoverage.getNumberInteractedEntities());
+
+		return out ;
 	}
 
 	/**
@@ -87,16 +192,26 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 	protected Set<Action> deriveActions(SUT system, State state) {
 		Set<Action> labActions = new HashSet<>();
 
+		// NavMesh returns very concrete and precise positions
+		// Lets round the coordinates to make them a bit abstract
+		Set<Vec3> abstractNavMeshPositions = new HashSet<>();
+
 		// For each NavMesh Position, derive goal exploration movements
 		if(state.get(IV4XRtags.labRecruitsNavMesh, null) != null && !state.get(IV4XRtags.labRecruitsNavMesh).isEmpty()) {
-			for(SVec3 nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {
-				Vec3 goalPosition = new Vec3(nodeNavMesh.x, nodeNavMesh.y, nodeNavMesh.z);
-				GoalStructure goalNavigatePosition = GoalLib.positionInCloseRange(goalPosition).lift();
-				Action exploreAction = new labActionGoalPositionInCloseRange(state, system, goalNavigatePosition, goalPosition);
-				// Save as current state action
-				labActions.add(exploreAction);
-				// But also memorize for special selector
-				labRecruitsExplorer.memorizeActionPosition(exploreAction);
+			for(SVec3 nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {				
+				Vec3 goalPosition = new Vec3(Math.round(nodeNavMesh.x), Math.round(nodeNavMesh.y), Math.round(nodeNavMesh.z));
+				// Only derive an action if the abstract NavMesh positions does not contain the concrete position
+				if(!abstractNavMeshPositions.contains(goalPosition)) {
+					abstractNavMeshPositions.add(goalPosition);
+					GoalStructure goalNavigatePosition = GoalLib.positionInCloseRange(goalPosition).lift();
+					Action exploreAction = new labActionGoalPositionInCloseRange(state, system, goalNavigatePosition, goalPosition);
+					// Save as current state action
+					labActions.add(exploreAction);
+					// But also memorize for special selector
+					labRecruitsExplorer.memorizeActionPosition(exploreAction);
+					// Update the observed LabRecruits x,z position to the coverage tracker
+					labRecruitsCoverage.addObservedPosition(Math.round(goalPosition.x), Math.round(goalPosition.z));
+				}
 			}
 		}
 
@@ -110,6 +225,8 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 				labActions.add(actionInteractEntity);
 				// But also memorize for special selector
 				labRecruitsExplorer.memorizeActionEntity(actionInteractEntity);
+				// Update the observed LabRecruits entity to the coverage tracker
+				labRecruitsCoverage.addObservedEntity(entityId);
 			}
 		}
 
@@ -174,6 +291,16 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 			while(testAgent.isGoalInProgress()) {
 				// execute selected action in the current state
 				action.run(system, state, settings.get(ConfigTags.ActionDuration, 0.1));
+				// Update the walked LabRecruits x,z position to the coverage tracker
+				Vec3 agentPosition = testAgent.state().worldmodel().position;
+				labRecruitsCoverage.addWalkedPosition(Math.round(agentPosition.x), Math.round(agentPosition.z));
+			}
+
+			// If the action executed was an interaction
+			if(action instanceof labActionGoalEntityInteracted && ((labActionGoalEntityInteracted)action).getEntityId() != null) {
+				String interactedEntityId = ((labActionGoalEntityInteracted)action).getEntityId();
+				// Update the interacted LabRecruits entity to the coverage tracker
+				labRecruitsCoverage.addInteractedEntity(interactedEntityId);
 			}
 
 			double waitTime = settings.get(ConfigTags.TimeToWaitAfterAction, 0.5);
@@ -188,18 +315,86 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 			return false;
 		}
 	}
-	
+
 	@Override
 	protected void stopSystem(SUT system) {
 		LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
-		List<Map<String,Number>> trace = testAgent.getTestDataCollector()
-				.getTestAgentScalarsTrace(testAgent.getId())
-		        .stream()
-		        .map(event -> event.values) . collect(Collectors.toList());
-		
-		
-		System.out.println("TESTAR agent coverage: " + trace.size());
+
+		String outputDir = OutputStructure.outerLoopOutputDir;
+
+		try {
+			testAgent.getTestDataCollector()
+			.saveTestAgentScalarsTraceAsCSV(testAgent.getId(), outputDir + File.separator + "trace_" + sequenceCount() + ".csv");
+		} catch(IOException ioe) {
+			System.out.println("Exception saving Coverage Scalar in TESTAR sequence: " + sequenceCount());
+		}
+
 		super.stopSystem(system);
+	}
+}
+
+class LabRecruitsCoverage {
+
+	private int [][] total_observed_positions = {{0,0,0}};
+	private int [][] total_walked_positions = {{0,0,0}};
+
+	private Set <String> total_entity_observed = new HashSet<>();
+	private Set <String> total_entity_interacted = new HashSet<>();
+
+	public LabRecruitsCoverage(int width, int height) {
+		total_observed_positions = new int[ width ][ height ];
+		total_walked_positions = new int[ width ][ height ];
+
+		total_entity_observed = new HashSet<>();
+		total_entity_interacted = new HashSet<>();
+	}
+
+	public void addObservedPosition(int x, int y) {
+		total_observed_positions[x][y] = 1;
+	}
+
+	public void addWalkedPosition(int x, int y) {
+		total_walked_positions[x][y] = 1;
+	}
+
+	public void addObservedEntity(String entityId) {
+		total_entity_observed.add(entityId);
+	}
+
+	public void addInteractedEntity(String entityId) {
+		total_entity_interacted.add(entityId);
+	}
+
+	public int getNumberObservedPositions() {
+		int count = 0;
+		for (int i = 0; i < total_observed_positions.length; i++) {
+			for (int j = 0; j < total_observed_positions[i].length; j++) {
+				if (total_observed_positions[i][j] == 1) {
+					count++;
+				}
+			}
+		}
+		return count;
+	}
+
+	public int getNumberWalkedPositions() {
+		int count = 0;
+		for (int i = 0; i < total_walked_positions.length; i++) {
+			for (int j = 0; j < total_walked_positions[i].length; j++) {
+				if (total_walked_positions[i][j] == 1) {
+					count++;
+				}
+			}
+		}
+		return count;
+	}
+
+	public int getNumberObservedEntities() {
+		return total_entity_observed.size();
+	}
+
+	public int getNumberInteractedEntities() {
+		return total_entity_interacted.size();
 	}
 }
 

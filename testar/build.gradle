@@ -238,6 +238,7 @@ task iv4xrWindowsDistribution(dependsOn:['downloadAndUnzipLabRecruits','buildWin
 }
 
 build.dependsOn(downloadAndUnzipLabRecruits)
+installDist.dependsOn(downloadAndUnzipLabRecruits)
 
 task buildWindows(type: Exec) {
     if( System.getProperty('os.name').toLowerCase().contains('windows 7')) {

@@ -22,3 +22,4 @@ build.bat
 /testar/windows.dll
 /iv4xr/windows.dll
 /logs/
+__pycache__/
