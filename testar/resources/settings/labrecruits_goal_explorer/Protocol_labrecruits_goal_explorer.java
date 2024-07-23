@@ -28,10 +28,18 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *******************************************************************************************************/
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.fruit.Util;
 import org.fruit.alayer.*;
 import org.fruit.alayer.exceptions.ActionFailedException;
@@ -92,22 +100,30 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 	 * Convert the state of the program under test into a list of name-value pairs.
 	 */
 	private Pair<String,Number>[] instrumenter(BeliefState labState, int walkableCount, int entitiesCount, LabRecruitsCoverage labRecruitsCoverage) {
-		Pair<String,Number>[] out = new Pair[8] ;
+		Pair<String,Number>[] out = new Pair[12] ;
 		// Heatmap only works with x,y 2D values, which is x,z in 3D LabRecruits
 		out[0] = new Pair<String,Number>("x", Math.round(labState.worldmodel().getFloorPosition().x));
 		out[1] = new Pair<String,Number>("y", Math.round(labState.worldmodel().getFloorPosition().z));
 
 		out[2] = new Pair<String,Number>("positionsExisting", walkableCount);
-		out[3] = new Pair<String,Number>("positionsObserved", labRecruitsCoverage.getNumberObservedPositions());
-		out[4] = new Pair<String,Number>("positionsWalked", labRecruitsCoverage.getNumberWalkedPositions());
+		out[3] = new Pair<String,Number>("positionsObservedNumeric", labRecruitsCoverage.getNumberObservedPositions());
+		out[4] = new Pair<String,Number>("positionsObservedPercentage", roundToTwoDecimalPlaces((double)labRecruitsCoverage.getNumberObservedPositions() / walkableCount * 100));
+		out[5] = new Pair<String,Number>("positionsWalkedNumeric", labRecruitsCoverage.getNumberWalkedPositions());
+		out[6] = new Pair<String,Number>("positionsWalkedPercentage", roundToTwoDecimalPlaces((double)labRecruitsCoverage.getNumberWalkedPositions() / walkableCount * 100));
 
-		out[5] = new Pair<String,Number>("entitiesExisting", entitiesCount);
-		out[6] = new Pair<String,Number>("entitiesObserved", labRecruitsCoverage.getNumberObservedEntities());
-		out[7] = new Pair<String,Number>("entitiesReached", labRecruitsCoverage.getNumberInteractedEntities());
+		out[7] = new Pair<String,Number>("entitiesExisting", entitiesCount);
+		out[8] = new Pair<String,Number>("entitiesObservedNumeric", labRecruitsCoverage.getNumberObservedEntities());
+		out[9] = new Pair<String,Number>("entitiesObservedPercentage", roundToTwoDecimalPlaces((double)labRecruitsCoverage.getNumberObservedEntities() / entitiesCount * 100));
+		out[10] = new Pair<String,Number>("entitiesReachedNumeric", labRecruitsCoverage.getNumberInteractedEntities());
+		out[11] = new Pair<String,Number>("entitiesReachedPercentage", roundToTwoDecimalPlaces((double)labRecruitsCoverage.getNumberInteractedEntities() / entitiesCount * 100));
 
 		return out ;
 	}
-
+	
+	private double roundToTwoDecimalPlaces(double value) {
+	    BigDecimal bd = new BigDecimal(value).setScale(2, RoundingMode.HALF_UP);
+	    return bd.doubleValue();
+	}
 	/**
 	 * Derive all possible actions that TESTAR can execute in each specific LabRecruits state.
 	 */
@@ -123,7 +139,6 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 		if(state.get(IV4XRtags.labRecruitsNavMesh, null) != null && !state.get(IV4XRtags.labRecruitsNavMesh).isEmpty()) {
 			for(SVec3 nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {				
 
-				
 				// Concrete NavMesh position
 				Vec3 goalPosition = new Vec3(nodeNavMesh.x, nodeNavMesh.y, nodeNavMesh.z);
 				GoalStructure goalNavigatePosition = GoalLib.positionInCloseRange(goalPosition).lift();
@@ -134,9 +149,9 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 				labRecruitsExplorer.memorizeActionPosition(exploreAction);
 				// Update the observed LabRecruits x,z position to the coverage tracker
 				labRecruitsCoverage.addObservedPosition(Math.round(goalPosition.x), Math.round(goalPosition.z));
-				 
 
 				/*
+				// This does not work well, maybe because dist is 0.4 and this round is "too abstract"
 				// Absctract NavMesh position
 				Vec3 goalPosition = new Vec3(Math.round(nodeNavMesh.x), Math.round(nodeNavMesh.y), Math.round(nodeNavMesh.z));
 				// Only derive an action if the abstract NavMesh positions does not contain the concrete position
@@ -194,7 +209,7 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 		if (retAction== null) {
 			// if no preSelected actions are needed,
 			// invoke the LabRecruitsExplorer
-			retAction = labRecruitsExplorer.prioritizeMemorizedAction(state, actions);
+			retAction = labRecruitsExplorer.prioritizeVisibleOfMemorizedAction(state, actions);
 			if(retAction != null) System.out.println("LabRecruitsExplorer prioritizes: " + retAction.toShortString());
 		}
 		if(retAction==null) {
@@ -247,6 +262,39 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 
 			// Add executed to LabRecruitsExplorer to map the executed actions
 			labRecruitsExplorer.addExecutedAction(action, testAgent.getLastHandledGoal().getStatus());
+
+			// Extract action coverage from the instrumenter
+			List<Map<String,Number>> trace = testAgent.getTestDataCollector()
+					.getTestAgentScalarsTrace(testAgent.getId())
+					.stream()
+					.map(event -> event.values).collect(Collectors.toList());
+
+			if(trace != null && !trace.isEmpty()) {
+				Map<String, Number> lastAction = trace.get(trace.size() - 1);
+
+				String actionCoverage = "Sequence | " + sequenceCount() + " | " 
+						+ "Action | " + actionCount() + " | "
+
+						+ "entitiesExisting | " + lastAction.get("entitiesExisting") + " | "
+						+ "entitiesObservedNumeric | " + lastAction.get("entitiesObservedNumeric") + " | "
+						+ "entitiesObservedPercentage | " + lastAction.get("entitiesObservedPercentage") + " | "
+						+ "entitiesReachedNumeric | " + lastAction.get("entitiesReachedNumeric") + " | "
+						+ "entitiesReachedPercentage | " + lastAction.get("entitiesReachedPercentage") + " | "
+
+						+ "positionsExisting | " + lastAction.get("positionsExisting") + " | "
+						+ "positionsObservedNumeric | " + lastAction.get("positionsObservedNumeric") + " | "
+						+ "positionsObservedPercentage | " + lastAction.get("positionsObservedPercentage") + " | "
+						+ "positionsWalkedNumeric | " + lastAction.get("positionsWalkedNumeric") + " | "
+						+ "positionsWalkedPercentage | " + lastAction.get("positionsWalkedPercentage");
+
+				String outputDir = OutputStructure.outerLoopOutputDir;
+
+				try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputDir + File.separator + "actions_trace_" + sequenceCount() + ".txt", true))) {
+					writer.write(actionCoverage + "\r\n");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 
 			return true;
 

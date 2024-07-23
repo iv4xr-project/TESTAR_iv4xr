@@ -91,9 +91,47 @@ public class LabRecruitsExplorer {
 		// We dont know which button will open a door...
 		// So just select one of them random
 		if(!nonInteractedActionEntities.isEmpty()) {
+			int randomIndex = new Random().nextInt(nonInteractedActionEntities.size());
+			prioritizedAction = new ArrayList<labActionGoalEntityInteracted>(nonInteractedActionEntities).get(randomIndex);
+		}
 
-			System.out.println("LabRecruitsExplorer: There are non interacted entities");
-			
+		// If there are not non-interacted entities
+		if(prioritizedAction == null) {
+			// And there are unexplored positions
+			if(!unexploredActionPositions.isEmpty()) {
+				// Prioritize the non-explored far positions
+				Vec3 agentPosition = state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition);
+				float farDistance = 0f;
+				for(Action action : unexploredActionPositions) {
+					// If no prioritizedAction selected
+					// This is probably the first unexploredActionPositions
+					if(prioritizedAction == null) {
+						prioritizedAction = action;
+						farDistance = Vec3.dist(agentPosition, ((labActionGoalPositionInCloseRange)action).getGoalPosition());
+						continue;
+					}
+
+					// If the distance of current action is farther than the saved action
+					// Save this farthest unexploredActionPositions
+					float distance = Vec3.dist(agentPosition, ((labActionGoalPositionInCloseRange)action).getGoalPosition());
+					if(distance > farDistance) {
+						prioritizedAction = action;
+						farDistance = distance;
+					}
+				}
+			}
+		}
+
+		return prioritizedAction;
+	}
+
+	public Action prioritizeVisibleOfMemorizedAction(State state, Set<Action> actions) {
+		Action prioritizedAction = null;
+
+		// First, prioritize the actions with non-interacted entities
+		// We dont know which button will open a door...
+		// So just select one of them random
+		if(!nonInteractedActionEntities.isEmpty()) {
 			// Get the visible interact actions
 			Set<labActionGoalEntityInteracted> visibleInteractedActionEntities = new HashSet<>();
 			for(Action action : actions) {
@@ -105,13 +143,8 @@ public class LabRecruitsExplorer {
 			// Retain the visible interact actions that are not yet interacted
 			visibleInteractedActionEntities.retainAll(nonInteractedActionEntities);
 			if(!visibleInteractedActionEntities.isEmpty()) {
-				
-				System.out.println("LabRecruitsExplorer: There are VISIBLE non interacted entities");
-				
 				int randomIndex = new Random().nextInt(visibleInteractedActionEntities.size());
 				prioritizedAction = new ArrayList<labActionGoalEntityInteracted>(visibleInteractedActionEntities).get(randomIndex);
-				
-				System.out.println("LabRecruitsExplorer: Selected: " + prioritizedAction.toShortString());
 			}
 		}
 
@@ -119,9 +152,6 @@ public class LabRecruitsExplorer {
 		if(prioritizedAction == null) {
 			// And there are unexplored positions
 			if(!unexploredActionPositions.isEmpty()) {
-				
-				System.out.println("LabRecruitsExplorer: There are non explored positions");
-
 				// Get visible explore actions
 				Set<labActionGoalPositionInCloseRange> visibleExploreActionPositions = new HashSet<>();
 				for(Action action : actions) {
@@ -133,9 +163,6 @@ public class LabRecruitsExplorer {
 				// Retain the visible explore actions that are not yet interacted
 				visibleExploreActionPositions.retainAll(unexploredActionPositions);
 				if(!visibleExploreActionPositions.isEmpty()) {
-					
-					System.out.println("LabRecruitsExplorer: There are VISIBLE non explored positions");
-					
 					// Prioritize the non-explored far positions
 					Vec3 agentPosition = state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition);
 					float farDistance = 0f;
@@ -156,8 +183,6 @@ public class LabRecruitsExplorer {
 							farDistance = distance;
 						}
 					}
-					
-					System.out.println("LabRecruitsExplorer: Selected: " + prioritizedAction.toShortString());
 				}
 			}
 		}

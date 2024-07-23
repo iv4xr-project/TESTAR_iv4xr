@@ -1,0 +1,191 @@
+<!doctype html>
+<body>
+<input type="file" id="fileInput" name="filefield" multiple="multiple">
+
+maxObservedButtons:<textarea id="maxObservedButtons">100</textarea>
+maxInteractedButtons:<textarea id="maxInteractedButtons">100</textarea>
+maxObservedPositions :<textarea id="maxObservedPositions">100</textarea>
+maxWalkedPositions :<textarea id="maxWalkedPositions">100</textarea>
+
+totalSeconds :<textarea id="totalSeconds">3600</textarea>
+
+<div id="fileDisplayArea" style="width: 400px; height: 50px;"></div>
+
+<div style="display: flex;">
+<div id="ObservedButtonsContainer" style="width: 500px; height: 400px;"></div>
+<div id="InteractedButtonsContainer" style="width: 500px; height: 400px;"></div>
+</div>
+
+<div style="display: flex;">
+<div id="ObservedPositionsContainer" style="width: 500px; height: 400px;"></div>
+<div id="WalkedPositionsContainer" style="width: 500px; height: 400px;"></div>
+</div>
+
+<div style="display: flex;">
+<div id="SecondsContainer" style="width: 500px; height: 400px;"></div>
+</div>
+
+<script src="https://cdn.anychart.com/releases/v8/js/anychart-base.min.js" type="text/javascript"></script>
+<script>
+// https://jsfiddle.net/b1ynb405/
+var fileInput = document.getElementById('fileInput');
+var fileDisplayArea = document.getElementById('fileDisplayArea');
+
+fileInput.addEventListener('change', function(e) {
+    const spatialFiles = fileInput.files;
+
+    // Validate we are reading txt files
+    for (var i = 0; i < spatialFiles.length; i++){
+        var textType = /text.*/;
+        if(!spatialFiles[i].type.match(textType)){
+            fileDisplayArea.innerText = "Some text coverageFile is not supported!"
+            throw new Error('Some text coverageFile is not supported!');
+        }
+    }
+	
+    myfunction(spatialFiles);
+});
+
+async function myfunction(spatialFiles) {
+	const allDataObservedButtons = [];
+	const allDataInteractedButtons = [];
+	const allDataObservedPositions = [];
+	const allDataWalkedPositions = [];
+	const allDataSeconds = [];
+	
+	//create a line chart
+	var chartObservedButtons = anychart.line();
+	var chartInteractedButtons = anychart.line();
+	var chartObservedPositions = anychart.line();
+	var chartWalkedPositions = anychart.line();
+	var chartSeconds = anychart.line();
+	
+	// set y axis max value if user indicates
+	var maxObservedButtons = document.getElementById("maxObservedButtons") === null ? "" : document.getElementById("maxObservedButtons").value;
+	if(!isEmpty(maxObservedButtons) && !isNaN(parseInt(maxObservedButtons))) chartObservedButtons.yScale().maximum(parseInt(maxObservedButtons));
+
+	var maxInteractedButtons = document.getElementById("maxInteractedButtons") === null ? "" : document.getElementById("maxInteractedButtons").value;
+	if(!isEmpty(maxInteractedButtons) && !isNaN(parseInt(maxInteractedButtons))) chartInteractedButtons.yScale().maximum(parseInt(maxInteractedButtons));
+	
+	var maxObservedPositions = document.getElementById("maxObservedPositions") === null ? "" : document.getElementById("maxObservedPositions").value;
+	if(!isEmpty(maxObservedPositions) && !isNaN(parseInt(maxObservedPositions))) chartObservedPositions.yScale().maximum(parseInt(maxObservedPositions));
+	
+	var maxWalkedPositions = document.getElementById("maxWalkedPositions") === null ? "" : document.getElementById("maxWalkedPositions").value;
+	if(!isEmpty(maxWalkedPositions) && !isNaN(parseInt(maxWalkedPositions))) chartWalkedPositions.yScale().maximum(parseInt(maxWalkedPositions));
+	
+	var totalSeconds = document.getElementById("totalSeconds") === null ? "" : document.getElementById("totalSeconds").value;
+	if(!isEmpty(totalSeconds) && !isNaN(parseInt(totalSeconds))) chartSeconds.yScale().maximum(parseInt(totalSeconds));
+    
+	chartObservedButtons.title("Observed Buttons Coverage Percentage");
+	chartInteractedButtons.title("Interacted Buttons Coverage Percentage");
+	chartObservedPositions.title("Observed Positions Coverage Percentage");
+	chartWalkedPositions.title("Walked Positions Coverage Percentage");
+	chartSeconds.title("Total Seconds");
+
+    for (var i = 0; i < spatialFiles.length; i++){
+	    console.log(spatialFiles[i]);
+		
+		const singleDataObservedButtons = [];
+        const singleDataInteractedButtons = [];
+		const singleDataObservedPositions = [];
+        const singleDataWalkedPositions = [];
+		const singleDataSeconds = [];
+		
+        const fileReader = new SyncFileReader(spatialFiles[i]);
+        const arrayBuffer = await fileReader.readAsText();
+		// Coverage metrics created with Windows CR LF
+        var arrLines = arrayBuffer.split("\r\n");
+		
+		for (var line = 0; line < arrLines.length; line++) {
+		    // Skip empty line, usually at the end of the file
+			if(isEmpty(arrLines[line])) continue;
+			
+			// Sequence | 1 | Action | 5 | entitiesExisting | 24 | entitiesObservedNumeric | 2 | entitiesObservedPercentage | 8.33 | entitiesReachedNumeric | 2 | entitiesReachedPercentage | 8.33 | positionsExisting | 1680 | positionsObservedNumeric | 44 | positionsObservedPercentage | 2.62 | positionsWalkedNumeric | 31 | positionsWalkedPercentage | 1.85 
+			
+			singleDataObservedButtons.push( parseFloat( arrLines[line].split(" | ")[9] ) );
+			singleDataInteractedButtons.push( parseFloat( arrLines[line].split(" | ")[13] ) );
+			singleDataObservedPositions.push( parseFloat( arrLines[line].split(" | ")[19] ) );
+			singleDataWalkedPositions.push( parseFloat( arrLines[line].split(" | ")[23] ) );
+			singleDataSeconds.push( parseFloat( 0.00 ) );
+        }
+		
+        allDataObservedButtons.push(singleDataObservedButtons)
+		allDataInteractedButtons.push(singleDataInteractedButtons)
+		allDataObservedPositions.push(singleDataObservedPositions)
+		allDataWalkedPositions.push(singleDataWalkedPositions)
+		allDataSeconds.push(singleDataSeconds)
+
+		console.log(spatialFiles[i].name);
+		
+		chartObservedButtons.line(allDataObservedButtons[i]).name(spatialFiles[i].name);
+        chartInteractedButtons.line(allDataInteractedButtons[i]).name(spatialFiles[i].name);
+		chartObservedPositions.line(allDataObservedPositions[i]).name(spatialFiles[i].name);
+        chartWalkedPositions.line(allDataWalkedPositions[i]).name(spatialFiles[i].name);
+		chartSeconds.line(allDataSeconds[i]).name(spatialFiles[i].name);
+	}
+
+	//set the container where chart will be drawn
+	chartObservedButtons.container("ObservedButtonsContainer");
+	chartInteractedButtons.container("InteractedButtonsContainer");
+	chartObservedPositions.container("ObservedPositionsContainer");
+	chartWalkedPositions.container("WalkedPositionsContainer");
+	chartSeconds.container("SecondsContainer");
+
+	// Enable legend colours
+	chartObservedButtons.legend().enabled(true)
+	chartInteractedButtons.legend().enabled(true)
+	chartObservedPositions.legend().enabled(true)
+	chartWalkedPositions.legend().enabled(true)
+	chartSeconds.legend().enabled(true)
+	
+	chartObservedButtons.xAxis().labels().format(function() { return(parseInt(this.value)); });
+	chartInteractedButtons.xAxis().labels().format(function() { return(parseInt(this.value)); });
+	chartObservedPositions.xAxis().labels().format(function() { return(parseInt(this.value)); });
+	chartWalkedPositions.xAxis().labels().format(function() { return(parseInt(this.value)); });
+	chartSeconds.xAxis().labels().format(function() { return(parseInt(this.value)); });
+	
+	chartObservedButtons.xAxis().title("Actions");
+	chartInteractedButtons.xAxis().title("Actions");
+	chartObservedPositions.xAxis().title("Actions");
+	chartWalkedPositions.xAxis().title("Actions");
+	chartSeconds.xAxis().title("Actions");
+
+	//draw the chart on the page
+	chartObservedButtons.draw();
+	chartInteractedButtons.draw();
+	chartObservedPositions.draw();
+	chartWalkedPositions.draw();
+	chartSeconds.draw();
+	console.log('finish drawing');
+}
+
+function SyncFileReader(file) {
+    let self = this;
+    let ready = false;
+    let result = '';
+
+    const sleep = function (ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    self.readAsText = async function() {
+        while (ready === false) {
+          await sleep(100);
+        }
+        return result;
+    }    
+
+    const reader = new FileReader();
+    reader.onloadend = function(evt) {
+        result = evt.target.result;
+        ready = true;
+    };
+    reader.readAsText(file);
+}
+
+function isEmpty(str) {
+    return (!str || str.length === 0 );
+}
+</script>
+</body>
+</html>
