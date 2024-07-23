@@ -40,7 +40,7 @@ import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import eu.iv4xr.framework.spatial.Vec3;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
-public class labActionGoalPositionInCloseRange extends labActionGoal {
+public class labActionGoalPositionInCloseRange extends labActionGoal implements Comparable<labActionGoalPositionInCloseRange> {
 
 	private static final long serialVersionUID = -3142712768999384558L;
 
@@ -72,4 +72,22 @@ public class labActionGoalPositionInCloseRange extends labActionGoal {
 		return "Agent: " + agentId + " executing Goal PositionInCloseRange to " + goalPosition;
 	}
 
+	@Override
+	public int compareTo(labActionGoalPositionInCloseRange other) {
+		if (this.goalPosition == null) return -1;
+		if (other.goalPosition == null) return 1;
+
+		if (this.goalPosition.equals(other.goalPosition)) return 0;
+		else return -1;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(!(obj instanceof labActionGoalPositionInCloseRange)) return false;
+
+		if (this.goalPosition == null) return false;
+		if (((labActionGoalPositionInCloseRange)obj).goalPosition == null) return false;
+
+		return this.goalPosition.equals(((labActionGoalPositionInCloseRange)obj).goalPosition);
+	}
 }

@@ -1,7 +1,7 @@
 /***************************************************************************************************
  *
- * Copyright (c) 2019 - 2022 Universitat Politecnica de Valencia - www.upv.es
- * Copyright (c) 2019 - 2022 Open Universiteit - www.ou.nl
+ * Copyright (c) 2019 - 2024 Universitat Politecnica de Valencia - www.upv.es
+ * Copyright (c) 2019 - 2024 Open Universiteit - www.ou.nl
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -30,6 +30,9 @@
 
 package org.testar.protocols.iv4xr;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Objects;
@@ -261,6 +264,80 @@ public class LabRecruitsProtocol extends iv4xrProtocol {
 		}
 
 		return actions;
+	}
+
+	protected int countWalkableFloors(LabRecruitsAgentTESTAR testAgent) {
+		String level_path = testAgent.env().gameConfig().level_path;
+		int walkableCount = 0;
+
+		try (BufferedReader br = new BufferedReader(new FileReader(level_path))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] elements = line.split(",");
+				for (String element : elements) {
+					if (element.trim().startsWith("f")) {
+						walkableCount++;
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return walkableCount;
+	}
+
+	protected int countExistingButtons(LabRecruitsAgentTESTAR testAgent) {
+		String level_path = testAgent.env().gameConfig().level_path;
+		int buttonCount = 0;
+
+		try (BufferedReader br = new BufferedReader(new FileReader(level_path))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] elements = line.split(",");
+				for (String element : elements) {
+					if (element.trim().startsWith("f:b")) {
+						buttonCount++;
+					}
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return buttonCount;
+	}
+
+	protected int[] getLevelDimensions(LabRecruitsAgentTESTAR testAgent) {
+		String level_path = testAgent.env().gameConfig().level_path;
+
+		int width = 0;
+		int height = 0;
+		boolean foundMap = false;
+
+		try (BufferedReader br = new BufferedReader(new FileReader(level_path))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				if (line.startsWith("|")) {
+					// Remove the pipe character and split the line
+					String[] elements = line.substring(1).split(",");
+					width = elements.length;
+					height++;
+					foundMap = true;
+				} else if (foundMap) {
+					String[] elements = line.split(",");
+					if (width == 0) {
+						// If width hasn't been set, set it based on the first map line after '|'
+						width = elements.length;
+					}
+					height++;
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return new int[]{width, height};
 	}
 
 	@Override

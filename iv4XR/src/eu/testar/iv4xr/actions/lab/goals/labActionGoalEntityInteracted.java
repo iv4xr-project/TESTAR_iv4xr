@@ -39,7 +39,7 @@ import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
-public class labActionGoalEntityInteracted extends labActionGoal {
+public class labActionGoalEntityInteracted extends labActionGoal implements Comparable<labActionGoalEntityInteracted> {
 
 	private static final long serialVersionUID = 257145936598623249L;
 
@@ -64,4 +64,21 @@ public class labActionGoalEntityInteracted extends labActionGoal {
 		return "Agent: " + agentId + " executing Goal : " + goalStructure.showGoalStructureStatus();
 	}
 
+	@Override
+	public int compareTo(labActionGoalEntityInteracted other) {
+		if (this.entityId == null) return -1;
+		if (other.entityId == null) return 1;
+
+		return this.entityId.compareTo(other.entityId);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(!(obj instanceof labActionGoalEntityInteracted)) return false;
+
+		if (this.entityId == null) return false;
+		if (((labActionGoalEntityInteracted)obj).entityId == null) return false;
+
+		return this.entityId.equals(((labActionGoalEntityInteracted)obj).entityId);
+	}
 }
