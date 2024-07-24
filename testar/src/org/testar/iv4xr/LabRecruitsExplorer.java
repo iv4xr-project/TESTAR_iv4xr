@@ -30,10 +30,8 @@
 
 package org.testar.iv4xr;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Random;
 import java.util.Set;
 
 import org.fruit.alayer.Action;
@@ -43,7 +41,6 @@ import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.lab.goals.labActionGoalEntityInteracted;
 import eu.testar.iv4xr.actions.lab.goals.labActionGoalPositionInCloseRange;
 import eu.testar.iv4xr.enums.IV4XRtags;
-import nl.uu.cs.aplib.mainConcepts.ProgressStatus;
 
 public class LabRecruitsExplorer {
 	private Set<labActionGoalPositionInCloseRange> unexploredActionPositions = new HashSet<>();
@@ -51,6 +48,22 @@ public class LabRecruitsExplorer {
 
 	private Set<labActionGoalEntityInteracted> nonInteractedActionEntities = new HashSet<>();
 	private Set<String> interactedEntities = new HashSet<>();
+
+	public Set<labActionGoalPositionInCloseRange> getUnexploredActionPositions() {
+		return unexploredActionPositions;
+	}
+
+	public Set<Vec3> getExploredPositions() {
+		return exploredPositions;
+	}
+
+	public Set<labActionGoalEntityInteracted> getNonInteractedActionEntities() {
+		return nonInteractedActionEntities;
+	}
+
+	public Set<String> getInteractedEntities() {
+		return interactedEntities;
+	}
 
 	/**
 	 * If the position of the labActionGoalPositionInCloseRange has not been reached, 
@@ -62,8 +75,9 @@ public class LabRecruitsExplorer {
 		if(action instanceof labActionGoalPositionInCloseRange) {
 			Vec3 goalPosition = ((labActionGoalPositionInCloseRange)action).getGoalPosition();
 			if(goalPosition!=null && !exploredPositions.contains(goalPosition)) {
-				unexploredActionPositions.add((labActionGoalPositionInCloseRange)action);
-				System.out.println("TESTAR memorizeActionPosition : " + goalPosition);
+				if(unexploredActionPositions.add((labActionGoalPositionInCloseRange)action)) {
+					System.out.println("TESTAR memorizeActionPosition : " + goalPosition);
+				}
 			}
 		}
 	}
@@ -78,8 +92,9 @@ public class LabRecruitsExplorer {
 		if(action instanceof labActionGoalEntityInteracted) {
 			String entityId = ((labActionGoalEntityInteracted)action).getEntityId();
 			if(entityId != null && !entityId.isEmpty() && !interactedEntities.contains(entityId)) {
-				nonInteractedActionEntities.add((labActionGoalEntityInteracted)action);
-				System.out.println("TESTAR memorizeActionEntity : " + entityId);
+				if(nonInteractedActionEntities.add((labActionGoalEntityInteracted)action)) {
+					System.out.println("TESTAR memorizeActionEntity : " + entityId);
+				}
 			}
 		}
 	}
@@ -91,8 +106,26 @@ public class LabRecruitsExplorer {
 		// We dont know which button will open a door...
 		// So just select one of them random
 		if(!nonInteractedActionEntities.isEmpty()) {
-			int randomIndex = new Random().nextInt(nonInteractedActionEntities.size());
-			prioritizedAction = new ArrayList<labActionGoalEntityInteracted>(nonInteractedActionEntities).get(randomIndex);
+			// Prioritize the non-interacted near entities
+			Vec3 agentPosition = state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition);
+			float nearDistance = 999f;
+			for(Action action : nonInteractedActionEntities) {
+				// If no prioritizedAction selected
+				// This is probably the first nonInteractedActionEntities
+				if(prioritizedAction == null) {
+					prioritizedAction = action;
+					nearDistance = Vec3.dist(agentPosition, ((labActionGoalEntityInteracted)action).getEntityPosition());
+					continue;
+				}
+
+				// If the distance of current action is farther than the saved action
+				// Save this farthest unexploredActionPositions
+				float distance = Vec3.dist(agentPosition, ((labActionGoalEntityInteracted)action).getEntityPosition());
+				if(distance < nearDistance) {
+					prioritizedAction = action;
+					nearDistance = distance;
+				}
+			}
 		}
 
 		// If there are not non-interacted entities
@@ -129,8 +162,6 @@ public class LabRecruitsExplorer {
 		Action prioritizedAction = null;
 
 		// First, prioritize the actions with non-interacted entities
-		// We dont know which button will open a door...
-		// So just select one of them random
 		if(!nonInteractedActionEntities.isEmpty()) {
 			// Get the visible interact actions
 			Set<labActionGoalEntityInteracted> visibleInteractedActionEntities = new HashSet<>();
@@ -143,8 +174,26 @@ public class LabRecruitsExplorer {
 			// Retain the visible interact actions that are not yet interacted
 			visibleInteractedActionEntities.retainAll(nonInteractedActionEntities);
 			if(!visibleInteractedActionEntities.isEmpty()) {
-				int randomIndex = new Random().nextInt(visibleInteractedActionEntities.size());
-				prioritizedAction = new ArrayList<labActionGoalEntityInteracted>(visibleInteractedActionEntities).get(randomIndex);
+				// Prioritize the non-interacted near entities
+				Vec3 agentPosition = state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition);
+				float nearDistance = 999f;
+				for(Action action : visibleInteractedActionEntities) {
+					// If no prioritizedAction selected
+					// This is probably the first nonInteractedActionEntities
+					if(prioritizedAction == null) {
+						prioritizedAction = action;
+						nearDistance = Vec3.dist(agentPosition, ((labActionGoalEntityInteracted)action).getEntityPosition());
+						continue;
+					}
+
+					// If the distance of current action is farther than the saved action
+					// Save this farthest unexploredActionPositions
+					float distance = Vec3.dist(agentPosition, ((labActionGoalEntityInteracted)action).getEntityPosition());
+					if(distance < nearDistance) {
+						prioritizedAction = action;
+						nearDistance = distance;
+					}
+				}
 			}
 		}
 
@@ -196,10 +245,9 @@ public class LabRecruitsExplorer {
 	 * @param executedAction
 	 * @param goalStatus
 	 */
-	public void addExecutedAction(Action executedAction, ProgressStatus goalStatus) {
+	public void addExecutedAction(Action executedAction) {
 		if(executedAction instanceof labActionGoalPositionInCloseRange 
-				&& ((labActionGoalPositionInCloseRange)executedAction).getGoalPosition() != null 
-				&& goalStatus.success()) {
+				&& ((labActionGoalPositionInCloseRange)executedAction).getGoalPosition() != null) {
 			Vec3 exploredPosition = ((labActionGoalPositionInCloseRange)executedAction).getGoalPosition();
 			// Remove the position as unexplored			
 			for (Iterator<labActionGoalPositionInCloseRange> it = unexploredActionPositions.iterator(); it.hasNext();) {
@@ -213,8 +261,7 @@ public class LabRecruitsExplorer {
 		}
 
 		if(executedAction instanceof labActionGoalEntityInteracted 
-				&& ((labActionGoalEntityInteracted)executedAction).getEntityId() != null 
-				&& goalStatus.success()) {
+				&& ((labActionGoalEntityInteracted)executedAction).getEntityId() != null) {
 			String interactedEntityId = ((labActionGoalEntityInteracted)executedAction).getEntityId();
 			// Remove the entity as nonInteracted			
 			for (Iterator<labActionGoalEntityInteracted> it = nonInteractedActionEntities.iterator(); it.hasNext();) {

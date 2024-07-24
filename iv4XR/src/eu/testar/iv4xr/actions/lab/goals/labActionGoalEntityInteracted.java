@@ -30,10 +30,13 @@
 
 package eu.testar.iv4xr.actions.lab.goals;
 
+import java.util.Objects;
+
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 
+import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
@@ -43,10 +46,17 @@ public class labActionGoalEntityInteracted extends labActionGoal implements Comp
 
 	private static final long serialVersionUID = 257145936598623249L;
 
+	private Vec3 entityPosition;
+
+	public Vec3 getEntityPosition() {
+		return entityPosition;
+	}
+
 	public labActionGoalEntityInteracted(Widget w, SUT system, GoalStructure goalStructure) {
 		this.goalStructure = goalStructure;
 		this.set(Tags.OriginWidget, w);
 		this.entityId = w.get(IV4XRtags.entityId);
+		this.entityPosition = w.get(IV4XRtags.entityPosition);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionGoalEntityInteracted);
 		this.set(IV4XRtags.agentAction, false);
 		this.set(IV4XRtags.newActionByAgent, false);
@@ -80,5 +90,10 @@ public class labActionGoalEntityInteracted extends labActionGoal implements Comp
 		if (((labActionGoalEntityInteracted)obj).entityId == null) return false;
 
 		return this.entityId.equals(((labActionGoalEntityInteracted)obj).entityId);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(entityId);
 	}
 }

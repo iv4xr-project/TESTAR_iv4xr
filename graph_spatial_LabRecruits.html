@@ -100,13 +100,13 @@ async function myfunction(spatialFiles) {
 		    // Skip empty line, usually at the end of the file
 			if(isEmpty(arrLines[line])) continue;
 			
-			// Sequence | 1 | Action | 5 | entitiesExisting | 24 | entitiesObservedNumeric | 2 | entitiesObservedPercentage | 8.33 | entitiesReachedNumeric | 2 | entitiesReachedPercentage | 8.33 | positionsExisting | 1680 | positionsObservedNumeric | 44 | positionsObservedPercentage | 2.62 | positionsWalkedNumeric | 31 | positionsWalkedPercentage | 1.85 
+			// Sequence | 1 | Action | 5 | entitiesExisting | 24 | entitiesObservedNumeric | 2 | entitiesObservedPercentage | 8.33 | entitiesReachedNumeric | 2 | entitiesReachedPercentage | 8.33 | positionsExisting | 1680 | positionsObservedNumeric | 44 | positionsObservedPercentage | 2.62 | positionsWalkedNumeric | 31 | positionsWalkedPercentage | 1.85 | seconds | 28 
 			
 			singleDataObservedButtons.push( parseFloat( arrLines[line].split(" | ")[9] ) );
 			singleDataInteractedButtons.push( parseFloat( arrLines[line].split(" | ")[13] ) );
 			singleDataObservedPositions.push( parseFloat( arrLines[line].split(" | ")[19] ) );
 			singleDataWalkedPositions.push( parseFloat( arrLines[line].split(" | ")[23] ) );
-			singleDataSeconds.push( parseFloat( 0.00 ) );
+			singleDataSeconds.push( parseFloat( arrLines[line].split(" | ")[25] ) );
         }
 		
         allDataObservedButtons.push(singleDataObservedButtons)

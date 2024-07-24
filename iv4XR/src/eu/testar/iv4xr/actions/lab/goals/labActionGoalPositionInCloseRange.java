@@ -30,6 +30,8 @@
 
 package eu.testar.iv4xr.actions.lab.goals;
 
+import java.util.Objects;
+
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
@@ -89,5 +91,10 @@ public class labActionGoalPositionInCloseRange extends labActionGoal implements 
 		if (((labActionGoalPositionInCloseRange)obj).goalPosition == null) return false;
 
 		return this.goalPosition.equals(((labActionGoalPositionInCloseRange)obj).goalPosition);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(goalPosition);
 	}
 }

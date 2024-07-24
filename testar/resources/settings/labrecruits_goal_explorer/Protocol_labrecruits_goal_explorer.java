@@ -34,6 +34,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -69,6 +71,9 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 	private LabRecruitsExplorer labRecruitsExplorer;
 	private LabRecruitsCoverage labRecruitsCoverage;
 
+	// Timing variables
+	private Instant accumulativeActionTime;
+
 	@Override
 	protected void preSequencePreparations() {
 		super.preSequencePreparations();
@@ -78,6 +83,9 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 	@Override
 	protected SUT startSystem() throws SystemStartException {
 		SUT system = super.startSystem();
+
+		accumulativeActionTime = Instant.now();
+
 		LabRecruitsAgentTESTAR testAgent = (LabRecruitsAgentTESTAR)system.get(IV4XRtags.iv4xrTestAgent);
 		testAgent.setTestDataCollector(new TestDataCollector());
 
@@ -119,10 +127,10 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 
 		return out ;
 	}
-	
+
 	private double roundToTwoDecimalPlaces(double value) {
-	    BigDecimal bd = new BigDecimal(value).setScale(2, RoundingMode.HALF_UP);
-	    return bd.doubleValue();
+		BigDecimal bd = new BigDecimal(value).setScale(2, RoundingMode.HALF_UP);
+		return bd.doubleValue();
 	}
 	/**
 	 * Derive all possible actions that TESTAR can execute in each specific LabRecruits state.
@@ -166,7 +174,7 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 					// Update the observed LabRecruits x,z position to the coverage tracker
 					labRecruitsCoverage.addObservedPosition(Math.round(goalPosition.x), Math.round(goalPosition.z));
 				}
-				*/
+				 */
 			}
 		}
 
@@ -261,7 +269,7 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 			Util.pause(waitTime);
 
 			// Add executed to LabRecruitsExplorer to map the executed actions
-			labRecruitsExplorer.addExecutedAction(action, testAgent.getLastHandledGoal().getStatus());
+			labRecruitsExplorer.addExecutedAction(action);
 
 			// Extract action coverage from the instrumenter
 			List<Map<String,Number>> trace = testAgent.getTestDataCollector()
@@ -285,7 +293,9 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 						+ "positionsObservedNumeric | " + lastAction.get("positionsObservedNumeric") + " | "
 						+ "positionsObservedPercentage | " + lastAction.get("positionsObservedPercentage") + " | "
 						+ "positionsWalkedNumeric | " + lastAction.get("positionsWalkedNumeric") + " | "
-						+ "positionsWalkedPercentage | " + lastAction.get("positionsWalkedPercentage");
+						+ "positionsWalkedPercentage | " + lastAction.get("positionsWalkedPercentage") + " | "
+
+						+ "seconds | " + Duration.between(accumulativeActionTime, Instant.now()).toSeconds();
 
 				String outputDir = OutputStructure.outerLoopOutputDir;
 
