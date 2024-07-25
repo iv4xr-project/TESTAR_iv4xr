@@ -30,8 +30,11 @@
 
 package org.testar.iv4xr;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.fruit.alayer.Action;
@@ -132,25 +135,33 @@ public class LabRecruitsExplorer {
 		if(prioritizedAction == null) {
 			// And there are unexplored positions
 			if(!unexploredActionPositions.isEmpty()) {
-				// Prioritize the non-explored far positions
+				// Step 1: Calculate the farthest distance
 				Vec3 agentPosition = state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition);
 				float farDistance = 0f;
-				for(Action action : unexploredActionPositions) {
-					// If no prioritizedAction selected
-					// This is probably the first unexploredActionPositions
-					if(prioritizedAction == null) {
-						prioritizedAction = action;
-						farDistance = Vec3.dist(agentPosition, ((labActionGoalPositionInCloseRange)action).getGoalPosition());
-						continue;
-					}
 
-					// If the distance of current action is farther than the saved action
-					// Save this farthest unexploredActionPositions
+				for(Action action : unexploredActionPositions) {
 					float distance = Vec3.dist(agentPosition, ((labActionGoalPositionInCloseRange)action).getGoalPosition());
 					if(distance > farDistance) {
-						prioritizedAction = action;
 						farDistance = distance;
 					}
+				}
+
+				// Step 2: Get all far explore actions within the threshold of 0.3 of the far distance
+				List<Action> farActionsWithinThreshold = new ArrayList<>();
+				float threshold = 0.5f;
+
+				for(Action action : unexploredActionPositions) {
+					float actionDistance = Vec3.dist(agentPosition, ((labActionGoalPositionInCloseRange)action).getGoalPosition());
+					if(actionDistance >= farDistance - threshold) {
+						farActionsWithinThreshold.add(action);
+					}
+				}
+
+				// Step 3: Select one of these far explore actions randomly
+				if(!farActionsWithinThreshold.isEmpty()) {
+					Random random = new Random();
+					int randomIndex = random.nextInt(farActionsWithinThreshold.size());
+					prioritizedAction = farActionsWithinThreshold.get(randomIndex);
 				}
 			}
 		}
@@ -212,25 +223,33 @@ public class LabRecruitsExplorer {
 				// Retain the visible explore actions that are not yet interacted
 				visibleExploreActionPositions.retainAll(unexploredActionPositions);
 				if(!visibleExploreActionPositions.isEmpty()) {
-					// Prioritize the non-explored far positions
+					// Step 1: Calculate the farthest distance
 					Vec3 agentPosition = state.get(IV4XRtags.agentWidget).get(IV4XRtags.agentPosition);
 					float farDistance = 0f;
-					for(Action action : visibleExploreActionPositions) {
-						// If no prioritizedAction selected
-						// This is probably the first unexploredActionPositions
-						if(prioritizedAction == null) {
-							prioritizedAction = action;
-							farDistance = Vec3.dist(agentPosition, ((labActionGoalPositionInCloseRange)action).getGoalPosition());
-							continue;
-						}
 
-						// If the distance of current action is farther than the saved action
-						// Save this farthest unexploredActionPositions
+					for(Action action : visibleExploreActionPositions) {
 						float distance = Vec3.dist(agentPosition, ((labActionGoalPositionInCloseRange)action).getGoalPosition());
 						if(distance > farDistance) {
-							prioritizedAction = action;
 							farDistance = distance;
 						}
+					}
+
+					// Step 2: Get all far explore actions within the threshold of 0.3 of the far distance
+					List<Action> farActionsWithinThreshold = new ArrayList<>();
+					float threshold = 0.5f;
+
+					for(Action action : visibleExploreActionPositions) {
+						float actionDistance = Vec3.dist(agentPosition, ((labActionGoalPositionInCloseRange)action).getGoalPosition());
+						if(actionDistance >= farDistance - threshold) {
+							farActionsWithinThreshold.add(action);
+						}
+					}
+
+					// Step 3: Select one of these far explore actions randomly
+					if(!farActionsWithinThreshold.isEmpty()) {
+						Random random = new Random();
+						int randomIndex = random.nextInt(farActionsWithinThreshold.size());
+						prioritizedAction = farActionsWithinThreshold.get(randomIndex);
 					}
 				}
 			}
@@ -245,7 +264,7 @@ public class LabRecruitsExplorer {
 	 * @param executedAction
 	 * @param goalStatus
 	 */
-	public void addExecutedAction(Action executedAction) {
+	public void addExecutedAction(Action executedAction, boolean resetMemory) {
 		if(executedAction instanceof labActionGoalPositionInCloseRange 
 				&& ((labActionGoalPositionInCloseRange)executedAction).getGoalPosition() != null) {
 			Vec3 exploredPosition = ((labActionGoalPositionInCloseRange)executedAction).getGoalPosition();
@@ -275,8 +294,10 @@ public class LabRecruitsExplorer {
 
 			// If an entity is interacted, I want to reset the exploration memory
 			// Because the agent needs to explore new possible opened areas
-			unexploredActionPositions = new HashSet<>();
-			exploredPositions = new HashSet<>();
+			if(resetMemory) {
+				unexploredActionPositions = new HashSet<>();
+				exploredPositions = new HashSet<>();
+			}
 		}
 	}
 }

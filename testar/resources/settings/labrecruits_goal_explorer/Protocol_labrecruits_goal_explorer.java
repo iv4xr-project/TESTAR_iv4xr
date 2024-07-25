@@ -52,7 +52,6 @@ import org.testar.iv4xr.LabRecruitsCoverage;
 import org.testar.iv4xr.LabRecruitsExplorer;
 import org.testar.protocols.iv4xr.LabRecruitsProtocol;
 
-import agents.tactics.GoalLib;
 import eu.iv4xr.framework.mainConcepts.TestDataCollector;
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.lab.goals.labActionGoal;
@@ -62,7 +61,6 @@ import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.enums.SVec3;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import nl.ou.testar.RandomActionSelector;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 import nl.uu.cs.aplib.utils.Pair;
 import world.BeliefState;
 
@@ -146,35 +144,15 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 		// For each NavMesh Position, derive goal exploration movements
 		if(state.get(IV4XRtags.labRecruitsNavMesh, null) != null && !state.get(IV4XRtags.labRecruitsNavMesh).isEmpty()) {
 			for(SVec3 nodeNavMesh : state.get(IV4XRtags.labRecruitsNavMesh)) {				
-
 				// Concrete NavMesh position
 				Vec3 goalPosition = new Vec3(nodeNavMesh.x, nodeNavMesh.y, nodeNavMesh.z);
-				GoalStructure goalNavigatePosition = GoalLib.positionInCloseRange(goalPosition).lift();
-				Action exploreAction = new labActionGoalPositionInCloseRange(state, system, goalNavigatePosition, goalPosition);
+				Action exploreAction = new labActionGoalPositionInCloseRange(state, system, goalPosition);
 				// Save as current state action
 				labActions.add(exploreAction);
 				// But also memorize for special selector
 				labRecruitsExplorer.memorizeActionPosition(exploreAction);
 				// Update the observed LabRecruits x,z position to the coverage tracker
 				labRecruitsCoverage.addObservedPosition(Math.round(goalPosition.x), Math.round(goalPosition.z));
-
-				/*
-				// This does not work well, maybe because dist is 0.4 and this round is "too abstract"
-				// Absctract NavMesh position
-				Vec3 goalPosition = new Vec3(Math.round(nodeNavMesh.x), Math.round(nodeNavMesh.y), Math.round(nodeNavMesh.z));
-				// Only derive an action if the abstract NavMesh positions does not contain the concrete position
-				if(!abstractNavMeshPositions.contains(goalPosition)) {
-					abstractNavMeshPositions.add(goalPosition);
-					GoalStructure goalNavigatePosition = GoalLib.positionInCloseRange(goalPosition).lift();
-					Action exploreAction = new labActionGoalPositionInCloseRange(state, system, goalNavigatePosition, goalPosition);
-					// Save as current state action
-					labActions.add(exploreAction);
-					// But also memorize for special selector
-					labRecruitsExplorer.memorizeActionPosition(exploreAction);
-					// Update the observed LabRecruits x,z position to the coverage tracker
-					labRecruitsCoverage.addObservedPosition(Math.round(goalPosition.x), Math.round(goalPosition.z));
-				}
-				 */
 			}
 		}
 
@@ -182,8 +160,7 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 		for(Widget w : state) {
 			if(isInteractiveEntity(w)) {
 				String entityId = w.get(IV4XRtags.entityId);
-				GoalStructure goalInteractEntity = GoalLib.entityInteracted(entityId);
-				Action actionInteractEntity = new labActionGoalEntityInteracted(w, system, goalInteractEntity);
+				Action actionInteractEntity = new labActionGoalEntityInteracted(w, system);
 				// Save as current state action
 				labActions.add(actionInteractEntity);
 				// But also memorize for special selector
@@ -217,7 +194,10 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 		if (retAction== null) {
 			// if no preSelected actions are needed,
 			// invoke the LabRecruitsExplorer
+
+			// Only the current visible of memorized during the sequence
 			retAction = labRecruitsExplorer.prioritizeVisibleOfMemorizedAction(state, actions);
+
 			if(retAction != null) System.out.println("LabRecruitsExplorer prioritizes: " + retAction.toShortString());
 		}
 		if(retAction==null) {
@@ -269,7 +249,8 @@ public class Protocol_labrecruits_goal_explorer extends LabRecruitsProtocol {
 			Util.pause(waitTime);
 
 			// Add executed to LabRecruitsExplorer to map the executed actions
-			labRecruitsExplorer.addExecutedAction(action);
+			// Choose if reset exploration memory after an entity interaction
+			labRecruitsExplorer.addExecutedAction(action, false);
 
 			// Extract action coverage from the instrumenter
 			List<Map<String,Number>> trace = testAgent.getTestDataCollector()

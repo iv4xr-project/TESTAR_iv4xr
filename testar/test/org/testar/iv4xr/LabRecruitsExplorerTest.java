@@ -24,13 +24,11 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import agents.tactics.GoalLib;
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.lab.goals.labActionGoalEntityInteracted;
 import eu.testar.iv4xr.actions.lab.goals.labActionGoalPositionInCloseRange;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
 public class LabRecruitsExplorerTest {
 
@@ -62,8 +60,7 @@ public class LabRecruitsExplorerTest {
 		Widget widgetButton1 = new StdWidget();
 		widgetButton1.set(IV4XRtags.entityId, "button1");
 		widgetButton1.set(IV4XRtags.entityPosition, new Vec3(0, 0, 1));
-		GoalStructure goalInteractEntityButton1 = GoalLib.entityInteracted(widgetButton1.get(IV4XRtags.entityId));
-		Action actionInteractEntityButton1 = new labActionGoalEntityInteracted(widgetButton1, system, goalInteractEntityButton1);
+		Action actionInteractEntityButton1 = new labActionGoalEntityInteracted(widgetButton1, system);
 
 		labRecruitsExplorer.memorizeActionEntity(actionInteractEntityButton1);
 		assertEquals(1, labRecruitsExplorer.getNonInteractedActionEntities().size());
@@ -73,22 +70,20 @@ public class LabRecruitsExplorerTest {
 		widgetButton2.set(IV4XRtags.entityId, "button2");
 		widgetButton2.set(IV4XRtags.entityPosition, new Vec3(1, 0, 1));
 
-		GoalStructure goalInteractEntityButton2 = GoalLib.entityInteracted(widgetButton2.get(IV4XRtags.entityId));
-		Action actionInteractEntityButton2 = new labActionGoalEntityInteracted(widgetButton2, system, goalInteractEntityButton2);
+		Action actionInteractEntityButton2 = new labActionGoalEntityInteracted(widgetButton2, system);
 
 		labRecruitsExplorer.memorizeActionEntity(actionInteractEntityButton2);
 		assertEquals(2, labRecruitsExplorer.getNonInteractedActionEntities().size());
 
 		// Repeat the derivation of an Action for button 2, which must maintain two memorized action and avoid repeated entries
-		GoalStructure goalInteractEntityButton2R = GoalLib.entityInteracted(widgetButton2.get(IV4XRtags.entityId));
-		Action actionInteractEntityButton2R = new labActionGoalEntityInteracted(widgetButton2, system, goalInteractEntityButton2R);
+		Action actionInteractEntityButton2R = new labActionGoalEntityInteracted(widgetButton2, system);
 
 		labRecruitsExplorer.memorizeActionEntity(actionInteractEntityButton2R);
 		assertEquals(2, labRecruitsExplorer.getNonInteractedActionEntities().size());
 
 		// Execute button1 action, which should remember button 1 is executed and maintain the memory of button 2
 		assertEquals(0, labRecruitsExplorer.getInteractedEntities().size());
-		labRecruitsExplorer.addExecutedAction(actionInteractEntityButton1);
+		labRecruitsExplorer.addExecutedAction(actionInteractEntityButton1, false);
 		assertEquals(1, labRecruitsExplorer.getInteractedEntities().size());
 		assertTrue(labRecruitsExplorer.getInteractedEntities().contains("button1"));
 		assertEquals(1, labRecruitsExplorer.getNonInteractedActionEntities().size());
@@ -106,8 +101,7 @@ public class LabRecruitsExplorerTest {
 		widgetButton3.set(IV4XRtags.entityId, "button3");
 		widgetButton3.set(IV4XRtags.entityPosition, new Vec3(1, 0, 2));
 
-		GoalStructure goalInteractEntityButton3 = GoalLib.entityInteracted(widgetButton3.get(IV4XRtags.entityId));
-		Action actionInteractEntityButton3 = new labActionGoalEntityInteracted(widgetButton3, system, goalInteractEntityButton3);
+		Action actionInteractEntityButton3 = new labActionGoalEntityInteracted(widgetButton3, system);
 
 		labRecruitsExplorer.memorizeActionEntity(actionInteractEntityButton3);
 		assertEquals(2, labRecruitsExplorer.getNonInteractedActionEntities().size());
@@ -122,28 +116,25 @@ public class LabRecruitsExplorerTest {
 
 		// Create Action for position 1,0,0, which must maintain one memorized position
 		Vec3 goalPosition100 = new Vec3(1.0f, 0.0f, 0.0f);
-		GoalStructure goalNavigatePosition100 = GoalLib.positionInCloseRange(goalPosition100).lift();
-		Action exploreAction100 = new labActionGoalPositionInCloseRange(state, system, goalNavigatePosition100, goalPosition100);
+		Action exploreAction100 = new labActionGoalPositionInCloseRange(state, system, goalPosition100);
 		labRecruitsExplorer.memorizeActionPosition(exploreAction100);
 		assertEquals(1, labRecruitsExplorer.getUnexploredActionPositions().size());
 
 		// Create Action for position 1,0,1, which must maintain two memorized position
 		Vec3 goalPosition101 = new Vec3(1.0f, 0.0f, 1.0f);
-		GoalStructure goalNavigatePosition101 = GoalLib.positionInCloseRange(goalPosition101).lift();
-		Action exploreAction101 = new labActionGoalPositionInCloseRange(state, system, goalNavigatePosition101, goalPosition101);
+		Action exploreAction101 = new labActionGoalPositionInCloseRange(state, system, goalPosition101);
 		labRecruitsExplorer.memorizeActionPosition(exploreAction101);
 		assertEquals(2, labRecruitsExplorer.getUnexploredActionPositions().size());
 
 		// Repeat Action for position 1,0,1, which must maintain two memorized position
 		Vec3 goalPosition101R = new Vec3(1.0f, 0.0f, 1.0f);
-		GoalStructure goalNavigatePosition101R = GoalLib.positionInCloseRange(goalPosition101R).lift();
-		Action exploreAction101R = new labActionGoalPositionInCloseRange(state, system, goalNavigatePosition101R, goalPosition101R);
+		Action exploreAction101R = new labActionGoalPositionInCloseRange(state, system, goalPosition101R);
 		labRecruitsExplorer.memorizeActionPosition(exploreAction101R);
 		assertEquals(2, labRecruitsExplorer.getUnexploredActionPositions().size());
 
 		// Execute position 1,0,0, which should remember 1,0,0 is executed and maintain the memory of 1,0,1
 		assertEquals(0, labRecruitsExplorer.getExploredPositions().size());
-		labRecruitsExplorer.addExecutedAction(exploreAction100);
+		labRecruitsExplorer.addExecutedAction(exploreAction100, false);
 		assertEquals(1, labRecruitsExplorer.getExploredPositions().size());
 		assertTrue(labRecruitsExplorer.getExploredPositions().contains(goalPosition100));
 		assertEquals(1, labRecruitsExplorer.getUnexploredActionPositions().size());
@@ -154,8 +145,7 @@ public class LabRecruitsExplorerTest {
 
 		// Finally a new 2,0,2 position
 		Vec3 goalPosition202 = new Vec3(2.0f, 0.0f, 2.0f);
-		GoalStructure goalNavigatePosition202 = GoalLib.positionInCloseRange(goalPosition202).lift();
-		Action exploreAction202 = new labActionGoalPositionInCloseRange(state, system, goalNavigatePosition202, goalPosition202);
+		Action exploreAction202 = new labActionGoalPositionInCloseRange(state, system, goalPosition202);
 		labRecruitsExplorer.memorizeActionPosition(exploreAction202);
 		assertEquals(2, labRecruitsExplorer.getUnexploredActionPositions().size());
 	}
@@ -178,21 +168,21 @@ public class LabRecruitsExplorerTest {
 		Widget widgetButton1 = new StdWidget();
 		widgetButton1.set(IV4XRtags.entityId, "button1");
 		widgetButton1.set(IV4XRtags.entityPosition, new Vec3(5, 0, 9));
-		GoalStructure goalInteractEntityButton1 = GoalLib.entityInteracted(widgetButton1.get(IV4XRtags.entityId));
-		Action actionInteractEntityButton1 = new labActionGoalEntityInteracted(widgetButton1, system, goalInteractEntityButton1);
+		Action actionInteractEntityButton1 = new labActionGoalEntityInteracted(widgetButton1, system);
 		labRecruitsExplorer.memorizeActionEntity(actionInteractEntityButton1);
 
 		// Create Action for button 2, near the agent
 		Widget widgetButton2 = new StdWidget();
 		widgetButton2.set(IV4XRtags.entityId, "button2");
 		widgetButton2.set(IV4XRtags.entityPosition, new Vec3(1, 0, 1));
-		GoalStructure goalInteractEntityButton2 = GoalLib.entityInteracted(widgetButton2.get(IV4XRtags.entityId));
-		Action actionInteractEntityButton2 = new labActionGoalEntityInteracted(widgetButton2, system, goalInteractEntityButton2);
+		Action actionInteractEntityButton2 = new labActionGoalEntityInteracted(widgetButton2, system);
 		labRecruitsExplorer.memorizeActionEntity(actionInteractEntityButton2);
 
 		// Check nearest button2 is selected
 		Set<Action> actions = new HashSet<>(Arrays.asList(actionInteractEntityButton1, actionInteractEntityButton2));
 		Action prioAction = labRecruitsExplorer.prioritizeVisibleOfMemorizedAction(state, actions);
+		assertEquals(prioAction, actionInteractEntityButton2);
+		prioAction = labRecruitsExplorer.prioritizeMemorizedAction(state, actions);
 		assertEquals(prioAction, actionInteractEntityButton2);
 	}
 
@@ -212,19 +202,19 @@ public class LabRecruitsExplorerTest {
 
 		// Create Action for position 9,0,9, far away from the agent
 		Vec3 goalPosition909 = new Vec3(9.0f, 0.0f, 9.0f);
-		GoalStructure goalNavigatePosition909 = GoalLib.positionInCloseRange(goalPosition909).lift();
-		Action exploreAction909 = new labActionGoalPositionInCloseRange(state, system, goalNavigatePosition909, goalPosition909);
+		Action exploreAction909 = new labActionGoalPositionInCloseRange(state, system, goalPosition909);
 		labRecruitsExplorer.memorizeActionPosition(exploreAction909);
 
 		// Create Action for position 1.0.1, near the agent
 		Vec3 goalPosition101 = new Vec3(1.0f, 0.0f, 1.0f);
-		GoalStructure goalNavigatePosition101 = GoalLib.positionInCloseRange(goalPosition101).lift();
-		Action exploreAction101 = new labActionGoalPositionInCloseRange(state, system, goalNavigatePosition101, goalPosition101);
+		Action exploreAction101 = new labActionGoalPositionInCloseRange(state, system, goalPosition101);
 		labRecruitsExplorer.memorizeActionPosition(exploreAction101);
 
 		// Check far position 9,0,9 is selected
 		Set<Action> actions = new HashSet<>(Arrays.asList(exploreAction909, exploreAction101));
 		Action prioAction = labRecruitsExplorer.prioritizeVisibleOfMemorizedAction(state, actions);
+		assertEquals(prioAction, exploreAction909);
+		prioAction = labRecruitsExplorer.prioritizeMemorizedAction(state, actions);
 		assertEquals(prioAction, exploreAction909);
 	}
 

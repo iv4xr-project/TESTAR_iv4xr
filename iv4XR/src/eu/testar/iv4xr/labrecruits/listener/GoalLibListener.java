@@ -121,7 +121,7 @@ public class GoalLibListener {
 	public static Goal positionInCloseRange(Vec3 goalPosition) {
 		Goal goal = GoalLib.positionInCloseRange(goalPosition);
 
-		Action executedGoalAction = new labActionGoalPositionInCloseRange(stateTESTAR, system, goal.lift(), goalPosition);
+		Action executedGoalAction = new labActionGoalPositionInCloseRange(stateTESTAR, system, goalPosition);
 		goalActionsList.add(executedGoalAction);
 
 		return goal;
@@ -161,7 +161,7 @@ public class GoalLibListener {
 		
 		Widget widget = getWidgetFromState(stateTESTAR, entityId);
 
-		Action executedGoalAction = new labActionGoalEntityInteracted(widget, system, goalStructure);
+		Action executedGoalAction = new labActionGoalEntityInteracted(widget, system);
 		goalActionsList.add(executedGoalAction);
 
 		return goalStructure;

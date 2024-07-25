@@ -36,11 +36,11 @@ import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 
+import agents.tactics.GoalLib;
 import eu.iv4xr.framework.spatial.Vec3;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure;
 
 public class labActionGoalEntityInteracted extends labActionGoal implements Comparable<labActionGoalEntityInteracted> {
 
@@ -52,10 +52,10 @@ public class labActionGoalEntityInteracted extends labActionGoal implements Comp
 		return entityPosition;
 	}
 
-	public labActionGoalEntityInteracted(Widget w, SUT system, GoalStructure goalStructure) {
-		this.goalStructure = goalStructure;
-		this.set(Tags.OriginWidget, w);
+	public labActionGoalEntityInteracted(Widget w, SUT system) {
 		this.entityId = w.get(IV4XRtags.entityId);
+		this.goalStructure = GoalLib.entityInteracted(entityId);
+		this.set(Tags.OriginWidget, w);
 		this.entityPosition = w.get(IV4XRtags.entityPosition);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionGoalEntityInteracted);
 		this.set(IV4XRtags.agentAction, false);

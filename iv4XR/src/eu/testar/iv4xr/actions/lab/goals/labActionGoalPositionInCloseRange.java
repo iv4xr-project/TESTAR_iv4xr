@@ -30,17 +30,22 @@
 
 package eu.testar.iv4xr.actions.lab.goals;
 
+import static nl.uu.cs.aplib.AplibEDSL.ABORT;
+import static nl.uu.cs.aplib.AplibEDSL.FIRSTof;
+
 import java.util.Objects;
 
 import org.fruit.alayer.SUT;
 import org.fruit.alayer.Tags;
 import org.fruit.alayer.Widget;
 
+import agents.tactics.TacticLib;
 import eu.testar.iv4xr.actions.iv4xrActionRoles;
 import eu.testar.iv4xr.enums.IV4XRtags;
 import eu.testar.iv4xr.labrecruits.LabRecruitsAgentTESTAR;
 import eu.iv4xr.framework.spatial.Vec3;
-import nl.uu.cs.aplib.mainConcepts.GoalStructure;
+import nl.uu.cs.aplib.mainConcepts.Goal;
+import world.BeliefState;
 
 public class labActionGoalPositionInCloseRange extends labActionGoal implements Comparable<labActionGoalPositionInCloseRange> {
 
@@ -52,8 +57,8 @@ public class labActionGoalPositionInCloseRange extends labActionGoal implements 
 		return goalPosition;
 	}
 
-	public labActionGoalPositionInCloseRange(Widget w, SUT system, GoalStructure goalStructure, Vec3 goalPosition) {
-		this.goalStructure = goalStructure;
+	public labActionGoalPositionInCloseRange(Widget w, SUT system, Vec3 goalPosition) {
+		this.goalStructure = moveToPositionInCloseRange(goalPosition).lift();
 		this.set(Tags.OriginWidget, w);
 		this.entityId = w.get(IV4XRtags.entityId);
 		this.set(Tags.Role, iv4xrActionRoles.iv4xrActionGoalPositionInCloseRange);
@@ -97,4 +102,22 @@ public class labActionGoalPositionInCloseRange extends labActionGoal implements 
 	public int hashCode() {
 		return Objects.hashCode(goalPosition);
 	}
+	
+    private Goal moveToPositionInCloseRange(Vec3 goalPosition) {
+        //define the goal
+        Goal goal = new Goal("This position is in-range: " + goalPosition.toString())
+        		    . toSolve((BeliefState belief) -> {
+                        //check if the agent is close to the goal position
+        		    	System.out.println("moveToPositionInCloseRange" +", "+ goalPosition +", "+ Vec3.dist(goalPosition,belief.worldmodel().getFloorPosition()));
+        		    	
+        		    	
+        		    	return Vec3.dist(goalPosition,belief.worldmodel().getFloorPosition()) < 0.4 ;
+                    });
+        //define the goal structure
+        Goal g = goal.withTactic(
+        		 FIRSTof(//the tactic used to solve the goal
+                   TacticLib.navigateTo(goalPosition),//move to the goal position
+                   ABORT())) ;
+        return g;
+    }
 }

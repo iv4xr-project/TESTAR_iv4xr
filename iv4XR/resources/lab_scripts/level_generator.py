@@ -57,3 +57,9 @@ for pair in button_door_pairs:
 print(f"|{','.join(level[0])}")
 for row in level[1:]:
     print(",".join(row))
+    
+# Print the big walls
+print(f"|{','.join(level[0])}")
+for row in level[1:]:
+    print(",".join(cell if cell == WALL else "" for cell in row))
+
